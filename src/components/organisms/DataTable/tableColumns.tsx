@@ -23,7 +23,7 @@ export const columns: ColumnDef<UserRow>[] = [
   {
     accessorKey: "name",
     header: "Name",
-    cell: ({ row }) => <strong>{row.original.name}</strong>,
+    cell: ({ row }) => <div className="w-56">{row.original.name}</div>,
   },
   {
     accessorKey: "email",
