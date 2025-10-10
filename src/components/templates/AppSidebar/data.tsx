@@ -7,37 +7,37 @@ export const sidebarData = {
   navMain: [
     {
       title: "User Management",
-      url: "#",
+      url: "/user-management",
       icon: "IconDashboard",
     },
     {
       title: "RBAC",
-      url: "#",
+      url: "/rbac",
       icon: "IconListDetails",
     },
     {
       title: "Data Upload",
-      url: "#",
+      url: "/data-upload",
       icon: "IconChartBar",
     },
     {
       title: "Data Validate",
-      url: "#",
+      url: "/data-validate",
       icon: "IconFolder",
     },
     {
       title: "Templates",
-      url: "#",
+      url: "/templates",
       icon: "IconHelp",
     },
     {
       title: "Notifications",
-      url: "#",
+      url: "/notifications",
       icon: "IconReport",
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: "IconSettings",
     },
   ],

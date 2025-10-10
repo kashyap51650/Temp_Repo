@@ -1,11 +1,11 @@
 "use client";
 import { type Icon } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/organisms";
 
@@ -24,10 +24,13 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title}>
+              <Link
+                to={item.url}
+                className="flex items-center gap-2 w-full px-3 py-2 rounded hover:bg-muted transition-colors"
+              >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>
-              </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
