@@ -5,7 +5,7 @@ export * from "./Drawer/Drawer";
 export * from "./DropdownMenu/DropdownMenu";
 export * from "./NavMain/NavMain";
 export * from "./NavUser/NavUser";
-export * from "./Popover/Popover";
+export { Popover, PopoverContent, PopoverTrigger } from "./Popover/Popover";
 export * from "./Sheet/Sheet";
 export * from "./Tabs/Tabs";
 export * from "./Tooltip/Tooltip";
