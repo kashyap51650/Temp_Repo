@@ -19,6 +19,7 @@ Sentry.init({
   tracesSampleRate: 1.0,
   // release: APP_VERSION,
   beforeSend(event) {
+    //for fututre use
     // if (isGuardianBrowser) {
     if (event?.exception?.values?.length ?? 0 > 0) {
       const { value: errorMessage, type: errorType } =
