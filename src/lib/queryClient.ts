@@ -1,20 +1,27 @@
 import { QueryClient } from "@tanstack/react-query";
 
-// Query client configuration with sensible defaults
+// Query client configuration with values from environment variables
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // Time in milliseconds that unused/inactive cache data remains in memory
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime:
+        Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 1000 * 60 * 5, // 5 minutes
 
       // Time in milliseconds that cache data remains in memory after being unused
-      gcTime: 1000 * 60 * 10, // 10 minutes (formerly known as cacheTime)
+      gcTime:
+        Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME) || 1000 * 60 * 10, // 10 minutes (formerly known as cacheTime)
 
       // Number of times to retry failed requests
-      retry: 3,
+      retry: Number(import.meta.env.VITE_REACT_QUERY_RETRY) || 3,
 
       // Retry delay function (exponential backoff)
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retryDelay: (attemptIndex) =>
+        Math.min(
+          (Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY) || 1000) *
+            2 ** attemptIndex,
+          Number(import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY) || 30000
+        ),
 
       // Refetch on window focus (useful for keeping data fresh)
       refetchOnWindowFocus: false,
@@ -30,7 +37,7 @@ export const queryClient = new QueryClient({
       retry: 1,
 
       // Retry delay for mutations
-      retryDelay: 1000,
+      retryDelay: Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY) || 1000,
     },
   },
 });
