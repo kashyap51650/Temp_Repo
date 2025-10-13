@@ -5,22 +5,30 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // Time in milliseconds that unused/inactive cache data remains in memory
-      staleTime:
-        Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 1000 * 60 * 5, // 5 minutes
+      staleTime: import.meta.env.VITE_REACT_QUERY_STALE_TIME
+        ? Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME)
+        : 1000 * 60 * 5, // 5 minutes
 
       // Time in milliseconds that cache data remains in memory after being unused
-      gcTime:
-        Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME) || 1000 * 60 * 10, // 10 minutes (formerly known as cacheTime)
+      gcTime: import.meta.env.VITE_REACT_QUERY_CACHE_TIME
+        ? Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME)
+        : 1000 * 60 * 10, // 10 minutes
 
       // Number of times to retry failed requests
-      retry: Number(import.meta.env.VITE_REACT_QUERY_RETRY) || 3,
+      retry: import.meta.env.VITE_REACT_QUERY_RETRY
+        ? Number(import.meta.env.VITE_REACT_QUERY_RETRY)
+        : 3,
 
       // Retry delay function (exponential backoff)
       retryDelay: (attemptIndex) =>
         Math.min(
-          (Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY) || 1000) *
+          (import.meta.env.VITE_REACT_QUERY_RETRY_DELAY
+            ? Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY)
+            : 1000) *
             2 ** attemptIndex,
-          Number(import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY) || 30000
+          import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY
+            ? Number(import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY)
+            : 30000
         ),
 
       // Refetch on window focus (useful for keeping data fresh)
@@ -37,7 +45,9 @@ export const queryClient = new QueryClient({
       retry: 1,
 
       // Retry delay for mutations
-      retryDelay: Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY) || 1000,
+      retryDelay: import.meta.env.VITE_REACT_QUERY_RETRY_DELAY
+        ? Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY)
+        : 1000,
     },
   },
 });
