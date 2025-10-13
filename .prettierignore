@@ -11,3 +11,9 @@ coverage/
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Prettier ignore
+node_modules
+build
+dist
+public
