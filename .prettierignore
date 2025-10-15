@@ -17,3 +17,6 @@ node_modules
 build
 dist
 public
+
+# TanStack Router generated files
+src/routeTree.gen.ts
