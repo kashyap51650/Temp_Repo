@@ -10,7 +10,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 const config = tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "src/routeTree.gen.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

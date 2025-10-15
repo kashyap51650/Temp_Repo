@@ -5,7 +5,16 @@ import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tanstackRouter(), react(), tailwindcss()],
+  plugins: [
+    tanstackRouter({
+      generatedRouteTree: "./src/routeTree.gen.ts",
+      routesDirectory: "./src/routes",
+      quoteStyle: "double",
+      semicolons: true,
+    }),
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
