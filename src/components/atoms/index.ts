@@ -2,6 +2,14 @@ export { Avatar } from "./Avatar/Avatar";
 export { Badge } from "./Badge/Badge";
 export { Button } from "./Button/Button";
 export { Card } from "./Card/Card";
+export {
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./Card/Card";
 export { Checkbox } from "./Checkbox/Checkbox";
 export * from "./Dialog/Dialog";
 export { Input } from "./Input/Input";
