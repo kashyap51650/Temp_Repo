@@ -15,7 +15,7 @@ import {
   Input,
   Label,
 } from "@/components/atoms";
-import { OtpInput } from "@/components/atoms/Input/OtpInput";
+import { OtpInput } from "@/components/atoms/Input/otp-input";
 import { toast } from "@/components/atoms/Sonner/toast";
 import {
   Form,
@@ -118,7 +118,7 @@ export default function ForgotPasswordPage() {
                 control={form.control}
                 name="email"
                 render={({ field }) => (
-                  <FormItem className="text-left mb-4">
+                  <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
                       <Input
@@ -130,7 +130,7 @@ export default function ForgotPasswordPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-xs mt-1" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
           </Form>
         ) : (
           <form onSubmit={handleSubmitOtp(onOtpSubmit)} className="space-y-6">
-            <div className="text-left mb-4">
+            <div>
               <Label className="mb-2.5" htmlFor="otp">
                 OTP
               </Label>

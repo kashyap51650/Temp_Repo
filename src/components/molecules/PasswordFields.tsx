@@ -46,6 +46,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                     type={showCurrentPassword ? "text" : "password"}
                     autoComplete="current-password"
                     className="pr-10"
+                    placeholder="Enter current password"
                     {...field}
                   />
                 </FormControl>
@@ -84,6 +85,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                   type={showNewPassword ? "text" : "password"}
                   autoComplete="new-password"
                   className="pr-10"
+                  placeholder="Enter new password"
                   {...field}
                 />
               </FormControl>
@@ -122,6 +124,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                     type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     className="pr-10"
+                    placeholder="Retype new password"
                     {...field}
                   />
                 </FormControl>
