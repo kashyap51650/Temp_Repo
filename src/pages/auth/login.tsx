@@ -12,15 +12,27 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Label,
 } from "@/components/atoms";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
+import { toast } from "@/components/atoms/Sonner/toast";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/organisms/Form/Form";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
+  email: z
+    .string({ message: "Email is required" })
+    .min(1, "Email is required")
+    .email({ message: "Please enter a valid email address" }),
   password: z
-    .string()
+    .string({ message: "Password is required" })
+    .min(1, "Password is required")
     .min(6, { message: "Password must be at least 6 characters" }),
 });
 
@@ -28,17 +40,16 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
+  const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async () => {
-    navigate({ to: "/user-management" });
+    toast.success("Login successful!");
+    setTimeout(() => {
+      navigate({ to: "/user-management" });
+    }, 1200);
   };
 
   return (
@@ -52,81 +63,86 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-6 pt-2 pb-0">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="text-left mb-5">
-            <Label className="mb-2.5" htmlFor="email">
-              Email Address
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              size="lg"
-              autoComplete="off"
-              placeholder="Enter your email"
-              {...register("email")}
-              disabled={isSubmitting}
-              aria-invalid={errors.email ? "true" : "false"}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="text-left mb-5">
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      size="lg"
+                      autoComplete="off"
+                      placeholder="Enter your email"
+                      disabled={form.formState.isSubmitting}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
             />
-            {errors.email && (
-              <p className="text-xs text-red-600 mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-          <div className="text-left mb-3">
-            <Label className="mb-2.5" htmlFor="password">
-              Password
-            </Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="off"
-                size="lg"
-                placeholder="Enter your password"
-                {...register("password")}
-                disabled={isSubmitting}
-                aria-invalid={errors.email ? "true" : "false"}
-              />
-              <Button
-                type="button"
-                tabIndex={0}
-                className="has-[>svg]:px-1 bg-transparent p-0 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-transparent focus:outline-none"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem className="text-left mb-3">
+                  <FormLabel>Password</FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="off"
+                        size="lg"
+                        placeholder="Enter your password"
+                        disabled={form.formState.isSubmitting}
+                        className="pr-10"
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      tabIndex={0}
+                      className="bg-transparent p-0 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-transparent focus:outline-none h-auto w-auto"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOffIcon className="size-4" />
+                      ) : (
+                        <EyeIcon className="size-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <FormMessage className="text-xs mt-1" />
+                </FormItem>
+              )}
+            />
+            <div className="text-right mb-5">
+              <Link
+                className="text-sm text-gray-500 font-medium hover:underline"
+                to={"/auth/forgot-password"}
               >
-                {showPassword ? (
-                  <EyeOffIcon className="size-4" />
-                ) : (
-                  <EyeIcon className="size-4" />
-                )}
-              </Button>
+                Forgot Password?
+              </Link>
             </div>
-            {errors.password && (
-              <p className="text-xs text-red-600 mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-          <div className="text-right mb-5">
-            <Link
-              className="text-sm text-gray-500 font-medium hover:underline"
-              to={"/auth/forgot-password"}
-            >
-              Forgot Password?
-            </Link>
-          </div>
 
-          <Button
-            type="submit"
-            variant={"default"}
-            size={"lg"}
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              variant={"default"}
+              size={"lg"}
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
       <CardFooter className="flex flex-col items-center gap-1  pt-4">
         <div className="text-sm text-slate-500 text-center">
