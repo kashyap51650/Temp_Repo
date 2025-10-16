@@ -30,7 +30,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
   const { control } = useFormContext();
 
   return (
-    <div className={cn("grid gap-4", className)}>
+    <div className={cn("grid gap-1", className)}>
       {showCurrent && (
         <FormField
           control={control}
@@ -66,7 +66,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                   )}
                 </Button>
               </div>
-              <FormMessage className="text-xs" />
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -103,7 +103,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                 )}
               </Button>
             </div>
-            <FormMessage className="text-xs" />
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -144,7 +144,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                   )}
                 </Button>
               </div>
-              <FormMessage className="text-xs" />
+              <FormMessage />
             </FormItem>
           )}
         />

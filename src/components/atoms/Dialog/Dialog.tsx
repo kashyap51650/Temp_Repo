@@ -1,4 +1,5 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import * as React from "react";
 
 export interface DialogProps extends DialogPrimitive.DialogProps {
@@ -7,6 +8,7 @@ export interface DialogProps extends DialogPrimitive.DialogProps {
   description?: React.ReactNode;
   children?: React.ReactNode;
   showClose?: boolean; // Controls cross icon visibility
+  className?: string; // Custom class for Dialog content
 }
 
 export function Dialog({
@@ -15,6 +17,7 @@ export function Dialog({
   description,
   children,
   showClose = true,
+  className,
   ...props
 }: DialogProps) {
   return (
@@ -22,7 +25,14 @@ export function Dialog({
       <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/70 z-50" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none">
+        <DialogPrimitive.Content
+          className={[
+            "fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg focus:outline-none",
+            className,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           {title && (
             <DialogPrimitive.Title className="text-lg font-semibold mb-0">
               {title}
@@ -35,8 +45,8 @@ export function Dialog({
           )}
           {children}
           {showClose && (
-            <DialogPrimitive.Close className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 focus:outline-none">
-              ✕
+            <DialogPrimitive.Close className="absolute right-4 top-4 text-gray-400 cursor-pointer hover:text-gray-600 focus:outline-none">
+              <X className="size-5" />
             </DialogPrimitive.Close>
           )}
         </DialogPrimitive.Content>

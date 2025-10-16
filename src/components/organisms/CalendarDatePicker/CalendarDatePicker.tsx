@@ -5,7 +5,6 @@ import * as React from "react";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
-import { Label } from "@/components/atoms/Label/Label";
 import {
   Popover,
   PopoverContent,
@@ -32,13 +31,11 @@ function isValidDate(date: Date | undefined) {
 }
 
 export function CalendarDatePicker({
-  label = "Subscription Date",
   id = "date",
   placeholder = "June 01, 2025",
   value: initialValue,
   onChange,
 }: {
-  label?: string;
   id?: string;
   placeholder?: string;
   value?: Date;
@@ -57,13 +54,11 @@ export function CalendarDatePicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <Label htmlFor={id} className="px-1">
-        {label}
-      </Label>
       <div className="relative flex gap-2">
         <Input
           id={id}
           value={value}
+          size="lg"
           placeholder={placeholder}
           className="bg-background pr-10"
           onChange={(e) => {

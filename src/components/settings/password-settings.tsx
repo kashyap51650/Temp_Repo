@@ -60,10 +60,7 @@ export function PasswordSettings() {
       </CardHeader>
       <CardContent>
         <Form {...passwordForm}>
-          <form
-            onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}
-            className="space-y-6"
-          >
+          <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
             <PasswordFields showCurrent showConfirm />
             <Button type="submit" size={"lg"} disabled={loading}>
               {loading ? "Changing..." : "Change Password"}

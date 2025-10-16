@@ -16,7 +16,6 @@ import { Route as RbacRouteImport } from "./routes/rbac";
 import { Route as NotificationsRouteImport } from "./routes/notifications";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
-import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AuthLoginRouteImport } from "./routes/auth/login";
 import { Route as AuthForgotPasswordRouteImport } from "./routes/auth/forgot-password";
 
@@ -55,11 +54,6 @@ const DataUploadRoute = DataUploadRouteImport.update({
   path: "/data-upload",
   getParentRoute: () => rootRouteImport,
 } as any);
-const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => rootRouteImport,
-} as any);
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: "/auth/login",
   path: "/auth/login",
@@ -72,7 +66,6 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
 } as any);
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/notifications": typeof NotificationsRoute;
@@ -84,7 +77,6 @@ export interface FileRoutesByFullPath {
   "/auth/login": typeof AuthLoginRoute;
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/notifications": typeof NotificationsRoute;
@@ -97,7 +89,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/notifications": typeof NotificationsRoute;
@@ -111,7 +102,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | "/"
     | "/data-upload"
     | "/data-validate"
     | "/notifications"
@@ -123,7 +113,6 @@ export interface FileRouteTypes {
     | "/auth/login";
   fileRoutesByTo: FileRoutesByTo;
   to:
-    | "/"
     | "/data-upload"
     | "/data-validate"
     | "/notifications"
@@ -135,7 +124,6 @@ export interface FileRouteTypes {
     | "/auth/login";
   id:
     | "__root__"
-    | "/"
     | "/data-upload"
     | "/data-validate"
     | "/notifications"
@@ -148,7 +136,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
   DataUploadRoute: typeof DataUploadRoute;
   DataValidateRoute: typeof DataValidateRoute;
   NotificationsRoute: typeof NotificationsRoute;
@@ -211,13 +198,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof DataUploadRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
     "/auth/login": {
       id: "/auth/login";
       path: "/auth/login";
@@ -236,7 +216,6 @@ declare module "@tanstack/react-router" {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   DataUploadRoute: DataUploadRoute,
   DataValidateRoute: DataValidateRoute,
   NotificationsRoute: NotificationsRoute,

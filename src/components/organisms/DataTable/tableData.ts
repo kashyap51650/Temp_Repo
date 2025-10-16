@@ -34,3 +34,79 @@ export const tableData: UserRow[] = [
     status: "Active",
   },
 ];
+
+// RBAC Roles Table Data
+export type RoleRow = {
+  id: string;
+  name: string;
+  description: string;
+  usersAssigned: number;
+};
+
+// User Assignments Table Data (Permissions)
+export type PermissionAssignment = {
+  id: string;
+  user: string;
+  role: string;
+  permissions: string[];
+};
+
+export const permissionAssignments: PermissionAssignment[] = [
+  {
+    id: "1",
+    user: "John Smith",
+    role: "Administrator",
+    permissions: [
+      "User Management",
+      "Data Upload",
+      "Query Builder",
+      "View Data",
+      "System Settings",
+    ],
+  },
+  {
+    id: "2",
+    user: "Sarah Johnson",
+    role: "Data Uploader",
+    permissions: ["Data Upload", "View Data"],
+  },
+  {
+    id: "3",
+    user: "Michael Chen",
+    role: "Scientist",
+    permissions: ["Query Builder", "View Data"],
+  },
+  {
+    id: "4",
+    user: "Emily Rodriguez",
+    role: "Scientist",
+    permissions: ["Query Builder", "View Data"],
+  },
+];
+
+export const rolesTableData: RoleRow[] = [
+  {
+    id: "1",
+    name: "Administrator",
+    description: "Full system access",
+    usersAssigned: 3,
+  },
+  {
+    id: "2",
+    name: "Data Uploader",
+    description: "Can upload and manage datasets",
+    usersAssigned: 5,
+  },
+  {
+    id: "3",
+    name: "Scientist",
+    description: "Can view and query data",
+    usersAssigned: 12,
+  },
+  {
+    id: "4",
+    name: "Viewer",
+    description: "Read-only access",
+    usersAssigned: 8,
+  },
+];
