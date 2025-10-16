@@ -17,6 +17,8 @@ import { Route as NotificationsRouteImport } from "./routes/notifications";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
 import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AuthLoginRouteImport } from "./routes/auth/login";
+import { Route as AuthForgotPasswordRouteImport } from "./routes/auth/forgot-password";
 
 const UserManagementRoute = UserManagementRouteImport.update({
   id: "/user-management",
@@ -58,6 +60,16 @@ const IndexRoute = IndexRouteImport.update({
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: "/auth/login",
+  path: "/auth/login",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: "/auth/forgot-password",
+  path: "/auth/forgot-password",
+  getParentRoute: () => rootRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
@@ -68,6 +80,8 @@ export interface FileRoutesByFullPath {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/auth/forgot-password": typeof AuthForgotPasswordRoute;
+  "/auth/login": typeof AuthLoginRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
@@ -78,6 +92,8 @@ export interface FileRoutesByTo {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/auth/forgot-password": typeof AuthForgotPasswordRoute;
+  "/auth/login": typeof AuthLoginRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -89,6 +105,8 @@ export interface FileRoutesById {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/auth/forgot-password": typeof AuthForgotPasswordRoute;
+  "/auth/login": typeof AuthLoginRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -100,7 +118,9 @@ export interface FileRouteTypes {
     | "/rbac"
     | "/settings"
     | "/templates"
-    | "/user-management";
+    | "/user-management"
+    | "/auth/forgot-password"
+    | "/auth/login";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
@@ -110,7 +130,9 @@ export interface FileRouteTypes {
     | "/rbac"
     | "/settings"
     | "/templates"
-    | "/user-management";
+    | "/user-management"
+    | "/auth/forgot-password"
+    | "/auth/login";
   id:
     | "__root__"
     | "/"
@@ -120,7 +142,9 @@ export interface FileRouteTypes {
     | "/rbac"
     | "/settings"
     | "/templates"
-    | "/user-management";
+    | "/user-management"
+    | "/auth/forgot-password"
+    | "/auth/login";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -132,6 +156,8 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute;
   TemplatesRoute: typeof TemplatesRoute;
   UserManagementRoute: typeof UserManagementRoute;
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute;
+  AuthLoginRoute: typeof AuthLoginRoute;
 }
 
 declare module "@tanstack/react-router" {
@@ -192,6 +218,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/auth/login": {
+      id: "/auth/login";
+      path: "/auth/login";
+      fullPath: "/auth/login";
+      preLoaderRoute: typeof AuthLoginRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth/forgot-password": {
+      id: "/auth/forgot-password";
+      path: "/auth/forgot-password";
+      fullPath: "/auth/forgot-password";
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -204,6 +244,8 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,
   UserManagementRoute: UserManagementRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

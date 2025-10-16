@@ -4,5 +4,30 @@ export { ChartAreaInteractive } from "./ChartAreaInteractive/ChartAreaInteractiv
 export { DataTable } from "./DataTable/DataTable";
 export { Form } from "./Form/Form";
 export { SectionCards } from "./SectionCards/SectionCards";
-export * from "./Sidebar/Sidebar";
+export {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuAction,
+  SidebarMenuBadge,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSkeleton,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "./Sidebar/Sidebar";
 export { Table } from "./Table/Table";

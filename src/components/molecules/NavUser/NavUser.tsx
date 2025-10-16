@@ -4,6 +4,7 @@ import {
   IconLogout,
   IconUserCircle,
 } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 
 import {
   Avatar,
@@ -24,7 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/organisms";
+} from "@/components/organisms/Sidebar/Sidebar";
 
 export function NavUser({
   user,
@@ -36,6 +37,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
   return (
     <SidebarMenu>
@@ -85,13 +87,18 @@ export function NavUser({
                 <IconUserCircle />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
                 <IconCreditCard />
                 Setting
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                localStorage.removeItem("authToken");
+                navigate({ to: "/auth/login" });
+              }}
+            >
               <IconLogout />
               Sign out
             </DropdownMenuItem>
