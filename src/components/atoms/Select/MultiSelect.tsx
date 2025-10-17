@@ -48,7 +48,7 @@ export function MultiSelect({
         <Button
           type="button"
           variant="outline"
-          className={`w-full min-h-[2.5rem] flex-wrap pr-8 items-start relative !h-auto !whitespace-normal justify-between text-left ${className}`}
+          className={`w-full min-h-10 flex-wrap pr-8 items-center relative h-auto whitespace-normal justify-between text-left ${className}`}
           aria-haspopup="listbox"
         >
           <div className="flex flex-wrap gap-1 flex-1 min-w-0 overflow-x-auto max-h-24">

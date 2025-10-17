@@ -1,12 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import {
-  ArrowDown,
-  ArrowUp,
-  Edit,
-  KeyIcon,
-  MoreHorizontal,
-  UserX,
-} from "lucide-react";
+import { Edit, KeyIcon, MoreHorizontal, UserX } from "lucide-react";
 
 import { Badge, Button } from "../../atoms";
 import {
@@ -15,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../molecules";
+import SortableHeader from "./SortableHeader";
 import type { PermissionAssignment, RoleRow } from "./tableData";
 
 export function getRoleColumns(
@@ -128,50 +122,14 @@ export function getUserColumns(
   return [
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="flex items-center gap-1 group text-left px-0"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <span className="inline-block w-4">
-            {column.getIsSorted() === "asc" && (
-              <ArrowUp className="size-4 text-primary" />
-            )}
-            {column.getIsSorted() === "desc" && (
-              <ArrowDown className="size-4 text-primary" />
-            )}
-            {!column.getIsSorted() && <ArrowUp className="size-4 opacity-40" />}
-          </span>
-        </Button>
-      ),
+      header: ({ column }) => <SortableHeader title={"Name"} column={column} />,
       enableSorting: true,
       cell: ({ row }) => <div className="w-56">{row.original.name}</div>,
     },
     {
       accessorKey: "email",
       header: ({ column }) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="flex items-center gap-1 group text-left px-0"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <span className="inline-block w-4">
-            {column.getIsSorted() === "asc" && (
-              <ArrowUp className="size-4 text-primary" />
-            )}
-            {column.getIsSorted() === "desc" && (
-              <ArrowDown className="size-4 text-primary" />
-            )}
-            {!column.getIsSorted() && <ArrowUp className="size-4 opacity-40" />}
-          </span>
-        </Button>
+        <SortableHeader title={"Email"} column={column} />
       ),
       enableSorting: true,
     },

@@ -75,7 +75,7 @@ export function EditRoleModal({
       description="Update the role details."
       showClose={true}
       className="max-w-md"
-      trigger={undefined}
+      trigger={null}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSave)}>
