@@ -42,6 +42,11 @@ export function DataTable<T extends { id: string }>({
   data,
 }: DataTableProps<T>) {
   const [tableData, setTableData] = React.useState<T[]>(data);
+
+  // Sync internal state with data prop changes
+  React.useEffect(() => {
+    setTableData(data);
+  }, [data]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
