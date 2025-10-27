@@ -18,6 +18,7 @@ export * from "./Select/Select";
 export { Separator } from "./Separator/separator";
 export { Skeleton } from "./Skeleton/skeleton";
 export * from "./Sonner/Sonner";
+export { Textarea } from "./Textarea/Textarea";
 export { Toggle } from "./Toggle/toggle";
 export * from "./ToggleGroup/ToggleGroup";
 export * from "./Tooltip/Tooltip";
