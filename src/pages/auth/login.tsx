@@ -15,7 +15,6 @@ import {
 } from "@/components/atoms";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
-import { toast } from "@/components/atoms/Sonner/toast";
 import {
   Form,
   FormControl,
@@ -24,6 +23,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/organisms/Form/Form";
+import { useLogin } from "@/lib/auth";
+import type { LoginCredentials } from "@/types/auth";
 
 const loginSchema = z.object({
   email: z
@@ -40,16 +41,46 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const loginMutation = useLogin();
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const onSubmit = async () => {
-    toast.success("Login successful!");
-    setTimeout(() => {
+  const onSubmit = async (data: LoginFormValues) => {
+    const credentials: LoginCredentials = {
+      email: data.email,
+      password: data.password,
+    };
+
+    try {
+      await loginMutation.mutateAsync(credentials);
+
       navigate({ to: "/user-management" });
-    }, 1200);
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
+  // Auto-fill demo credentials when clicking on them
+  const fillDemoCredentials = (
+    email: string,
+    password: string = "SecurePass123!"
+  ) => {
+    form.setValue("email", email);
+    form.setValue("password", password);
+  };
+
+  const handleDemoCredentialClick = (email: string) => {
+    fillDemoCredentials(email);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent, email: string) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fillDemoCredentials(email);
+    }
   };
 
   return (
@@ -77,7 +108,9 @@ export default function LoginPage() {
                       size="lg"
                       autoComplete="off"
                       placeholder="Enter your email"
-                      disabled={form.formState.isSubmitting}
+                      disabled={
+                        form.formState.isSubmitting || loginMutation.isPending
+                      }
                       {...field}
                     />
                   </FormControl>
@@ -98,7 +131,9 @@ export default function LoginPage() {
                         autoComplete="off"
                         size="lg"
                         placeholder="Enter your password"
-                        disabled={form.formState.isSubmitting}
+                        disabled={
+                          form.formState.isSubmitting || loginMutation.isPending
+                        }
                         className="pr-10"
                         {...field}
                       />
@@ -137,21 +172,47 @@ export default function LoginPage() {
               variant={"default"}
               size={"lg"}
               className="w-full"
-              disabled={form.formState.isSubmitting}
+              disabled={form.formState.isSubmitting || loginMutation.isPending}
             >
-              {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+              {form.formState.isSubmitting || loginMutation.isPending
+                ? "Signing in..."
+                : "Sign In"}
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex flex-col items-center gap-1  pt-4">
+      <CardFooter className="flex flex-col items-center gap-1 pt-4">
         <div className="text-sm text-slate-500 text-center">
-          <div className="font-medium">Demo Accounts:</div>
-          <div className="font-medium">admin@oranomed.com (Admin)</div>
-          <div className="font-medium">
+          <div className="font-medium mb-2">
+            Demo Accounts (Click to auto-fill):
+          </div>
+          <div
+            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => handleDemoCredentialClick("admin@oranomed.com")}
+            onKeyDown={(e) => handleKeyDown(e, "admin@oranomed.com")}
+            role="button"
+            tabIndex={0}
+          >
+            admin@oranomed.com (Admin)
+          </div>
+          <div
+            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => handleDemoCredentialClick("uploader@oranomed.com")}
+            onKeyDown={(e) => handleKeyDown(e, "uploader@oranomed.com")}
+            role="button"
+            tabIndex={0}
+          >
             uploader@oranomed.com (Data Uploader)
           </div>
-          <div className="font-medium">scientist@oranomed.com (Scientist)</div>
+          <div
+            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => handleDemoCredentialClick("scientist@oranomed.com")}
+            onKeyDown={(e) => handleKeyDown(e, "scientist@oranomed.com")}
+            role="button"
+            tabIndex={0}
+          >
+            scientist@oranomed.com (Scientist)
+          </div>
         </div>
       </CardFooter>
     </Card>
