@@ -1,9 +1,9 @@
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
-  VERSION: import.meta.env.API_VERSION,
+  VERSION: import.meta.env.VITE_API_VERSION,
   ENDPOINTS: {
     AUTH: {
-      LOGIN: `/api/${import.meta.env.API_VERSION}/auth/login`,
+      LOGIN: `/api/${import.meta.env.VITE_API_VERSION}/auth/login`,
     },
   },
 } as const;
