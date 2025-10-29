@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/organisms/Form/Form";
 import { useLogin } from "@/lib/auth";
+import { DEMO_ACCOUNTS } from "@/lib/constants";
 import type { LoginCredentials } from "@/types/auth";
 
 const loginSchema = z.object({
@@ -41,6 +42,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/auth/login" });
   const loginMutation = useLogin();
 
   const form = useForm<LoginFormValues>({
@@ -57,8 +59,11 @@ export default function LoginPage() {
     try {
       await loginMutation.mutateAsync(credentials);
 
-      navigate({ to: "/user-management" });
+      const redirectTo =
+        (search as { redirect?: string })?.redirect || "/user-management";
+      navigate({ to: redirectTo });
     } catch (error) {
+      // In future replace it by sentry error logs
       console.error("Login error:", error);
     }
   };
@@ -72,14 +77,18 @@ export default function LoginPage() {
     form.setValue("password", password);
   };
 
-  const handleDemoCredentialClick = (email: string) => {
-    fillDemoCredentials(email);
+  const handleDemoCredentialClick = (email: string, password: string) => {
+    fillDemoCredentials(email, password);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent, email: string) => {
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    email: string,
+    password: string
+  ) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      fillDemoCredentials(email);
+      fillDemoCredentials(email, password);
     }
   };
 
@@ -186,33 +195,22 @@ export default function LoginPage() {
           <div className="font-medium mb-2">
             Demo Accounts (Click to auto-fill):
           </div>
-          <div
-            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={() => handleDemoCredentialClick("admin@oranomed.com")}
-            onKeyDown={(e) => handleKeyDown(e, "admin@oranomed.com")}
-            role="button"
-            tabIndex={0}
-          >
-            admin@oranomed.com (Admin)
-          </div>
-          <div
-            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={() => handleDemoCredentialClick("uploader@oranomed.com")}
-            onKeyDown={(e) => handleKeyDown(e, "uploader@oranomed.com")}
-            role="button"
-            tabIndex={0}
-          >
-            uploader@oranomed.com (Data Uploader)
-          </div>
-          <div
-            className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={() => handleDemoCredentialClick("scientist@oranomed.com")}
-            onKeyDown={(e) => handleKeyDown(e, "scientist@oranomed.com")}
-            role="button"
-            tabIndex={0}
-          >
-            scientist@oranomed.com (Scientist)
-          </div>
+          {DEMO_ACCOUNTS.map((account) => (
+            <div
+              key={account.email}
+              className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+              onClick={() =>
+                handleDemoCredentialClick(account.email, account.password)
+              }
+              onKeyDown={(e) =>
+                handleKeyDown(e, account.email, account.password)
+              }
+              role="button"
+              tabIndex={0}
+            >
+              {account.email} ({account.role})
+            </div>
+          ))}
         </div>
       </CardFooter>
     </Card>

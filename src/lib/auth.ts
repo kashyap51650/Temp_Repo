@@ -53,9 +53,9 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: (data: LoginResponse) => {
-      // Store tokens in localStorage
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      // Store tokens in sessionStorage
+      sessionStorage.setItem("access_token", data.access_token);
+      sessionStorage.setItem("refresh_token", data.refresh_token);
 
       // Cache auth data in TanStack Query
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
@@ -135,16 +135,16 @@ export const useIsAuthenticated = () => {
 // Utility functions for token management
 export const tokenUtils = {
   getAccessToken: (): string | null => {
-    return localStorage.getItem("access_token");
+    return sessionStorage.getItem("access_token");
   },
 
   getRefreshToken: (): string | null => {
-    return localStorage.getItem("refresh_token");
+    return sessionStorage.getItem("refresh_token");
   },
 
   removeTokens: (): void => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("refresh_token");
   },
 
   isTokenExpired: (token: string): boolean => {

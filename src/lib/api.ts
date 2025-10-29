@@ -37,7 +37,7 @@ export class ApiClient {
       "Content-Type": "application/json",
     };
 
-    const token = localStorage.getItem("access_token");
+    const token = sessionStorage.getItem("access_token");
     if (token) {
       defaultHeaders.Authorization = `Bearer ${token}`;
     }

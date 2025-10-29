@@ -25,7 +25,7 @@ export const useAuthState = () => {
     isAuthenticated,
     isLoading: isUserLoading,
 
-    user: user || cachedUser || null,
+    user: user ?? cachedUser ?? null,
     userError,
 
     logout: logoutMutation.mutate,
@@ -35,7 +35,7 @@ export const useAuthState = () => {
     refreshToken: tokenUtils.getRefreshToken(),
 
     hasRole: (role: string) => {
-      const currentUser = user || cachedUser;
+      const currentUser = user ?? cachedUser;
       if (!currentUser) return false;
 
       // Add role checking logic based on your user structure
