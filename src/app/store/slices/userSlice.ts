@@ -1,7 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface UserUIState {
-  isLoading: boolean;
   sidebarCollapsed: boolean;
   theme: "light" | "dark" | "system";
   preferences: {
@@ -12,7 +11,6 @@ interface UserUIState {
 }
 
 const initialState: UserUIState = {
-  isLoading: false,
   sidebarCollapsed: false,
   theme: "light",
   preferences: {
@@ -26,10 +24,6 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setLoading(state, action: PayloadAction<boolean>) {
-      state.isLoading = action.payload;
-    },
-
     toggleSidebar(state) {
       state.sidebarCollapsed = !state.sidebarCollapsed;
     },
@@ -56,7 +50,6 @@ const userSlice = createSlice({
 });
 
 export const {
-  setLoading,
   toggleSidebar,
   setSidebarCollapsed,
   setTheme,
