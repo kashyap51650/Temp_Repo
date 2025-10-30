@@ -110,3 +110,85 @@ export const rolesTableData: RoleRow[] = [
     usersAssigned: 8,
   },
 ];
+
+// Notification Table Data
+export type NotificationRow = {
+  id: string;
+  title: string;
+  sentTo: string[];
+  sentBy: string;
+  date: string;
+  type: string[];
+  recipients: number;
+  status: "Delivered" | "Failed" | "Pending" | string;
+};
+
+export const notificationData: NotificationRow[] = [
+  {
+    id: "n1",
+    title: "New dataset uploaded: Patient Vitals",
+    sentTo: ["Data Uploader", "Scientist"],
+    sentBy: "System",
+    date: "2025-10-22 09:15",
+    type: ["Email"],
+    recipients: 12,
+    status: "Delivered",
+  },
+  {
+    id: "n2",
+    title: "RBAC role changed for John Smith",
+    sentTo: ["Administrator"],
+    sentBy: "Admin Console",
+    date: "2025-10-21 16:40",
+    type: ["In-app"],
+    recipients: 1,
+    status: "Delivered",
+  },
+  {
+    id: "n3",
+    title: "Scheduled export failed: storage quota",
+    sentTo: ["Administrator"],
+    sentBy: "Export Service",
+    date: "2025-10-20 02:05",
+    type: ["Email", "In-app"],
+    recipients: 2,
+    status: "Failed",
+  },
+];
+
+// Template Table Data
+export type TemplateRow = {
+  id: string;
+  name: string;
+  subject: string;
+  createdBy: string;
+  createdDate: string;
+  usageCount: number;
+};
+
+export const templateData: TemplateRow[] = [
+  {
+    id: "t1",
+    name: "System Maintenance Template",
+    subject: "Scheduled System Maintenance",
+    createdBy: "John Smith",
+    createdDate: "2024-01-10",
+    usageCount: 8,
+  },
+  {
+    id: "t2",
+    name: "Data Upload Reminder",
+    subject: "Data Upload Reminder",
+    createdBy: "Sarah Johnson",
+    createdDate: "2024-01-08",
+    usageCount: 15,
+  },
+  {
+    id: "t3",
+    name: "Welcome New User",
+    subject: "Welcome to Orano Med Research Platform",
+    createdBy: "Emily Rodriguez",
+    createdDate: "2024-01-05",
+    usageCount: 22,
+  },
+];

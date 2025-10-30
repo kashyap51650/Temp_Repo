@@ -9,6 +9,7 @@ import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 
 import { Toaster } from "@/components/atoms/Sonner/Sonner";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 import App from "./App.tsx";
 import ErrorBoundary from "./app/ErrorBoundary.tsx";
@@ -46,9 +47,11 @@ createRoot(document.getElementById("root")!).render(
     <ErrorBoundary>
       <ReduxProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          <App />
-          <Toaster />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <NotificationProvider>
+            <App />
+            <Toaster />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </NotificationProvider>
         </QueryClientProvider>
       </ReduxProvider>
     </ErrorBoundary>
