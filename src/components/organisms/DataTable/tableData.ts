@@ -192,3 +192,68 @@ export const templateData: TemplateRow[] = [
     usageCount: 22,
   },
 ];
+
+// Uploaded Dataset Table Data
+export type UploadedDatasetRow = {
+  id: string;
+  projectName: string;
+  experimentName: string;
+  dataType: string;
+  uploadDateTime: string;
+  currentStatus: "Pending" | "Approved" | "Rejected";
+  reviewer: string;
+  rejectionReason: string;
+};
+
+export const uploadedDatasetData: UploadedDatasetRow[] = [
+  {
+    id: "ud1",
+    projectName: "OM-112_TROP2",
+    experimentName: "PROT-001-Biodistribution",
+    dataType: "Callipering",
+    uploadDateTime: "2024-01-15 10:30:00",
+    currentStatus: "Pending",
+    reviewer: "-",
+    rejectionReason: "-",
+  },
+  {
+    id: "ud2",
+    projectName: "OM-113_SORT-1",
+    experimentName: "PROT-002-Biodistribution",
+    dataType: "Biodistribution_ProtXXX",
+    uploadDateTime: "2024-01-14 14:45:00",
+    currentStatus: "Approved",
+    reviewer: "Dr. Sarah Johnson (Validator)",
+    rejectionReason: "-",
+  },
+  {
+    id: "ud3",
+    projectName: "OM-116_Molecular Partners",
+    experimentName: "PROT-003-DoseRangeFinding",
+    dataType: "Weight Sheet",
+    uploadDateTime: "2024-01-13 09:15:00",
+    currentStatus: "Rejected",
+    reviewer: "Dr. Michael Chen (Validator)",
+    rejectionReason: "Incomplete data - missing weight measurement...",
+  },
+  {
+    id: "ud4",
+    projectName: "OM-112_TROP2",
+    experimentName: "PROT-004-Biodistribution",
+    dataType: "Cage Cards",
+    uploadDateTime: "2024-01-12 16:20:00",
+    currentStatus: "Approved",
+    reviewer: "Dr. Emily Rodriguez (Validator)",
+    rejectionReason: "-",
+  },
+  {
+    id: "ud5",
+    projectName: "OM-113_SORT-1",
+    experimentName: "PROT-005-DoseRangeFinding",
+    dataType: "Hematology",
+    uploadDateTime: "2024-01-11 11:30:00",
+    currentStatus: "Pending",
+    reviewer: "-",
+    rejectionReason: "-",
+  },
+];

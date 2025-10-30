@@ -1,5 +1,5 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, KeyIcon, MoreHorizontal, UserX } from "lucide-react";
+import { Clock, Edit, Eye, KeyIcon, MoreHorizontal, UserX } from "lucide-react";
 
 import { Badge, Button } from "../../atoms";
 import {
@@ -14,6 +14,7 @@ import type {
   PermissionAssignment,
   RoleRow,
   TemplateRow,
+  UploadedDatasetRow,
 } from "./tableData";
 
 export function getRoleColumns(
@@ -307,7 +308,8 @@ export function getNotificationColumns(
       accessorKey: "date",
       header: () => <span className="w-40 block">Date</span>,
       cell: ({ row }) => (
-        <div className="w-40 block">
+        <div className="w-40 flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
           <div>{row.original.date.split(" ")[0]}</div>
           <div className="text-xs text-muted-foreground">
             {row.original.date.split(" ")[1]}
@@ -410,7 +412,10 @@ export function getTemplateColumns(
       accessorKey: "createdDate",
       header: () => <span className="w-32 block">Created Date</span>,
       cell: ({ row }) => (
-        <span className="w-32 block">{row.original.createdDate}</span>
+        <span className="w-32 flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          {row.original.createdDate}
+        </span>
       ),
     },
     {
@@ -444,6 +449,94 @@ export function getTemplateColumns(
             <Edit className="h-4 w-4" />
           </Button>
         </div>
+      ),
+    },
+  ];
+}
+
+export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
+  return [
+    {
+      accessorKey: "projectName",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Project Name" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-40 block">{row.original.projectName}</span>
+      ),
+    },
+    {
+      accessorKey: "experimentName",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Experiment Name" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-48 block">{row.original.experimentName}</span>
+      ),
+    },
+    {
+      accessorKey: "dataType",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Data Type" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-44 block">{row.original.dataType}</span>
+      ),
+    },
+    {
+      accessorKey: "uploadDateTime",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Upload Date/Time" />
+      ),
+      cell: ({ row }) => (
+        <div className="w-40 flex items-center gap-2">
+          <Clock className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm">{row.original.uploadDateTime}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "currentStatus",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Current Status" />
+      ),
+      cell: ({ row }) => {
+        const status = row.original.currentStatus;
+        return (
+          <div className="w-28">
+            <Badge
+              variant={
+                status === "Approved"
+                  ? "default"
+                  : status === "Rejected"
+                    ? "destructive"
+                    : "secondary"
+              }
+            >
+              {status}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "reviewer",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Reviewer" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-44 block">{row.original.reviewer}</span>
+      ),
+    },
+    {
+      accessorKey: "rejectionReason",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Rejection Reason" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-64 block text-red-500 truncate">
+          {row.original.rejectionReason}
+        </span>
       ),
     },
   ];
