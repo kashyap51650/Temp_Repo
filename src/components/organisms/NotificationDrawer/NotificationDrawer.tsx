@@ -67,7 +67,7 @@ export function NotificationDrawer({
               <div className="text-lg font-semibold">
                 Notifications
                 {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
+                  <span className="ml-2 inline-flex items-center justify-center size-5 text-xs font-medium text-white bg-red-500 rounded-full">
                     {unreadCount}
                   </span>
                 )}

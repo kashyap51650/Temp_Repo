@@ -16,14 +16,14 @@ export function NotificationButton({
     <Button
       variant="ghost"
       size="icon"
-      className="relative h-9 w-9"
+      className="relative size-9"
       onClick={onClick}
     >
-      <Bell className="h-4 w-4" />
+      <Bell className="size-4" />
       {unreadCount > 0 && (
         <Badge
           variant="destructive"
-          className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs font-medium flex items-center justify-center"
+          className="absolute -right-1 -top-1 size-5 rounded-full p-0 text-xs font-medium flex items-center justify-center"
         >
           {unreadCount > 99 ? "99+" : unreadCount}
         </Badge>
