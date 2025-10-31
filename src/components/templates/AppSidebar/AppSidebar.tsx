@@ -5,6 +5,7 @@ import {
   IconDashboard,
   IconFolder,
   IconHelp,
+  IconHome,
   IconListDetails,
   IconReport,
   IconSettings,
@@ -22,6 +23,7 @@ import {
 import { sidebarData } from "./data";
 
 const iconMap = {
+  IconHome,
   IconDashboard,
   IconListDetails,
   IconChartBar,

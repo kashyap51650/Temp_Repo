@@ -14,8 +14,10 @@ import { Route as TemplatesRouteImport } from "./routes/templates";
 import { Route as SettingsRouteImport } from "./routes/settings";
 import { Route as RbacRouteImport } from "./routes/rbac";
 import { Route as NotificationsRouteImport } from "./routes/notifications";
+import { Route as HomeRouteImport } from "./routes/home";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
+import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AuthLoginRouteImport } from "./routes/auth/login";
 import { Route as AuthForgotPasswordRouteImport } from "./routes/auth/forgot-password";
 
@@ -44,6 +46,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: "/notifications",
   getParentRoute: () => rootRouteImport,
 } as any);
+const HomeRoute = HomeRouteImport.update({
+  id: "/home",
+  path: "/home",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const DataValidateRoute = DataValidateRouteImport.update({
   id: "/data-validate",
   path: "/data-validate",
@@ -52,6 +59,11 @@ const DataValidateRoute = DataValidateRouteImport.update({
 const DataUploadRoute = DataUploadRouteImport.update({
   id: "/data-upload",
   path: "/data-upload",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const IndexRoute = IndexRouteImport.update({
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -66,8 +78,10 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
 } as any);
 
 export interface FileRoutesByFullPath {
+  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/notifications": typeof NotificationsRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
@@ -77,8 +91,10 @@ export interface FileRoutesByFullPath {
   "/auth/login": typeof AuthLoginRoute;
 }
 export interface FileRoutesByTo {
+  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/notifications": typeof NotificationsRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
@@ -89,8 +105,10 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/notifications": typeof NotificationsRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
@@ -102,8 +120,10 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
+    | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/notifications"
     | "/rbac"
     | "/settings"
@@ -113,8 +133,10 @@ export interface FileRouteTypes {
     | "/auth/login";
   fileRoutesByTo: FileRoutesByTo;
   to:
+    | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/notifications"
     | "/rbac"
     | "/settings"
@@ -124,8 +146,10 @@ export interface FileRouteTypes {
     | "/auth/login";
   id:
     | "__root__"
+    | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/notifications"
     | "/rbac"
     | "/settings"
@@ -136,8 +160,10 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute;
   DataUploadRoute: typeof DataUploadRoute;
   DataValidateRoute: typeof DataValidateRoute;
+  HomeRoute: typeof HomeRoute;
   NotificationsRoute: typeof NotificationsRoute;
   RbacRoute: typeof RbacRoute;
   SettingsRoute: typeof SettingsRoute;
@@ -184,6 +210,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof NotificationsRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/home": {
+      id: "/home";
+      path: "/home";
+      fullPath: "/home";
+      preLoaderRoute: typeof HomeRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/data-validate": {
       id: "/data-validate";
       path: "/data-validate";
@@ -196,6 +229,13 @@ declare module "@tanstack/react-router" {
       path: "/data-upload";
       fullPath: "/data-upload";
       preLoaderRoute: typeof DataUploadRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/auth/login": {
@@ -216,8 +256,10 @@ declare module "@tanstack/react-router" {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   DataUploadRoute: DataUploadRoute,
   DataValidateRoute: DataValidateRoute,
+  HomeRoute: HomeRoute,
   NotificationsRoute: NotificationsRoute,
   RbacRoute: RbacRoute,
   SettingsRoute: SettingsRoute,

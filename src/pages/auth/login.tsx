@@ -48,7 +48,7 @@ export default function LoginPage() {
   const onSubmit = async () => {
     toast.success("Login successful!");
     setTimeout(() => {
-      navigate({ to: "/user-management" });
+      navigate({ to: "/home" });
     }, 1200);
   };
 

@@ -1,10 +1,9 @@
-// import UserManagementPage from "@/pages/user-management";
-// import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
-// export const Route = createFileRoute("/")({
-//   component: IndexComponent,
-// });
+export const Route = createFileRoute("/")({
+  component: IndexComponent,
+});
 
-// function IndexComponent() {
-//   return <UserManagementPage />;
-// }
+function IndexComponent() {
+  return <Navigate to="/home" />;
+}
