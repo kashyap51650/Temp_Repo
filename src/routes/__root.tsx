@@ -1,18 +1,50 @@
-import { createRootRoute, Outlet, useLocation } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import { SidebarInset, SidebarProvider } from "@/components/organisms";
 import { AppSidebar } from "@/components/templates";
 import { SiteHeader } from "@/components/templates/SiteHeader/site-header";
+import { useIsAuthenticated } from "@/lib/auth";
 
 function RootLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const isAuthenticated = useIsAuthenticated();
   const isAuthRoute = location.pathname.startsWith("/auth");
 
-  // If it's an auth route, render without dashboard layout
+  useEffect(() => {
+    if (isAuthRoute) return;
+
+    if (!isAuthenticated) {
+      navigate({
+        to: "/auth/login",
+        search: { redirect: location.pathname },
+      });
+    }
+  }, [isAuthenticated, isAuthRoute, navigate, location.pathname]);
+
   if (isAuthRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Outlet />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Checking authentication...
+          </p>
+        </div>
       </div>
     );
   }
