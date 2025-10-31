@@ -3,10 +3,10 @@ import { useState } from "react";
 
 import { Button } from "../atoms/Button/Button";
 import { Dialog } from "../atoms/Dialog/Dialog";
-import type {
+import {
   type DataViewItem,
   getDataViewItems,
-  ValidationRow,
+  type ValidationRow,
 } from "../organisms/DataTable/tableData";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
