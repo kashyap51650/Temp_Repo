@@ -74,7 +74,6 @@ export function EditRoleModal({
       title="Edit Role"
       description="Update the role details."
       showClose={true}
-      className="max-w-md"
       trigger={null}
     >
       <Form {...form}>

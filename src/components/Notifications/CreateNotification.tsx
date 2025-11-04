@@ -84,7 +84,7 @@ export function CreateNotification() {
               placeholder="Enter your message here..."
               value={formData.message}
               onChange={(e) => handleInputChange("message", e.target.value)}
-              className="min-h-[120px]"
+              className="min-h-28"
             />
           </div>
         </div>
