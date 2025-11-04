@@ -57,6 +57,14 @@ export const authApi = {
   }): Promise<void> => {
     await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
   },
+
+  resetPassword: async (data: {
+    reset_token: string;
+    new_password: string;
+    confirm_password: string;
+  }): Promise<{ message: string }> => {
+    return await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, data);
+  },
 };
 
 // React Query hooks for authentication
@@ -113,6 +121,22 @@ export const useChangePassword = () => {
     },
     onError: (error: Error) => {
       toast.error("Failed to change password", {
+        description: error.message || "Please try again.",
+      });
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: authApi.resetPassword,
+    onSuccess: (response) => {
+      toast.success("Password reset successfully", {
+        description: response.message || "Your password has been reset.",
+      });
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to reset password", {
         description: error.message || "Please try again.",
       });
     },

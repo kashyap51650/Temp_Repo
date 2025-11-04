@@ -14,11 +14,6 @@ export interface ResetPasswordModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  onReset: (data: {
-    oldPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-  }) => void;
   restrictedMode?: boolean; // When true, no close button and can't close outside
 }
 

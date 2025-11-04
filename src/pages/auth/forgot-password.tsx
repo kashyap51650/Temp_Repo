@@ -25,7 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/organisms/Form/Form";
-import { ResetPasswordModal } from "@/components/user-management/ResetPasswordModal";
+import { ChangePasswordModal } from "@/components/user-management/ChangePasswordModal";
 import { API_CONFIG, apiClient } from "@/lib/api";
 
 const forgotSchema = z.object({
@@ -94,8 +94,11 @@ export default function ForgotPasswordPage() {
   const onOtpSubmit = async (data: OtpFormValues) => {
     try {
       const response = await apiClient.post<{
+        data: {
+          reset_token: string;
+        };
         message: string;
-        reset_token: string;
+        success: boolean;
       }>(API_CONFIG.ENDPOINTS.AUTH.VERIFY_RESET_CODE, {
         email: email,
         code: data.otp,
@@ -103,7 +106,7 @@ export default function ForgotPasswordPage() {
 
       toast.success(response.message || "OTP verified successfully!");
 
-      sessionStorage.setItem("reset_token", response.reset_token);
+      sessionStorage.setItem("reset_token", response.data.reset_token);
 
       setResetModalOpen(true);
     } catch (error) {
@@ -117,7 +120,6 @@ export default function ForgotPasswordPage() {
   };
 
   const handlePasswordResetSuccess = () => {
-    toast.success("Password reset successfully!");
     sessionStorage.removeItem("reset_token");
     navigate({ to: "/auth/login" });
   };
@@ -263,10 +265,11 @@ export default function ForgotPasswordPage() {
         </CardContent>
       </Card>
 
-      <ResetPasswordModal
+      <ChangePasswordModal
         open={resetModalOpen}
         onOpenChange={setResetModalOpen}
         onSuccess={handlePasswordResetSuccess}
+        mode="reset"
       />
     </>
   );
