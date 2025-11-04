@@ -36,6 +36,16 @@ export const sidebarData = {
       icon: "IconHelp",
     },
     {
+      title: "Project Folders",
+      url: "/project-folders",
+      icon: "IconFolder",
+    },
+    {
+      title: "Master Data",
+      url: "/master-data",
+      icon: "IconDatabase",
+    },
+    {
       title: "Notifications",
       url: "/notifications",
       icon: "IconReport",

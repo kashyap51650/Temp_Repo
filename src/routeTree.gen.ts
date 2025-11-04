@@ -13,7 +13,9 @@ import { Route as UserManagementRouteImport } from "./routes/user-management";
 import { Route as TemplatesRouteImport } from "./routes/templates";
 import { Route as SettingsRouteImport } from "./routes/settings";
 import { Route as RbacRouteImport } from "./routes/rbac";
+import { Route as ProjectFoldersRouteImport } from "./routes/project-folders";
 import { Route as NotificationsRouteImport } from "./routes/notifications";
+import { Route as MasterDataRouteImport } from "./routes/master-data";
 import { Route as HomeRouteImport } from "./routes/home";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
@@ -41,9 +43,19 @@ const RbacRoute = RbacRouteImport.update({
   path: "/rbac",
   getParentRoute: () => rootRouteImport,
 } as any);
+const ProjectFoldersRoute = ProjectFoldersRouteImport.update({
+  id: "/project-folders",
+  path: "/project-folders",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const NotificationsRoute = NotificationsRouteImport.update({
   id: "/notifications",
   path: "/notifications",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const MasterDataRoute = MasterDataRouteImport.update({
+  id: "/master-data",
+  path: "/master-data",
   getParentRoute: () => rootRouteImport,
 } as any);
 const HomeRoute = HomeRouteImport.update({
@@ -82,7 +94,9 @@ export interface FileRoutesByFullPath {
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/home": typeof HomeRoute;
+  "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
+  "/project-folders": typeof ProjectFoldersRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
@@ -95,7 +109,9 @@ export interface FileRoutesByTo {
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/home": typeof HomeRoute;
+  "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
+  "/project-folders": typeof ProjectFoldersRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
@@ -109,7 +125,9 @@ export interface FileRoutesById {
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
   "/home": typeof HomeRoute;
+  "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
+  "/project-folders": typeof ProjectFoldersRoute;
   "/rbac": typeof RbacRoute;
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
@@ -124,7 +142,9 @@ export interface FileRouteTypes {
     | "/data-upload"
     | "/data-validate"
     | "/home"
+    | "/master-data"
     | "/notifications"
+    | "/project-folders"
     | "/rbac"
     | "/settings"
     | "/templates"
@@ -137,7 +157,9 @@ export interface FileRouteTypes {
     | "/data-upload"
     | "/data-validate"
     | "/home"
+    | "/master-data"
     | "/notifications"
+    | "/project-folders"
     | "/rbac"
     | "/settings"
     | "/templates"
@@ -150,7 +172,9 @@ export interface FileRouteTypes {
     | "/data-upload"
     | "/data-validate"
     | "/home"
+    | "/master-data"
     | "/notifications"
+    | "/project-folders"
     | "/rbac"
     | "/settings"
     | "/templates"
@@ -164,7 +188,9 @@ export interface RootRouteChildren {
   DataUploadRoute: typeof DataUploadRoute;
   DataValidateRoute: typeof DataValidateRoute;
   HomeRoute: typeof HomeRoute;
+  MasterDataRoute: typeof MasterDataRoute;
   NotificationsRoute: typeof NotificationsRoute;
+  ProjectFoldersRoute: typeof ProjectFoldersRoute;
   RbacRoute: typeof RbacRoute;
   SettingsRoute: typeof SettingsRoute;
   TemplatesRoute: typeof TemplatesRoute;
@@ -203,11 +229,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof RbacRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/project-folders": {
+      id: "/project-folders";
+      path: "/project-folders";
+      fullPath: "/project-folders";
+      preLoaderRoute: typeof ProjectFoldersRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/notifications": {
       id: "/notifications";
       path: "/notifications";
       fullPath: "/notifications";
       preLoaderRoute: typeof NotificationsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/master-data": {
+      id: "/master-data";
+      path: "/master-data";
+      fullPath: "/master-data";
+      preLoaderRoute: typeof MasterDataRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/home": {
@@ -260,7 +300,9 @@ const rootRouteChildren: RootRouteChildren = {
   DataUploadRoute: DataUploadRoute,
   DataValidateRoute: DataValidateRoute,
   HomeRoute: HomeRoute,
+  MasterDataRoute: MasterDataRoute,
   NotificationsRoute: NotificationsRoute,
+  ProjectFoldersRoute: ProjectFoldersRoute,
   RbacRoute: RbacRoute,
   SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,

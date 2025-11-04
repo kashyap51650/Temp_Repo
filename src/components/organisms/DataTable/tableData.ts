@@ -639,3 +639,644 @@ export const visualFilterData: VisualFilterRow[] = [
     filterType: "Text Box",
   },
 ];
+
+// Project Folders Data
+export type ProjectRow = {
+  id: string;
+  name: string;
+  status: "Active" | "Inactive" | "Closed";
+};
+
+export type ExperimentRow = {
+  id: string;
+  name: string;
+  status: "Approved" | "Pending" | "Rejected" | "Completed" | "Active";
+  projectId: string;
+};
+
+export type StudyType = {
+  id: string;
+  name: string;
+  color: string;
+};
+
+export type StudySheet = {
+  id: string;
+  name: string;
+  studyTypeId: string;
+};
+
+export const projectData: ProjectRow[] = [
+  {
+    id: "p1",
+    name: "OM-112_TROP2",
+    status: "Active",
+  },
+  {
+    id: "p2",
+    name: "OM-113_SORT-1",
+    status: "Active",
+  },
+  {
+    id: "p3",
+    name: "OM-116_Molecular Partners",
+    status: "Active",
+  },
+];
+
+export const experimentData: ExperimentRow[] = [
+  {
+    id: "e1",
+    name: "EXP001_Biodistribution_MCF-7",
+    status: "Approved",
+    projectId: "p1",
+  },
+  {
+    id: "e2",
+    name: "EXP002_Toxicity_A549",
+    status: "Pending",
+    projectId: "p1",
+  },
+  {
+    id: "e3",
+    name: "EXP003_Efficacy_HeLa",
+    status: "Rejected",
+    projectId: "p1",
+  },
+];
+
+export const studyTypes: StudyType[] = [
+  {
+    id: "biod",
+    name: "BioD",
+    color: "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200",
+  },
+  {
+    id: "dose-range",
+    name: "Dose Range Finding",
+    color: "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
+  },
+  {
+    id: "toxicity",
+    name: "Toxicity",
+    color:
+      "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200",
+  },
+  {
+    id: "efficacy",
+    name: "Efficacy",
+    color:
+      "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200",
+  },
+  {
+    id: "model-study",
+    name: "Model Study",
+    color: "bg-pink-100 text-pink-700 border-pink-200 hover:bg-pink-200",
+  },
+];
+
+export const biodSheets: StudySheet[] = [
+  {
+    id: "biod-organ",
+    name: "Organ Sheet",
+    studyTypeId: "biod",
+  },
+  {
+    id: "biod-agc",
+    name: "AGC Sheet",
+    studyTypeId: "biod",
+  },
+  {
+    id: "biod-graph",
+    name: "Graph",
+    studyTypeId: "biod",
+  },
+  {
+    id: "biod-cage",
+    name: "Cage Cards",
+    studyTypeId: "biod",
+  },
+  {
+    id: "biod-cells",
+    name: "Cells & Drugs Prep",
+    studyTypeId: "biod",
+  },
+];
+
+export const doseRangeSheets: StudySheet[] = [
+  {
+    id: "dose-weight",
+    name: "Weight Sheet",
+    studyTypeId: "dose-range",
+  },
+  {
+    id: "dose-hematology",
+    name: "Hematology",
+    studyTypeId: "dose-range",
+  },
+  {
+    id: "dose-blood",
+    name: "Blood Chemistry",
+    studyTypeId: "dose-range",
+  },
+  {
+    id: "dose-necropsy",
+    name: "Necropsy",
+    studyTypeId: "dose-range",
+  },
+];
+
+export const efficacySheets: StudySheet[] = [
+  {
+    id: "efficacy-weight",
+    name: "Weight Sheet",
+    studyTypeId: "efficacy",
+  },
+  {
+    id: "efficacy-callipering",
+    name: "Callipering",
+    studyTypeId: "efficacy",
+  },
+];
+
+export const toxicitySheets: StudySheet[] = [
+  {
+    id: "toxicity-weight",
+    name: "Weight Sheet",
+    studyTypeId: "toxicity",
+  },
+  {
+    id: "toxicity-hematology",
+    name: "Hematology",
+    studyTypeId: "toxicity",
+  },
+  {
+    id: "toxicity-blood",
+    name: "Blood Chemistry",
+    studyTypeId: "toxicity",
+  },
+  {
+    id: "toxicity-necropsy",
+    name: "Necropsy",
+    studyTypeId: "toxicity",
+  },
+];
+
+export const modelStudySheets: StudySheet[] = [
+  {
+    id: "model-weight",
+    name: "Weight Sheet",
+    studyTypeId: "model-study",
+  },
+  {
+    id: "model-callipering",
+    name: "Callipering",
+    studyTypeId: "model-study",
+  },
+];
+
+// Master Data Types
+export type MasterDataType =
+  | "isotope"
+  | "organ-list"
+  | "cell-line"
+  | "dose-values"
+  | "vehicles";
+
+export interface BaseMasterDataEntity {
+  id: string;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Isotope extends BaseMasterDataEntity {
+  isotopeId: string;
+  isotopeName: string;
+  halfLifeHours: number;
+}
+
+export interface OrganList extends BaseMasterDataEntity {
+  organId: string;
+  organName: string;
+  description: string;
+}
+
+export interface CellLine extends BaseMasterDataEntity {
+  cellLineId: string;
+  cellLineName: string;
+  vendorName: string;
+}
+
+export interface DoseValues extends BaseMasterDataEntity {
+  doseId: string;
+  doseName: string;
+  doseValue: number;
+  unit: string;
+}
+
+export interface Vehicles extends BaseMasterDataEntity {
+  vehicleId: string;
+  vehicleName: string;
+  description: string;
+}
+
+export type MasterDataItem =
+  | Isotope
+  | OrganList
+  | CellLine
+  | DoseValues
+  | Vehicles;
+
+// Master Data Mock Data
+export const isotopeData: Isotope[] = [
+  {
+    id: "1",
+    isotopeId: "ISO-001",
+    isotopeName: "Iodine-131",
+    halfLifeHours: 192,
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-15 10:30:00",
+    updatedAt: "2024-01-15 10:30:00",
+  },
+  {
+    id: "2",
+    isotopeId: "ISO-002",
+    isotopeName: "Technetium-99m",
+    halfLifeHours: 6,
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-16 14:20:00",
+    updatedAt: "2024-01-16 14:20:00",
+  },
+  {
+    id: "3",
+    isotopeId: "ISO-003",
+    isotopeName: "Lutetium-177",
+    halfLifeHours: 161,
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-17 09:15:00",
+    updatedAt: "2024-01-17 09:15:00",
+  },
+];
+
+export const organListData: OrganList[] = [
+  {
+    id: "1",
+    organId: "ORG-001",
+    organName: "Liver",
+    description: "Hepatic tissue analysis",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-15 10:30:00",
+    updatedAt: "2024-01-15 10:30:00",
+  },
+  {
+    id: "2",
+    organId: "ORG-002",
+    organName: "Kidney",
+    description: "Renal tissue analysis",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-16 14:20:00",
+    updatedAt: "2024-01-16 14:20:00",
+  },
+  {
+    id: "3",
+    organId: "ORG-003",
+    organName: "Spleen",
+    description: "Splenic tissue analysis",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-17 09:15:00",
+    updatedAt: "2024-01-17 09:15:00",
+  },
+];
+
+export const cellLineData: CellLine[] = [
+  {
+    id: "1",
+    cellLineId: "CL-001",
+    cellLineName: "HeLa",
+    vendorName: "ATCC",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-15 10:30:00",
+    updatedAt: "2024-01-15 10:30:00",
+  },
+  {
+    id: "2",
+    cellLineId: "CL-002",
+    cellLineName: "MCF-7",
+    vendorName: "Sigma-Aldrich",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-16 14:20:00",
+    updatedAt: "2024-01-16 14:20:00",
+  },
+  {
+    id: "3",
+    cellLineId: "CL-003",
+    cellLineName: "A549",
+    vendorName: "ATCC",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-17 09:15:00",
+    updatedAt: "2024-01-17 09:15:00",
+  },
+];
+
+export const doseValuesData: DoseValues[] = [
+  {
+    id: "1",
+    doseId: "DS-001",
+    doseName: "Low Dose",
+    doseValue: 5.0,
+    unit: "mg/kg",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-15 10:30:00",
+    updatedAt: "2024-01-15 10:30:00",
+  },
+  {
+    id: "2",
+    doseId: "DS-002",
+    doseName: "Medium Dose",
+    doseValue: 15.0,
+    unit: "mg/kg",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-16 14:20:00",
+    updatedAt: "2024-01-16 14:20:00",
+  },
+  {
+    id: "3",
+    doseId: "DS-003",
+    doseName: "High Dose",
+    doseValue: 30.0,
+    unit: "mg/kg",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-17 09:15:00",
+    updatedAt: "2024-01-17 09:15:00",
+  },
+  {
+    id: "4",
+    doseId: "DS-004",
+    doseName: "Therapeutic Dose",
+    doseValue: 100.0,
+    unit: "MBq",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-18 11:45:00",
+    updatedAt: "2024-01-18 11:45:00",
+  },
+  {
+    id: "5",
+    doseId: "DS-005",
+    doseName: "Maintenance Dose",
+    doseValue: 2.5,
+    unit: "ml/day",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-19 16:30:00",
+    updatedAt: "2024-01-19 16:30:00",
+  },
+];
+
+export const vehiclesData: Vehicles[] = [
+  {
+    id: "1",
+    vehicleId: "VH-001",
+    vehicleName: "Saline Solution",
+    description: "Sterile saline solution for injection and dilution purposes",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-15 10:30:00",
+    updatedAt: "2024-01-15 10:30:00",
+  },
+  {
+    id: "2",
+    vehicleId: "VH-002",
+    vehicleName: "PBS Buffer",
+    description: "Phosphate buffered saline for biological applications",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-16 14:20:00",
+    updatedAt: "2024-01-16 14:20:00",
+  },
+  {
+    id: "3",
+    vehicleId: "VH-003",
+    vehicleName: "DMSO",
+    description: "Dimethyl sulfoxide - organic solvent for drug delivery",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-17 09:15:00",
+    updatedAt: "2024-01-17 09:15:00",
+  },
+  {
+    id: "4",
+    vehicleId: "VH-004",
+    vehicleName: "Corn Oil",
+    description: "Pharmaceutical grade corn oil for oral administration",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-18 11:45:00",
+    updatedAt: "2024-01-18 11:45:00",
+  },
+  {
+    id: "5",
+    vehicleId: "VH-005",
+    vehicleName: "Cremophor EL",
+    description: "Polyoxyl castor oil for solubilizing hydrophobic drugs",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-19 16:30:00",
+    updatedAt: "2024-01-19 16:30:00",
+  },
+  {
+    id: "6",
+    vehicleId: "VH-006",
+    vehicleName: "5% Dextrose",
+    description: "Dextrose solution for intravenous drug administration",
+    createdBy: "admin@oranomed.com",
+    updatedBy: "admin@oranomed.com",
+    createdAt: "2024-01-20 13:20:00",
+    updatedAt: "2024-01-20 13:20:00",
+  },
+];
+
+// Master Data Configuration
+export interface MasterDataConfig {
+  type: MasterDataType;
+  label: string;
+  tableName: string;
+  fields: Array<{
+    key: string;
+    label: string;
+    type: "text" | "number" | "textarea";
+    required: boolean;
+    placeholder?: string;
+  }>;
+}
+
+export const MASTER_DATA_CONFIGS: Record<MasterDataType, MasterDataConfig> = {
+  isotope: {
+    type: "isotope",
+    label: "Isotope",
+    tableName: "isotopes",
+    fields: [
+      {
+        key: "isotopeId",
+        label: "Isotope ID",
+        type: "text",
+        required: true,
+        placeholder: "e.g., ISO-001",
+      },
+      {
+        key: "isotopeName",
+        label: "Isotope Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter isotope name",
+      },
+      {
+        key: "halfLifeHours",
+        label: "Half Life (hours)",
+        type: "number",
+        required: true,
+        placeholder: "Enter half life in hours",
+      },
+    ],
+  },
+  "organ-list": {
+    type: "organ-list",
+    label: "Organ List",
+    tableName: "organs",
+    fields: [
+      {
+        key: "organId",
+        label: "Organ ID",
+        type: "text",
+        required: true,
+        placeholder: "e.g., ORG-001",
+      },
+      {
+        key: "organName",
+        label: "Organ Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter organ name",
+      },
+      {
+        key: "description",
+        label: "Description",
+        type: "textarea",
+        required: true,
+        placeholder: "Enter description",
+      },
+    ],
+  },
+  "cell-line": {
+    type: "cell-line",
+    label: "Cell Line",
+    tableName: "cell_lines",
+    fields: [
+      {
+        key: "cellLineId",
+        label: "Cell Line ID",
+        type: "text",
+        required: true,
+        placeholder: "e.g., CL-001",
+      },
+      {
+        key: "cellLineName",
+        label: "Cell Line Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter cell line name",
+      },
+      {
+        key: "vendorName",
+        label: "Vendor Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter vendor name",
+      },
+    ],
+  },
+  "dose-values": {
+    type: "dose-values",
+    label: "Dose Values",
+    tableName: "dose_values",
+    fields: [
+      {
+        key: "doseId",
+        label: "Dose ID",
+        type: "text",
+        required: true,
+        placeholder: "e.g., DS-001",
+      },
+      {
+        key: "doseName",
+        label: "Dose Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter dose name",
+      },
+      {
+        key: "doseValue",
+        label: "Dose Value",
+        type: "number",
+        required: true,
+        placeholder: "Enter dose value",
+      },
+      {
+        key: "unit",
+        label: "Unit",
+        type: "text",
+        required: true,
+        placeholder: "e.g., mg, ml, etc.",
+      },
+    ],
+  },
+  vehicles: {
+    type: "vehicles",
+    label: "Vehicles",
+    tableName: "vehicles",
+    fields: [
+      {
+        key: "vehicleId",
+        label: "Vehicle ID",
+        type: "text",
+        required: true,
+        placeholder: "e.g., VH-001",
+      },
+      {
+        key: "vehicleName",
+        label: "Vehicle Name",
+        type: "text",
+        required: true,
+        placeholder: "Enter vehicle name",
+      },
+      {
+        key: "description",
+        label: "Description",
+        type: "textarea",
+        required: true,
+        placeholder: "Enter description",
+      },
+    ],
+  },
+};
+
+export const MASTER_DATA_OPTIONS = Object.values(MASTER_DATA_CONFIGS).map(
+  (config) => ({
+    value: config.type,
+    label: config.label,
+  })
+);

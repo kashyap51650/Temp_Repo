@@ -76,23 +76,23 @@ export function getPermissionColumns(
     {
       accessorKey: "user",
       header: () => <span className="w-52 block">User</span>,
-      cell: ({ row }: { row: unknown }) => (
-        <span className="w-52 block">{(row as any).original.user}</span>
+      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
+        <span className="w-52 block">{row.original.user}</span>
       ),
     },
     {
       accessorKey: "role",
       header: () => <span className="w-52 block">Role</span>,
-      cell: ({ row }: { row: unknown }) => (
-        <span className="w-52 block">{(row as any).original.role}</span>
+      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
+        <span className="w-52 block">{row.original.role}</span>
       ),
     },
     {
       accessorKey: "permissions",
       header: () => <span className="w-96 block">Permissions</span>,
-      cell: ({ row }: { row: unknown }) => (
+      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
         <div className="flex flex-wrap gap-2">
-          {(row as any).original.permissions.map((perm: string) => (
+          {row.original.permissions.map((perm: string) => (
             <Badge key={perm} variant="secondary" className="px-3 py-1">
               {perm}
             </Badge>
@@ -103,12 +103,12 @@ export function getPermissionColumns(
     {
       id: "actions",
       header: () => <span className="w-32 block">Actions</span>,
-      cell: ({ row }: { row: unknown }) => (
+      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
         <Button
           variant="outline"
           size="default"
           className="w-24"
-          onClick={onEdit ? () => onEdit((row as any).original) : undefined}
+          onClick={onEdit ? () => onEdit(row.original) : undefined}
         >
           Edit
         </Button>
@@ -713,4 +713,279 @@ export function getVisualFilterColumns(
       ),
     },
   ];
+}
+
+// Master Data Column Functions
+export function getMasterDataColumns(
+  dataType: string,
+  onEdit?: (item: any) => void,
+  onDelete?: (item: any) => void
+): ColumnDef<any>[] {
+  const formatDateTime = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
+  const baseColumns: ColumnDef<any>[] = [];
+
+  // Add specific columns based on data type
+  switch (dataType) {
+    case "isotope":
+      baseColumns.push(
+        {
+          accessorKey: "isotopeId",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Isotope ID" />
+          ),
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.isotopeId}</span>
+          ),
+        },
+        {
+          accessorKey: "isotopeName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Isotope Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.isotopeName}</span>,
+        },
+        {
+          accessorKey: "halfLifeHours",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Half Life (hours)" />
+          ),
+          cell: ({ row }) => <span>{row.original.halfLifeHours}</span>,
+        }
+      );
+      break;
+
+    case "organ-list":
+      baseColumns.push(
+        {
+          accessorKey: "organId",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Organ ID" />
+          ),
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.organId}</span>
+          ),
+        },
+        {
+          accessorKey: "organName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Organ Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.organName}</span>,
+        },
+        {
+          accessorKey: "description",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Description" />
+          ),
+          cell: ({ row }) => (
+            <span className="max-w-xs truncate">
+              {row.original.description}
+            </span>
+          ),
+        }
+      );
+      break;
+
+    case "cell-line":
+      baseColumns.push(
+        {
+          accessorKey: "cellLineId",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Cell Line ID" />
+          ),
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.cellLineId}</span>
+          ),
+        },
+        {
+          accessorKey: "cellLineName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Cell Line Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.cellLineName}</span>,
+        },
+        {
+          accessorKey: "vendorName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Vendor Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.vendorName}</span>,
+        }
+      );
+      break;
+
+    case "dose-values":
+      baseColumns.push(
+        {
+          accessorKey: "doseId",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Dose ID" />
+          ),
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.doseId}</span>
+          ),
+        },
+        {
+          accessorKey: "doseName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Dose Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.doseName}</span>,
+        },
+        {
+          accessorKey: "doseValue",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Dose Value" />
+          ),
+          cell: ({ row }) => <span>{row.original.doseValue}</span>,
+        },
+        {
+          accessorKey: "unit",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Unit" />
+          ),
+          cell: ({ row }) => <span>{row.original.unit}</span>,
+        }
+      );
+      break;
+
+    case "vehicles":
+      baseColumns.push(
+        {
+          accessorKey: "vehicleId",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Vehicle ID" />
+          ),
+          cell: ({ row }) => (
+            <span className="font-medium">{row.original.vehicleId}</span>
+          ),
+        },
+        {
+          accessorKey: "vehicleName",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Vehicle Name" />
+          ),
+          cell: ({ row }) => <span>{row.original.vehicleName}</span>,
+        },
+        {
+          accessorKey: "description",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Description" />
+          ),
+          cell: ({ row }) => (
+            <span className="max-w-xs truncate">
+              {row.original.description}
+            </span>
+          ),
+        }
+      );
+      break;
+  }
+
+  // Add common columns
+  baseColumns.push(
+    {
+      accessorKey: "createdBy",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created By" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.createdBy}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "updatedBy",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Updated By" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.updatedBy}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created At" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {formatDateTime(row.original.createdAt)}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "updatedAt",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Updated At" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {formatDateTime(row.original.updatedAt)}
+        </span>
+      ),
+    }
+  );
+
+  // Add actions column
+  if (onEdit || onDelete) {
+    baseColumns.push({
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const item = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="size-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onEdit && (
+                <DropdownMenuItem
+                  onClick={() => onEdit(item)}
+                  className="cursor-pointer"
+                >
+                  <Edit className="mr-2 size-4" />
+                  Edit
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <DropdownMenuItem
+                  onClick={() => onDelete(item)}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <UserX className="mr-2 size-4" />
+                  Delete
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+      enableSorting: false,
+    });
+  }
+
+  return baseColumns;
 }

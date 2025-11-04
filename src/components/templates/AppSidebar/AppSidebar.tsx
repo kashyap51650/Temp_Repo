@@ -3,6 +3,7 @@
 import {
   IconChartBar,
   IconDashboard,
+  IconDatabase,
   IconFolder,
   IconHelp,
   IconHome,
@@ -31,6 +32,7 @@ const iconMap = {
   IconHelp,
   IconReport,
   IconSettings,
+  IconDatabase,
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
