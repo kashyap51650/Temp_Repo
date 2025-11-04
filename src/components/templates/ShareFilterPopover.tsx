@@ -111,10 +111,7 @@ export function ShareFilterPopover({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-80 p-6" align="end">
         <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold">Share Filter</h3>
-          </div>
-
+          <h3 className="text-lg font-semibold">Share Filter</h3>
           <div className="space-y-1.5">
             <Label htmlFor="share-by">Share by</Label>
             <Select

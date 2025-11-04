@@ -37,12 +37,12 @@ import {
 type DataTableProps<T extends { id: string }> = {
   columns: ColumnDef<T>[];
   data: T[];
+  hideSelectionCount?: boolean;
 };
 
-export function DataTable<T extends { id: string }>({
-  columns,
-  data,
-}: DataTableProps<T>) {
+// ...existing code...
+export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
+  const { columns, data, hideSelectionCount = false } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -158,10 +158,12 @@ export function DataTable<T extends { id: string }>({
           </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
+          {!hideSelectionCount && (
+            <div className="text-muted-foreground flex-1 text-sm lg:flex">
+              {table.getFilteredSelectedRowModel().rows.length} of{" "}
+              {table.getFilteredRowModel().rows.length} row(s) selected.
+            </div>
+          )}
 
           {table.getFilteredRowModel().rows.length > 25 ? (
             <div className="flex w-full items-center gap-8 lg:w-fit">

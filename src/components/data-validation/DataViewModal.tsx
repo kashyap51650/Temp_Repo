@@ -102,7 +102,7 @@ export function DataViewModal({
           </span>
         }
         showClose={true}
-        className="w-[90vw] max-w-[1200px]"
+        className="w-9/10  max-w-300"
         trigger={null}
       >
         <div className="space-y-4">

@@ -1,16 +1,8 @@
+import { type ColumnDef } from "@tanstack/react-table";
+
 import { Dialog } from "../atoms/Dialog/Dialog";
-import {
-  bioDOrganData,
-  getBioDOrganTableColumns,
-} from "../organisms/DataTable/tableData";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../organisms/Table/Table";
+import { DataTable } from "../organisms/DataTable/DataTable";
+import { bioDOrganData } from "../organisms/DataTable/tableData";
 
 interface BioDOrganViewModalProps {
   isOpen: boolean;
@@ -22,7 +14,29 @@ export function BioDOrganViewModal({
   isOpen,
   onClose,
 }: BioDOrganViewModalProps) {
-  const columns = getBioDOrganTableColumns(bioDOrganData);
+  const columns: ColumnDef<any>[] = [
+    {
+      accessorKey: "label",
+      header: "Parameter",
+      cell: ({ row }: { row: any }) => (
+        <span className="font-medium text-sm">{row.original.label}</span>
+      ),
+    },
+    ...bioDOrganData.mouse.map((mouseId) => ({
+      accessorKey: mouseId,
+      header: mouseId,
+      cell: ({ row }: { row: any }) => (
+        <span className="text-sm">{row.original.data[mouseId] || ""}</span>
+      ),
+    })),
+  ];
+
+  const tableRows = bioDOrganData.rows.map((row) => ({
+    id: row.id,
+    label: row.label,
+    data: row.data,
+    ...row.data,
+  }));
 
   return (
     <Dialog
@@ -35,35 +49,8 @@ export function BioDOrganViewModal({
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       trigger={null}
     >
-      <div className="flex-1 overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((column, idx) => (
-                <TableHead
-                  key={column.id || idx}
-                  className="text-sm sticky left-0 z-10 bg-white min-w-28 px-2 h-14"
-                >
-                  {column.label}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {bioDOrganData.rows.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="text-sm font-medium sticky bg-white left-0 z-10 px-2 h-14">
-                  {row.label}
-                </TableCell>
-                {bioDOrganData.mouse.map((mouse, idx) => (
-                  <TableCell key={idx} className="text-sm px-2 h-14">
-                    {row.data[mouse] || ""}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="flex-1 overflow-auto mt-4">
+        <DataTable columns={columns} data={tableRows} hideSelectionCount />
       </div>
     </Dialog>
   );
