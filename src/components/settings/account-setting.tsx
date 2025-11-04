@@ -9,9 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/atoms";
+import { useLogout } from "@/lib/auth";
 
 export function AccountActions() {
   const navigate = useNavigate();
+  const logout = useLogout();
+
+  const handleSignOut = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => {
+        navigate({ to: "/auth/login" });
+      },
+    });
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -31,10 +42,11 @@ export function AccountActions() {
           <Button
             variant="outline"
             size={"default"}
-            onClick={() => navigate({ to: "/auth/login" })}
+            onClick={handleSignOut}
+            disabled={logout.isPending}
           >
             <LogOut className="w-4 h-4" />
-            Sign Out
+            {logout.isPending ? "Signing Out..." : "Sign Out"}
           </Button>
         </div>
       </CardContent>

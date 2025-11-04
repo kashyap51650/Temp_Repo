@@ -4,6 +4,10 @@ export const API_CONFIG = {
   ENDPOINTS: {
     AUTH: {
       LOGIN: `/api/${import.meta.env.VITE_API_VERSION}/auth/login`,
+      LOGOUT: `/api/${import.meta.env.VITE_API_VERSION}/auth/logout`,
+      FORGOT_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/forgot-password`,
+      VERIFY_RESET_CODE: `/api/${import.meta.env.VITE_API_VERSION}/auth/verify-reset-code`,
+      CHANGE_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/change-password`,
     },
   },
 } as const;

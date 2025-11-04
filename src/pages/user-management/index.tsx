@@ -80,7 +80,7 @@ export default function UserManagementPage() {
       <ResetPasswordModal
         open={!!resetUser}
         onOpenChange={(open) => !open && setResetUser(null)}
-        onReset={() => setResetUser(null)}
+        onSuccess={() => setResetUser(null)}
       />
       <DisableAccountModal
         open={!!disableUser}

@@ -12,25 +12,31 @@ import {
   FormLabel,
   FormMessage,
 } from "../organisms/Form/Form";
+import { PasswordRequirements } from "./PasswordRequirements";
 
 interface PasswordFieldsProps {
   showCurrent?: boolean;
   showConfirm?: boolean;
+  showRequirements?: boolean;
   className?: string;
 }
 
 export const PasswordFields: React.FC<PasswordFieldsProps> = ({
   showCurrent = false,
   showConfirm = true,
+  showRequirements = true,
   className = "",
 }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const { control } = useFormContext();
+  const { control, watch } = useFormContext();
+
+  const newPassword = watch("new") || "";
+  const confirmPassword = watch("confirm") || "";
 
   return (
-    <div className={cn("grid gap-1", className)}>
+    <div className={cn("grid gap-4", className)}>
       {showCurrent && (
         <FormField
           control={control}
@@ -71,6 +77,7 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
           )}
         />
       )}
+
       <FormField
         control={control}
         name="new"
@@ -147,6 +154,13 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
               <FormMessage />
             </FormItem>
           )}
+        />
+      )}
+      {showRequirements && newPassword && (
+        <PasswordRequirements
+          password={newPassword}
+          confirmPassword={showConfirm ? confirmPassword : undefined}
+          className="mt-2"
         />
       )}
     </div>

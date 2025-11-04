@@ -40,9 +40,22 @@ export const authApi = {
   },
 
   logout: async (): Promise<void> => {
-    // This would call logout endpoint if available
-    // For now, just clear local storage
-    tokenUtils.removeTokens();
+    try {
+      await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+    } catch (error) {
+      //Replace that by sentry logging in future
+      console.warn("Logout API call failed:", error);
+    } finally {
+      tokenUtils.removeTokens();
+    }
+  },
+
+  changePassword: async (data: {
+    current_password: string;
+    new_password: string;
+    confirm_password: string;
+  }): Promise<void> => {
+    await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
   },
 };
 
@@ -82,14 +95,26 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: authApi.logout,
     onSuccess: () => {
-      // Clear all auth-related cache
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.auth });
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.user });
-
-      // Clear all cached data on logout
       queryClient.clear();
-
       toast.success("Logged out successfully");
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: authApi.changePassword,
+    onSuccess: () => {
+      toast.success("Password changed successfully", {
+        description: "Your password has been updated.",
+      });
+    },
+    onError: (error: Error) => {
+      toast.error("Failed to change password", {
+        description: error.message || "Please try again.",
+      });
     },
   });
 };
