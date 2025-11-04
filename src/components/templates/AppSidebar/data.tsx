@@ -6,6 +6,11 @@ export const sidebarData = {
   },
   navMain: [
     {
+      title: "Home",
+      url: "/home",
+      icon: "IconHome",
+    },
+    {
       title: "User Management",
       url: "/user-management",
       icon: "IconDashboard",

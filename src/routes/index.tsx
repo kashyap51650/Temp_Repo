@@ -1,7 +1,11 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+
+import UserManagementPage from "@/pages/user-management";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/user-management" });
-  },
+  component: IndexComponent,
 });
+
+function IndexComponent() {
+  return <UserManagementPage />;
+}

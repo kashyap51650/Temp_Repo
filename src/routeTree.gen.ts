@@ -16,6 +16,7 @@ import { Route as RbacRouteImport } from "./routes/rbac";
 import { Route as ProjectFoldersRouteImport } from "./routes/project-folders";
 import { Route as NotificationsRouteImport } from "./routes/notifications";
 import { Route as MasterDataRouteImport } from "./routes/master-data";
+import { Route as HomeRouteImport } from "./routes/home";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
 import { Route as IndexRouteImport } from "./routes/index";
@@ -57,6 +58,11 @@ const MasterDataRoute = MasterDataRouteImport.update({
   path: "/master-data",
   getParentRoute: () => rootRouteImport,
 } as any);
+const HomeRoute = HomeRouteImport.update({
+  id: "/home",
+  path: "/home",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const DataValidateRoute = DataValidateRouteImport.update({
   id: "/data-validate",
   path: "/data-validate",
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
   "/project-folders": typeof ProjectFoldersRoute;
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
   "/project-folders": typeof ProjectFoldersRoute;
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
   "/project-folders": typeof ProjectFoldersRoute;
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/master-data"
     | "/notifications"
     | "/project-folders"
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/master-data"
     | "/notifications"
     | "/project-folders"
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/home"
     | "/master-data"
     | "/notifications"
     | "/project-folders"
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   DataUploadRoute: typeof DataUploadRoute;
   DataValidateRoute: typeof DataValidateRoute;
+  HomeRoute: typeof HomeRoute;
   MasterDataRoute: typeof MasterDataRoute;
   NotificationsRoute: typeof NotificationsRoute;
   ProjectFoldersRoute: typeof ProjectFoldersRoute;
@@ -237,6 +250,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof MasterDataRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/home": {
+      id: "/home";
+      path: "/home";
+      fullPath: "/home";
+      preLoaderRoute: typeof HomeRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/data-validate": {
       id: "/data-validate";
       path: "/data-validate";
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DataUploadRoute: DataUploadRoute,
   DataValidateRoute: DataValidateRoute,
+  HomeRoute: HomeRoute,
   MasterDataRoute: MasterDataRoute,
   NotificationsRoute: NotificationsRoute,
   ProjectFoldersRoute: ProjectFoldersRoute,
