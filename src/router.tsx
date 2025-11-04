@@ -1,4 +1,5 @@
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -19,6 +20,7 @@ export default function AppRouter() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <RouterProvider router={router} />
+      <Toaster position="top-right" expand={true} richColors closeButton />
     </ThemeProvider>
   );
 }

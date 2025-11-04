@@ -1,29 +1,60 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-interface UserState {
-  name: string;
-  email: string;
+interface UserUIState {
+  sidebarCollapsed: boolean;
+  theme: "light" | "dark" | "system";
+  preferences: {
+    tablePageSize: number;
+    defaultView: string;
+    notifications: boolean;
+  };
 }
 
-const initialState: UserState = {
-  name: "",
-  email: "",
+const initialState: UserUIState = {
+  sidebarCollapsed: false,
+  theme: "light",
+  preferences: {
+    tablePageSize: 10,
+    defaultView: "grid",
+    notifications: true,
+  },
 };
 
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<UserState>) {
-      state.name = action.payload.name;
-      state.email = action.payload.email;
+    toggleSidebar(state) {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
     },
-    clearUser(state) {
-      state.name = "";
-      state.email = "";
+
+    setSidebarCollapsed(state, action: PayloadAction<boolean>) {
+      state.sidebarCollapsed = action.payload;
+    },
+
+    setTheme(state, action: PayloadAction<"light" | "dark" | "system">) {
+      state.theme = action.payload;
+    },
+
+    updatePreferences(
+      state,
+      action: PayloadAction<Partial<UserUIState["preferences"]>>
+    ) {
+      state.preferences = { ...state.preferences, ...action.payload };
+    },
+
+    resetUserUI(_state) {
+      return initialState;
     },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const {
+  toggleSidebar,
+  setSidebarCollapsed,
+  setTheme,
+  updatePreferences,
+  resetUserUI,
+} = userSlice.actions;
+
 export default userSlice.reducer;

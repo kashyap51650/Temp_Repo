@@ -1,5 +1,13 @@
 import { type ColumnDef } from "@tanstack/react-table";
-import { Edit, Eye, KeyIcon, MoreHorizontal, UserX } from "lucide-react";
+import {
+  Clock,
+  Edit,
+  Eye,
+  KeyIcon,
+  MoreHorizontal,
+  Share2,
+  UserX,
+} from "lucide-react";
 
 import { Badge, Button } from "../../atoms";
 import {
@@ -14,6 +22,9 @@ import type {
   PermissionAssignment,
   RoleRow,
   TemplateRow,
+  UploadedDatasetRow,
+  ValidationRow,
+  VisualFilterRow,
 } from "./tableData";
 
 export function getRoleColumns(
@@ -65,23 +76,23 @@ export function getPermissionColumns(
     {
       accessorKey: "user",
       header: () => <span className="w-52 block">User</span>,
-      cell: ({ row }: any) => (
-        <span className="w-52 block">{row.original.user}</span>
+      cell: ({ row }: { row: unknown }) => (
+        <span className="w-52 block">{(row as any).original.user}</span>
       ),
     },
     {
       accessorKey: "role",
       header: () => <span className="w-52 block">Role</span>,
-      cell: ({ row }: any) => (
-        <span className="w-52 block">{row.original.role}</span>
+      cell: ({ row }: { row: unknown }) => (
+        <span className="w-52 block">{(row as any).original.role}</span>
       ),
     },
     {
       accessorKey: "permissions",
       header: () => <span className="w-96 block">Permissions</span>,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: unknown }) => (
         <div className="flex flex-wrap gap-2">
-          {row.original.permissions.map((perm: string) => (
+          {(row as any).original.permissions.map((perm: string) => (
             <Badge key={perm} variant="secondary" className="px-3 py-1">
               {perm}
             </Badge>
@@ -92,12 +103,12 @@ export function getPermissionColumns(
     {
       id: "actions",
       header: () => <span className="w-32 block">Actions</span>,
-      cell: ({ row }: any) => (
+      cell: ({ row }: { row: unknown }) => (
         <Button
           variant="outline"
           size="default"
           className="w-24"
-          onClick={onEdit ? () => onEdit(row.original) : undefined}
+          onClick={onEdit ? () => onEdit((row as any).original) : undefined}
         >
           Edit
         </Button>
@@ -203,7 +214,7 @@ export function getUserColumns(
                 }}
               >
                 <span className="sr-only">Open user actions menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -220,7 +231,7 @@ export function getUserColumns(
                   handlers.onEdit(user);
                 }}
               >
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-2 size-4" />
                 Edit Details
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -229,7 +240,7 @@ export function getUserColumns(
                   handlers.onResetPassword(user);
                 }}
               >
-                <KeyIcon className="mr-2 h-4 w-4" />
+                <KeyIcon className="mr-2 size-4" />
                 Reset Password
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -239,7 +250,7 @@ export function getUserColumns(
                   handlers.onDisable(user);
                 }}
               >
-                <UserX className="mr-2 h-4 w-4" />
+                <UserX className="mr-2 size-4" />
                 Disable Account
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -307,7 +318,8 @@ export function getNotificationColumns(
       accessorKey: "date",
       header: () => <span className="w-40 block">Date</span>,
       cell: ({ row }) => (
-        <div className="w-40 block">
+        <div className="w-40 flex items-center gap-2">
+          <Clock className="size-4 text-muted-foreground" />
           <div>{row.original.date.split(" ")[0]}</div>
           <div className="text-xs text-muted-foreground">
             {row.original.date.split(" ")[1]}
@@ -371,7 +383,7 @@ export function getNotificationColumns(
             className="text-muted-foreground"
             onClick={() => onView?.(row.original)}
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="size-4" />
           </Button>
         </div>
       ),
@@ -410,7 +422,10 @@ export function getTemplateColumns(
       accessorKey: "createdDate",
       header: () => <span className="w-32 block">Created Date</span>,
       cell: ({ row }) => (
-        <span className="w-32 block">{row.original.createdDate}</span>
+        <span className="w-32 flex items-center gap-2">
+          <Clock className="size-4 text-muted-foreground" />
+          {row.original.createdDate}
+        </span>
       ),
     },
     {
@@ -432,7 +447,7 @@ export function getTemplateColumns(
             onClick={() => onView?.(row.original)}
             aria-label="view-template"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="size-4" />
           </Button>
           <Button
             variant="ghost"
@@ -441,8 +456,259 @@ export function getTemplateColumns(
             onClick={() => onEdit?.(row.original)}
             aria-label="edit-template"
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="size-4" />
           </Button>
+        </div>
+      ),
+    },
+  ];
+}
+
+export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
+  return [
+    {
+      accessorKey: "projectName",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Project Name" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-40 block">{row.original.projectName}</span>
+      ),
+    },
+    {
+      accessorKey: "experimentName",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Experiment Name" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-48 block">{row.original.experimentName}</span>
+      ),
+    },
+    {
+      accessorKey: "dataType",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Data Type" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-44 block">{row.original.dataType}</span>
+      ),
+    },
+    {
+      accessorKey: "uploadDateTime",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Upload Date/Time" />
+      ),
+      cell: ({ row }) => (
+        <div className="w-40 flex items-center gap-2">
+          <Clock className="size-4 text-muted-foreground" />
+          <span className="text-sm">{row.original.uploadDateTime}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "currentStatus",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Current Status" />
+      ),
+      cell: ({ row }) => {
+        const status = row.original.currentStatus;
+        return (
+          <div className="w-28">
+            <Badge
+              variant={
+                status === "Approved"
+                  ? "default"
+                  : status === "Rejected"
+                    ? "destructive"
+                    : "secondary"
+              }
+            >
+              {status}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "reviewer",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Reviewer" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-44 block">{row.original.reviewer}</span>
+      ),
+    },
+    {
+      accessorKey: "rejectionReason",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Rejection Reason" />
+      ),
+      cell: ({ row }) => (
+        <span className="w-64 block text-red-500 truncate">
+          {row.original.rejectionReason}
+        </span>
+      ),
+    },
+  ];
+}
+export function getValidationColumns(
+  onViewData?: (row: ValidationRow) => void
+): ColumnDef<ValidationRow>[] {
+  return [
+    {
+      accessorKey: "experimentName",
+      header: ({ column }) => (
+        <SortableHeader
+          className="w-xs justify-start"
+          column={column}
+          title="Experiment Name"
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="block w-xs">{row.original.experimentName}</span>
+      ),
+    },
+    {
+      accessorKey: "studyType",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Study Type" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.studyType}</span>
+      ),
+    },
+    {
+      accessorKey: "uploadedDate",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Uploaded Date" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.uploadedDate}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const variant =
+          status === "Validated"
+            ? "success"
+            : status === "Error"
+              ? "destructive"
+              : "secondary";
+
+        return <Badge variant={variant}>{status}</Badge>;
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onViewData?.(row.original)}
+        >
+          <Eye className="size-4" />
+          View Data
+        </Button>
+      ),
+    },
+  ];
+}
+
+// BioD Organ Table Column Definitions
+export interface BioDOrganColumn {
+  id: string;
+  label: string;
+  width?: string;
+  sticky?: boolean;
+}
+
+export const createBioDOrganColumns = (
+  mouseColumns: string[]
+): BioDOrganColumn[] => [
+  {
+    id: "label",
+    label: "Mouse",
+    width: "min-w-48",
+    sticky: true,
+  },
+  ...mouseColumns.map((mouse) => ({
+    id: mouse,
+    label: mouse,
+    width: "min-w-20",
+  })),
+];
+
+export const getBioDOrganTableColumns = (data: { mouse: string[] }) =>
+  createBioDOrganColumns(data.mouse);
+
+// Visual Data Filter Table Columns
+export function getVisualFilterColumns(
+  onView?: (filter: VisualFilterRow) => void,
+  renderShareAction?: (filter: VisualFilterRow) => React.ReactNode
+): ColumnDef<VisualFilterRow>[] {
+  return [
+    {
+      accessorKey: "filterName",
+      header: ({ column }) => (
+        <SortableHeader
+          className="w-96 justify-start"
+          column={column}
+          title="Filter Name"
+        />
+      ),
+      cell: ({ row }) => (
+        <div className="font-medium w-96 text-left ">
+          {row.original.filterName}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdDate",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created Date" />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Clock className="size-4" />
+          {row.original.createdDate}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "createdBy",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created By" />
+      ),
+      cell: ({ row }) => (
+        <div className="text-sm">{row.original.createdBy}</div>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-center">Actions</div>,
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onView?.(row.original)}
+            aria-label="View filter"
+          >
+            <Eye className="size-5" />
+          </Button>
+          {renderShareAction ? (
+            renderShareAction(row.original)
+          ) : (
+            <Button variant="ghost" size="icon" aria-label="Share filter">
+              <Share2 className="size-5" />
+            </Button>
+          )}
         </div>
       ),
     },

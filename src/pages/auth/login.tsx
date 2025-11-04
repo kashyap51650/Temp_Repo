@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -15,7 +15,6 @@ import {
 } from "@/components/atoms";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
-import { toast } from "@/components/atoms/Sonner/toast";
 import {
   Form,
   FormControl,
@@ -24,6 +23,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/organisms/Form/Form";
+import { useLogin } from "@/lib/auth";
+import { DEMO_ACCOUNTS } from "@/lib/constants";
+import type { LoginCredentials } from "@/types/auth";
 
 const loginSchema = z.object({
   email: z
@@ -40,16 +42,54 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/auth/login" });
+  const loginMutation = useLogin();
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const onSubmit = async () => {
-    toast.success("Login successful!");
-    setTimeout(() => {
-      navigate({ to: "/home" });
-    }, 1200);
+  const onSubmit = async (data: LoginFormValues) => {
+    const credentials: LoginCredentials = {
+      email: data.email,
+      password: data.password,
+    };
+
+    try {
+      await loginMutation.mutateAsync(credentials);
+
+      const redirectTo =
+        (search as { redirect?: string })?.redirect || "/user-management";
+      navigate({ to: redirectTo });
+    } catch (error) {
+      // In future replace it by sentry error logs
+      console.error("Login error:", error);
+    }
+  };
+
+  // Auto-fill demo credentials when clicking on them
+  const fillDemoCredentials = (
+    email: string,
+    password: string = "SecurePass123!"
+  ) => {
+    form.setValue("email", email);
+    form.setValue("password", password);
+  };
+
+  const handleDemoCredentialClick = (email: string, password: string) => {
+    fillDemoCredentials(email, password);
+  };
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    email: string,
+    password: string
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fillDemoCredentials(email, password);
+    }
   };
 
   return (
@@ -77,7 +117,9 @@ export default function LoginPage() {
                       size="lg"
                       autoComplete="off"
                       placeholder="Enter your email"
-                      disabled={form.formState.isSubmitting}
+                      disabled={
+                        form.formState.isSubmitting || loginMutation.isPending
+                      }
                       {...field}
                     />
                   </FormControl>
@@ -98,7 +140,9 @@ export default function LoginPage() {
                         autoComplete="off"
                         size="lg"
                         placeholder="Enter your password"
-                        disabled={form.formState.isSubmitting}
+                        disabled={
+                          form.formState.isSubmitting || loginMutation.isPending
+                        }
                         className="pr-10"
                         {...field}
                       />
@@ -137,21 +181,36 @@ export default function LoginPage() {
               variant={"default"}
               size={"lg"}
               className="w-full"
-              disabled={form.formState.isSubmitting}
+              disabled={form.formState.isSubmitting || loginMutation.isPending}
             >
-              {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+              {form.formState.isSubmitting || loginMutation.isPending
+                ? "Signing in..."
+                : "Sign In"}
             </Button>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex flex-col items-center gap-1  pt-4">
+      <CardFooter className="flex flex-col items-center gap-1 pt-4">
         <div className="text-sm text-slate-500 text-center">
-          <div className="font-medium">Demo Accounts:</div>
-          <div className="font-medium">admin@oranomed.com (Admin)</div>
-          <div className="font-medium">
-            uploader@oranomed.com (Data Uploader)
+          <div className="font-medium mb-2">
+            Demo Accounts (Click to auto-fill):
           </div>
-          <div className="font-medium">scientist@oranomed.com (Scientist)</div>
+          {DEMO_ACCOUNTS.map((account) => (
+            <div
+              key={account.email}
+              className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+              onClick={() =>
+                handleDemoCredentialClick(account.email, account.password)
+              }
+              onKeyDown={(e) =>
+                handleKeyDown(e, account.email, account.password)
+              }
+              role="button"
+              tabIndex={0}
+            >
+              {account.email} ({account.role})
+            </div>
+          ))}
         </div>
       </CardFooter>
     </Card>

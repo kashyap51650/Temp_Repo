@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/organisms/Sidebar/Sidebar";
+import { useLogout } from "@/lib/auth";
 
 export function NavUser({
   user,
@@ -38,6 +39,15 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const logout = useLogout();
+
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => {
+        navigate({ to: "/auth/login" });
+      },
+    });
+  };
 
   return (
     <SidebarMenu>
@@ -93,12 +103,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => {
-                localStorage.removeItem("authToken");
-                navigate({ to: "/auth/login" });
-              }}
-            >
+            <DropdownMenuItem onSelect={handleLogout}>
               <IconLogout />
               Sign out
             </DropdownMenuItem>
