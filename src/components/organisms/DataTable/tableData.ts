@@ -257,3 +257,385 @@ export const uploadedDatasetData: UploadedDatasetRow[] = [
     rejectionReason: "-",
   },
 ];
+// Data Validation Table Data
+export type ValidationRow = {
+  id: string;
+  experimentName: string;
+  studyType: string;
+  uploadedDate: string;
+  status: "Pending" | "Validated" | "Error";
+};
+
+export const validationData: ValidationRow[] = [
+  {
+    id: "v1",
+    experimentName: "PROT-001-Biodistribution",
+    studyType: "Biodistribution_ProtXXX",
+    uploadedDate: "2024-01-15",
+    status: "Validated",
+  },
+  {
+    id: "v2",
+    experimentName: "PROT-002-Biodistribution",
+    studyType: "Biodistribution_ProtXXX",
+    uploadedDate: "2024-01-14",
+    status: "Pending",
+  },
+  {
+    id: "v3",
+    experimentName: "PROT-003-Biodistribution",
+    studyType: "Biodistribution_ProtXXX",
+    uploadedDate: "2024-01-13",
+    status: "Error",
+  },
+  {
+    id: "v4",
+    experimentName: "PROT-004-DRF",
+    studyType: "Dose Range Finding",
+    uploadedDate: "2024-01-16",
+    status: "Validated",
+  },
+  {
+    id: "v5",
+    experimentName: "PROT-005-Toxicity",
+    studyType: "Toxicity",
+    uploadedDate: "2024-01-17",
+    status: "Validated",
+  },
+  {
+    id: "v6",
+    experimentName: "PROT-006-ModelStudy",
+    studyType: "Model Study",
+    uploadedDate: "2024-01-18",
+    status: "Validated",
+  },
+];
+
+// Data View Modal Data (for individual experiment data types)
+export type DataViewItem = {
+  id: string;
+  name: string;
+  status: "Pending" | "Validated" | "Error";
+  canView: boolean;
+  canEdit: boolean;
+  canApprove: boolean;
+  canReject: boolean;
+};
+
+export const getDataViewItems = (experimentName: string): DataViewItem[] => {
+  // Return different data types based on experiment
+  if (experimentName.includes("Biodistribution")) {
+    return [
+      {
+        id: "dv1",
+        name: "Organ Calculation",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv2",
+        name: "BioD Organ",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv3",
+        name: "Callipering Data",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv4",
+        name: "Randomized Data",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv5",
+        name: "Cells & Drugs Data",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv6",
+        name: "Cage Cards",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+    ];
+  }
+
+  // Default data types for other study types
+  return [
+    {
+      id: "dv1",
+      name: "Study Protocol",
+      status: "Pending",
+      canView: true,
+      canEdit: true,
+      canApprove: true,
+      canReject: true,
+    },
+    {
+      id: "dv2",
+      name: "Cage Cards",
+      status: "Validated",
+      canView: true,
+      canEdit: true,
+      canApprove: true,
+      canReject: true,
+    },
+  ];
+};
+
+// BioD Organ Table Column Definitions
+export interface BioDOrganColumn {
+  id: string;
+  label: string;
+  width?: string;
+  sticky?: boolean;
+}
+
+export const createBioDOrganColumns = (
+  mouseColumns: string[]
+): BioDOrganColumn[] => [
+  {
+    id: "label",
+    label: "Mouse",
+    width: "min-w-48",
+    sticky: true,
+  },
+  ...mouseColumns.map((mouse) => ({
+    id: mouse,
+    label: mouse,
+    width: "min-w-20",
+  })),
+];
+
+export const getBioDOrganTableColumns = (data: BioDOrganData) =>
+  createBioDOrganColumns(data.mouse);
+
+// BioD Organ Data Structure for Experiment Tables
+export interface BioDOrganData {
+  mouse: string[];
+  rows: BioDOrganRow[];
+}
+
+export interface BioDOrganRow {
+  id: string;
+  label: string;
+  isRequired?: boolean;
+  data: Record<string, string | number>;
+}
+
+// Sample data for BioD Organ experiments
+export const bioDOrganData: BioDOrganData = {
+  mouse: ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5"],
+  rows: [
+    {
+      id: "longGroupName",
+      label: "Long Group Name",
+      isRequired: true,
+      data: {
+        A1: "A-1H",
+        A2: "",
+        A3: "",
+        A4: "",
+        A5: "",
+        B1: "B-4H",
+        B2: "",
+        B3: "",
+        B4: "",
+        B5: "",
+      },
+    },
+    {
+      id: "cellLine",
+      label: "Cell line",
+      isRequired: true,
+      data: {
+        A1: "BxPC3",
+        A2: "",
+        A3: "",
+        A4: "",
+        A5: "",
+        B1: "BxPC3",
+        B2: "",
+        B3: "",
+        B4: "",
+        B5: "",
+      },
+    },
+    {
+      id: "drugName",
+      label: "Drug Name",
+      isRequired: true,
+      data: {
+        A1: "DOTAM-Malemeide",
+        A2: "",
+        A3: "",
+        A4: "",
+        A5: "",
+        B1: "DOTAM",
+        B2: "",
+        B3: "",
+        B4: "",
+        B5: "",
+      },
+    },
+    {
+      id: "injection212Pb",
+      label: "212Pb injection time",
+      data: {},
+    },
+    {
+      id: "necropsyTime",
+      label: "Necropsy time",
+      data: {},
+    },
+    {
+      id: "blood",
+      label: "Blood",
+      data: {},
+    },
+    {
+      id: "bladder",
+      label: "Bladder",
+      data: {},
+    },
+    {
+      id: "reproductiveOrgans",
+      label: "Reproductive organs",
+      data: {},
+    },
+    {
+      id: "smallIntestine",
+      label: "Small intestine",
+      data: {},
+    },
+    {
+      id: "colon",
+      label: "Colon",
+      data: {},
+    },
+    {
+      id: "spleen",
+      label: "Spleen",
+      data: {},
+    },
+    {
+      id: "pancreas",
+      label: "Pancreas",
+      data: {},
+    },
+    {
+      id: "kidneys",
+      label: "Kidneys",
+      data: {},
+    },
+    {
+      id: "stomach",
+      label: "Stomach",
+      data: {},
+    },
+    {
+      id: "liver",
+      label: "Liver",
+      data: {},
+    },
+    {
+      id: "lung",
+      label: "Lung",
+      data: {},
+    },
+    {
+      id: "heart",
+      label: "Heart",
+      data: {},
+    },
+    {
+      id: "brain",
+      label: "Brain",
+      data: {},
+    },
+    {
+      id: "femoralBone",
+      label: "Femoral Bone",
+      data: {},
+    },
+    {
+      id: "abdominalFat",
+      label: "Abdominal Fat",
+      data: {},
+    },
+    {
+      id: "skeletalMuscle",
+      label: "Skeletal Muscle",
+      data: {},
+    },
+    {
+      id: "tail",
+      label: "Tail",
+      data: {},
+    },
+    {
+      id: "cellLine2",
+      label: "cell line",
+      data: {},
+    },
+  ],
+};
+
+// Visual Data Filter Table Data
+export type VisualFilterRow = {
+  id: string;
+  filterName: string;
+  createdDate: string;
+  createdBy: string;
+  filterType: "Text Box" | "Dropdown" | "Radio Button";
+  filterOptions?: string[];
+};
+
+export const visualFilterData: VisualFilterRow[] = [
+  {
+    id: "vf1",
+    filterName: "Active Experiments Filter",
+    createdDate: "2024-01-10",
+    createdBy: "John Smith",
+    filterType: "Dropdown",
+    filterOptions: ["Active", "Inactive", "Pending"],
+  },
+  {
+    id: "vf2",
+    filterName: "Study Type Filter",
+    createdDate: "2024-01-08",
+    createdBy: "Sarah Johnson",
+    filterType: "Radio Button",
+    filterOptions: ["Clinical", "Pre-clinical", "Research"],
+  },
+  {
+    id: "vf3",
+    filterName: "Search Experiments",
+    createdDate: "2024-01-05",
+    createdBy: "Michael Chen",
+    filterType: "Text Box",
+  },
+];

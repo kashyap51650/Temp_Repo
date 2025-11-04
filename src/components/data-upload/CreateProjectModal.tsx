@@ -43,7 +43,7 @@ export function CreateProjectModal({
         if (!open) handleCancel();
       }}
       title={"Create New Project"}
-      description={" Enter the name for your new project"}
+      description={"Enter the name for your new project"}
       showClose={true}
       className="max-w-lg"
       trigger={null}
