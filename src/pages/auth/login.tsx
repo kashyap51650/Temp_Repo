@@ -59,8 +59,7 @@ export default function LoginPage() {
     try {
       await loginMutation.mutateAsync(credentials);
 
-      const redirectTo =
-        (search as { redirect?: string })?.redirect || "/user-management";
+      const redirectTo = (search as { redirect?: string })?.redirect || "/home";
       navigate({ to: redirectTo });
     } catch (error) {
       // In future replace it by sentry error logs
