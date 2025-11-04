@@ -12,6 +12,7 @@ export interface ChangePasswordModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChangePassword: (data: {
+    currentPassword: string;
     newPassword: string;
     confirmPassword: string;
   }) => void;
@@ -24,6 +25,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 }) => {
   const schema = z
     .object({
+      current: z.string().min(1, "Please enter current password"),
       new: z.string().min(6, "New password must be at least 6 characters"),
       confirm: z.string().min(1, "Please confirm your new password"),
     })
@@ -37,6 +39,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      current: "",
       new: "",
       confirm: "",
     },
@@ -44,6 +47,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleChangePassword = (values: FormValues) => {
     onChangePassword({
+      currentPassword: values.current,
       newPassword: values.new,
       confirmPassword: values.confirm,
     });
@@ -64,7 +68,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleChangePassword)}>
-          <PasswordFields showConfirm className="py-2" />
+          <PasswordFields showCurrent showConfirm className="py-2" />
           <div className="flex flex-row gap-2 justify-end pt-3">
             <Button size="lg" className="default" type="submit">
               Change Password
