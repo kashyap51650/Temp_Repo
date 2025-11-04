@@ -11,6 +11,7 @@ export interface DialogProps extends DialogPrimitive.DialogProps {
   children?: React.ReactNode;
   showClose?: boolean; // Controls cross icon visibility
   className?: string; // Custom class for Dialog content
+  preventOutsideClose?: boolean; // Prevents closing when clicking outside
 }
 
 export function Dialog({
@@ -20,6 +21,7 @@ export function Dialog({
   children,
   showClose = true,
   className,
+  preventOutsideClose = false,
   ...props
 }: DialogProps) {
   return (
@@ -33,6 +35,12 @@ export function Dialog({
             !className?.includes("max-w") && "max-w-lg",
             className
           )}
+          onPointerDownOutside={
+            preventOutsideClose ? (e) => e.preventDefault() : undefined
+          }
+          onEscapeKeyDown={
+            preventOutsideClose ? (e) => e.preventDefault() : undefined
+          }
         >
           {title && (
             <DialogPrimitive.Title className="text-lg font-semibold mb-0">

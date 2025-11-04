@@ -14,12 +14,19 @@ export interface ResetPasswordModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  onReset: (data: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => void;
+  restrictedMode?: boolean; // When true, no close button and can't close outside
 }
 
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   open,
   onOpenChange,
   onSuccess,
+  restrictedMode = false,
 }) => {
   const changePasswordMutation = useChangePassword();
 
@@ -92,20 +99,24 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
       title="Reset Password"
       description="Change the user's password."
       trigger={null}
+      showClose={!restrictedMode}
+      preventOutsideClose={restrictedMode}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleReset)}>
           <PasswordFields showCurrent showConfirm className="py-2" />
           <div className="flex flex-row gap-2 justify-end pt-3">
-            <Button
-              variant="outline"
-              size="lg"
-              type="button"
-              onClick={handleCancel}
-              disabled={changePasswordMutation.isPending}
-            >
-              Cancel
-            </Button>
+            {!restrictedMode && (
+              <Button
+                variant="outline"
+                size="lg"
+                type="button"
+                onClick={handleCancel}
+                disabled={changePasswordMutation.isPending}
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               size="lg"
               className="default"

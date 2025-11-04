@@ -2,21 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Button } from "@/components/atoms";
-import { ChangePasswordModal } from "@/components/user-management/ChangePasswordModal";
+import { ResetPasswordModal } from "@/components/user-management/ResetPasswordModal";
 
 export const Route = createFileRoute("/home")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] =
     useState(false);
 
-  const handleChangePassword = (data: {
+  const handleResetPassword = (data: {
+    oldPassword: string;
     newPassword: string;
     confirmPassword: string;
   }) => {
-    console.log("Password change requested:", data);
+    console.log("Password reset requested:", data);
+    // After successful reset, close the modal
+    setIsResetPasswordModalOpen(false);
   };
 
   return (
@@ -40,20 +43,23 @@ function HomeComponent() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
           <Button
             size="lg"
-            onClick={() => setIsChangePasswordModalOpen(true)}
+            variant="outline"
+            onClick={() => setIsResetPasswordModalOpen(true)}
             className="px-8 py-3 font-semibold text-base"
           >
-            Change Password
+            Reset Password
           </Button>
         </div>
         <div className="text-center text-gray-400 text-sm pt-2 mt-8">
           <p>© 2025 Orano Med — Medical Research Platform</p>
         </div>
       </div>
-      <ChangePasswordModal
-        open={isChangePasswordModalOpen}
-        onOpenChange={setIsChangePasswordModalOpen}
-        onChangePassword={handleChangePassword}
+
+      <ResetPasswordModal
+        open={isResetPasswordModalOpen}
+        onOpenChange={setIsResetPasswordModalOpen}
+        onReset={handleResetPassword}
+        restrictedMode={true}
       />
     </>
   );
