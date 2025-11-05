@@ -13,9 +13,9 @@ export const API_CONFIG = {
   },
 } as const;
 
-export interface ApiError {
+export interface ApiError extends Error {
   message: string;
-  status?: number;
+  status: number;
   details?: unknown;
 }
 
@@ -60,17 +60,33 @@ export class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
+        const error = new Error(
           errorData.message || `HTTP error! status: ${response.status}`
-        );
+        ) as ApiError;
+
+        error.status = response.status;
+        error.details = errorData;
+
+        throw error;
       }
 
       return await response.json();
     } catch (error) {
-      if (error instanceof Error) {
+      if (error instanceof Error && "status" in error) {
         throw error;
       }
-      throw new Error("An unexpected error occurred");
+
+      if (error instanceof Error) {
+        const apiError = error as ApiError;
+        apiError.status = 500;
+        throw apiError;
+      }
+
+      const genericError = new Error(
+        "An unexpected error occurred"
+      ) as ApiError;
+      genericError.status = 500;
+      throw genericError;
     }
   }
 
