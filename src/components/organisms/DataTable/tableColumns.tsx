@@ -6,6 +6,7 @@ import {
   KeyIcon,
   MoreHorizontal,
   Share2,
+  UserCheck,
   UserX,
 } from "lucide-react";
 
@@ -150,7 +151,9 @@ export function getUserColumns(
       header: ({ column }) => <SortableHeader column={column} title="Email" />,
       enableSorting: true,
       sortingFn: "alphanumeric",
-      cell: ({ row }) => <div className="w-56">{row.original.email}</div>,
+      cell: ({ row }) => (
+        <div className="w-56 truncate">{row.original.email}</div>
+      ),
     },
     {
       id: "role",
@@ -250,8 +253,17 @@ export function getUserColumns(
                   handlers.onDisable(user);
                 }}
               >
-                <UserX className="mr-2 size-4" />
-                Disable Account
+                {user.status === "Active" ? (
+                  <>
+                    <UserX className="mr-2 size-4" />
+                    Disable Account
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="mr-2 size-4" />
+                    Enable Account
+                  </>
+                )}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -6,6 +6,13 @@ import * as z from "zod";
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/atoms/Select/Select";
 import { CalendarDatePicker } from "@/components/organisms/CalendarDatePicker/CalendarDatePicker";
 import {
   Form,
@@ -15,25 +22,34 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/organisms/Form/Form";
+import { useRoles } from "@/hooks/useFetch";
 
 export interface AddUserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (data: {
-    username: string;
+    firstName: string;
+    lastName: string;
     email: string;
+    roleId: string;
     expiry: string | null;
   }) => void;
+  isLoading?: boolean;
 }
 
 export const AddUserModal: React.FC<AddUserModalProps> = ({
   open,
   onOpenChange,
   onSave,
+  isLoading = false,
 }) => {
+  const { data: rolesData, isLoading: rolesLoading } = useRoles();
+
   const schema = z.object({
-    username: z.string().min(1, "User name is required"),
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
+    roleId: z.string().min(1, "Role is required"),
     expiry: z.date().nullable().optional(),
   });
 
@@ -42,21 +58,29 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      username: "",
+      firstName: "",
+      lastName: "",
       email: "",
+      roleId: "",
       expiry: null,
     },
   });
 
   const handleSave = (values: FormValues) => {
     onSave({
-      username: values.username,
+      firstName: values.firstName,
+      lastName: values.lastName,
       email: values.email,
+      roleId: values.roleId,
       expiry: values.expiry ? values.expiry.toISOString() : null,
     });
     form.reset();
     onOpenChange(false);
   };
+
+  const roles = React.useMemo(() => {
+    return rolesData?.data?.items || [];
+  }, [rolesData]);
 
   return (
     <Dialog
@@ -71,12 +95,29 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
           <div className="space-y-4 py-2">
             <FormField
               control={form.control}
-              name="username"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>User Name</FormLabel>
+                  <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input size="lg" placeholder="Enter user name" {...field} />
+                    <Input
+                      size="lg"
+                      placeholder="Enter first name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input size="lg" placeholder="Enter last name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,6 +143,38 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
             />
             <FormField
               control={form.control}
+              name="roleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role</FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={rolesLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            rolesLoading ? "Loading roles..." : "Select a role"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="expiry"
               render={({ field }) => (
                 <FormItem>
@@ -111,7 +184,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                       id="expiry"
                       value={field.value ?? undefined}
                       onChange={field.onChange}
-                      placeholder="Pick a date"
+                      placeholder="Select expiry date (future dates only)"
                     />
                   </FormControl>
                   <FormMessage />
@@ -125,11 +198,17 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
               size={"lg"}
               type="button"
               onClick={() => onOpenChange(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button size={"lg"} className="default" type="submit">
-              Save
+            <Button
+              size={"lg"}
+              className="default"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating..." : "Save"}
             </Button>
           </div>
         </form>

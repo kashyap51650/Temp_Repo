@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/atoms";
+import type { Role } from "@/types/auth";
 
 export interface UserFilterBarProps {
   search: string;
@@ -17,17 +18,11 @@ export interface UserFilterBarProps {
   status: string;
   onStatusChange: (value: string) => void;
   onReset: () => void;
+  roles?: Role[];
+  rolesLoading?: boolean;
 }
 
-const ROLES = [
-  "all",
-  "Administrator",
-  "Data Uploader",
-  "Data Validator",
-  "Scientist",
-  "Researcher",
-];
-const STATUSES = ["all", "Active", "Inactive"];
+const STATUSES = ["all", "Active", "Inactive", "Blocked"];
 
 export function UserFilterBar({
   search,
@@ -37,7 +32,18 @@ export function UserFilterBar({
   status,
   onStatusChange,
   onReset,
+  roles = [],
+  rolesLoading = false,
 }: UserFilterBarProps) {
+  const roleOptions = [
+    { id: "all", name: "All", value: "" },
+    ...roles.map((r) => ({
+      id: r.id.toString(),
+      name: r.name,
+      value: r.id.toString(),
+    })),
+  ];
+
   return (
     <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
       <div className="flex flex-col gap-2">
@@ -58,14 +64,15 @@ export function UserFilterBar({
         <Select
           value={role || "all"}
           onValueChange={(v) => onRoleChange(v === "all" ? "" : v)}
+          disabled={rolesLoading}
         >
           <SelectTrigger id="role" className="w-48">
-            <SelectValue placeholder="All" />
+            <SelectValue placeholder={rolesLoading ? "Loading..." : "All"} />
           </SelectTrigger>
           <SelectContent>
-            {ROLES.map((r) => (
-              <SelectItem key={r} value={r}>
-                {r === "all" ? "All" : r}
+            {roleOptions.map((r) => (
+              <SelectItem key={r.id} value={r.id}>
+                {r.name}
               </SelectItem>
             ))}
           </SelectContent>
