@@ -8,7 +8,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider as ReduxProvider } from "react-redux";
 
-import { Toaster } from "@/components/atoms/Sonner/Sonner";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
 import App from "./App.tsx";
@@ -49,7 +48,6 @@ createRoot(document.getElementById("root")!).render(
         <QueryClientProvider client={queryClient}>
           <NotificationProvider>
             <App />
-            <Toaster />
             <ReactQueryDevtools initialIsOpen={false} />
           </NotificationProvider>
         </QueryClientProvider>

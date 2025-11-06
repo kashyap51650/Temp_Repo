@@ -1,24 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-
-import { Button } from "@/components/atoms";
-import { ChangePasswordModal } from "@/components/user-management/ChangePasswordModal";
 
 export const Route = createFileRoute("/home")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
-    useState(false);
-
-  const handleChangePassword = (data: {
-    newPassword: string;
-    confirmPassword: string;
-  }) => {
-    console.log("Password change requested:", data);
-  };
-
   return (
     <>
       <div className="w-full h-full max-w-2xl mx-auto bg-white p-8 flex flex-col gap-2 items-center justify-center">
@@ -37,24 +23,10 @@ function HomeComponent() {
           We&apos;re working hard to bring you a powerful dashboard experience.
           Please check back soon!
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-4">
-          <Button
-            size="lg"
-            onClick={() => setIsChangePasswordModalOpen(true)}
-            className="px-8 py-3 font-semibold text-base"
-          >
-            Change Password
-          </Button>
-        </div>
         <div className="text-center text-gray-400 text-sm pt-2 mt-8">
           <p>© 2025 Orano Med — Medical Research Platform</p>
         </div>
       </div>
-      <ChangePasswordModal
-        open={isChangePasswordModalOpen}
-        onOpenChange={setIsChangePasswordModalOpen}
-        onChangePassword={handleChangePassword}
-      />
     </>
   );
 }

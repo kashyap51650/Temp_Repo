@@ -7,6 +7,7 @@ export * from "./NavMain/NavMain";
 export * from "./NavUser/NavUser";
 export * from "./NotificationButton/NotificationButton";
 export * from "./NotificationItem/NotificationItem";
+export * from "./PasswordRequirements";
 export { Popover, PopoverContent, PopoverTrigger } from "./Popover/Popover";
 export * from "./Sheet/Sheet";
 export { SortableHeader } from "./SortableHeader/SortableHeader";
