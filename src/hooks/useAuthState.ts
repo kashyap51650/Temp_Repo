@@ -34,12 +34,12 @@ export const useAuthState = () => {
     token: tokenUtils.getAccessToken(),
     refreshToken: tokenUtils.getRefreshToken(),
 
-    hasRole: (role: string) => {
+    hasRole: (_role: string) => {
       const currentUser = user ?? cachedUser;
       if (!currentUser) return false;
 
       // Add role checking logic based on your user structure
-      if (role === "admin") return currentUser.is_superuser;
+      // if (role === "admin") return currentUser.is_superuser;
       // Add more role checks as needed
       return false;
     },
