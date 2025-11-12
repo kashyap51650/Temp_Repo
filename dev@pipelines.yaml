@@ -1,5 +1,12 @@
 trigger:
-- devops-setup
+  branches:
+    include:
+      - development
+  paths:
+    exclude:
+      - README.md
+      
+pr: none
 
 pool: jumphost-dev-agent
 
