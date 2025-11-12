@@ -1,0 +1,54 @@
+parameters:
+- name: webhookUrl
+  type: string
+- name: status
+  type: string
+
+steps:
+- script: |
+    if [ "${{ parameters.status }}" = "started" ]; then
+      TITLE="🚀 Pipeline Started"
+      COLOR="0076D7"
+    elif [ "${{ parameters.status }}" = "succeeded" ]; then
+      TITLE="✅ Pipeline Succeeded"
+      COLOR="00C853"
+    elif [ "${{ parameters.status }}" = "failed" ]; then
+      TITLE="❌ Pipeline Failed"
+      COLOR="FF0000"
+    elif [ "${{ parameters.status }}" = "stopped" ]; then
+      TITLE="⏹️ Pipeline Stopped"
+      COLOR="FFA500"
+    else
+      TITLE="ℹ️ Pipeline Status Unknown"
+      COLOR="808080"
+    fi
+
+    FINISH_TIME=$(date -u +"%a, %b %d %Y %T GMT+00:00")
+
+    curl -H 'Content-Type: application/json' -d "{
+      \"@type\": \"MessageCard\",
+      \"@context\": \"http://schema.org/extensions\",
+      \"themeColor\": \"$COLOR\",
+      \"summary\": \"$TITLE\",
+      \"sections\": [{
+        \"activityTitle\": \"$TITLE\",
+        \"facts\": [
+          { \"name\": \"Pipeline:\", \"value\":       \"$(Build.DefinitionName)\" },
+          { \"name\": \"Branch:\", \"value\":         \"$(Build.SourceBranchName)\" },
+          { \"name\": \"Commit:\", \"value\":         \"$(Build.SourceVersion)\" },
+          { \"name\": \"Commit By:\", \"value\":      \"$(Build.SourceVersionAuthor)\" },
+          { \"name\": \"Triggered by\", \"value\": \"$(Build.RequestedFor)\" },
+          { \"name\": \"Reason:\", \"value\":         \"$(Build.Reason)\" },
+          { \"name\": \"Finished\", \"value\": \"$FINISH_TIME\" }
+        ],
+        \"markdown\": true
+      }]
+    }" ${{ parameters.webhookUrl }}
+  displayName: "Notify Teams - ${{ parameters.status }}"
+  condition: |
+    or(
+      and(eq('${{ parameters.status }}', 'succeeded'), succeeded()),
+      and(eq('${{ parameters.status }}', 'failed'), failed()),
+      and(eq('${{ parameters.status }}', 'stopped'), eq(variables['Agent.JobStatus'], 'Canceled')),
+      and(eq('${{ parameters.status }}', 'started'), always())
+    )
