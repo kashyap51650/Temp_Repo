@@ -24,10 +24,11 @@ import {
 } from "@/components/organisms/Form/Form";
 import { useRoles } from "@/hooks/useFetch";
 
-export interface EditUserModalProps {
+export interface UserModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: {
+  mode: "add" | "edit";
+  user?: {
     firstName: string;
     lastName: string;
     email: string;
@@ -44,9 +45,10 @@ export interface EditUserModalProps {
   isLoading?: boolean;
 }
 
-export const EditUserModal: React.FC<EditUserModalProps> = ({
+export const UserModal: React.FC<UserModalProps> = ({
   open,
   onOpenChange,
+  mode,
   user,
   onSave,
   isLoading = false,
@@ -63,26 +65,33 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
   type FormValues = z.infer<typeof schema>;
 
+  const getDefaultValues = React.useCallback(() => {
+    if (mode === "edit" && user) {
+      return {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        roleId: user.roleId || "",
+        expiry: user.expiry ? new Date(user.expiry) : null,
+      };
+    }
+    return {
+      firstName: "",
+      lastName: "",
+      email: "",
+      roleId: "",
+      expiry: null,
+    };
+  }, [mode, user]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      roleId: user.roleId || "",
-      expiry: user.expiry ? new Date(user.expiry) : null,
-    },
+    defaultValues: getDefaultValues(),
   });
 
   React.useEffect(() => {
-    form.reset({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      roleId: user.roleId || "",
-      expiry: user.expiry ? new Date(user.expiry) : null,
-    });
-  }, [user, form]);
+    form.reset(getDefaultValues());
+  }, [form, getDefaultValues]);
 
   const handleSave = (values: FormValues) => {
     onSave({
@@ -92,6 +101,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       roleId: values.roleId,
       expiry: values.expiry ? values.expiry.toISOString() : null,
     });
+
+    if (mode === "add") {
+      form.reset();
+    }
     onOpenChange(false);
   };
 
@@ -99,12 +112,25 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     return rolesData?.data?.items || [];
   }, [rolesData]);
 
+  const isEdit = mode === "edit";
+  const title = isEdit ? "Edit User" : "Add New User";
+  const description = isEdit
+    ? "Update user account details."
+    : "Create a new user account for the platform";
+  const submitText = isEdit
+    ? isLoading
+      ? "Updating..."
+      : "Update"
+    : isLoading
+      ? "Creating..."
+      : "Save";
+
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Edit User"
-      description="Update user account details."
+      title={title}
+      description={description}
       trigger={null}
     >
       <Form {...form}>
@@ -225,7 +251,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? "Updating..." : "Update"}
+              {submitText}
             </Button>
           </div>
         </form>

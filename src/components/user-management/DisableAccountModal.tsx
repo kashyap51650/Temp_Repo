@@ -22,12 +22,29 @@ export const DisableAccountModal: React.FC<DisableAccountModalProps> = ({
   isLoading = false,
 }) => {
   const isDisabling = userStatus === "Active";
-  const actionText = isDisabling ? "disable" : "enable";
-  const actionTextCapitalized = isDisabling ? "Disable" : "Enable";
-  const buttonVariant = isDisabling ? "danger" : "default";
-  const iconBgColor = isDisabling ? "bg-red-100" : "bg-green-100";
-  const IconComponent = isDisabling ? LucideTrash2 : CheckCircle;
-  const iconColor = isDisabling ? "text-destructive" : "text-green-600";
+
+  const ACTIONS = {
+    disabling: {
+      actionText: "disable",
+      buttonVariant: "danger" as const,
+      iconBgColor: "bg-red-100",
+      IconComponent: LucideTrash2,
+      iconColor: "text-destructive",
+    },
+    enabling: {
+      actionText: "enable",
+      buttonVariant: "default" as const,
+      iconBgColor: "bg-green-100",
+      IconComponent: CheckCircle,
+      iconColor: "text-green-600",
+    },
+  };
+
+  const { actionText, buttonVariant, iconBgColor, IconComponent, iconColor } =
+    isDisabling ? ACTIONS.disabling : ACTIONS.enabling;
+
+  const actionTextCapitalized =
+    actionText.charAt(0).toUpperCase() + actionText.slice(1);
 
   return (
     <Dialog

@@ -8,11 +8,10 @@ import {
   getUserColumns,
   type UserRow,
 } from "@/components/organisms/DataTable/tableColumns";
-import { AddUserModal } from "@/components/user-management/AddUserModal";
 import { DisableAccountModal } from "@/components/user-management/DisableAccountModal";
-import { EditUserModal } from "@/components/user-management/EditUserModal";
 import { ResetPasswordModal } from "@/components/user-management/ResetPasswordModal";
 import { UserFilterBar } from "@/components/user-management/UserFilterBar";
+import { UserModal } from "@/components/user-management/UserModal";
 import {
   useCreateUser,
   useRoles,
@@ -20,8 +19,8 @@ import {
   useUpdateUserStatus,
   useUsers,
 } from "@/hooks/useFetch";
-import { type ApiError, extractValidationErrors } from "@/lib/api";
-import { transformUserToRow } from "@/types/auth";
+import { handleApiError } from "@/lib/api";
+import { transformUserToRow, type UserFilters } from "@/types/auth";
 
 export default function UserManagementPage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,7 +35,7 @@ export default function UserManagementPage() {
   const pageSize = 25;
 
   const filters = useMemo(() => {
-    const apiFilters: any = {
+    const apiFilters: UserFilters = {
       page: currentPage,
       size: pageSize,
     };
@@ -70,7 +69,13 @@ export default function UserManagementPage() {
     setCurrentPage(1);
   };
 
-  const handleSave = async (data: {
+  const handleSave = async ({
+    firstName,
+    lastName,
+    email,
+    roleId,
+    expiry,
+  }: {
     firstName: string;
     lastName: string;
     email: string;
@@ -79,11 +84,11 @@ export default function UserManagementPage() {
   }) => {
     try {
       await createUserMutation.mutateAsync({
-        email: data.email,
-        first_name: data.firstName,
-        last_name: data.lastName,
-        role_id: parseInt(data.roleId),
-        account_expiry_date: data.expiry ? data.expiry.split("T")[0] : null,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        role_id: parseInt(roleId),
+        account_expiry_date: expiry ? expiry.split("T")[0] : null,
       });
 
       toast.success("User created successfully!");
@@ -91,17 +96,18 @@ export default function UserManagementPage() {
       refetch();
     } catch (error) {
       console.error("Error creating user:", error);
-      const errorMessage =
-        error instanceof Error && "details" in error
-          ? extractValidationErrors(error as ApiError)
-          : error instanceof Error
-            ? error.message
-            : "Failed to create user";
+      const errorMessage = handleApiError(error, "Failed to create user");
       toast.error(errorMessage);
     }
   };
 
-  const handleEditSave = async (data: {
+  const handleEditSave = async ({
+    firstName,
+    lastName,
+    email,
+    roleId,
+    expiry,
+  }: {
     firstName: string;
     lastName: string;
     email: string;
@@ -114,11 +120,11 @@ export default function UserManagementPage() {
       await updateUserMutation.mutateAsync({
         userId: editUser.id,
         userData: {
-          email: data.email,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          role_id: parseInt(data.roleId),
-          account_expiry_date: data.expiry ? data.expiry.split("T")[0] : null,
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          role_id: parseInt(roleId),
+          account_expiry_date: expiry ? expiry.split("T")[0] : null,
           status: editUser.status.toLowerCase(),
         },
       });
@@ -130,12 +136,12 @@ export default function UserManagementPage() {
       // Will be used in future
       // // Call the user-roles API only if the role has changed
       // const currentRoleId = roles.find(r => r.name === editUser.role)?.id.toString();
-      // const hasRoleChanged = currentRoleId !== data.roleId;
+      // const hasRoleChanged = currentRoleId !== roleId;
 
       // if (hasRoleChanged) {
       //   try {
       //     await roleApi.assignUserRole({
-      //       role_id: parseInt(data.roleId),
+      //       role_id: parseInt(roleId),
       //       user_id: parseInt(editUser.id)
       //     });
       //     console.log('User role assignment updated successfully');
@@ -147,12 +153,7 @@ export default function UserManagementPage() {
       // }
     } catch (error) {
       console.error("Error updating user:", error);
-      const errorMessage =
-        error instanceof Error && "details" in error
-          ? extractValidationErrors(error as ApiError)
-          : error instanceof Error
-            ? error.message
-            : "Failed to update user";
+      const errorMessage = handleApiError(error, "Failed to update user");
       toast.error(errorMessage);
     }
   };
@@ -178,12 +179,10 @@ export default function UserManagementPage() {
         `Error ${isCurrentlyActive ? "disabling" : "enabling"} user:`,
         error
       );
-      const errorMessage =
-        error instanceof Error && "details" in error
-          ? extractValidationErrors(error as ApiError)
-          : error instanceof Error
-            ? error.message
-            : `Failed to ${isCurrentlyActive ? "disable" : "enable"} user`;
+      const errorMessage = handleApiError(
+        error,
+        `Failed to ${isCurrentlyActive ? "disable" : "enable"} user`
+      );
       toast.error(errorMessage);
     }
   };
@@ -212,26 +211,34 @@ export default function UserManagementPage() {
 
   return (
     <div className="px-6 py-6">
-      <AddUserModal
+      <UserModal
         open={modalOpen}
         onOpenChange={setModalOpen}
+        mode="add"
         onSave={handleSave}
         isLoading={createUserMutation.isPending}
       />
-      <EditUserModal
+      <UserModal
         open={!!editUser}
         onOpenChange={(open) => !open && setEditUser(null)}
+        mode="edit"
         user={
           editUser
-            ? {
-                firstName: editUser.name?.split(" ")[0] || "",
-                lastName: editUser.name?.split(" ").slice(1).join(" ") || "",
-                email: editUser.email,
-                roleId:
-                  roles.find((r) => r.name === editUser.role)?.id.toString() ||
-                  "",
-                expiry: undefined,
-              }
+            ? (() => {
+                const { name = "", email = "", role = "" } = editUser;
+                const [firstName = "", ...lastNameParts] = name.split(" ");
+                const lastName = lastNameParts.join(" ");
+                const roleId =
+                  roles.find((r) => r.name === role)?.id.toString() || "";
+
+                return {
+                  firstName,
+                  lastName,
+                  email,
+                  roleId,
+                  expiry: undefined,
+                };
+              })()
             : { firstName: "", lastName: "", email: "", roleId: "" }
         }
         onSave={handleEditSave}

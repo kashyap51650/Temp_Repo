@@ -1,3 +1,5 @@
+import type { RolesResponse, UserFilters, UsersResponse } from "../types/auth";
+
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
   VERSION: import.meta.env.VITE_API_VERSION,
@@ -63,6 +65,17 @@ export function extractValidationErrors(error: ApiError): string {
   }
 
   return error.message;
+}
+
+export function handleApiError(
+  error: unknown,
+  fallbackMessage: string
+): string {
+  return error instanceof Error && "details" in error
+    ? extractValidationErrors(error as ApiError)
+    : error instanceof Error
+      ? error.message
+      : fallbackMessage;
 }
 
 export class ApiClient {
@@ -166,9 +179,7 @@ export class ApiClient {
 export const apiClient = new ApiClient();
 
 export const userApi = {
-  getUsers: async (
-    filters?: import("../types/auth").UserFilters
-  ): Promise<import("../types/auth").UsersResponse> => {
+  getUsers: async (filters?: UserFilters): Promise<UsersResponse> => {
     const params = new URLSearchParams();
 
     if (filters?.search) params.append("search", filters.search);
@@ -182,7 +193,7 @@ export const userApi = {
       ? `${API_CONFIG.ENDPOINTS.USERS.LIST}?${queryString}`
       : API_CONFIG.ENDPOINTS.USERS.LIST;
 
-    return apiClient.get<import("../types/auth").UsersResponse>(endpoint);
+    return apiClient.get<UsersResponse>(endpoint);
   },
 
   createUser: async (userData: {
@@ -249,10 +260,8 @@ export const userApi = {
 };
 
 export const roleApi = {
-  getRoles: async (): Promise<import("../types/auth").RolesResponse> => {
-    return apiClient.get<import("../types/auth").RolesResponse>(
-      API_CONFIG.ENDPOINTS.RBAC.ROLES
-    );
+  getRoles: async (): Promise<RolesResponse> => {
+    return apiClient.get<RolesResponse>(API_CONFIG.ENDPOINTS.RBAC.ROLES);
   },
 
   assignUserRole: async (payload: {

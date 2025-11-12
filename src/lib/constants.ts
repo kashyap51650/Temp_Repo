@@ -22,3 +22,8 @@ export const DEMO_ACCOUNTS = [
   DEMO_CREDENTIALS.DATA_UPLOADER,
   DEMO_CREDENTIALS.SCIENTIST,
 ] as const;
+
+export const STALE_TIME = {
+  FIVE_MINUTES: 1000 * 60 * 5,
+  TEN_MINUTES: 1000 * 60 * 10,
+} as const;

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { roleApi, userApi } from "@/lib/api";
+import { STALE_TIME } from "@/lib/constants";
 import type { RolesResponse, UserFilters, UsersResponse } from "@/types/auth";
 
 const useFetch = <T>(key: string, fetchFunction: () => Promise<T>) => {
@@ -11,7 +12,7 @@ export const useUsers = (filters?: UserFilters) => {
   return useQuery<UsersResponse>({
     queryKey: ["users", filters],
     queryFn: () => userApi.getUsers(filters),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: STALE_TIME.FIVE_MINUTES,
     refetchOnWindowFocus: false,
   });
 };
@@ -20,8 +21,7 @@ export const useRoles = () => {
   return useQuery<RolesResponse>({
     queryKey: ["roles"],
     queryFn: () => roleApi.getRoles(),
-    staleTime: 1000 * 60 * 10, // 10 minutes - roles change less frequently
-    refetchOnWindowFocus: false,
+    staleTime: STALE_TIME.TEN_MINUTES,
   });
 };
 
