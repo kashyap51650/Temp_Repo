@@ -1,11 +1,11 @@
 trigger:
   branches:
     include:
-      - development
+    - development
   paths:
     exclude:
-      - README.md
-      
+    - README.md
+
 pr: none
 
 pool: jumphost-dev-agent
@@ -74,23 +74,23 @@ steps:
 - script: |
     # Helm upgrade and rollout
     cd /home/jumpboxadmin/k8s-files/helm-chart-frontend
-    helm upgrade orano-med-dev-frontend . --namespace dev-backend
+    helm upgrade orano-med-dev-frontend . --namespace orano-med-dev
     if [ $? -eq 0 ]; then
         echo "Helm upgrade successful. Restarting deployments to ensure env updates..."
         
         # Restart all deployments to ensure environment variables are properly loaded
-        kubectl rollout restart deployment/orano-med-dev-frontend -n dev-backend
+        kubectl rollout restart deployment/orano-med-dev-frontend -n orano-med-dev
       
         
         echo "Waiting for deployments to be ready..."
-        kubectl rollout status deployment/orano-med-dev-frontend -n dev-backend
+        kubectl rollout status deployment/orano-med-dev-frontend -n orano-med-dev
         
         echo "Deployment completed successfully!"
         echo "All pods have been restarted with updated environment variables."
         
         # Show current pod status
         echo "Current pod status:"
-        kubectl get pods -n dev-backend -l app.kubernetes.io/name=orano-med-dev-frontend
+        kubectl get pods -n orano-med-dev -l app.kubernetes.io/name=orano-med-dev-frontend
         
     else
         echo "Helm upgrade failed. Please check the logs above."
