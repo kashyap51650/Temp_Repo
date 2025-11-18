@@ -57,7 +57,7 @@ steps:
     
     # Clone Helm chart repo
     cd /home/jumpboxadmin/k8s-files/helm-chart-frontend
-
+    git pull
     # Update image tags using yq 
     yq eval ".deployments.frontend.tag = \"$(COMMIT_HASH)\"" -i values.yaml
 
@@ -68,35 +68,10 @@ steps:
     new_version="$major.$minor.$patch"
 
     yq eval ".appVersion = \"$new_version\"" -i Chart.yaml
-
+    git add .
+    git commit -m "Update Helm chart to version $new_version with image tag $(COMMIT_HASH)"
+    git push
   displayName: 'Update Helm Chart Version and AppVersion'
-
-- script: |
-    # Helm upgrade and rollout
-    cd /home/jumpboxadmin/k8s-files/helm-chart-frontend
-    helm upgrade orano-med-dev-frontend . --namespace orano-med-dev
-    if [ $? -eq 0 ]; then
-        echo "Helm upgrade successful. Restarting deployments to ensure env updates..."
-        
-        # Restart all deployments to ensure environment variables are properly loaded
-        kubectl rollout restart deployment/orano-med-dev-frontend -n orano-med-dev
-      
-        
-        echo "Waiting for deployments to be ready..."
-        kubectl rollout status deployment/orano-med-dev-frontend -n orano-med-dev
-        
-        echo "Deployment completed successfully!"
-        echo "All pods have been restarted with updated environment variables."
-        
-        # Show current pod status
-        echo "Current pod status:"
-        kubectl get pods -n orano-med-dev -l app.kubernetes.io/name=orano-med-dev-frontend
-        
-    else
-        echo "Helm upgrade failed. Please check the logs above."
-        exit 1
-    fi
-  displayName: 'Helm Upgrade and Rollout'
 
 - template: ./notify-teams.yml
   parameters:
