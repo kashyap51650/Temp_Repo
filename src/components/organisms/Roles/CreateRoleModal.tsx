@@ -5,6 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
+import { Textarea } from "@/components/atoms/Textarea/Textarea";
 import {
   Form,
   FormControl,
@@ -21,19 +22,28 @@ export function CreateRoleModal({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (roleName: string) => void;
+  onCreate: (roleData: { name: string; description: string }) => void;
 }) {
   const schema = z.object({
-    roleName: z.string().min(1, "Role name is required"),
+    name: z.string().min(1, "Role name is required"),
+    description: z.string().min(1, "Description is required"),
   });
+
   type FormValues = z.infer<typeof schema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { roleName: "" },
+    defaultValues: {
+      name: "",
+      description: "",
+    },
   });
 
   const handleCreate = async (values: FormValues) => {
-    await onCreate(values.roleName.trim());
+    await onCreate({
+      name: values.name.trim(),
+      description: values.description.trim(),
+    });
     form.reset();
     onOpenChange(false);
   };
@@ -54,10 +64,10 @@ export function CreateRoleModal({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleCreate)}>
-          <div className="my-6">
+          <div className="my-6 space-y-4">
             <FormField
               control={form.control}
-              name="roleName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role Name</FormLabel>
@@ -73,7 +83,27 @@ export function CreateRoleModal({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="role-description"
+                      placeholder="Enter role description"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
+
           <div className="flex justify-end gap-3 mt-2">
             <Button
               type="button"
@@ -89,7 +119,7 @@ export function CreateRoleModal({
               size={"lg"}
               disabled={form.formState.isSubmitting}
             >
-              Create
+              {form.formState.isSubmitting ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>

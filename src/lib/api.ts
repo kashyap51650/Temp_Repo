@@ -1,4 +1,4 @@
-import type { RolesResponse, UserFilters, UsersResponse } from "../types/auth";
+import type { UserFilters, UsersResponse } from "../types/auth";
 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
@@ -23,6 +23,7 @@ export const API_CONFIG = {
     RBAC: {
       ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/roles`,
       USER_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/user-roles`,
+      USERS_WITH_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/users-with-roles`,
     },
   },
 } as const;
@@ -260,8 +261,48 @@ export const userApi = {
 };
 
 export const roleApi = {
-  getRoles: async (): Promise<RolesResponse> => {
-    return apiClient.get<RolesResponse>(API_CONFIG.ENDPOINTS.RBAC.ROLES);
+  getRoles: async (
+    page: number = 1,
+    size: number = 10
+  ): Promise<import("../types/auth").RolesResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.RBAC.ROLES}?${params.toString()}`;
+    return apiClient.get<import("../types/auth").RolesResponse>(endpoint);
+  },
+
+  createRole: async (payload: {
+    name: string;
+    description: string;
+  }): Promise<ApiResponse> => {
+    return apiClient.post<ApiResponse>(
+      API_CONFIG.ENDPOINTS.RBAC.ROLES,
+      payload
+    );
+  },
+
+  updateRole: async (
+    roleId: string,
+    payload: {
+      name: string;
+      description: string;
+    }
+  ): Promise<ApiResponse> => {
+    return apiClient.put<ApiResponse>(
+      `${API_CONFIG.ENDPOINTS.RBAC.ROLES}/${roleId}`,
+      payload
+    );
+  },
+
+  getPermissions: async (
+    roleId: string
+  ): Promise<import("../types/auth").PermissionsApiResponse> => {
+    return apiClient.get<import("../types/auth").PermissionsApiResponse>(
+      `${API_CONFIG.ENDPOINTS.RBAC.ROLES}/${roleId}/permissions`
+    );
   },
 
   assignUserRole: async (payload: {
@@ -271,6 +312,21 @@ export const roleApi = {
     return apiClient.post<ApiResponse>(
       API_CONFIG.ENDPOINTS.RBAC.USER_ROLES,
       payload
+    );
+  },
+
+  getUsersWithRoles: async (
+    page: number = 1,
+    size: number = 10
+  ): Promise<import("../types/auth").UsersWithRolesResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.RBAC.USERS_WITH_ROLES}?${params.toString()}`;
+    return apiClient.get<import("../types/auth").UsersWithRolesResponse>(
+      endpoint
     );
   },
 };

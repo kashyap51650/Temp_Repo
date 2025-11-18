@@ -6,6 +6,7 @@ import * as z from "zod";
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
+import { Textarea } from "@/components/atoms/Textarea/Textarea";
 import {
   Form,
   FormControl,
@@ -19,7 +20,7 @@ export interface EditRoleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   role: { id: string; name: string; description: string } | null;
-  onSave: (role: { id: string; name: string; description: string }) => void;
+  onSave: (roleData: { id: string; name: string; description: string }) => void;
 }
 
 export function EditRoleModal({
@@ -29,33 +30,35 @@ export function EditRoleModal({
   onSave,
 }: EditRoleModalProps) {
   const schema = z.object({
-    roleName: z.string().min(1, "Role name is required"),
-    description: z.string().optional(),
+    name: z.string().min(1, "Role name is required"),
+    description: z.string().min(1, "Description is required"),
   });
+
   type FormValues = z.infer<typeof schema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      roleName: role?.name || "",
-      description: role?.description || "",
+      name: "",
+      description: "",
     },
-    values: role
-      ? { roleName: role.name, description: role.description }
-      : undefined,
   });
 
   React.useEffect(() => {
     if (role) {
-      form.reset({ roleName: role.name, description: role.description });
+      form.reset({
+        name: role.name,
+        description: role.description,
+      });
     }
   }, [role, form]);
 
   const handleSave = async (values: FormValues) => {
     if (role) {
-      onSave({
-        ...role,
-        name: values.roleName.trim(),
-        description: values.description || "",
+      await onSave({
+        id: role.id,
+        name: values.name.trim(),
+        description: values.description.trim(),
       });
     }
     form.reset();
@@ -78,10 +81,10 @@ export function EditRoleModal({
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSave)}>
-          <div className="my-6">
+          <div className="my-6 space-y-4">
             <FormField
               control={form.control}
-              name="roleName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role Name</FormLabel>
@@ -97,6 +100,7 @@ export function EditRoleModal({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="description"
@@ -104,10 +108,10 @@ export function EditRoleModal({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input
-                      id="role-desc"
-                      placeholder="Enter description"
-                      size="lg"
+                    <Textarea
+                      id="role-description"
+                      placeholder="Enter role description"
+                      rows={3}
                       {...field}
                     />
                   </FormControl>
@@ -116,6 +120,7 @@ export function EditRoleModal({
               )}
             />
           </div>
+
           <div className="flex justify-end gap-3 mt-2">
             <Button
               type="button"
@@ -131,7 +136,7 @@ export function EditRoleModal({
               size="lg"
               disabled={form.formState.isSubmitting}
             >
-              Save
+              {form.formState.isSubmitting ? "Saving..." : "Save"}
             </Button>
           </div>
         </form>

@@ -4,7 +4,6 @@ import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
 import { Label } from "@/components/atoms/Label/Label";
-import { MultiSelect } from "@/components/atoms/Select/MultiSelect";
 import {
   Select,
   SelectContent,
@@ -13,93 +12,116 @@ import {
   SelectValue,
 } from "@/components/atoms/Select/Select";
 import type { PermissionAssignment } from "@/components/organisms/DataTable/tableData";
-
-interface Permission {
-  id: string;
-  name: string;
-}
+import { handleApiError, roleApi } from "@/lib/api";
+import type { Role, UserAssignment } from "@/types/auth";
 
 interface EditAssignmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   assignment?: PermissionAssignment | null;
+  userAssignment?: UserAssignment | null;
+  roles?: Role[]; // Add roles from API
   onSave: (updatedAssignment: PermissionAssignment) => void;
 }
-
-const availableRoles = [
-  "Administrator",
-  "Data Uploader",
-  "Data Validator",
-  "Scientist",
-  "Researcher",
-];
-
-const availablePermissions: Permission[] = [
-  { id: "user-management", name: "User Management" },
-  { id: "data-upload", name: "Data Upload" },
-  { id: "query-builder", name: "Query Builder" },
-  { id: "view-data", name: "View Data" },
-  { id: "system-settings", name: "System Settings" },
-  { id: "rbac", name: "RBAC" },
-  { id: "templates", name: "Templates" },
-  { id: "notifications", name: "Notifications" },
-  { id: "data-validate", name: "Data Validate" },
-];
 
 export function EditAssignmentModal({
   open,
   onOpenChange,
   assignment,
+  userAssignment,
+  roles,
   onSave,
 }: EditAssignmentModalProps) {
-  const [selectedRole, setSelectedRole] = React.useState(
-    assignment?.role || ""
-  );
-  const [selectedPermissions, setSelectedPermissions] = React.useState<
-    Permission[]
-  >([]);
+  const [selectedRole, setSelectedRole] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const allApiPermissions = React.useMemo(() => {
+    if (!userAssignment?.roles) return [];
+
+    const primaryRole =
+      userAssignment.roles.find((role) => role.is_primary) ||
+      userAssignment.roles[0];
+    return primaryRole
+      ? primaryRole.assigned_permissions.map((p) => ({
+          id: p.id.toString(),
+          name: p.name,
+        }))
+      : [];
+  }, [userAssignment]);
+
+  const roleNameToIdMap = React.useMemo(() => {
+    if (!roles || roles.length === 0) return {};
+
+    return roles.reduce(
+      (map, role) => {
+        map[role.name] = role.id;
+        return map;
+      },
+      {} as Record<string, number>
+    );
+  }, [roles]);
+
+  const availableRoles = React.useMemo(() => {
+    return roles ? roles.map((role) => role.name) : [];
+  }, [roles]);
 
   React.useEffect(() => {
-    if (assignment) {
-      setSelectedRole(assignment.role);
-      const permissions = assignment.permissions.map(
-        (permName) =>
-          availablePermissions.find((p) => p.name === permName) || {
-            id: permName.toLowerCase().replace(/\s+/g, "-"),
-            name: permName,
-          }
-      );
-      setSelectedPermissions(permissions);
+    if (assignment && userAssignment) {
+      const primaryRole =
+        userAssignment.roles.find((role) => role.is_primary) ||
+        userAssignment.roles[0];
+      setSelectedRole(primaryRole ? primaryRole.name : "");
+      setError(null);
     }
-  }, [assignment]);
+  }, [assignment, userAssignment]);
 
-  const handleSave = () => {
-    if (assignment) {
+  const handleSave = async () => {
+    if (!assignment || !userAssignment || !selectedRole) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const roleId =
+        roleNameToIdMap[selectedRole as keyof typeof roleNameToIdMap];
+
+      if (!roleId) {
+        throw new Error("Invalid role selected");
+      }
+
+      await roleApi.assignUserRole({
+        role_id: roleId,
+        user_id: userAssignment.user.id,
+      });
+
       onSave({
         ...assignment,
         role: selectedRole,
-        permissions: selectedPermissions.map((p) => p.name),
+        permissions: [],
       });
+
       onOpenChange(false);
+    } catch (err) {
+      const errorMessage = handleApiError(err, "Failed to update user role");
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    if (assignment) {
-      setSelectedRole(assignment.role);
-      const permissions = assignment.permissions.map(
-        (permName) =>
-          availablePermissions.find((p) => p.name === permName) || {
-            id: permName.toLowerCase().replace(/\s+/g, "-"),
-            name: permName,
-          }
-      );
-      setSelectedPermissions(permissions);
+    if (assignment && userAssignment) {
+      const primaryRole =
+        userAssignment.roles.find((role) => role.is_primary) ||
+        userAssignment.roles[0];
+      setSelectedRole(primaryRole ? primaryRole.name : "");
+      setError(null);
     }
     onOpenChange(false);
   };
 
-  if (!assignment) return null;
+  if (!assignment || !userAssignment) return null;
 
   return (
     <Dialog
@@ -152,26 +174,38 @@ export function EditAssignmentModal({
           <Label htmlFor="user-assignment-permissions" className="mb-2 block">
             Permissions
           </Label>
-          <MultiSelect
-            options={availablePermissions.map((p) => ({
-              id: p.id,
-              label: p.name,
-            }))}
-            value={selectedPermissions.map((p) => p.id)}
-            onChange={(ids) => {
-              setSelectedPermissions(
-                availablePermissions.filter((p) => ids.includes(p.id))
-              );
-            }}
-            placeholder="Select permissions"
-          />
+          <div className="space-y-2">
+            {allApiPermissions.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-4 bg-muted rounded-lg max-h-60 overflow-y-auto">
+                {allApiPermissions.map((permission) => (
+                  <div
+                    key={permission.id}
+                    className="text-sm px-3 py-2 bg-background rounded border text-gray-700"
+                  >
+                    {permission.name}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-muted rounded-lg text-gray-500 text-sm">
+                No permissions assigned
+              </div>
+            )}
+            <div className="text-xs text-gray-500 mt-2">
+              Total: {allApiPermissions.length} permission(s)
+            </div>
+          </div>
         </div>
 
+        {error && <div className="text-sm text-red-500">{error}</div>}
+
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button variant="outline" onClick={handleCancel}>
+          <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave} disabled={isLoading}>
+            Save Changes
+          </Button>
         </div>
       </div>
     </Dialog>
