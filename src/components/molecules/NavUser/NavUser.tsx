@@ -1,5 +1,4 @@
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
   IconUserCircle,
@@ -93,13 +92,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
                 <IconUserCircle />
                 Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => navigate({ to: "/settings" })}>
-                <IconCreditCard />
-                Setting
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

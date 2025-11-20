@@ -50,10 +50,5 @@ export const sidebarData = {
       url: "/notifications",
       icon: "IconReport",
     },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: "IconSettings",
-    },
   ],
 };
