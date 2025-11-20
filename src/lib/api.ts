@@ -29,6 +29,11 @@ export const API_CONFIG = {
     NOTIFICATIONS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
+      MY_NOTIFICATIONS: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/my-notifications`,
+      UNREAD_COUNT: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/unread-count`,
+      MARK_READ: (notificationId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/${notificationId}/mark-read`,
+      MARK_ALL_READ: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/mark-all-read`,
       TEMPLATES: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates`,
       TEMPLATES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates/dropdown`,
     },
@@ -181,6 +186,18 @@ export class ApiClient {
 
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" });
+  }
+
+  async patch<T>(
+    endpoint: string,
+    data?: unknown,
+    options?: RequestInit
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    });
   }
 }
 
@@ -488,5 +505,51 @@ export const notificationApi = {
     }>;
   }> => {
     return apiClient.get(API_CONFIG.ENDPOINTS.NOTIFICATIONS.TEMPLATES_DROPDOWN);
+  },
+
+  getMyNotifications: async (
+    page: number = 1,
+    size: number = 10
+  ): Promise<import("../types/notification").NotificationApiResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.NOTIFICATIONS.MY_NOTIFICATIONS}?${params.toString()}`;
+    return apiClient.get<
+      import("../types/notification").NotificationApiResponse
+    >(endpoint);
+  },
+
+  getUnreadCount: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      unread_count: number;
+    };
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT);
+  },
+
+  markNotificationAsRead: async (
+    notificationId: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+  }> => {
+    return apiClient.patch(
+      API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_READ(notificationId),
+      {
+        notification_id: notificationId,
+      }
+    );
+  },
+
+  markAllNotificationsAsRead: async (): Promise<{
+    success: boolean;
+    message: string;
+  }> => {
+    return apiClient.patch(API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
   },
 };

@@ -49,6 +49,31 @@ export const mockNotifications: Notification[] = [
   },
 ];
 
+export const transformApiNotification = (
+  apiNotification: import("@/types/notification").ApiNotification
+): Notification => {
+  const getNotificationType = (
+    notificationTypes: string[]
+  ): "success" | "warning" | "info" | "error" => {
+    if (notificationTypes.includes("error")) return "error";
+    if (notificationTypes.includes("warning")) return "warning";
+    if (notificationTypes.includes("success")) return "success";
+    return "info";
+  };
+
+  return {
+    id: apiNotification.id.toString(),
+    title: apiNotification.subject,
+    message: apiNotification.message,
+    type: getNotificationType(apiNotification.notification_types),
+    isRead: apiNotification.is_read,
+    createdAt: new Date(apiNotification.created_at),
+    readAt: apiNotification.read_at
+      ? new Date(apiNotification.read_at)
+      : undefined,
+  };
+};
+
 export const getUnreadCount = (notifications: Notification[]): number => {
   return notifications.filter((n) => !n.isRead).length;
 };

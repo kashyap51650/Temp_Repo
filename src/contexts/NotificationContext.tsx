@@ -1,17 +1,28 @@
-import { createContext, type ReactNode, useContext, useReducer } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 
 import {
   getUnreadCount,
   markAllNotificationsAsRead,
   markNotificationAsRead,
   mockNotifications,
+  transformApiNotification,
 } from "@/data/notifications";
+import { notificationApi } from "@/lib/api";
 import type { Notification } from "@/types/notification";
 
 interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
   isDrawerOpen: boolean;
+  isLoading: boolean;
+  error: string | null;
+  apiUnreadCount: number;
 }
 
 type NotificationAction =
@@ -23,7 +34,10 @@ type NotificationAction =
       type: "ADD_NOTIFICATION";
       payload: Omit<Notification, "id" | "createdAt">;
     }
-  | { type: "LOAD_NOTIFICATIONS"; payload: Notification[] };
+  | { type: "LOAD_NOTIFICATIONS"; payload: Notification[] }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_API_UNREAD_COUNT"; payload: number };
 
 interface NotificationContextType extends NotificationState {
   markAsRead: (id: string) => void;
@@ -33,6 +47,7 @@ interface NotificationContextType extends NotificationState {
   addNotification: (
     notification: Omit<Notification, "id" | "createdAt">
   ) => void;
+  refreshNotifications: () => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -40,9 +55,12 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 );
 
 const initialState: NotificationState = {
-  notifications: mockNotifications,
-  unreadCount: getUnreadCount(mockNotifications),
+  notifications: [],
+  unreadCount: 0,
   isDrawerOpen: false,
+  isLoading: false,
+  error: null,
+  apiUnreadCount: 0,
 };
 
 function notificationReducer(
@@ -99,6 +117,26 @@ function notificationReducer(
         ...state,
         notifications: action.payload,
         unreadCount: getUnreadCount(action.payload),
+        error: null,
+      };
+    }
+    case "SET_LOADING": {
+      return {
+        ...state,
+        isLoading: action.payload,
+      };
+    }
+    case "SET_ERROR": {
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+      };
+    }
+    case "SET_API_UNREAD_COUNT": {
+      return {
+        ...state,
+        apiUnreadCount: action.payload,
       };
     }
     default:
@@ -109,12 +147,93 @@ function notificationReducer(
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
 
-  const markAsRead = (id: string) => {
-    dispatch({ type: "MARK_AS_READ", payload: id });
+  const fetchNotifications = async () => {
+    try {
+      dispatch({ type: "SET_LOADING", payload: true });
+      dispatch({ type: "SET_ERROR", payload: null });
+
+      const response = await notificationApi.getMyNotifications(1, 50); // Get more notifications initially
+
+      if (response.success && response.data.items) {
+        const transformedNotifications = response.data.items.map(
+          transformApiNotification
+        );
+        dispatch({
+          type: "LOAD_NOTIFICATIONS",
+          payload: transformedNotifications,
+        });
+      } else {
+        dispatch({ type: "LOAD_NOTIFICATIONS", payload: mockNotifications });
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+      dispatch({ type: "SET_ERROR", payload: "Failed to load notifications" });
+      dispatch({ type: "LOAD_NOTIFICATIONS", payload: mockNotifications });
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
+    }
   };
 
-  const markAllAsRead = () => {
-    dispatch({ type: "MARK_ALL_AS_READ" });
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await notificationApi.getUnreadCount();
+      if (response.success && response.data) {
+        dispatch({
+          type: "SET_API_UNREAD_COUNT",
+          payload: response.data.unread_count,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch unread count:", error);
+      dispatch({ type: "SET_API_UNREAD_COUNT", payload: state.unreadCount });
+    }
+  };
+
+  const refreshNotifications = async () => {
+    await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    fetchUnreadCount();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const markAsRead = async (id: string) => {
+    try {
+      const response = await notificationApi.markNotificationAsRead(id);
+
+      if (response.success) {
+        dispatch({ type: "MARK_AS_READ", payload: id });
+
+        await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+      dispatch({ type: "MARK_AS_READ", payload: id });
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const response = await notificationApi.markAllNotificationsAsRead();
+
+      if (response.success) {
+        dispatch({ type: "MARK_ALL_AS_READ" });
+
+        await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+      }
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      dispatch({ type: "MARK_ALL_AS_READ" });
+    }
   };
 
   const openDrawer = () => {
@@ -138,6 +257,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     openDrawer,
     closeDrawer,
     addNotification,
+    refreshNotifications,
   };
 
   return (
