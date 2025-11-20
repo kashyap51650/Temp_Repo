@@ -164,6 +164,8 @@ export type TemplateRow = {
   createdBy: string;
   createdDate: string;
   usageCount: number;
+  isActive: boolean;
+  content: string;
 };
 
 export const templateData: TemplateRow[] = [
@@ -174,6 +176,8 @@ export const templateData: TemplateRow[] = [
     createdBy: "John Smith",
     createdDate: "2024-01-10",
     usageCount: 8,
+    isActive: true,
+    content: "Content of System Maintenance Template",
   },
   {
     id: "t2",
@@ -182,6 +186,8 @@ export const templateData: TemplateRow[] = [
     createdBy: "Sarah Johnson",
     createdDate: "2024-01-08",
     usageCount: 15,
+    isActive: true,
+    content: "Content of Data Upload Reminder",
   },
   {
     id: "t3",
@@ -190,6 +196,8 @@ export const templateData: TemplateRow[] = [
     createdBy: "Emily Rodriguez",
     createdDate: "2024-01-05",
     usageCount: 22,
+    isActive: true,
+    content: "Content of Welcome New User",
   },
 ];
 

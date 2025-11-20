@@ -6,6 +6,7 @@ import * as z from "zod";
 import { Button } from "@/components/atoms";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
+import { Textarea } from "@/components/atoms/Textarea/Textarea";
 import type { TemplateRow } from "@/components/organisms/DataTable/tableData";
 import {
   Form,
@@ -41,18 +42,21 @@ export default function TemplateModal({
         id: `tmp-${Date.now()}`,
         name: "",
         subject: "",
+        content: "",
         createdBy: "",
         createdDate: new Date().toISOString().split("T")[0],
         usageCount: 0,
+        isActive: true,
       });
     } else {
       setFormState(template ?? null);
     }
   }, [mode, template, open]);
+
   const schema = z.object({
     name: z.string().min(1, "Template name is required"),
     subject: z.string().min(1, "Subject is required"),
-    createdBy: z.string().optional(),
+    content: z.string().min(1, "Content is required"),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -62,7 +66,7 @@ export default function TemplateModal({
     defaultValues: {
       name: "",
       subject: "",
-      createdBy: "",
+      content: "",
     },
   });
 
@@ -71,7 +75,7 @@ export default function TemplateModal({
       form.reset({
         name: formState.name,
         subject: formState.subject,
-        createdBy: formState.createdBy,
+        content: formState.content,
       });
     }
   }, [formState, form]);
@@ -84,24 +88,27 @@ export default function TemplateModal({
       : mode === "edit"
         ? "Edit Template"
         : "View Template";
-  if (!formState) return null;
 
   type Detail = { label: string; value: string | number };
   const templateDetails: Detail[] = [
     { label: "Template Name :", value: formState.name },
     { label: "Subject :", value: formState.subject },
+    { label: "Content :", value: formState.content },
     { label: "Created By :", value: formState.createdBy },
     { label: "Created Date :", value: formState.createdDate },
     { label: "Usage Count :", value: formState.usageCount },
   ];
+
   const onSubmit = (values: FormValues) => {
     const updated: TemplateRow = {
       id: formState.id,
       name: values.name,
       subject: values.subject,
-      createdBy: values.createdBy ?? "",
+      content: values.content,
+      createdBy: formState.createdBy,
       createdDate: formState.createdDate,
       usageCount: formState.usageCount ?? 0,
+      isActive: formState.isActive,
     };
     onSave(updated);
     onOpenChange(false);
@@ -167,12 +174,16 @@ export default function TemplateModal({
             />
             <FormField
               control={form.control}
-              name="createdBy"
+              name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Created By</FormLabel>
+                  <FormLabel>Content</FormLabel>
                   <FormControl>
-                    <Input size="lg" placeholder="Created By" {...field} />
+                    <Textarea
+                      placeholder="Enter template content..."
+                      className="min-h-32"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
