@@ -441,6 +441,22 @@ export function getTemplateColumns(
       ),
     },
     {
+      accessorKey: "isActive",
+      header: () => <span className="w-20 block">Status</span>,
+      cell: ({ row }) => (
+        <Badge
+          variant={row.original.isActive ? "default" : "secondary"}
+          className={
+            row.original.isActive
+              ? "bg-green-100 text-green-700"
+              : "bg-muted text-muted-foreground"
+          }
+        >
+          {row.original.isActive ? "Active" : "Inactive"}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "usageCount",
       header: () => <span className="w-24 block">Usage Count</span>,
       cell: ({ row }) => (

@@ -9,6 +9,11 @@ import {
   SelectValue,
 } from "@/components/atoms";
 
+interface Role {
+  id: number;
+  name: string;
+}
+
 interface NotificationTableFiltersProps {
   onTitleFilter: (value: string) => void;
   onStatusFilter: (value: string) => void;
@@ -17,6 +22,7 @@ interface NotificationTableFiltersProps {
   statusFilter: string;
   sentToFilter: string;
   onClearFilters: () => void;
+  roles: Role[];
 }
 
 export function NotificationTableFilters({
@@ -27,6 +33,7 @@ export function NotificationTableFilters({
   statusFilter,
   sentToFilter,
   onClearFilters,
+  roles,
 }: NotificationTableFiltersProps) {
   const handleTitleInputChange = (value: string) => {
     onTitleFilter(value);
@@ -74,10 +81,11 @@ export function NotificationTableFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="Administrator">Administrator</SelectItem>
-            <SelectItem value="Data Uploader">Data Uploader</SelectItem>
-            <SelectItem value="Scientist">Scientist</SelectItem>
-            <SelectItem value="Guest">Guest</SelectItem>
+            {roles.map((role) => (
+              <SelectItem key={role.id} value={role.name}>
+                {role.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
