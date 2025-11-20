@@ -1,17 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import * as React from "react";
 
-import { Label } from "@/components/atoms";
-import { Button } from "@/components/atoms/Button/Button";
-import { Checkbox } from "@/components/atoms/Checkbox/Checkbox";
 import {
+  Button,
+  Checkbox,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/atoms/Select/Select";
+} from "@/components";
 import type { RoleRow } from "@/components/organisms/DataTable/tableData";
 import { roleApi } from "@/lib/api";
 import type { ApiModule, ApiPermission } from "@/types/auth";
@@ -49,7 +49,11 @@ export function PermissionsTab({
   const [permissionGroups, setPermissionGroups] = React.useState<
     PermissionGroup[]
   >([]);
+  const [originalPermissionGroups, setOriginalPermissionGroups] =
+    React.useState<PermissionGroup[]>([]);
+  const [isSaving, setIsSaving] = React.useState(false);
 
+  const queryClient = useQueryClient();
   const selectedRoleId = selectedRole || "1";
 
   const {
@@ -63,12 +67,36 @@ export function PermissionsTab({
     retry: 2,
   });
 
+  const updatePermissionsMutation = useMutation({
+    mutationFn: (data: { roleId: string; permission_ids: number[] }) =>
+      roleApi.updatePermissions(data.roleId, {
+        permission_ids: data.permission_ids,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["permissions", selectedRoleId],
+      });
+      onSave(permissionGroups);
+    },
+    onError: (error) => {
+      console.error("Failed to update permissions:", error);
+      // You can add toast notification here if available
+    },
+    onSettled: () => {
+      setIsSaving(false);
+    },
+  });
+
   React.useEffect(() => {
     if (permissionsResponse?.data?.modules) {
       const transformedGroups: PermissionGroup[] = transformPermissionsData(
         permissionsResponse.data.modules
       );
       setPermissionGroups(transformedGroups);
+      // Store original state for reverting changes
+      setOriginalPermissionGroups(
+        JSON.parse(JSON.stringify(transformedGroups))
+      );
     }
   }, [permissionsResponse]);
 
@@ -153,8 +181,31 @@ export function PermissionsTab({
     );
   };
 
-  const handleSave = () => {
-    onSave(permissionGroups);
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    // Collect all selected permission IDs
+    const selectedPermissionIds: number[] = [];
+
+    permissionGroups.forEach((group) => {
+      group.permissions.forEach((permission) => {
+        if (permission.checked) {
+          selectedPermissionIds.push(parseInt(permission.id));
+        }
+      });
+    });
+
+    // Call the API with the selected role ID and permission IDs
+    updatePermissionsMutation.mutate({
+      roleId: selectedRoleId,
+      permission_ids: selectedPermissionIds,
+    });
+  };
+
+  const handleCancel = () => {
+    // Revert all changes to original state
+    setPermissionGroups(JSON.parse(JSON.stringify(originalPermissionGroups)));
+    onCancel();
   };
 
   const selectedRoleName =
@@ -297,11 +348,11 @@ export function PermissionsTab({
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-border">
-        <Button variant="outline" size={"lg"} onClick={onCancel}>
+        <Button variant="outline" size="lg" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button size={"lg"} onClick={handleSave}>
-          Save Permissions
+        <Button size="lg" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save Permissions"}
         </Button>
       </div>
     </div>

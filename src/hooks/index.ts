@@ -1,3 +1,4 @@
+export * from "./useAssignUserRole";
 export * from "./useAuthState";
 export * from "./useDebounce";
 export * from "./useFetch";

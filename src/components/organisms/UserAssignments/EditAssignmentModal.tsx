@@ -1,18 +1,20 @@
-import * as React from "react";
+import type { ReactElement } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { Button } from "@/components/atoms/Button/Button";
-import { Dialog } from "@/components/atoms/Dialog/Dialog";
-import { Input } from "@/components/atoms/Input/Input";
-import { Label } from "@/components/atoms/Label/Label";
 import {
+  Button,
+  Dialog,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/atoms/Select/Select";
+} from "@/components";
 import type { PermissionAssignment } from "@/components/organisms/DataTable/tableData";
-import { handleApiError, roleApi } from "@/lib/api";
+import { useAssignUserRole } from "@/hooks";
+import { handleApiError } from "@/lib/api";
 import type { Role, UserAssignment } from "@/types/auth";
 
 interface EditAssignmentModalProps {
@@ -20,7 +22,7 @@ interface EditAssignmentModalProps {
   onOpenChange: (open: boolean) => void;
   assignment?: PermissionAssignment | null;
   userAssignment?: UserAssignment | null;
-  roles?: Role[]; // Add roles from API
+  roles?: Role[];
   onSave: (updatedAssignment: PermissionAssignment) => void;
 }
 
@@ -31,26 +33,29 @@ export function EditAssignmentModal({
   userAssignment,
   roles,
   onSave,
-}: EditAssignmentModalProps) {
-  const [selectedRole, setSelectedRole] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+}: EditAssignmentModalProps): ReactElement | null {
+  const [selectedRole, setSelectedRole] = useState("");
 
-  const allApiPermissions = React.useMemo(() => {
-    if (!userAssignment?.roles) return [];
+  const assignUserRoleMutation = useAssignUserRole();
 
-    const primaryRole =
+  const primaryRole = useMemo(() => {
+    if (!userAssignment?.roles) return null;
+    return (
       userAssignment.roles.find((role) => role.is_primary) ||
-      userAssignment.roles[0];
+      userAssignment.roles[0]
+    );
+  }, [userAssignment]);
+
+  const allApiPermissions = useMemo(() => {
     return primaryRole
       ? primaryRole.assigned_permissions.map((p) => ({
           id: p.id.toString(),
           name: p.name,
         }))
       : [];
-  }, [userAssignment]);
+  }, [primaryRole]);
 
-  const roleNameToIdMap = React.useMemo(() => {
+  const roleNameToIdMap = useMemo(() => {
     if (!roles || roles.length === 0) return {};
 
     return roles.reduce(
@@ -62,66 +67,58 @@ export function EditAssignmentModal({
     );
   }, [roles]);
 
-  const availableRoles = React.useMemo(() => {
+  const availableRoles = useMemo(() => {
     return roles ? roles.map((role) => role.name) : [];
   }, [roles]);
 
-  React.useEffect(() => {
-    if (assignment && userAssignment) {
-      const primaryRole =
-        userAssignment.roles.find((role) => role.is_primary) ||
-        userAssignment.roles[0];
-      setSelectedRole(primaryRole ? primaryRole.name : "");
-      setError(null);
+  useEffect(() => {
+    if (assignment && primaryRole) {
+      setSelectedRole(primaryRole.name);
     }
-  }, [assignment, userAssignment]);
+  }, [assignment, primaryRole]);
 
   const handleSave = async () => {
     if (!assignment || !userAssignment || !selectedRole) return;
 
-    setIsLoading(true);
-    setError(null);
+    const roleId =
+      roleNameToIdMap[selectedRole as keyof typeof roleNameToIdMap];
 
-    try {
-      const roleId =
-        roleNameToIdMap[selectedRole as keyof typeof roleNameToIdMap];
+    if (!roleId) {
+      throw new Error("Invalid role selected");
+    }
 
-      if (!roleId) {
-        throw new Error("Invalid role selected");
-      }
-
-      await roleApi.assignUserRole({
+    assignUserRoleMutation.mutate(
+      {
         role_id: roleId,
         user_id: userAssignment.user.id,
-      });
-
-      onSave({
-        ...assignment,
-        role: selectedRole,
-        permissions: [],
-      });
-
-      onOpenChange(false);
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to update user role");
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+      },
+      {
+        onSuccess: () => {
+          onSave({
+            ...assignment,
+            role: selectedRole,
+            permissions: [],
+          });
+          onOpenChange(false);
+        },
+      }
+    );
   };
 
   const handleCancel = () => {
-    if (assignment && userAssignment) {
-      const primaryRole =
-        userAssignment.roles.find((role) => role.is_primary) ||
-        userAssignment.roles[0];
-      setSelectedRole(primaryRole ? primaryRole.name : "");
-      setError(null);
+    if (assignment && primaryRole) {
+      setSelectedRole(primaryRole.name);
     }
+    assignUserRoleMutation.reset();
     onOpenChange(false);
   };
 
   if (!assignment || !userAssignment) return null;
+
+  const isLoading = assignUserRoleMutation.isPending;
+  const error = assignUserRoleMutation.error
+    ? handleApiError(assignUserRoleMutation.error, "Failed to update user role")
+    : null;
 
   return (
     <Dialog

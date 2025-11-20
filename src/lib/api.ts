@@ -329,4 +329,16 @@ export const roleApi = {
       endpoint
     );
   },
+
+  updatePermissions: async (
+    roleId: string,
+    payload: {
+      permission_ids: number[];
+    }
+  ): Promise<ApiResponse> => {
+    return apiClient.post<ApiResponse>(
+      `${API_CONFIG.ENDPOINTS.RBAC.ROLES}/${roleId}/permissions`,
+      payload
+    );
+  },
 };
