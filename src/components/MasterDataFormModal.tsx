@@ -1,15 +1,7 @@
+import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/atoms/Button/Button";
-import { Input } from "@/components/atoms/Input/Input";
-import { Label } from "@/components/atoms/Label/Label";
-import { Textarea } from "@/components/atoms/Textarea/Textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/molecules/Dialog/Dialog";
+import { Button, Dialog, Input, Label, Textarea } from "@/components";
 import {
   type MasterDataConfig,
   type MasterDataItem,
@@ -31,7 +23,7 @@ export function MasterDataFormModal({
   config,
   initialData,
   mode,
-}: MasterDataFormModalProps) {
+}: MasterDataFormModalProps): ReactElement {
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,9 +84,9 @@ export function MasterDataFormModal({
   };
 
   const handleInputChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev: Record<string, unknown>) => ({ ...prev, [key]: value }));
     if (errors[key]) {
-      setErrors((prev) => ({ ...prev, [key]: "" }));
+      setErrors((prev: Record<string, string>) => ({ ...prev, [key]: "" }));
     }
   };
 
@@ -137,91 +129,83 @@ export function MasterDataFormModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "add"
-              ? `Add New ${config.label}`
-              : `Edit ${config.label}`}
-          </DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {errors.general && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-              <p className="text-sm text-destructive">{errors.general}</p>
-            </div>
-          )}
-
-          {config.fields
-            .filter((field) => {
-              if (mode === "edit") {
-                const idFields = [
-                  "isotopeId",
-                  "organId",
-                  "cellLineId",
-                  "doseId",
-                  "vehicleId",
-                ];
-                return !idFields.includes(field.key);
-              }
-              return true;
-            })
-            .map((field) => (
-              <div key={field.key} className="space-y-2">
-                <Label htmlFor={field.key}>{field.label}</Label>
-
-                {field.type === "textarea" ? (
-                  <Textarea
-                    id={field.key}
-                    value={String(formData[field.key] ?? "")}
-                    onChange={(e) =>
-                      handleInputChange(field.key, e.target.value)
-                    }
-                    placeholder={field.placeholder}
-                    rows={3}
-                    className={errors[field.key] ? "border-destructive" : ""}
-                  />
-                ) : (
-                  <Input
-                    id={field.key}
-                    size="lg"
-                    type={field.type === "number" ? "number" : "text"}
-                    value={String(formData[field.key] ?? "")}
-                    onChange={(e) =>
-                      handleInputChange(field.key, e.target.value)
-                    }
-                    placeholder={field.placeholder}
-                    className={errors[field.key] ? "border-destructive" : ""}
-                    min={field.type === "number" ? 0 : undefined}
-                    step={field.type === "number" ? "any" : undefined}
-                  />
-                )}
-
-                {errors[field.key] && (
-                  <p className="text-sm text-destructive">
-                    {errors[field.key]}
-                  </p>
-                )}
-              </div>
-            ))}
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              size={"lg"}
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button size={"lg"} disabled={loading}>
-              {loading ? "Saving..." : mode === "add" ? "Add" : "Save"}
-            </Button>
+    <Dialog
+      open={isOpen}
+      onOpenChange={handleClose}
+      trigger={null}
+      title={
+        mode === "add" ? `Add New ${config.label}` : `Edit ${config.label}`
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {errors.general && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+            <p className="text-sm text-destructive">{errors.general}</p>
           </div>
-        </form>
-      </DialogContent>
+        )}
+
+        {config.fields
+          .filter((field) => {
+            if (mode === "edit") {
+              const idFields = [
+                "isotopeId",
+                "organId",
+                "cellLineId",
+                "doseId",
+                "vehicleId",
+              ];
+              return !idFields.includes(field.key);
+            }
+            return true;
+          })
+          .map((field) => (
+            <div key={field.key} className="space-y-2">
+              <Label htmlFor={field.key}>{field.label}</Label>
+
+              {field.type === "textarea" ? (
+                <Textarea
+                  id={field.key}
+                  value={String(formData[field.key] ?? "")}
+                  onChange={(e) => handleInputChange(field.key, e.target.value)}
+                  placeholder={field.placeholder}
+                  rows={3}
+                  className={errors[field.key] ? "border-destructive" : ""}
+                />
+              ) : (
+                <Input
+                  id={field.key}
+                  size="lg"
+                  type={field.type === "number" ? "number" : "text"}
+                  value={String(formData[field.key] ?? "")}
+                  onChange={(e) => handleInputChange(field.key, e.target.value)}
+                  placeholder={field.placeholder}
+                  className={errors[field.key] ? "border-destructive" : ""}
+                  min={field.type === "number" ? 0 : undefined}
+                  step={field.type === "number" ? "any" : undefined}
+                />
+              )}
+
+              {errors[field.key] && (
+                <p className="text-sm text-destructive">{errors[field.key]}</p>
+              )}
+            </div>
+          ))}
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={handleClose}
+            disabled={loading}
+            type="button"
+          >
+            Cancel
+          </Button>
+          <Button size="lg" disabled={loading} type="submit">
+            {loading ? "Saving..." : mode === "add" ? "Add" : "Save"}
+          </Button>
+        </div>
+      </form>
     </Dialog>
   );
 }
