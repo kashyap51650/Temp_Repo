@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 
@@ -66,9 +66,9 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                   onClick={() => setShowCurrentPassword((v) => !v)}
                 >
                   {showCurrentPassword ? (
-                    <EyeOff className="size-4" />
+                    <EyeIcon className="size-4" />
                   ) : (
-                    <Eye className="size-4" />
+                    <EyeOffIcon className="size-4" />
                   )}
                 </Button>
               </div>
@@ -104,9 +104,9 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                 onClick={() => setShowNewPassword((v) => !v)}
               >
                 {showNewPassword ? (
-                  <EyeOff className="size-4" />
+                  <EyeIcon className="size-4" />
                 ) : (
-                  <Eye className="size-4" />
+                  <EyeOffIcon className="size-4" />
                 )}
               </Button>
             </div>
@@ -145,9 +145,9 @@ export const PasswordFields: React.FC<PasswordFieldsProps> = ({
                   onClick={() => setShowConfirmPassword((v) => !v)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="size-4" />
+                    <EyeIcon className="size-4" />
                   ) : (
-                    <Eye className="size-4" />
+                    <EyeOffIcon className="size-4" />
                   )}
                 </Button>
               </div>
