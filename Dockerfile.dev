@@ -9,10 +9,16 @@ WORKDIR /app
 # Change ownership of the working directory
 RUN chown -R appuser:appgroup /app
 
+# Copy application files
+COPY --chown=appuser:appgroup . /app
+
+# Remove write permissions on copied source files (except node_modules and build outputs)
+RUN find /app -type f -not -path "*/node_modules/*" -not -path "*/dist/*" -exec chmod 444 {} \; && \
+    find /app -type d -not -path "*/node_modules/*" -not -path "*/dist/*" -exec chmod 555 {} \;
+
 # Switch to non-root user
 USER appuser
 
-COPY --chown=appuser:appgroup . /app
 RUN npm install
 RUN npm run build
 
