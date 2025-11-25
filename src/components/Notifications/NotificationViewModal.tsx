@@ -44,11 +44,7 @@ export function NotificationViewModal({
           value: (
             <div className="flex flex-wrap gap-2 justify-end">
               {notification.type.map((t) => (
-                <Badge
-                  key={t}
-                  variant={t === "Email" ? "secondary" : "secondary"}
-                  className="text-xs"
-                >
+                <Badge key={t} variant={"secondary"} className="text-xs">
                   {t}
                 </Badge>
               ))}

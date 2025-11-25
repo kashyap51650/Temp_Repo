@@ -345,11 +345,7 @@ export function getNotificationColumns(
       cell: ({ row }) => (
         <div className="w-32 flex flex-wrap gap-1">
           {row.original.type.map((type, index) => (
-            <Badge
-              key={index}
-              variant={type === "Email" ? "secondary" : "secondary"}
-              className="text-xs"
-            >
+            <Badge key={index} variant={"secondary"} className="text-xs">
               {type}
             </Badge>
           ))}
