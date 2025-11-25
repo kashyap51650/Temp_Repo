@@ -46,7 +46,7 @@ export function NotificationViewModal({
               {notification.type.map((t) => (
                 <Badge
                   key={t}
-                  variant={t === "Email" ? "default" : "secondary"}
+                  variant={t === "Email" ? "secondary" : "secondary"}
                   className="text-xs"
                 >
                   {t}

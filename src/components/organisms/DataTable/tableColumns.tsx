@@ -347,7 +347,7 @@ export function getNotificationColumns(
           {row.original.type.map((type, index) => (
             <Badge
               key={index}
-              variant={type === "Email" ? "default" : "secondary"}
+              variant={type === "Email" ? "secondary" : "secondary"}
               className="text-xs"
             >
               {type}
