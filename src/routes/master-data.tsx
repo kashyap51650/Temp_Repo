@@ -12,72 +12,103 @@ import {
   SelectValue,
 } from "@/components/atoms/Select/Select";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
-import { MasterDataFormModal } from "@/components/MasterDataFormModal";
+import { DynamicMasterDataFormModal } from "@/components/DynamicMasterDataFormModal";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
-import { getMasterDataColumns } from "@/components/organisms/DataTable/tableColumns";
 import {
-  MASTER_DATA_CONFIGS,
-  MASTER_DATA_OPTIONS,
-  type MasterDataItem,
-  type MasterDataType,
-} from "@/components/organisms/DataTable/tableData";
-import { useMasterData } from "@/hooks/useMasterData";
+  createDynamicMasterDataColumns,
+  type TableDataItem,
+} from "@/components/organisms/DataTable/dynamicColumns";
+import { type MasterDataItem, useMasterData } from "@/hooks/useMasterData";
+import {
+  type MasterDataSource,
+  useMasterDataSources,
+} from "@/hooks/useMasterDataSources";
 
 export const Route = createFileRoute("/master-data")({
   component: MasterDataComponent,
 });
 
+function transformDataForTable(data: MasterDataItem[]): TableDataItem[] {
+  return data.map((item) => ({ ...item, id: item.id.toString() }));
+}
+
 function MasterDataComponent() {
-  const [selectedType, setSelectedType] = useState<MasterDataType | null>(null);
+  const [selectedSource, setSelectedSource] = useState<MasterDataSource | null>(
+    null
+  );
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MasterDataItem | null>(null);
 
-  const { data, loading, error, addItem, updateItem, deleteItem, refreshData } =
-    useMasterData(selectedType);
+  const {
+    data: masterDataSources = [],
+    isLoading: sourcesLoading,
+    error: sourcesError,
+  } = useMasterDataSources();
 
-  const currentConfig = selectedType ? MASTER_DATA_CONFIGS[selectedType] : null;
+  const { data, loading, error, addItem, updateItem, deleteItem } =
+    useMasterData(selectedSource?.slug || null);
 
-  const handleTypeChange = (value: string) => {
-    setSelectedType(value as MasterDataType);
+  const handleSourceChange = (value: string) => {
+    const source = (masterDataSources as MasterDataSource[]).find(
+      (s: MasterDataSource) => s.slug === value
+    );
+    setSelectedSource(source || null);
   };
 
   const handleAddNew = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleEdit = (item: MasterDataItem) => {
-    setSelectedItem(item);
+  const handleEdit = (item: TableDataItem) => {
+    const originalItem: MasterDataItem = {
+      ...item,
+      id: Number(item.id),
+      created_by: item.created_by,
+      updated_by: item.updated_by,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    };
+    setSelectedItem(originalItem);
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (item: MasterDataItem) => {
-    setSelectedItem(item);
+  const handleDelete = (item: TableDataItem) => {
+    // Convert back to MasterDataItem - spread all properties and override id
+    const originalItem: MasterDataItem = {
+      ...item,
+      id: Number(item.id),
+      created_by: item.created_by,
+      updated_by: item.updated_by,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    };
+    setSelectedItem(originalItem);
     setIsDeleteModalOpen(true);
   };
 
-  const handleSaveAdd = async (data: Partial<MasterDataItem>) => {
+  const handleSaveAdd = async (data: Record<string, any>) => {
     try {
       await addItem(data);
       setIsAddModalOpen(false);
       toast.success("Data added successfully.");
-      refreshData();
-    } catch {
+    } catch (error) {
       toast.error("Failed to add data. Please try again.");
+      throw error;
     }
   };
 
-  const handleSaveEdit = async (data: Partial<MasterDataItem>) => {
+  const handleSaveEdit = async (data: Record<string, any>) => {
     if (selectedItem) {
       try {
         await updateItem(selectedItem.id, data);
         setIsEditModalOpen(false);
         setSelectedItem(null);
         toast.success("Data updated successfully.");
-        refreshData();
-      } catch {
+      } catch (error) {
         toast.error("Failed to update data. Please try again.");
+        throw error;
       }
     }
   };
@@ -88,9 +119,9 @@ function MasterDataComponent() {
         await deleteItem(selectedItem.id);
         setIsDeleteModalOpen(false);
         setSelectedItem(null);
-        toast.success("Record deleted (soft delete) successfully.");
-        refreshData();
-      } catch {
+        toast.success("Record deleted successfully.");
+      } catch (error) {
+        console.error(error);
         toast.error("Failed to delete record. Please try again.");
       }
     }
@@ -103,38 +134,80 @@ function MasterDataComponent() {
     setSelectedItem(null);
   };
 
+  if (sourcesLoading) {
+    return (
+      <div className="px-6 py-6 space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">
+          Master Data Management
+        </h1>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">
+            Loading master data sources...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sourcesError) {
+    return (
+      <div className="px-6 py-6 space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">
+          Master Data Management
+        </h1>
+        <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4">
+          <p className="text-sm text-destructive">
+            Failed to load master data sources: {sourcesError.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const tableData = transformDataForTable(data);
+
   return (
     <div className="px-6 py-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground">
         Master Data Management
       </h1>
 
-      <div className="bg-card ">
+      <div className="bg-card">
         <div className="flex flex-col items-center justify-center space-y-3">
           <h2 className="text-lg font-semibold">Select Master Data</h2>
           <div className="w-full max-w-md">
-            <Select value={selectedType || ""} onValueChange={handleTypeChange}>
+            <Select
+              value={selectedSource?.slug || ""}
+              onValueChange={handleSourceChange}
+            >
               <SelectTrigger className="w-full" size="lg">
                 <SelectValue placeholder="Select master data type..." />
               </SelectTrigger>
               <SelectContent>
-                {MASTER_DATA_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                {(masterDataSources as MasterDataSource[]).map(
+                  (source: MasterDataSource) => (
+                    <SelectItem key={source.slug} value={source.slug}>
+                      {source.title}
+                    </SelectItem>
+                  )
+                )}
               </SelectContent>
             </Select>
           </div>
+          {selectedSource && (
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              {selectedSource.description}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Data Management Section */}
-      {selectedType && currentConfig && (
+      {selectedSource && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">
-              {currentConfig.label} Management
+              {selectedSource.title} Management
             </h2>
             <Button onClick={handleAddNew}>
               <Plus className="mr-2 size-4" />
@@ -161,36 +234,37 @@ function MasterDataComponent() {
               </div>
             ) : (
               <DataTable
-                columns={getMasterDataColumns(
-                  selectedType!,
+                columns={createDynamicMasterDataColumns(
+                  tableData,
                   handleEdit,
                   handleDelete
                 )}
-                data={data}
+                data={tableData}
               />
             )}
           </div>
         </div>
       )}
 
-      {currentConfig && (isAddModalOpen || isEditModalOpen) && (
-        <MasterDataFormModal
+      {selectedSource && (isAddModalOpen || isEditModalOpen) && (
+        <DynamicMasterDataFormModal
           isOpen={isAddModalOpen || isEditModalOpen}
           onClose={handleCloseModals}
           onSave={isAddModalOpen ? handleSaveAdd : handleSaveEdit}
-          config={currentConfig}
+          masterDataSource={selectedSource}
           initialData={selectedItem}
           mode={isAddModalOpen ? "add" : "edit"}
+          sampleData={data}
         />
       )}
 
-      {currentConfig && isDeleteModalOpen && (
+      {selectedSource && isDeleteModalOpen && selectedItem && (
         <DeleteConfirmModal
           isOpen={isDeleteModalOpen}
           onClose={handleCloseModals}
           onConfirm={handleConfirmDelete}
-          item={selectedItem}
-          itemLabel={currentConfig.label}
+          item={{ id: selectedItem.id.toString() } as any}
+          itemLabel={selectedSource.title}
         />
       )}
     </div>

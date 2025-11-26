@@ -26,6 +26,13 @@ export const API_CONFIG = {
       USER_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/user-roles`,
       USERS_WITH_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/users-with-roles`,
     },
+    MASTER_DATA: {
+      SOURCES: `/api/${import.meta.env.VITE_API_VERSION}/master-data/`,
+      ITEMS: (slug: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/${slug}/`,
+      ITEM: (slug: string, id: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/${slug}/${id}`,
+    },
     NOTIFICATIONS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
@@ -551,5 +558,187 @@ export const notificationApi = {
     message: string;
   }> => {
     return apiClient.patch(API_CONFIG.ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
+  },
+};
+
+export const masterDataApi = {
+  getMasterDataSources: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: Array<{
+      slug: string;
+      title: string;
+      description: string;
+    }>;
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.MASTER_DATA.SOURCES);
+  },
+
+  getMasterData: async (
+    slug: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      items: Array<{
+        id: number;
+        created_by: number;
+        updated_by: number;
+        created_at: string;
+        updated_at: string;
+        creator: {
+          id: number;
+          first_name: string;
+          last_name: string;
+          email: string;
+        };
+        updator: {
+          id: number;
+          first_name: string;
+          last_name: string;
+          email: string;
+        };
+        createdBy: string;
+        updatedBy: string;
+        [key: string]: any;
+      }>;
+      total: number;
+      page: number;
+      size: number;
+      pages: number;
+    };
+  }> => {
+    const response = (await apiClient.get(
+      API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug)
+    )) as {
+      success: boolean;
+      message: string;
+      data: {
+        items: Array<any>;
+        total: number;
+        page: number;
+        size: number;
+        pages: number;
+      };
+    };
+
+    if (response.success && response.data && response.data.items) {
+      response.data.items = response.data.items.map((item: any) => ({
+        ...item,
+        createdBy: item.creator?.email || "",
+        updatedBy: item.updator?.email || "",
+      }));
+    }
+
+    return response;
+  },
+
+  createMasterDataItem: async (
+    slug: string,
+    data: Record<string, any>
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      id: number;
+      created_by: number;
+      updated_by: number;
+      created_at: string;
+      updated_at: string;
+      creator: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+      updator: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+      createdBy: string;
+      updatedBy: string;
+      [key: string]: any;
+    };
+  }> => {
+    const response = (await apiClient.post(
+      API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug),
+      data
+    )) as {
+      success: boolean;
+      message: string;
+      data: any;
+    };
+
+    if (response.success && response.data) {
+      response.data = {
+        ...response.data,
+        createdBy: response.data.creator?.email || "",
+        updatedBy: response.data.updator?.email || "",
+      };
+    }
+
+    return response;
+  },
+
+  updateMasterDataItem: async (
+    slug: string,
+    id: number,
+    data: Record<string, any>
+  ): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      id: number;
+      created_by: number;
+      updated_by: number;
+      created_at: string;
+      updated_at: string;
+      creator: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+      updator: {
+        id: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+      };
+      createdBy: string;
+      updatedBy: string;
+      [key: string]: any;
+    };
+  }> => {
+    const response = (await apiClient.put(
+      API_CONFIG.ENDPOINTS.MASTER_DATA.ITEM(slug, id),
+      data
+    )) as {
+      success: boolean;
+      message: string;
+      data: any;
+    };
+
+    if (response.success && response.data) {
+      response.data = {
+        ...response.data,
+        createdBy: response.data.creator?.email || "",
+        updatedBy: response.data.updator?.email || "",
+      };
+    }
+
+    return response;
+  },
+
+  deleteMasterDataItem: async (
+    slug: string,
+    id: number
+  ): Promise<{
+    success: boolean;
+    message: string;
+  }> => {
+    return apiClient.delete(API_CONFIG.ENDPOINTS.MASTER_DATA.ITEM(slug, id));
   },
 };

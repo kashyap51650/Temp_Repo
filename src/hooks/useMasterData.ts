@@ -1,178 +1,110 @@
-import { useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  cellLineData,
-  doseValuesData,
-  isotopeData,
-  type MasterDataItem,
-  type MasterDataType,
-  organListData,
-  vehiclesData,
-} from "@/components/organisms/DataTable/tableData";
+import { masterDataApi } from "@/lib/api";
 
-const MOCK_DATA: Record<MasterDataType, MasterDataItem[]> = {
-  isotope: isotopeData,
-  "organ-list": organListData,
-  "cell-line": cellLineData,
-  "dose-values": doseValuesData,
-  vehicles: vehiclesData,
-};
+export interface MasterDataItem {
+  id: number;
+  created_by: number;
+  updated_by: number;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any;
+}
 
 export interface UseMasterDataResult {
   data: MasterDataItem[];
   loading: boolean;
   error: string | null;
-  addItem: (item: Partial<MasterDataItem>) => Promise<void>;
-  updateItem: (id: string, item: Partial<MasterDataItem>) => Promise<void>;
-  deleteItem: (id: string) => Promise<void>;
-  refreshData: () => void;
+  addItem: (item: Record<string, any>) => Promise<void>;
+  updateItem: (id: number, item: Record<string, any>) => Promise<void>;
+  deleteItem: (id: number) => Promise<void>;
+  refetch: () => void;
 }
 
-export function useMasterData(
-  dataType: MasterDataType | null
-): UseMasterDataResult {
-  const [data, setData] = useState<MasterDataItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useMasterData(slug: string | null): UseMasterDataResult {
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async (type: MasterDataType) => {
-    setLoading(true);
-    setError(null);
+  const {
+    data = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["master-data", slug],
+    queryFn: async () => {
+      const response = await masterDataApi.getMasterData(slug!);
+      return response.data.items;
+    },
+    enabled: !!slug,
+    staleTime:
+      Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 5 * 60 * 1000,
+  });
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  const addMutation = useMutation({
+    mutationFn: ({ slug, item }: { slug: string; item: Record<string, any> }) =>
+      masterDataApi.createMasterDataItem(slug, item),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master-data", slug] });
+    },
+  });
 
-      const mockData = MOCK_DATA[type] || [];
-      setData(mockData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const updateMutation = useMutation({
+    mutationFn: ({
+      slug,
+      id,
+      item,
+    }: {
+      slug: string;
+      id: number;
+      item: Record<string, any>;
+    }) => masterDataApi.updateMasterDataItem(slug, id, item),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master-data", slug] });
+    },
+  });
 
-  const addItem = async (item: Partial<MasterDataItem>): Promise<void> => {
-    if (!dataType) return;
+  const deleteMutation = useMutation({
+    mutationFn: ({ slug, id }: { slug: string; id: number }) =>
+      masterDataApi.deleteMasterDataItem(slug, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["master-data", slug] });
+    },
+  });
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const idFields = [
-        "isotopeId",
-        "organId",
-        "cellLineId",
-        "doseId",
-        "vehicleId",
-      ];
-      const relevantIdField = idFields.find((field) => field in item);
-
-      if (relevantIdField && item[relevantIdField as keyof MasterDataItem]) {
-        const duplicate = data.find(
-          (existing) =>
-            existing[relevantIdField as keyof MasterDataItem] ===
-            item[relevantIdField as keyof MasterDataItem]
-        );
-
-        if (duplicate) {
-          throw new Error("Record already exists.");
-        }
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const newItem: MasterDataItem = {
-        ...item,
-        id: Math.random().toString(36).substr(2, 9),
-        createdBy: "admin@oranomed.com",
-        updatedBy: "admin@oranomed.com",
-        createdAt: new Date().toISOString().slice(0, 19).replace("T", " "),
-        updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
-      } as MasterDataItem;
-
-      setData((prev) => [...prev, newItem]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add item");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const addItem = async (item: Record<string, any>): Promise<void> => {
+    if (!slug) throw new Error("No slug provided");
+    await addMutation.mutateAsync({ slug, item });
   };
 
   const updateItem = async (
-    id: string,
-    updatedItem: Partial<MasterDataItem>
+    id: number,
+    item: Record<string, any>
   ): Promise<void> => {
-    if (!dataType) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      setData((prev) =>
-        prev.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                ...updatedItem,
-                updatedBy: "admin@oranomed.com",
-                updatedAt: new Date()
-                  .toISOString()
-                  .slice(0, 19)
-                  .replace("T", " "),
-              }
-            : item
-        )
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update item");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    if (!slug) throw new Error("No slug provided");
+    await updateMutation.mutateAsync({ slug, id, item });
   };
 
-  const deleteItem = async (id: string): Promise<void> => {
-    if (!dataType) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      setData((prev) => prev.filter((item) => item.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete item");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const deleteItem = async (id: number): Promise<void> => {
+    if (!slug) throw new Error("No slug provided");
+    await deleteMutation.mutateAsync({ slug, id });
   };
-
-  const refreshData = useCallback(() => {
-    if (dataType) {
-      fetchData(dataType);
-    }
-  }, [dataType, fetchData]);
-
-  useEffect(() => {
-    if (dataType) {
-      fetchData(dataType);
-    } else {
-      setData([]);
-    }
-  }, [dataType, fetchData]);
 
   return {
     data,
-    loading,
-    error,
+    loading:
+      loading ||
+      addMutation.isPending ||
+      updateMutation.isPending ||
+      deleteMutation.isPending,
+    error:
+      error?.message ||
+      addMutation.error?.message ||
+      updateMutation.error?.message ||
+      deleteMutation.error?.message ||
+      null,
     addItem,
     updateItem,
     deleteItem,
-    refreshData,
+    refetch,
   };
 }
