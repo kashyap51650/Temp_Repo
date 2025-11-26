@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/molecules/DropdownMenu/DropdownMenu";
 import type { MasterDataItem } from "@/hooks/useMasterData";
+import { formatFieldLabel } from "@/lib/utils";
 
 export type TableDataItem = Omit<MasterDataItem, "id"> & { id: string };
 
@@ -37,7 +38,7 @@ export const createDynamicMasterDataColumns = (
 
   const dynamicColumns: ColumnDef<TableDataItem>[] = dynamicKeys.map((key) => ({
     accessorKey: key,
-    header: formatColumnHeader(key),
+    header: formatFieldLabel(key),
     cell: ({ row }) => {
       const value = row.getValue(key);
       return <div className="capitalize">{String(value)}</div>;
@@ -109,10 +110,3 @@ export const createDynamicMasterDataColumns = (
 
   return [...dynamicColumns, ...commonColumns];
 };
-
-function formatColumnHeader(key: string): string {
-  return key
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}

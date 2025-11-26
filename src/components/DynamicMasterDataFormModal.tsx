@@ -8,6 +8,7 @@ import { Label } from "@/components/atoms/Label/Label";
 import { Textarea } from "@/components/atoms/Textarea/Textarea";
 import type { MasterDataItem } from "@/hooks/useMasterData";
 import type { MasterDataSource } from "@/hooks/useMasterDataSources";
+import { formatFieldLabel } from "@/lib/utils";
 
 interface DynamicMasterDataFormModalProps {
   isOpen: boolean;
@@ -351,11 +352,4 @@ export function DynamicMasterDataFormModal({
       </form>
     </Dialog>
   );
-}
-
-function formatFieldLabel(key: string): string {
-  return key
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 }
