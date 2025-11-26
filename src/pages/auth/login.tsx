@@ -9,7 +9,7 @@ import {
   Card,
   CardContent,
   CardDescription,
-  // CardFooter,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/atoms";
@@ -25,7 +25,7 @@ import {
 } from "@/components/organisms/Form/Form";
 import { ResetPasswordModal } from "@/components/user-management/ResetPasswordModal";
 import { useLogin } from "@/lib/auth";
-// import { DEMO_ACCOUNTS } from "@/lib/constants";
+import { DEMO_ACCOUNTS } from "@/lib/constants";
 import type { LoginCredentials } from "@/types/auth";
 
 const loginSchema = z.object({
@@ -81,28 +81,28 @@ export default function LoginPage() {
   };
 
   // Auto-fill demo credentials when clicking on them
-  // const fillDemoCredentials = (
-  //   email: string,
-  //   password: string = "SecurePass123!"
-  // ) => {
-  //   form.setValue("email", email);
-  //   form.setValue("password", password);
-  // };
+  const fillDemoCredentials = (
+    email: string,
+    password: string = "SecurePass123!"
+  ) => {
+    form.setValue("email", email);
+    form.setValue("password", password);
+  };
 
-  // const handleDemoCredentialClick = (email: string, password: string) => {
-  //   fillDemoCredentials(email, password);
-  // };
+  const handleDemoCredentialClick = (email: string, password: string) => {
+    fillDemoCredentials(email, password);
+  };
 
-  // const handleKeyDown = (
-  //   event: React.KeyboardEvent,
-  //   email: string,
-  //   password: string
-  // ) => {
-  //   if (event.key === "Enter" || event.key === " ") {
-  //     event.preventDefault();
-  //     fillDemoCredentials(email, password);
-  //   }
-  // };
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    email: string,
+    password: string
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      fillDemoCredentials(email, password);
+    }
+  };
 
   return (
     <>
@@ -206,29 +206,37 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        {/* <CardFooter className="flex flex-col items-center gap-1 pt-4">
-          <div className="text-sm text-slate-500 text-center">
-            <div className="font-medium mb-2">
-              Demo Accounts (Click to auto-fill):
-            </div>
-            {DEMO_ACCOUNTS.map((account) => (
-              <div
-                key={account.email}
-                className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={() =>
-                  handleDemoCredentialClick(account.email, account.password)
-                }
-                onKeyDown={(e) =>
-                  handleKeyDown(e, account.email, account.password)
-                }
-                role="button"
-                tabIndex={0}
-              >
-                {account.email} ({account.role})
+        {/* Demo accounts section - only visible in localhost */}
+        {
+          // import.meta.env.DEV ||
+          // import.meta.env.VITE_APP_ENV === 'development' ||
+          (window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1") && (
+            <CardFooter className="flex flex-col items-center gap-1 pt-4">
+              <div className="text-sm text-slate-500 text-center">
+                <div className="font-medium mb-2">
+                  Demo Accounts (Click to auto-fill):
+                </div>
+                {DEMO_ACCOUNTS.map((account) => (
+                  <div
+                    key={account.email}
+                    className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                    onClick={() =>
+                      handleDemoCredentialClick(account.email, account.password)
+                    }
+                    onKeyDown={(e) =>
+                      handleKeyDown(e, account.email, account.password)
+                    }
+                    role="button"
+                    tabIndex={0}
+                  >
+                    {account.email} ({account.role})
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </CardFooter> */}
+            </CardFooter>
+          )
+        }
       </Card>
 
       <ResetPasswordModal
