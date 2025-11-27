@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import type { ApiError } from "./api";
+import { REACT_QUERY_CONFIG } from "./constants";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,9 +9,9 @@ export const queryClient = new QueryClient({
       staleTime: 0,
 
       // Time in milliseconds that cache data remains in memory after being unused
-      gcTime: import.meta.env.VITE_REACT_QUERY_CACHE_TIME
-        ? Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME)
-        : 1000 * 60 * 10, // 10 minutes
+      gcTime: REACT_QUERY_CONFIG.CACHE_TIME
+        ? Number(REACT_QUERY_CONFIG.CACHE_TIME)
+        : 1000 * 60 * 10,
 
       retry: (failureCount, error) => {
         const apiError = error as ApiError;
