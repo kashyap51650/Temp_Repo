@@ -1,20 +1,17 @@
 import { QueryClient } from "@tanstack/react-query";
 
 import type { ApiError } from "./api";
+import { REACT_QUERY_CONFIG } from "./constants";
 
-// Query client configuration with values from environment variables
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Time in milliseconds that unused/inactive cache data remains in memory
-      staleTime: import.meta.env.VITE_REACT_QUERY_STALE_TIME
-        ? Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME)
-        : 1000 * 60 * 5, // 5 minutes
+      staleTime: 0,
 
       // Time in milliseconds that cache data remains in memory after being unused
-      gcTime: import.meta.env.VITE_REACT_QUERY_CACHE_TIME
-        ? Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME)
-        : 1000 * 60 * 10, // 10 minutes
+      gcTime: REACT_QUERY_CONFIG.CACHE_TIME
+        ? Number(REACT_QUERY_CONFIG.CACHE_TIME)
+        : 1000 * 60 * 10,
 
       retry: (failureCount, error) => {
         const apiError = error as ApiError;
@@ -41,14 +38,11 @@ export const queryClient = new QueryClient({
             : 30000
         ),
 
-      // Refetch on window focus (useful for keeping data fresh)
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
 
-      // Refetch on reconnect
       refetchOnReconnect: true,
 
-      // Refetch on mount if data is stale
-      refetchOnMount: true,
+      refetchOnMount: "always",
     },
     mutations: {
       retry: (failureCount, error) => {
@@ -68,5 +62,4 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Export for use in components if needed
 export default queryClient;

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms";
-import { DataTable } from "@/components/organisms";
+import { DataTableWithLoading } from "@/components/organisms/DataTable/DataTableWithLoading";
 import {
   getUserColumns,
   type UserRow,
@@ -47,7 +47,13 @@ export default function UserManagementPage() {
     return apiFilters;
   }, [search, role, status, currentPage]);
 
-  const { data: usersData, isLoading, error, refetch } = useUsers(filters);
+  const {
+    data: usersData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useUsers(filters);
   const { data: rolesData, isLoading: rolesLoading } = useRoles();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
@@ -290,13 +296,14 @@ export default function UserManagementPage() {
         rolesLoading={rolesLoading}
       />
 
-      {isLoading ? (
-        <div className="text-center py-8">
-          <p>Loading users...</p>
-        </div>
-      ) : (
-        <DataTable columns={columns} data={transformedData} />
-      )}
+      <DataTableWithLoading
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingText="Loading users..."
+        refreshingText="Refreshing users..."
+        columns={columns}
+        data={transformedData}
+      />
     </div>
   );
 }

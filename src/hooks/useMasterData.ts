@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { masterDataApi } from "@/lib/api";
+import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface MasterDataItem {
   id: number;
@@ -36,8 +37,7 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
       return response.data.items;
     },
     enabled: !!slug,
-    staleTime:
-      Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 5 * 60 * 1000,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
   });
 
   const addMutation = useMutation({

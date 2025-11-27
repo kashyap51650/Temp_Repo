@@ -2,12 +2,16 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { queryClient } from "@/lib/queryClient";
 
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  context: {
+    queryClient,
+  },
 });
 
 declare module "@tanstack/react-router" {

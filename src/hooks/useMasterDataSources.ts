@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { masterDataApi } from "@/lib/api";
+import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface MasterDataSource {
   slug: string;
@@ -15,7 +16,7 @@ export const useMasterDataSources = () => {
       const response = await masterDataApi.getMasterDataSources();
       return response.data;
     },
-    staleTime: Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME),
-    gcTime: Number(import.meta.env.VITE_REACT_QUERY_CACHE_TIME),
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
+    gcTime: REACT_QUERY_CONFIG.CACHE_TIME,
   });
 };
