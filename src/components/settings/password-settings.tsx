@@ -1,8 +1,6 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 
 import {
   Button,
@@ -14,30 +12,35 @@ import {
 } from "@/components/atoms";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
+import { isPasswordFormValid } from "@/lib/password-utils";
 
 export function PasswordSettings() {
-  const passwordSchema = z
-    .object({
-      current: z.string().min(1, "Current password is required"),
-      new: z.string().min(6, "New password must be at least 6 characters"),
-      confirm: z.string().min(1, "Please confirm your new password"),
-    })
-    .refine((data) => data.new === data.confirm, {
-      message: "Passwords do not match",
-      path: ["confirm"],
-    });
-
-  type PasswordFormValues = z.infer<typeof passwordSchema>;
+  type PasswordFormValues = {
+    current: string;
+    new: string;
+    confirm: string;
+  };
 
   const passwordForm = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
     defaultValues: {
       current: "",
       new: "",
       confirm: "",
     },
   });
+
   const [loading, setLoading] = useState(false);
+
+  const newPassword = passwordForm.watch("new");
+  const confirmPassword = passwordForm.watch("confirm");
+  const currentPassword = passwordForm.watch("current");
+
+  const isFormValid = isPasswordFormValid(
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    true
+  );
 
   const handlePasswordSubmit = async (_data: PasswordFormValues) => {
     setLoading(true);
@@ -62,7 +65,11 @@ export function PasswordSettings() {
         <Form {...passwordForm}>
           <form onSubmit={passwordForm.handleSubmit(handlePasswordSubmit)}>
             <PasswordFields showCurrent showConfirm />
-            <Button type="submit" size={"lg"} disabled={loading}>
+            <Button
+              type="submit"
+              size={"lg"}
+              disabled={!isFormValid || loading}
+            >
               {loading ? "Changing..." : "Change Password"}
             </Button>
           </form>

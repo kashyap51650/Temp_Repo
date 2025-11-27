@@ -82,3 +82,27 @@ export const createPasswordSchema = (fieldName: string = "password") => {
       }
     );
 };
+
+export const isPasswordFormValid = (
+  currentPassword: string = "",
+  newPassword: string,
+  confirmPassword: string,
+  requireCurrentPassword: boolean = true
+) => {
+  const hasCurrentPassword = requireCurrentPassword
+    ? currentPassword.trim() !== ""
+    : true;
+  const hasNewPassword = newPassword.trim() !== "";
+  const hasConfirmPassword = confirmPassword.trim() !== "";
+  const isNewPasswordValid = isPasswordValid(newPassword);
+  const passwordsMatch =
+    newPassword === confirmPassword && newPassword.length > 0;
+
+  return (
+    hasCurrentPassword &&
+    hasNewPassword &&
+    hasConfirmPassword &&
+    isNewPasswordValid &&
+    passwordsMatch
+  );
+};
