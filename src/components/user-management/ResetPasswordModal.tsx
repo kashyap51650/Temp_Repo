@@ -1,14 +1,12 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
 import { useChangePassword } from "@/lib/auth";
-import { createPasswordSchema, isPasswordValid } from "@/lib/password-utils";
+import { isPasswordFormValid } from "@/lib/password-utils";
 
 export interface ResetPasswordModalProps {
   open: boolean;
@@ -25,21 +23,13 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
 }) => {
   const changePasswordMutation = useChangePassword();
 
-  const schema = z
-    .object({
-      current: z.string().min(1, "Old password is required"),
-      new: createPasswordSchema("New password"),
-      confirm: z.string().min(1, "Please confirm your new password"),
-    })
-    .refine((data) => data.new === data.confirm, {
-      message: "Passwords do not match",
-      path: ["confirm"],
-    });
-
-  type FormValues = z.infer<typeof schema>;
+  type FormValues = {
+    current: string;
+    new: string;
+    confirm: string;
+  };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
     defaultValues: {
       current: "",
       new: "",
@@ -51,12 +41,12 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   const confirmPassword = form.watch("confirm");
   const currentPassword = form.watch("current");
 
-  const isFormValid =
-    currentPassword &&
-    newPassword &&
-    confirmPassword &&
-    isPasswordValid(newPassword) &&
-    newPassword === confirmPassword;
+  const isFormValid = isPasswordFormValid(
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    true
+  );
 
   const handleCancel = () => {
     form.reset();

@@ -1,7 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
@@ -9,6 +7,7 @@ import { toast } from "@/components/atoms/Sonner/toast";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
 import { API_CONFIG, apiClient } from "@/lib/api";
+import { isPasswordFormValid } from "@/lib/password-utils";
 
 export interface ChangePasswordModalProps {
   open: boolean;
@@ -29,38 +28,39 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onSuccess,
   mode = "change",
 }) => {
-  const changePasswordSchema = z
-    .object({
-      current: z.string().min(1, "Please enter current password"),
-      new: z.string().min(8, "New password must be at least 8 characters"),
-      confirm: z.string().min(1, "Please confirm your new password"),
-    })
-    .refine((data) => data.new === data.confirm, {
-      message: "Passwords do not match",
-      path: ["confirm"],
-    });
-
-  const resetPasswordSchema = z
-    .object({
-      new: z.string().min(8, "New password must be at least 8 characters"),
-      confirm: z.string().min(1, "Please confirm your new password"),
-    })
-    .refine((data) => data.new === data.confirm, {
-      message: "Passwords do not match",
-      path: ["confirm"],
-    });
-
-  const schema = mode === "change" ? changePasswordSchema : resetPasswordSchema;
-  type FormValues = z.infer<typeof schema>;
+  type FormValues = {
+    current?: string;
+    new: string;
+    confirm: string;
+  };
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
     defaultValues: {
       ...(mode === "change" && { current: "" }),
       new: "",
       confirm: "",
     },
   });
+
+  const newPassword = form.watch("new");
+  const confirmPassword = form.watch("confirm");
+
+  // Handle current password based on mode
+  let currentPassword = "";
+  if (mode === "change") {
+    try {
+      currentPassword = (form.getValues() as any).current || "";
+    } catch {
+      currentPassword = "";
+    }
+  }
+
+  const isFormValid = isPasswordFormValid(
+    currentPassword,
+    newPassword,
+    confirmPassword,
+    mode === "change"
+  );
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -131,7 +131,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               size="lg"
               className="default"
               type="submit"
-              disabled={form.formState.isSubmitting}
+              disabled={!isFormValid || form.formState.isSubmitting}
             >
               {form.formState.isSubmitting
                 ? "Updating..."
