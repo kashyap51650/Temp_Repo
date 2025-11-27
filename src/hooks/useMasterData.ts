@@ -37,7 +37,7 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
     },
     enabled: !!slug,
     staleTime:
-      Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 5 * 60 * 1000,
+      Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 1000 * 60 * 1, // 1 minute
   });
 
   const addMutation = useMutation({

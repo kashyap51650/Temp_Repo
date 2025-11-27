@@ -39,6 +39,7 @@ export default function RBACRolesPage() {
   const {
     data: rolesResponse,
     isLoading: rolesLoading,
+    isFetching: rolesFetching,
     error: rolesError,
     refetch: refetchRoles,
   } = useQuery({
@@ -50,6 +51,7 @@ export default function RBACRolesPage() {
   const {
     data: userAssignmentsResponse,
     isLoading: assignmentsLoading,
+    isFetching: assignmentsFetching,
     error: assignmentsError,
     refetch: refetchAssignments,
   } = useQuery({
@@ -201,7 +203,17 @@ export default function RBACRolesPage() {
               <Plus /> Create Role
             </Button>
           </div>
-          <DataTable columns={getRoleColumns(handleEditRole)} data={roles} />
+
+          <div className="relative">
+            {rolesFetching && !rolesLoading && (
+              <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                <div className="bg-white px-4 py-2 rounded-lg shadow-md">
+                  <p className="text-sm text-gray-600">Refreshing roles...</p>
+                </div>
+              </div>
+            )}
+            <DataTable columns={getRoleColumns(handleEditRole)} data={roles} />
+          </div>
 
           {/* {rolesResponse?.data?.pagination && (
             <div className="mt-4 text-sm text-gray-600">
@@ -251,10 +263,21 @@ export default function RBACRolesPage() {
               </div>
             </div>
           ) : (
-            <DataTable
-              columns={getPermissionColumns(handleEditAssignment)}
-              data={assignments}
-            />
+            <div className="relative">
+              {assignmentsFetching && !assignmentsLoading && (
+                <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                  <div className="bg-white px-4 py-2 rounded-lg shadow-md">
+                    <p className="text-sm text-gray-600">
+                      Refreshing assignments...
+                    </p>
+                  </div>
+                </div>
+              )}
+              <DataTable
+                columns={getPermissionColumns(handleEditAssignment)}
+                data={assignments}
+              />
+            </div>
           )}
 
           {/* {userAssignmentsResponse?.data?.pagination && (

@@ -47,7 +47,13 @@ export default function UserManagementPage() {
     return apiFilters;
   }, [search, role, status, currentPage]);
 
-  const { data: usersData, isLoading, error, refetch } = useUsers(filters);
+  const {
+    data: usersData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useUsers(filters);
   const { data: rolesData, isLoading: rolesLoading } = useRoles();
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
@@ -295,7 +301,16 @@ export default function UserManagementPage() {
           <p>Loading users...</p>
         </div>
       ) : (
-        <DataTable columns={columns} data={transformedData} />
+        <div className="relative">
+          {isFetching && !isLoading && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+              <div className="bg-white px-4 py-2 rounded-lg shadow-md">
+                <p className="text-sm text-gray-600">Refreshing...</p>
+              </div>
+            </div>
+          )}
+          <DataTable columns={columns} data={transformedData} />
+        </div>
       )}
     </div>
   );
