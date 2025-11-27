@@ -148,6 +148,14 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const formatTimer = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const isResendAvailable = timer <= 0;
+
   return (
     <>
       <Card className="mx-auto w-full max-w-md border border-gray-200 shadow-none rounded-2xl">
@@ -222,34 +230,34 @@ export default function ForgotPasswordPage() {
                   error={otpErrors.otp?.message}
                 />
               </div>
-              <div className="flex justify-between items-center gap-2 ">
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {timer > 0
-                    ? `Resend OTP in ${Math.floor(timer / 60)}:${(timer % 60)
-                        .toString()
-                        .padStart(2, "0")}`
-                    : "Didn't receive the code?"}
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="text-xs text-primary px-2"
-                    onClick={handleResendOtp}
-                    disabled={timer !== 0}
-                  >
-                    Resend OTP
-                  </Button>
-                </span>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="text-xs text-primary px-0"
-                    onClick={handleChangeEmail}
-                  >
-                    Change Email
-                  </Button>
+              <div className="flex justify-between items-center gap-2">
+                <div className="text-xs text-muted-foreground flex items-center gap-1">
+                  {timer > 0 ? (
+                    <span>Resend OTP in {formatTimer(timer)}</span>
+                  ) : (
+                    <>
+                      <span>Didn&apos;t receive the code?</span>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="text-xs text-primary px-2 h-auto"
+                        onClick={handleResendOtp}
+                        disabled={!isResendAvailable}
+                      >
+                        Resend OTP
+                      </Button>
+                    </>
+                  )}
                 </div>
+
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-xs text-primary px-0"
+                  onClick={handleChangeEmail}
+                >
+                  Change Email
+                </Button>
               </div>
               <Button
                 type="submit"
