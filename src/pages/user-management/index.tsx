@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms";
-import { DataTable } from "@/components/organisms";
+import { DataTableWithLoading } from "@/components/organisms/DataTable/DataTableWithLoading";
 import {
   getUserColumns,
   type UserRow,
@@ -296,22 +296,14 @@ export default function UserManagementPage() {
         rolesLoading={rolesLoading}
       />
 
-      {isLoading ? (
-        <div className="text-center py-8">
-          <p>Loading users...</p>
-        </div>
-      ) : (
-        <div className="relative">
-          {isFetching && !isLoading && (
-            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
-              <div className="bg-white px-4 py-2 rounded-lg shadow-md">
-                <p className="text-sm text-gray-600">Refreshing...</p>
-              </div>
-            </div>
-          )}
-          <DataTable columns={columns} data={transformedData} />
-        </div>
-      )}
+      <DataTableWithLoading
+        isLoading={isLoading}
+        isFetching={isFetching}
+        loadingText="Loading users..."
+        refreshingText="Refreshing users..."
+        columns={columns}
+        data={transformedData}
+      />
     </div>
   );
 }
