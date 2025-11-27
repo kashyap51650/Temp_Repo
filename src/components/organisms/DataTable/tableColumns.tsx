@@ -36,21 +36,23 @@ export function getRoleColumns(
       accessorKey: "name",
       header: () => <span className="w-56 block">Role Name</span>,
       cell: ({ row }) => (
-        <span className="w-56 block">{row.original.name}</span>
+        <span className="w-56 block truncate">{row.original.name}</span>
       ),
     },
     {
       accessorKey: "description",
       header: () => <span className="w-80 block">Description</span>,
       cell: ({ row }) => (
-        <span className="w-80 block">{row.original.description}</span>
+        <span className="w-80 block truncate">{row.original.description}</span>
       ),
     },
     {
       accessorKey: "usersAssigned",
       header: () => <span className="w-40 block">Users Assigned</span>,
       cell: ({ row }) => (
-        <span className="w-40 block">{row.original.usersAssigned}</span>
+        <span className="w-40 block truncate">
+          {row.original.usersAssigned}
+        </span>
       ),
     },
     {
@@ -78,14 +80,14 @@ export function getPermissionColumns(
       accessorKey: "user",
       header: () => <span className="w-52 block">User</span>,
       cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <span className="w-52 block">{row.original.user}</span>
+        <span className="w-52 block truncate">{row.original.user}</span>
       ),
     },
     {
       accessorKey: "role",
       header: () => <span className="w-52 block">Role</span>,
       cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <span className="w-52 block">{row.original.role}</span>
+        <span className="w-52 block truncate">{row.original.role}</span>
       ),
     },
     {
@@ -161,7 +163,9 @@ export function getUserColumns(
       header: ({ column }) => <SortableHeader column={column} title="Role" />,
       enableSorting: true,
       sortingFn: "alphanumeric",
-      cell: ({ row }) => <div className="w-32">{row.original.role}</div>,
+      cell: ({ row }) => (
+        <div className="w-32 truncate">{row.original.role}</div>
+      ),
     },
     {
       id: "lastLogin",
@@ -171,7 +175,9 @@ export function getUserColumns(
       ),
       enableSorting: true,
       sortingFn: "alphanumeric",
-      cell: ({ row }) => <div className="w-32">{row.original.lastLogin}</div>,
+      cell: ({ row }) => (
+        <div className="w-32 truncate">{row.original.lastLogin}</div>
+      ),
     },
     {
       id: "status",
@@ -323,7 +329,7 @@ export function getNotificationColumns(
       accessorKey: "sentBy",
       header: () => <span className="w-36 block">Sent By</span>,
       cell: ({ row }) => (
-        <span className="w-36 block">{row.original.sentBy}</span>
+        <span className="w-36 block truncate">{row.original.sentBy}</span>
       ),
     },
     {
@@ -345,11 +351,7 @@ export function getNotificationColumns(
       cell: ({ row }) => (
         <div className="w-32 flex flex-wrap gap-1">
           {row.original.type.map((type, index) => (
-            <Badge
-              key={index}
-              variant={type === "Email" ? "default" : "secondary"}
-              className="text-xs"
-            >
+            <Badge key={index} variant={"secondary"} className="text-xs">
               {type}
             </Badge>
           ))}
@@ -360,7 +362,7 @@ export function getNotificationColumns(
       accessorKey: "recipients",
       header: () => <span className="w-24 block">Recipients</span>,
       cell: ({ row }) => (
-        <span className="w-24 block">{row.original.recipients}</span>
+        <span className="w-24 block truncate">{row.original.recipients}</span>
       ),
     },
     {
@@ -413,21 +415,23 @@ export function getTemplateColumns(
       accessorKey: "name",
       header: () => <span className="w-48 block">Template Name</span>,
       cell: ({ row }) => (
-        <span className="w-48 block font-medium">{row.original.name}</span>
+        <span className="w-48 block font-medium truncate">
+          {row.original.name}
+        </span>
       ),
     },
     {
       accessorKey: "subject",
       header: () => <span className="w-64 block">Subject</span>,
       cell: ({ row }) => (
-        <span className="w-64 block">{row.original.subject}</span>
+        <span className="w-64 block truncate">{row.original.subject}</span>
       ),
     },
     {
       accessorKey: "createdBy",
       header: () => <span className="w-32 block">Created By</span>,
       cell: ({ row }) => (
-        <span className="w-32 block">{row.original.createdBy}</span>
+        <span className="w-32 block truncate">{row.original.createdBy}</span>
       ),
     },
     {
@@ -460,7 +464,7 @@ export function getTemplateColumns(
       accessorKey: "usageCount",
       header: () => <span className="w-24 block">Usage Count</span>,
       cell: ({ row }) => (
-        <span className="w-24 block">{row.original.usageCount}</span>
+        <span className="w-24 block truncate">{row.original.usageCount}</span>
       ),
     },
     {
@@ -500,7 +504,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Project Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-40 block">{row.original.projectName}</span>
+        <span className="w-40 block truncate">{row.original.projectName}</span>
       ),
     },
     {
@@ -509,7 +513,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Experiment Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-48 block">{row.original.experimentName}</span>
+        <span className="w-48 block truncate">
+          {row.original.experimentName}
+        </span>
       ),
     },
     {
@@ -518,7 +524,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Data Type" />
       ),
       cell: ({ row }) => (
-        <span className="w-44 block">{row.original.dataType}</span>
+        <span className="w-44 block truncate">{row.original.dataType}</span>
       ),
     },
     {
@@ -563,7 +569,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Reviewer" />
       ),
       cell: ({ row }) => (
-        <span className="w-44 block">{row.original.reviewer}</span>
+        <span className="w-44 block truncate">{row.original.reviewer}</span>
       ),
     },
     {
@@ -796,7 +802,6 @@ export function getMasterDataColumns(
         }
       );
       break;
-
     case "organ-list":
       baseColumns.push(
         {
