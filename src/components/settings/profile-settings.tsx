@@ -159,6 +159,11 @@ export function ProfileSettings() {
               <Camera className="w-4 h-4" />
               Change Picture
             </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              Supported formats: JPG, JPEG, PNG, GIF
+              <br />
+              Maximum size: 5MB
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
