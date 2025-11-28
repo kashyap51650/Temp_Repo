@@ -9,7 +9,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/molecules/Tabs/Tabs";
-import { DataTable } from "@/components/organisms/DataTable/DataTable";
+import { DataTableWithLoading } from "@/components/organisms/DataTable/DataTableWithLoading";
 import {
   getPermissionColumns,
   getRoleColumns,
@@ -39,6 +39,7 @@ export default function RBACRolesPage() {
   const {
     data: rolesResponse,
     isLoading: rolesLoading,
+    isFetching: rolesFetching,
     error: rolesError,
     refetch: refetchRoles,
   } = useQuery({
@@ -50,6 +51,7 @@ export default function RBACRolesPage() {
   const {
     data: userAssignmentsResponse,
     isLoading: assignmentsLoading,
+    isFetching: assignmentsFetching,
     error: assignmentsError,
     refetch: refetchAssignments,
   } = useQuery({
@@ -201,7 +203,17 @@ export default function RBACRolesPage() {
               <Plus /> Create Role
             </Button>
           </div>
-          <DataTable columns={getRoleColumns(handleEditRole)} data={roles} />
+
+          <div className="relative">
+            <DataTableWithLoading
+              isLoading={rolesLoading}
+              isFetching={rolesFetching}
+              loadingText="Loading roles..."
+              refreshingText="Refreshing roles..."
+              columns={getRoleColumns(handleEditRole)}
+              data={roles}
+            />
+          </div>
 
           {/* {rolesResponse?.data?.pagination && (
             <div className="mt-4 text-sm text-gray-600">
@@ -240,22 +252,17 @@ export default function RBACRolesPage() {
               User Assignments
             </h2>
           </div>
-          {assignmentsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-gray-500">Loading user assignments...</div>
-            </div>
-          ) : assignmentsError ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-red-500">
-                Error loading user assignments. Please try again later.
-              </div>
-            </div>
-          ) : (
-            <DataTable
-              columns={getPermissionColumns(handleEditAssignment)}
-              data={assignments}
-            />
-          )}
+
+          <DataTableWithLoading
+            isLoading={assignmentsLoading}
+            isFetching={assignmentsFetching}
+            loadingText="Loading user assignments..."
+            refreshingText="Refreshing assignments..."
+            columns={getPermissionColumns(handleEditAssignment)}
+            data={assignments}
+            error={assignmentsError}
+            errorText="Error loading user assignments. Please try again later."
+          />
 
           {/* {userAssignmentsResponse?.data?.pagination && (
             <div className="mt-4 text-sm text-gray-600">

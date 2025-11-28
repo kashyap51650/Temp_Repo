@@ -23,7 +23,7 @@ export const DEMO_ACCOUNTS = [
   DEMO_CREDENTIALS.SCIENTIST,
 ] as const;
 
-export const STALE_TIME = {
-  FIVE_MINUTES: 1000 * 60 * 5,
-  TEN_MINUTES: 1000 * 60 * 10,
+export const REACT_QUERY_CONFIG = {
+  STALE_TIME: 1000 * 60 * 5, // 5 minutes in milliseconds
+  CACHE_TIME: 1000 * 60 * 10, // 10 minutes in milliseconds
 } as const;
