@@ -1,3 +1,6 @@
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios from "axios";
+
 import type { UserFilters, UsersResponse } from "../types/auth";
 
 export const API_CONFIG = {
@@ -7,6 +10,7 @@ export const API_CONFIG = {
     AUTH: {
       LOGIN: `/api/${import.meta.env.VITE_API_VERSION}/auth/login`,
       LOGOUT: `/api/${import.meta.env.VITE_API_VERSION}/auth/logout`,
+      PROFILE: `/api/${import.meta.env.VITE_API_VERSION}/auth/profile`,
       FORGOT_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/forgot-password`,
       VERIFY_RESET_CODE: `/api/${import.meta.env.VITE_API_VERSION}/auth/verify-reset-code`,
       RESET_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/reset-password`,
@@ -69,6 +73,7 @@ export interface ApiResponse<T = unknown> {
   success?: boolean;
 }
 
+// Common error handling utility functions
 export function extractValidationErrors(error: ApiError): string {
   if (!error.details || !Array.isArray(error.details)) {
     return error.message;
@@ -98,113 +103,136 @@ export function handleApiError(
       : fallbackMessage;
 }
 
+function createApiError(status: number, data: any): ApiError {
+  const error = new Error(
+    data.message || `HTTP error! status: ${status}`
+  ) as ApiError;
+
+  error.status = status;
+  error.details = data;
+
+  return error;
+}
+
 export class ApiClient {
-  private baseUrl: string;
+  private axiosInstance: AxiosInstance;
 
   constructor(baseUrl: string = API_CONFIG.BASE_URL) {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const defaultHeaders: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-
-    const token = sessionStorage.getItem("access_token");
-    if (token) {
-      defaultHeaders.Authorization = `Bearer ${token}`;
-    }
-
-    const config: RequestInit = {
-      ...options,
+    this.axiosInstance = axios.create({
+      baseURL: baseUrl,
       headers: {
-        ...defaultHeaders,
-        ...options.headers,
+        "Content-Type": "application/json",
       },
-    };
+    });
 
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const error = new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        ) as ApiError;
-
-        error.status = response.status;
-        error.details = errorData;
-
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      if (error instanceof Error && "status" in error) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        const apiError = error as ApiError;
-        apiError.status = 500;
-        throw apiError;
-      }
-
-      const genericError = new Error(
-        "An unexpected error occurred"
-      ) as ApiError;
-      genericError.status = 500;
-      throw genericError;
-    }
+    this.setupInterceptors();
   }
 
-  async get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+  private setupInterceptors(): void {
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        const token = sessionStorage.getItem("access_token");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    this.axiosInstance.interceptors.response.use(
+      (response: AxiosResponse) => {
+        return response;
+      },
+      (error) => {
+        if (error.response) {
+          const apiError = createApiError(
+            error.response.status,
+            error.response.data || {}
+          );
+          return Promise.reject(apiError);
+        } else if (error.request) {
+          const apiError = createApiError(500, {
+            message: "Network error - no response received",
+          });
+          return Promise.reject(apiError);
+        } else {
+          const apiError = createApiError(500, {
+            message: error.message || "An unexpected error occurred",
+          });
+          return Promise.reject(apiError);
+        }
+      }
+    );
+  }
+
+  async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.get<T>(endpoint, config);
+    return response.data;
   }
 
   async post<T>(
     endpoint: string,
     data?: unknown,
-    options?: RequestInit
+    config?: AxiosRequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const response = await this.axiosInstance.post<T>(endpoint, data, config);
+    return response.data;
   }
 
   async put<T>(
     endpoint: string,
     data?: unknown,
-    options?: RequestInit
+    config?: AxiosRequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
-    });
+    const response = await this.axiosInstance.put<T>(endpoint, data, config);
+    return response.data;
   }
 
-  async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+  async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
+    const response = await this.axiosInstance.delete<T>(endpoint, config);
+    return response.data;
   }
 
   async patch<T>(
     endpoint: string,
     data?: unknown,
-    options?: RequestInit
+    config?: AxiosRequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: "PATCH",
-      body: data ? JSON.stringify(data) : undefined,
+    const response = await this.axiosInstance.patch<T>(endpoint, data, config);
+    return response.data;
+  }
+
+  async postFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    const response = await this.axiosInstance.post<T>(endpoint, formData, {
+      ...config,
+      headers: {
+        ...config?.headers,
+        "Content-Type": "multipart/form-data",
+      },
     });
+    return response.data;
+  }
+
+  async putFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    const response = await this.axiosInstance.put<T>(endpoint, formData, {
+      ...config,
+      headers: {
+        ...config?.headers,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
   }
 }
 
@@ -740,5 +768,47 @@ export const masterDataApi = {
     message: string;
   }> => {
     return apiClient.delete(API_CONFIG.ENDPOINTS.MASTER_DATA.ITEM(slug, id));
+  },
+};
+
+export const authApi = {
+  getProfile: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      id: number;
+      email: string;
+      username: string;
+      first_name: string;
+      last_name: string;
+      full_name: string;
+      profile_picture: string;
+      status: string;
+      is_email_verified: boolean;
+      last_login_at: string;
+      must_change_password: boolean;
+      roles: any[];
+    };
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.AUTH.PROFILE);
+  },
+
+  updateProfile: async (profileData: {
+    first_name: string;
+    last_name: string;
+    profile_picture?: File;
+  }): Promise<ApiResponse> => {
+    const formData = new FormData();
+    formData.append("first_name", profileData.first_name);
+    formData.append("last_name", profileData.last_name);
+
+    if (profileData.profile_picture) {
+      formData.append("profile_picture", profileData.profile_picture);
+    }
+
+    return apiClient.putFormData<ApiResponse>(
+      API_CONFIG.ENDPOINTS.AUTH.PROFILE,
+      formData
+    );
   },
 };

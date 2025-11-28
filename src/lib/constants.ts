@@ -27,3 +27,5 @@ export const REACT_QUERY_CONFIG = {
   STALE_TIME: 1000 * 60 * 5, // 5 minutes in milliseconds
   CACHE_TIME: 1000 * 60 * 10, // 10 minutes in milliseconds
 } as const;
+
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
