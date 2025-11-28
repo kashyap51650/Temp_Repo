@@ -20,6 +20,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/organisms";
+import { useProfile } from "@/hooks/useProfile";
 
 import { sidebarData } from "./data";
 
@@ -36,6 +37,22 @@ const iconMap = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { profile } = useProfile();
+
+  const userData = React.useMemo(() => {
+    if (profile) {
+      return {
+        name:
+          profile.full_name ||
+          `${profile.first_name} ${profile.last_name}`.trim() ||
+          "User",
+        email: profile.email || "user@example.com",
+        avatar: profile.profile_picture || "/avatars/shadcn.jpg",
+      };
+    }
+    return sidebarData.user;
+  }, [profile]);
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader className="gap-1">
@@ -51,7 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={sidebarData.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );

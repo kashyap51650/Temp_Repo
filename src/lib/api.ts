@@ -7,6 +7,7 @@ export const API_CONFIG = {
     AUTH: {
       LOGIN: `/api/${import.meta.env.VITE_API_VERSION}/auth/login`,
       LOGOUT: `/api/${import.meta.env.VITE_API_VERSION}/auth/logout`,
+      PROFILE: `/api/${import.meta.env.VITE_API_VERSION}/auth/profile`,
       FORGOT_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/forgot-password`,
       VERIFY_RESET_CODE: `/api/${import.meta.env.VITE_API_VERSION}/auth/verify-reset-code`,
       RESET_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/reset-password`,
@@ -205,6 +206,142 @@ export class ApiClient {
       method: "PATCH",
       body: data ? JSON.stringify(data) : undefined,
     });
+  }
+
+  async postFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    options?: Omit<RequestInit, "body" | "headers">
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    const token = sessionStorage.getItem("access_token");
+    const headers: HeadersInit = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
+      ...options,
+      method: "POST",
+      headers,
+      body: formData,
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        ) as ApiError;
+
+        error.status = response.status;
+        error.details = errorData;
+
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof Error && "status" in error) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        const apiError = error as ApiError;
+        apiError.status = 500;
+        throw apiError;
+      }
+
+      const genericError = new Error(
+        "An unexpected error occurred"
+      ) as ApiError;
+      genericError.status = 500;
+      throw genericError;
+    }
+  }
+
+  async putFormData<T>(
+    endpoint: string,
+    formData: FormData,
+    options?: Omit<RequestInit, "body" | "headers">
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    const token = sessionStorage.getItem("access_token");
+    const headers: HeadersInit = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
+      ...options,
+      method: "PUT",
+      headers,
+      body: formData,
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        let errorData: any = {};
+        const contentType = response.headers.get("content-type");
+
+        try {
+          if (contentType && contentType.includes("application/json")) {
+            errorData = await response.json();
+          } else {
+            const text = await response.text();
+            console.error("Non-JSON error response:", text);
+            errorData = {
+              message: text || `HTTP error! status: ${response.status}`,
+            };
+          }
+        } catch (parseError) {
+          console.error("Error parsing error response:", parseError);
+          errorData = { message: `HTTP error! status: ${response.status}` };
+        }
+
+        const error = new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        ) as ApiError;
+
+        error.status = response.status;
+        error.details = errorData;
+
+        console.error("API Error:", {
+          status: response.status,
+          url,
+          errorData,
+        });
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("FormData upload error:", error);
+
+      if (error instanceof Error && "status" in error) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        const apiError = error as ApiError;
+        apiError.status = 500;
+        throw apiError;
+      }
+
+      const genericError = new Error(
+        "An unexpected error occurred"
+      ) as ApiError;
+      genericError.status = 500;
+      throw genericError;
+    }
   }
 }
 
@@ -740,5 +877,47 @@ export const masterDataApi = {
     message: string;
   }> => {
     return apiClient.delete(API_CONFIG.ENDPOINTS.MASTER_DATA.ITEM(slug, id));
+  },
+};
+
+export const authApi = {
+  getProfile: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      id: number;
+      email: string;
+      username: string;
+      first_name: string;
+      last_name: string;
+      full_name: string;
+      profile_picture: string;
+      status: string;
+      is_email_verified: boolean;
+      last_login_at: string;
+      must_change_password: boolean;
+      roles: any[];
+    };
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.AUTH.PROFILE);
+  },
+
+  updateProfile: async (profileData: {
+    first_name: string;
+    last_name: string;
+    profile_picture?: File;
+  }): Promise<ApiResponse> => {
+    const formData = new FormData();
+    formData.append("first_name", profileData.first_name);
+    formData.append("last_name", profileData.last_name);
+
+    if (profileData.profile_picture) {
+      formData.append("profile_picture", profileData.profile_picture);
+    }
+
+    return apiClient.putFormData<ApiResponse>(
+      API_CONFIG.ENDPOINTS.AUTH.PROFILE,
+      formData
+    );
   },
 };

@@ -4,6 +4,7 @@ export * from "./useDebounce";
 export * from "./useFetch";
 export { useMasterData, type UseMasterDataResult } from "./useMasterData";
 export * from "./useMobile";
+export * from "./useProfile";
 export type { Theme } from "./useTheme";
 export * from "./useTheme";
 export { useTheme } from "./useTheme";
