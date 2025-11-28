@@ -16,6 +16,7 @@ import {
 } from "@/components/atoms";
 import { AvatarFallback, AvatarImage } from "@/components/atoms/Avatar/Avatar";
 import { useProfile } from "@/hooks";
+import { MAX_FILE_SIZE } from "@/lib/constants";
 
 export function ProfileSettings() {
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
@@ -37,7 +38,6 @@ export function ProfileSettings() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.warn(file);
 
     if (file) {
       if (!file.type.startsWith("image/")) {
@@ -45,8 +45,7 @@ export function ProfileSettings() {
         return;
       }
 
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
+      if (file.size > MAX_FILE_SIZE) {
         toast.error("File size must be less than 5MB");
         return;
       }
@@ -85,16 +84,7 @@ export function ProfileSettings() {
       const errorMessage =
         error?.details?.message || error?.message || "Failed to update profile";
 
-      if (error?.status === 500) {
-        console.error("Server error details:", {
-          status: error.status,
-          details: error.details,
-          message: error.message,
-        });
-        toast.error(`Server error (500): ${errorMessage}`);
-      } else {
-        toast.error(errorMessage);
-      }
+      toast.error(errorMessage);
     }
   };
 

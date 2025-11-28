@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { REACT_QUERY_CONFIG } from "@/lib/constants";
+
 import { authApi } from "../lib/api";
 
 export interface UserProfile {
@@ -28,8 +30,7 @@ export function useProfile() {
   } = useQuery({
     queryKey: ["profile"],
     queryFn: authApi.getProfile,
-    staleTime:
-      Number(import.meta.env.VITE_REACT_QUERY_STALE_TIME) || 5 * 60 * 1000,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME || 5 * 60 * 1000,
   });
 
   const updateProfileMutation = useMutation({
