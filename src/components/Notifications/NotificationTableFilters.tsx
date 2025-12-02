@@ -35,10 +35,6 @@ export function NotificationTableFilters({
   onClearFilters,
   roles,
 }: NotificationTableFiltersProps) {
-  const handleTitleInputChange = (value: string) => {
-    onTitleFilter(value);
-  };
-
   return (
     <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
       <div className="flex flex-col gap-2">
@@ -47,7 +43,7 @@ export function NotificationTableFilters({
           id="title-search"
           type="text"
           value={titleFilter}
-          onChange={(e) => handleTitleInputChange(e.target.value)}
+          onChange={(e) => onTitleFilter(e.target.value)}
           placeholder="Search by title..."
           className="w-64"
         />

@@ -124,11 +124,12 @@ export function NotificationHistory() {
   // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchTerm !== titleFilter) {
+      const trimmedSearch = titleFilter.trim();
+      if (searchTerm !== trimmedSearch) {
         setCurrentPage(1);
-        fetchNotifications(1, titleFilter || undefined);
+        fetchNotifications(1, trimmedSearch || undefined);
       }
-      setSearchTerm(titleFilter);
+      setSearchTerm(trimmedSearch);
     }, 500);
 
     return () => clearTimeout(timeoutId);
@@ -161,7 +162,7 @@ export function NotificationHistory() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchNotifications(page, titleFilter || undefined);
+    fetchNotifications(page, titleFilter.trim() || undefined);
   };
 
   const [viewOpen, setViewOpen] = useState(false);
