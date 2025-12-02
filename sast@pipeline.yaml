@@ -1,9 +1,4 @@
-trigger:
-  branches:
-    include:
-    - development
-    - main
-    - stage
+trigger: none
 
 pr:
   branches:
