@@ -172,7 +172,14 @@ export function DynamicMasterDataFormModal({
           placeholder: "Enter drug name",
         },
         {
-          key: "description",
+          key: "om_number",
+          label: "Om Number",
+          type: "text",
+          required: true,
+          placeholder: "Enter Om number",
+        },
+        {
+          key: "drug_description",
           label: "Description",
           type: "textarea",
           required: true,
