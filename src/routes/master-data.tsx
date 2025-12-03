@@ -47,8 +47,9 @@ function MasterDataComponent() {
     error: sourcesError,
   } = useMasterDataSources();
 
-  const { data, loading, error, addItem, updateItem, deleteItem } =
-    useMasterData(selectedSource?.slug || null);
+  const { data, loading, addItem, updateItem, deleteItem } = useMasterData(
+    selectedSource?.slug || null
+  );
 
   const handleSourceChange = (value: string) => {
     const source = (masterDataSources as MasterDataSource[]).find(
@@ -94,7 +95,7 @@ function MasterDataComponent() {
       setIsAddModalOpen(false);
       toast.success("Data added successfully.");
     } catch (error) {
-      toast.error("Failed to add data. Please try again.");
+      toast.error(String(error));
       throw error;
     }
   };
@@ -214,12 +215,6 @@ function MasterDataComponent() {
               Add New
             </Button>
           </div>
-
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-4">
-              <p className="text-sm text-destructive">{error}</p>
-            </div>
-          )}
 
           <div className="bg-card">
             {loading ? (
