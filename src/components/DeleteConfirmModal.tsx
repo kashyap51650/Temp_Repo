@@ -39,27 +39,6 @@ export function DeleteConfirmModal({
     }
   };
 
-  const getItemDisplayName = (item: MasterDataItem | null): string => {
-    if (!item) return "";
-
-    const nameFields = [
-      "isotopeName",
-      "organName",
-      "cellLineName",
-      "doseName",
-      "vehicleName",
-      "name",
-    ];
-
-    for (const field of nameFields) {
-      if (field in item && item[field as keyof MasterDataItem]) {
-        return item[field as keyof MasterDataItem] as string;
-      }
-    }
-
-    return item.id;
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -77,7 +56,6 @@ export function DeleteConfirmModal({
 
           {item && (
             <div className="mt-3 p-3 bg-muted rounded-md">
-              <p className="font-medium">{getItemDisplayName(item)}</p>
               <p className="text-sm text-muted-foreground mt-1">
                 This action cannot be undone. The record will be marked as
                 inactive.
