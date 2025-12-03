@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/molecules/DropdownMenu/DropdownMenu";
+import { SortableHeader } from "@/components/molecules/SortableHeader/SortableHeader";
 import type { MasterDataItem } from "@/hooks/useMasterData";
 import { formatFieldLabel } from "@/lib/utils";
 
@@ -38,7 +39,10 @@ export const createDynamicMasterDataColumns = (
 
   const dynamicColumns: ColumnDef<TableDataItem>[] = dynamicKeys.map((key) => ({
     accessorKey: key,
-    header: formatFieldLabel(key),
+    header: ({ column }) => (
+      <SortableHeader column={column} title={formatFieldLabel(key)} />
+    ),
+    enableSorting: true,
     cell: ({ row }) => {
       const value = row.getValue(key);
       return <div className="capitalize">{String(value)}</div>;
@@ -48,7 +52,10 @@ export const createDynamicMasterDataColumns = (
   const commonColumns: ColumnDef<TableDataItem>[] = [
     {
       accessorKey: "createdBy",
-      header: "CreatedBy",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created By" />
+      ),
+      enableSorting: true,
       cell: ({ row }) => {
         const email = row.getValue("createdBy");
         return <div className="text-sm">{String(email)}</div>;
@@ -56,7 +63,10 @@ export const createDynamicMasterDataColumns = (
     },
     {
       accessorKey: "updatedBy",
-      header: "UpdatedBy",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Updated By" />
+      ),
+      enableSorting: true,
       cell: ({ row }) => {
         const email = row.getValue("updatedBy");
         return <div className="text-sm">{String(email)}</div>;
@@ -64,7 +74,10 @@ export const createDynamicMasterDataColumns = (
     },
     {
       accessorKey: "created_at",
-      header: "Created At",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Created At" />
+      ),
+      enableSorting: true,
       cell: ({ row }) => {
         const date = new Date(row.getValue("created_at"));
         return <div>{date.toLocaleDateString()}</div>;
@@ -72,7 +85,10 @@ export const createDynamicMasterDataColumns = (
     },
     {
       accessorKey: "updated_at",
-      header: "Updated At",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Updated At" />
+      ),
+      enableSorting: true,
       cell: ({ row }) => {
         const date = new Date(row.getValue("updated_at"));
         return <div>{date.toLocaleDateString()}</div>;
@@ -80,7 +96,9 @@ export const createDynamicMasterDataColumns = (
     },
     {
       id: "actions",
+      header: "Actions",
       enableHiding: false,
+      enableSorting: false,
       cell: ({ row }) => {
         const item = row.original;
 
