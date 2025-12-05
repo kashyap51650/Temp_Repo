@@ -4,11 +4,17 @@ import type { Experiment } from "@/data/experiments";
 import {
   cellLineOptions,
   experiments as experimentData,
-  getDataTypeOptions,
   isotopeOptions,
   specialisationOptions,
+  strainOptions,
   studyTypeOptions,
 } from "@/data/experiments";
+import {
+  useDataTypes,
+  useProjects,
+  useSampleFileDownload,
+  useStudyTypes,
+} from "@/hooks";
 
 import { Card } from "../atoms";
 import {
@@ -23,13 +29,8 @@ import { CreateProjectModal } from "./CreateProjectModal";
 import UploadedList from "./UploadedList";
 import UploadPanel from "./UploadPanel";
 
-interface Project {
-  id: string;
-  name: string;
-}
-
 interface DataUploadFormData {
-  project: Project | null;
+  project: { id: string; name: string } | null; // Use the format expected by ProjectSelect
   newProjectName: string;
   specialisation: string;
   studyType: string;
@@ -43,6 +44,53 @@ interface DataUploadFormData {
 }
 
 export default function DataUploadCommon() {
+  const {
+    projects: apiProjects,
+    loading: projectsLoading,
+    searchProjects,
+    createProject: apiCreateProject,
+  } = useProjects();
+
+  const {
+    studyTypes: apiStudyTypes,
+    loading: studyTypesLoading,
+    error: studyTypesError,
+    loadStudyTypes,
+    clearStudyTypes,
+  } = useStudyTypes();
+
+  const {
+    dataTypes: apiDataTypes,
+    loading: dataTypesLoading,
+    error: dataTypesError,
+    loadDataTypes,
+    clearDataTypes,
+  } = useDataTypes();
+
+  const { downloadSampleFile, loading: sampleFileLoading } =
+    useSampleFileDownload();
+
+  const existingProjects = apiProjects.map((project) => ({
+    id: project.id.toString(),
+    name: project.project_name,
+  }));
+
+  const dynamicStudyTypeOptions =
+    apiStudyTypes.length > 0
+      ? apiStudyTypes.map((studyType) => {
+          let normalizedName = studyType.study_type_name;
+          if (normalizedName === "Bio Distribution") {
+            normalizedName = "Biodistribution";
+          }
+
+          return {
+            value: normalizedName,
+            label: studyType.study_type_name, // Keep original label for display
+            code: studyType.study_type_code,
+          };
+        })
+      : studyTypeOptions;
+
   const [formData, setFormData] = useState<DataUploadFormData>({
     project: null,
     newProjectName: "",
@@ -65,16 +113,13 @@ export default function DataUploadCommon() {
     useState(false);
   const [showProjectChangeConfirm, setShowProjectChangeConfirm] =
     useState(false);
-  const [pendingProjectChange, setPendingProjectChange] =
-    useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>([
-    { id: "1", name: "Project Alpha" },
-    { id: "2", name: "Project Beta" },
-  ]);
+  const [pendingProjectChange, setPendingProjectChange] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const [experiments, setExperiments] = useState<Experiment[]>(experimentData);
 
-  const existingProjects: Project[] = projects;
   const existingExperiments: Experiment[] = experiments;
 
   const hasFormData = () => {
@@ -88,7 +133,9 @@ export default function DataUploadCommon() {
     );
   };
 
-  const handleProjectChange = (newProject: Project | null) => {
+  const handleProjectChange = (
+    newProject: { id: string; name: string } | null
+  ) => {
     if (
       formData.project &&
       newProject &&
@@ -115,16 +162,37 @@ export default function DataUploadCommon() {
         newExperimentName: "",
         selectedCellLines: [],
         selectedIsotope: "",
-
+        uploadedFile: null,
         specialisation: prev.specialisation,
         studyType: prev.studyType,
         efficacy: prev.efficacy,
         dataType: prev.dataType,
-        uploadedFile: null,
       }));
+
+      refreshAPIsAfterProjectChange();
     }
     setShowProjectChangeConfirm(false);
     setPendingProjectChange(null);
+  };
+
+  const refreshAPIsAfterProjectChange = () => {
+    if (
+      formData.specialisation &&
+      formData.specialisation.toLowerCase() === "preclinical"
+    ) {
+      loadStudyTypes();
+    }
+
+    if (formData.studyType && formData.specialisation && pendingProjectChange) {
+      const event = new CustomEvent("projectChanged", {
+        detail: {
+          newProjectId: parseInt(pendingProjectChange.id),
+          specialization: formData.specialisation,
+          studyType: formData.studyType,
+        },
+      });
+      window.dispatchEvent(event);
+    }
   };
 
   const cancelProjectChange = () => {
@@ -132,22 +200,30 @@ export default function DataUploadCommon() {
     setPendingProjectChange(null);
   };
 
-  const handleCreateProject = async (projectName: string) => {
-    const newId = (projects.length + 1).toString();
-    const newProject: Project = {
-      id: newId,
-      name: projectName,
-    };
+  const handleCreateProject = async (
+    projectName: string,
+    description: string
+  ) => {
+    try {
+      const newProject = await apiCreateProject(projectName, description);
+      if (newProject) {
+        const convertedProject = {
+          id: newProject.id.toString(),
+          name: newProject.project_name,
+        };
 
-    setProjects((prev) => [...prev, newProject]);
+        setFormData((prev) => ({
+          ...prev,
+          project: convertedProject,
+          newProjectName: "",
+        }));
 
-    setFormData((prev) => ({
-      ...prev,
-      project: newProject,
-      newProjectName: "",
-    }));
-
-    setErrors((prev) => ({ ...prev, project: "" }));
+        setErrors((prev) => ({ ...prev, project: "" }));
+      }
+    } catch (error) {
+      console.error("Failed to create project:", error);
+      setErrors((prev) => ({ ...prev, project: "Failed to create project" }));
+    }
   };
 
   const handleCreateExperiment = async (experimentData: {
@@ -185,7 +261,6 @@ export default function DataUploadCommon() {
       setErrors((p) => ({ ...p, project: "Project required" }));
       return;
     }
-    console.log("submit", formData);
   };
 
   return (
@@ -211,14 +286,28 @@ export default function DataUploadCommon() {
               specialisationOptions={specialisationOptions}
               cellLineOptions={cellLineOptions}
               isotopeOptions={isotopeOptions}
-              studyTypeOptions={studyTypeOptions}
-              getDataTypeOptions={getDataTypeOptions}
+              strainOptions={strainOptions}
+              studyTypeOptions={dynamicStudyTypeOptions}
               handleSubmit={handleSubmit}
               onShowCreateProjectModal={() => setShowCreateProjectModal(true)}
               onShowCreateExperimentModal={() =>
                 setShowCreateExperimentModal(true)
               }
               onProjectChange={handleProjectChange}
+              projectsLoading={projectsLoading}
+              searchProjects={searchProjects}
+              studyTypesLoading={studyTypesLoading}
+              studyTypesError={studyTypesError}
+              loadStudyTypes={loadStudyTypes}
+              clearStudyTypes={clearStudyTypes}
+              apiStudyTypes={apiStudyTypes}
+              apiDataTypes={apiDataTypes}
+              dataTypesLoading={dataTypesLoading}
+              dataTypesError={dataTypesError}
+              loadDataTypes={loadDataTypes}
+              clearDataTypes={clearDataTypes}
+              downloadSampleFile={downloadSampleFile}
+              sampleFileLoading={sampleFileLoading}
             />
           </TabsContent>
 
@@ -241,9 +330,18 @@ export default function DataUploadCommon() {
         isotopeOptions={isotopeOptions}
         cellLineOptions={cellLineOptions}
         studyType={formData.studyType}
+        projectId={formData.project ? parseInt(formData.project.id) : undefined}
+        specialization={formData.specialisation}
+        studyTypeId={
+          apiStudyTypes.find(
+            (st) =>
+              st.study_type_name === formData.studyType ||
+              (st.study_type_name === "Bio Distribution" &&
+                formData.studyType === "Biodistribution")
+          )?.id
+        }
       />
 
-      {/* the title and other things are given in this modal so that we can reuse this warning popup */}
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}
         onConfirm={confirmProjectChange}

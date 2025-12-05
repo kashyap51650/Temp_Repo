@@ -1,5 +1,6 @@
 import { UploadCloud } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button, Input } from "@/components/atoms";
 import { Label } from "@/components/atoms/Label/Label";
@@ -25,6 +26,9 @@ export function FileUploadArea({
 }: FileUploadAreaProps) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounter = useRef(0);
 
   useEffect(() => {
     if (isUploading) {
@@ -43,6 +47,83 @@ export function FileUploadArea({
     }
   }, [isUploading]);
 
+  const validateXlsxFile = (file: File): boolean => {
+    const isValidExtension = file.name.toLowerCase().endsWith(".xlsx");
+    const isValidMimeType =
+      file.type ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    if (!isValidExtension && !isValidMimeType) {
+      toast.error("Invalid file type. Please upload an Excel file (.xlsx).");
+      return false;
+    }
+
+    const maxSizeInBytes = 10 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      toast.error(
+        "File size too large. Please upload a file smaller than 10MB."
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleFileSelection = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+
+    if (!validateXlsxFile(file)) {
+      return;
+    }
+
+    setFormData((prev: any) => ({
+      ...prev,
+      uploadedFile: file,
+    }));
+    setIsUploading(true);
+    toast.success(`File "${file.name}" selected successfully!`);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+
+    if (isUploadDisabled) {
+      toast.error("Please complete the required selections before uploading.");
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    handleFileSelection(files);
+  };
+
   const isUploadDisabled =
     !isProjectSelected ||
     (isHotlabSelected && !isSpecialisationSelected) ||
@@ -54,32 +135,34 @@ export function FileUploadArea({
       <Label
         className={`${isPreclinicSelected && !isDataTypeSelected ? "text-muted-foreground" : ""}`}
       >
-        {formData.dataType ? `Upload ${formData.dataType}` : "Upload File"}
+        {formData.dataType
+          ? `Upload ${formData.dataType} (.xlsx)`
+          : "Upload Excel File (.xlsx)"}
       </Label>
       <div
-        className={`border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 ${
+        className={`border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors ${
           isUploadDisabled
             ? "opacity-50 cursor-not-allowed border-gray-300"
-            : "border-primary/20 hover:border-primary/40"
+            : isDragging
+              ? "border-primary bg-primary/5"
+              : "border-primary/20 hover:border-primary/40"
         }`}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
         <div className="flex flex-col items-center justify-center w-full h-full p-10">
           <UploadCloud size={50} className="text-dark mb-3" />
           <Input
+            ref={fileInputRef}
             type="file"
             id="file-upload"
-            multiple
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             disabled={isUploadDisabled}
             className="hidden"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              const files = e.target.files ? Array.from(e.target.files) : [];
-              if (files.length > 0) {
-                setFormData((prev: any) => ({
-                  ...prev,
-                  uploadedFiles: [...(prev.uploadedFiles || []), ...files],
-                }));
-                setIsUploading(true);
-              }
+              handleFileSelection(e.target.files);
             }}
           />
           <Button
@@ -91,17 +174,17 @@ export function FileUploadArea({
             }
             onClick={() => {
               if (!isUploadDisabled) {
-                document.getElementById("file-upload")?.click();
+                fileInputRef.current?.click();
               }
             }}
           >
-            {formData.uploadedFiles && formData.uploadedFiles.length > 0
+            {formData.uploadedFile
               ? isUploading
-                ? `Uploading ${formData.uploadedFiles.length} file(s)...`
-                : `${formData.uploadedFiles.length} file(s) selected`
+                ? `Processing ${formData.uploadedFile.name}...`
+                : `Selected: ${formData.uploadedFile.name}`
               : formData.dataType
-                ? `Upload file`
-                : "Upload File"}
+                ? `Upload ${formData.dataType} file (.xlsx)`
+                : "Upload Excel File (.xlsx)"}
           </Button>
 
           {isUploading && (
@@ -113,12 +196,14 @@ export function FileUploadArea({
                 />
               </div>
               <div className="text-xs text-muted-foreground mt-1 text-center">
-                Uploading... {uploadProgress}%
+                Processing... {uploadProgress}%
               </div>
             </div>
           )}
           <span className="text-sm text-muted-foreground mt-3">
-            Click or drag file to this area to upload
+            {isDragging
+              ? "Drop your Excel file here"
+              : "Click or drag & drop your Excel file (.xlsx) here"}
           </span>
         </div>
       </div>

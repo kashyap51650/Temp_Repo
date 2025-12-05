@@ -12,6 +12,7 @@ interface ProjectSectionProps {
   existingProjects: any[];
   onShowCreateProjectModal?: () => void;
   onProjectChange?: (project: any) => void;
+  projectsLoading?: boolean;
 }
 
 export function ProjectSection({
@@ -22,6 +23,7 @@ export function ProjectSection({
   existingProjects,
   onShowCreateProjectModal,
   onProjectChange,
+  projectsLoading = false,
 }: ProjectSectionProps) {
   return (
     <div className="space-y-2">
@@ -44,6 +46,7 @@ export function ProjectSection({
                 }
               }}
               onCreateNew={() => onShowCreateProjectModal?.()}
+              disabled={projectsLoading}
             />
           ) : (
             <Input
@@ -57,6 +60,11 @@ export function ProjectSection({
                 }))
               }
             />
+          )}
+          {projectsLoading && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Loading projects...
+            </p>
           )}
         </div>
       </div>

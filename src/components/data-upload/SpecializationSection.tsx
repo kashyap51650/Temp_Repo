@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { Label } from "@/components/atoms/Label/Label";
 
 import { CustomSelect } from "./CustomSelect";
@@ -8,9 +10,14 @@ interface SpecializationSectionProps {
   errors: any;
   specialisationOptions: any[];
   studyTypeOptions: any[];
+  strainOptions: any[];
   isProjectSelected: boolean;
   isPreclinicSelected: boolean;
   isSpecialisationSelected: boolean;
+  studyTypesLoading?: boolean;
+  studyTypesError?: string | null;
+  loadStudyTypes?: () => void;
+  clearStudyTypes?: () => void;
 }
 
 export function SpecializationSection({
@@ -22,7 +29,28 @@ export function SpecializationSection({
   isProjectSelected,
   isPreclinicSelected,
   isSpecialisationSelected,
+  studyTypesLoading = false,
+  studyTypesError,
+  loadStudyTypes,
+  clearStudyTypes,
 }: SpecializationSectionProps) {
+  useEffect(() => {
+    if (isSpecialisationSelected && loadStudyTypes) {
+      loadStudyTypes();
+    } else if (!isSpecialisationSelected && clearStudyTypes) {
+      clearStudyTypes();
+    }
+  }, [isSpecialisationSelected, loadStudyTypes, clearStudyTypes]);
+
+  const handleSpecialisationChange = (value: string | string[]) => {
+    const selectedValue = typeof value === "string" ? value : value[0];
+    setFormData((prev: any) => ({
+      ...prev,
+      specialisation: selectedValue,
+      studyType: "",
+    }));
+  };
+
   return (
     <>
       {/* Specialisation */}
@@ -37,13 +65,7 @@ export function SpecializationSection({
           options={specialisationOptions}
           placeholder="Select specialisation"
           value={formData.specialisation}
-          onValueChange={(value: string | string[]) => {
-            const selectedValue = typeof value === "string" ? value : value[0];
-            setFormData((prev: any) => ({
-              ...prev,
-              specialisation: selectedValue,
-            }));
-          }}
+          onValueChange={handleSpecialisationChange}
           disabled={!isProjectSelected}
           className={
             !isProjectSelected
@@ -61,7 +83,7 @@ export function SpecializationSection({
         )}
       </div>
 
-      {/* Study Type - Only show when preclinic is selected */}
+      {/* Study Type - Only show when preclinical is selected */}
       {isPreclinicSelected && (
         <div className="space-y-2">
           <Label
@@ -82,9 +104,9 @@ export function SpecializationSection({
                 studyType: selectedValue,
               }));
             }}
-            disabled={!isSpecialisationSelected}
+            disabled={!isSpecialisationSelected || studyTypesLoading}
             className={
-              !isSpecialisationSelected
+              !isSpecialisationSelected || studyTypesLoading
                 ? "opacity-50 cursor-not-allowed w-full"
                 : "w-full"
             }
@@ -92,6 +114,11 @@ export function SpecializationSection({
           {!isSpecialisationSelected && (
             <span className="text-xs text-muted-foreground">
               Please select specialisation to continue
+            </span>
+          )}
+          {studyTypesError && (
+            <span className="text-xs text-red-500">
+              Error loading study types: {studyTypesError}
             </span>
           )}
           {errors.studyType && (

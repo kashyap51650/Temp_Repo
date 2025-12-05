@@ -48,6 +48,36 @@ export const API_CONFIG = {
       TEMPLATES: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates`,
       TEMPLATES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates/dropdown`,
     },
+    PROJECTS: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
+      SEARCH: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/projects/`,
+    },
+    STUDY_TYPES: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/study-types/dropdown`,
+    },
+    ISOTOPES: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/isotopes/dropdown`,
+    },
+    CELL_LINES: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/dropdown`,
+    },
+    MOUSE_STRAINS: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/mouse-strains/dropdown`,
+    },
+    EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/experiments/`,
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiments/dropdown`,
+    },
+    DATA_TYPES: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
+    },
+    SAMPLE_FILES: {
+      DOWNLOAD: `/api/${import.meta.env.VITE_API_VERSION}/sample-file-download`,
+    },
+    EXPERIMENT_DATA: {
+      IMPORT: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-experiment-data`,
+    },
   },
 } as const;
 
@@ -810,5 +840,316 @@ export const authApi = {
       API_CONFIG.ENDPOINTS.AUTH.PROFILE,
       formData
     );
+  },
+};
+
+export interface Project {
+  id: number;
+  project_name: string;
+}
+
+export interface ProjectsResponse {
+  success: boolean;
+  message: string;
+  data: Project[];
+}
+
+export interface StudyType {
+  id: number;
+  study_type_name: string;
+  study_type_code: string;
+}
+
+export interface StudyTypesResponse {
+  success: boolean;
+  message: string;
+  data: StudyType[];
+}
+
+export interface Isotope {
+  id: number;
+  isotope_name: string;
+}
+
+export interface IsotopesResponse {
+  success: boolean;
+  message: string;
+  data: Isotope[];
+}
+
+export interface CellLine {
+  id: number;
+  cell_line_name: string;
+  vendor_name: string;
+}
+
+export interface CellLinesResponse {
+  success: boolean;
+  message: string;
+  data: CellLine[];
+}
+
+export interface MouseStrain {
+  id: number;
+  mouse_strain_name: string;
+}
+
+export interface MouseStrainsResponse {
+  success: boolean;
+  message: string;
+  data: MouseStrain[];
+}
+
+export interface CreateExperimentPayload {
+  cell_line_ids: number[];
+  experiment_name: string;
+  isotope_id: number;
+  mouse_strain_ids: number[];
+  project_id: number;
+  specialization: string;
+  study_type_id: number;
+}
+
+export interface CreateExperimentResponse {
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    experiment_name: string;
+    project_id: number;
+    specialization: string;
+    study_type_id: number;
+    isotope_id: number;
+    cell_line_ids: number[];
+    mouse_strain_ids: number[];
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface ExperimentDropdownItem {
+  id: number;
+  experiment_name: string;
+}
+
+export interface ExperimentsDropdownResponse {
+  success: boolean;
+  message: string;
+  data: ExperimentDropdownItem[];
+}
+
+export interface ExperimentFilters {
+  project_id: number;
+  study_type_id: number;
+  specialization: string;
+}
+
+export const projectApi = {
+  getProjects: async (): Promise<ProjectsResponse> => {
+    return apiClient.get<ProjectsResponse>(API_CONFIG.ENDPOINTS.PROJECTS.LIST);
+  },
+
+  searchProjects: async (searchTerm: string): Promise<ProjectsResponse> => {
+    const params = new URLSearchParams();
+    if (searchTerm) {
+      params.append("search", searchTerm);
+    }
+
+    const endpoint = searchTerm
+      ? `${API_CONFIG.ENDPOINTS.PROJECTS.SEARCH}?${params.toString()}`
+      : API_CONFIG.ENDPOINTS.PROJECTS.LIST;
+
+    return apiClient.get<ProjectsResponse>(endpoint);
+  },
+
+  createProject: async (projectData: {
+    project_name: string;
+    description: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    data: Project;
+  }> => {
+    return apiClient.post<{
+      success: boolean;
+      message: string;
+      data: Project;
+    }>(API_CONFIG.ENDPOINTS.PROJECTS.CREATE, projectData);
+  },
+};
+
+export const studyTypeApi = {
+  getStudyTypes: async (): Promise<StudyTypesResponse> => {
+    return apiClient.get<StudyTypesResponse>(
+      API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST
+    );
+  },
+};
+
+export const isotopeApi = {
+  getIsotopes: async (): Promise<IsotopesResponse> => {
+    return apiClient.get<IsotopesResponse>(API_CONFIG.ENDPOINTS.ISOTOPES.LIST);
+  },
+};
+
+export const cellLineApi = {
+  getCellLines: async (): Promise<CellLinesResponse> => {
+    return apiClient.get<CellLinesResponse>(
+      API_CONFIG.ENDPOINTS.CELL_LINES.LIST
+    );
+  },
+};
+
+export const mouseStrainApi = {
+  getMouseStrains: async (): Promise<MouseStrainsResponse> => {
+    return apiClient.get<MouseStrainsResponse>(
+      API_CONFIG.ENDPOINTS.MOUSE_STRAINS.LIST
+    );
+  },
+};
+
+export const experimentApi = {
+  createExperiment: async (
+    payload: CreateExperimentPayload
+  ): Promise<CreateExperimentResponse> => {
+    return apiClient.post<CreateExperimentResponse>(
+      API_CONFIG.ENDPOINTS.EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+
+  getExperimentsDropdown: async (
+    filters: ExperimentFilters
+  ): Promise<ExperimentsDropdownResponse> => {
+    const params = new URLSearchParams({
+      project_id: filters.project_id.toString(),
+      study_type_id: filters.study_type_id.toString(),
+      specialization: filters.specialization,
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.EXPERIMENTS.DROPDOWN}?${params.toString()}`;
+    return apiClient.get<ExperimentsDropdownResponse>(endpoint);
+  },
+};
+
+export interface DataType {
+  id: number;
+  data_type_name: string;
+  study_type_id: number;
+}
+
+export interface DataTypesResponse {
+  success: boolean;
+  message: string;
+  data: DataType[];
+}
+
+export interface DataTypeFilters {
+  study_type_id: number;
+}
+
+export const dataTypeApi = {
+  getDataTypes: async (
+    filters: DataTypeFilters
+  ): Promise<DataTypesResponse> => {
+    const params = new URLSearchParams({
+      study_type_id: filters.study_type_id.toString(),
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.DATA_TYPES.DROPDOWN}?${params.toString()}`;
+    return apiClient.get<DataTypesResponse>(endpoint);
+  },
+};
+
+export interface SampleFileFilters {
+  study_type_id: number;
+  data_type_id: number;
+}
+
+export interface SampleFileResponse {
+  success: boolean;
+  message: string;
+  data: {
+    download_url: string;
+    expires_in: number;
+    file_name: string;
+  };
+}
+
+export const sampleFileApi = {
+  getSampleFileDownload: async (
+    filters: SampleFileFilters
+  ): Promise<SampleFileResponse> => {
+    const params = new URLSearchParams({
+      study_type_id: filters.study_type_id.toString(),
+      data_type_id: filters.data_type_id.toString(),
+    });
+
+    const endpoint = `${API_CONFIG.ENDPOINTS.SAMPLE_FILES.DOWNLOAD}?${params.toString()}`;
+    return apiClient.get<SampleFileResponse>(endpoint);
+  },
+};
+
+export interface ImportExperimentDataPayload {
+  experiment_id: number | null;
+  data_type_id: number | null;
+  file: File;
+}
+
+export interface ImportExperimentDataResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export const experimentDataApi = {
+  importExperimentData: async (
+    payload: ImportExperimentDataPayload
+  ): Promise<ImportExperimentDataResponse> => {
+    if (!payload.file) {
+      throw new Error("File is required");
+    }
+
+    if (payload.experiment_id === null || payload.experiment_id === undefined) {
+      throw new Error("Experiment ID is required");
+    }
+
+    if (payload.data_type_id === null || payload.data_type_id === undefined) {
+      throw new Error("Data Type ID is required");
+    }
+
+    const fileName = payload.file.name.toLowerCase();
+    if (!fileName.endsWith(".xlsx")) {
+      throw new Error("Only .xlsx files are allowed");
+    }
+
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
+    if (payload.file.size > maxSizeInBytes) {
+      throw new Error("File size must be less than 10MB");
+    }
+
+    if (payload.file.size === 0) {
+      throw new Error("File cannot be empty");
+    }
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("data_type_id", payload.data_type_id.toString());
+
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData<ImportExperimentDataResponse>(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
+        formData,
+        {
+          timeout: 60000,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment data import error:", error);
+      throw error;
+    }
   },
 };
