@@ -45,7 +45,7 @@ export const createDynamicMasterDataColumns = (
     enableSorting: true,
     cell: ({ row }) => {
       const value = row.getValue(key);
-      return <div className="capitalize">{String(value)}</div>;
+      return <div className="capitalize truncate w-58">{String(value)}</div>;
     },
   }));
 
