@@ -16,3 +16,4 @@ export type { Theme } from "./useTheme";
 export * from "./useTheme";
 export { useTheme } from "./useTheme";
 export * from "./useToggle";
+export * from "./useUploadedExperimentData";

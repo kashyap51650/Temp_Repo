@@ -77,6 +77,7 @@ export const API_CONFIG = {
     },
     EXPERIMENT_DATA: {
       IMPORT: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-experiment-data`,
+      MY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/my-experiment-data`,
     },
   },
 } as const;
@@ -1151,5 +1152,80 @@ export const experimentDataApi = {
       console.error("Experiment data import error:", error);
       throw error;
     }
+  },
+};
+
+// Uploaded Experiment Data Types
+export interface UploadedExperimentDataItem {
+  id: number;
+  project: {
+    id: number;
+    project_name: string;
+  };
+  experiment: {
+    id: number;
+    experiment_name: string;
+  };
+  data_type: {
+    id: number;
+    data_type_name: string;
+    data_type_code: string;
+  };
+  study_type: {
+    id: number;
+    study_type_name: string;
+    study_type_code: string;
+  };
+  upload_date: string;
+  status: "pending" | "approved" | "rejected";
+  reviewer: {
+    id: number;
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+  } | null;
+  rejection_reason: string;
+  uploaded_data: any;
+}
+
+export interface UploadedExperimentDataResponse {
+  items: UploadedExperimentDataItem[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}
+
+export interface UploadedExperimentDataFilters {
+  page?: number;
+  size?: number;
+  status?: string;
+}
+
+// Add to experimentDataApi
+export const uploadedExperimentDataApi = {
+  getMyExperimentData: async (
+    filters?: UploadedExperimentDataFilters
+  ): Promise<UploadedExperimentDataResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.size) params.append("size", filters.size.toString());
+    if (filters?.status && filters.status !== "All Status") {
+      params.append("status", filters.status.toLowerCase());
+    }
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `${API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.MY_EXPERIMENT_DATA}?${queryString}`
+      : API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.MY_EXPERIMENT_DATA;
+
+    return apiClient.get<UploadedExperimentDataResponse>(endpoint);
   },
 };
