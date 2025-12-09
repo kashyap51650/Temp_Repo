@@ -10,7 +10,14 @@ import {
   UserX,
 } from "lucide-react";
 
-import { Badge, Button } from "../../atoms";
+import {
+  Badge,
+  Button,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../atoms";
+import { TruncateWithTooltip } from "../../atoms/TruncateWithTooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,23 +43,27 @@ export function getRoleColumns(
       accessorKey: "name",
       header: () => <span className="w-56 block">Role Name</span>,
       cell: ({ row }) => (
-        <span className="w-56 block truncate">{row.original.name}</span>
+        <TruncateWithTooltip className="w-56 block">
+          {row.original.name}
+        </TruncateWithTooltip>
       ),
     },
     {
       accessorKey: "description",
       header: () => <span className="w-80 block">Description</span>,
       cell: ({ row }) => (
-        <span className="w-80 block truncate">{row.original.description}</span>
+        <TruncateWithTooltip className="w-80 block">
+          {row.original.description}
+        </TruncateWithTooltip>
       ),
     },
     {
       accessorKey: "usersAssigned",
       header: () => <span className="w-40 block">Users Assigned</span>,
       cell: ({ row }) => (
-        <span className="w-40 block truncate">
+        <TruncateWithTooltip className="w-40 block">
           {row.original.usersAssigned}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -80,14 +91,18 @@ export function getPermissionColumns(
       accessorKey: "user",
       header: () => <span className="w-52 block">User</span>,
       cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <span className="w-52 block truncate">{row.original.user}</span>
+        <TruncateWithTooltip className="w-52 block">
+          {row.original.user}
+        </TruncateWithTooltip>
       ),
     },
     {
       accessorKey: "role",
       header: () => <span className="w-52 block">Role</span>,
       cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <span className="w-52 block truncate">{row.original.role}</span>
+        <TruncateWithTooltip className="w-52 block">
+          {row.original.role}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -145,7 +160,11 @@ export function getUserColumns(
       header: ({ column }) => <SortableHeader column={column} title="Name" />,
       enableSorting: true,
       sortingFn: "alphanumeric",
-      cell: ({ row }) => <div className="w-56">{row.original.name}</div>,
+      cell: ({ row }) => (
+        <TruncateWithTooltip className="w-56">
+          {row.original.name}
+        </TruncateWithTooltip>
+      ),
     },
     {
       id: "email",
@@ -154,7 +173,9 @@ export function getUserColumns(
       enableSorting: true,
       sortingFn: "alphanumeric",
       cell: ({ row }) => (
-        <div className="w-56 truncate">{row.original.email}</div>
+        <TruncateWithTooltip className="w-56">
+          {row.original.email}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -164,7 +185,9 @@ export function getUserColumns(
       enableSorting: true,
       sortingFn: "alphanumeric",
       cell: ({ row }) => (
-        <div className="w-32 truncate">{row.original.role}</div>
+        <TruncateWithTooltip className="w-32">
+          {row.original.role}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -176,7 +199,9 @@ export function getUserColumns(
       enableSorting: true,
       sortingFn: "alphanumeric",
       cell: ({ row }) => (
-        <div className="w-32 truncate">{row.original.lastLogin}</div>
+        <TruncateWithTooltip className="w-32">
+          {row.original.lastLogin}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -297,9 +322,9 @@ export function getNotificationColumns(
       enableColumnFilter: true,
       filterFn: "includesString",
       cell: ({ row }) => (
-        <span className="w-64  whitespace-break-spaces  wrap-anywhere">
+        <TruncateWithTooltip className="w-64 whitespace-break-spaces wrap-anywhere">
           {row.original.title}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -329,12 +354,14 @@ export function getNotificationColumns(
       accessorKey: "sentBy",
       header: () => <span className="w-36 block">Sent By</span>,
       cell: ({ row }) => (
-        <span className="w-36 block truncate">{row.original.sentBy}</span>
+        <TruncateWithTooltip className="w-36 block">
+          {row.original.sentBy}
+        </TruncateWithTooltip>
       ),
     },
     {
       accessorKey: "date",
-      header: () => <span className="w-40 block">Date</span>,
+      header: () => <span className="w-40 block">Date & Time</span>,
       cell: ({ row }) => (
         <div className="w-40 flex items-center gap-2">
           <Clock className="size-4 text-muted-foreground" />
@@ -414,11 +441,25 @@ export function getTemplateColumns(
     {
       accessorKey: "name",
       header: () => <span className="w-48 block">Template Name</span>,
-      cell: ({ row }) => (
-        <span className="w-48 block font-medium truncate">
-          {row.original.name}
-        </span>
-      ),
+      cell: ({ row }) =>
+        (() => {
+          const name = row.original.name;
+          const isTruncated = name.length > 24;
+          return (
+            <span className="w-48 block font-medium truncate">
+              {isTruncated ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>{name}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>{name}</TooltipContent>
+                </Tooltip>
+              ) : (
+                name
+              )}
+            </span>
+          );
+        })(),
     },
     {
       accessorKey: "subject",
@@ -458,13 +499,6 @@ export function getTemplateColumns(
         >
           {row.original.isActive ? "Active" : "Inactive"}
         </Badge>
-      ),
-    },
-    {
-      accessorKey: "usageCount",
-      header: () => <span className="w-24 block">Usage Count</span>,
-      cell: ({ row }) => (
-        <span className="w-24 block truncate">{row.original.usageCount}</span>
       ),
     },
     {
