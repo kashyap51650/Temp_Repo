@@ -389,7 +389,7 @@ export function getNotificationColumns(
       accessorKey: "recipients",
       header: () => <span className="w-24 block">Recipients</span>,
       cell: ({ row }) => (
-        <span className="w-24 block truncate">{row.original.recipients}</span>
+        <span className="w-24 block">{row.original.recipients}</span>
       ),
     },
     {
@@ -465,14 +465,18 @@ export function getTemplateColumns(
       accessorKey: "subject",
       header: () => <span className="w-64 block">Subject</span>,
       cell: ({ row }) => (
-        <span className="w-64 block truncate">{row.original.subject}</span>
+        <TruncateWithTooltip className="w-64 block">
+          {row.original.subject}
+        </TruncateWithTooltip>
       ),
     },
     {
       accessorKey: "createdBy",
       header: () => <span className="w-32 block">Created By</span>,
       cell: ({ row }) => (
-        <span className="w-32 block truncate">{row.original.createdBy}</span>
+        <TruncateWithTooltip className="w-32 block">
+          {row.original.createdBy}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -538,7 +542,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Project Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-40 block truncate">{row.original.projectName}</span>
+        <TruncateWithTooltip className="w-40 block">
+          {row.original.projectName}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -547,9 +553,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Experiment Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-48 block truncate">
+        <TruncateWithTooltip className="w-48 block">
           {row.original.experimentName}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -558,7 +564,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Data Type" />
       ),
       cell: ({ row }) => (
-        <span className="w-44 block truncate">{row.original.dataType}</span>
+        <TruncateWithTooltip className="w-44 block">
+          {row.original.dataType}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -603,7 +611,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Reviewer" />
       ),
       cell: ({ row }) => (
-        <span className="w-44 block truncate">{row.original.reviewer}</span>
+        <TruncateWithTooltip className="w-44 block">
+          {row.original.reviewer}
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -612,9 +622,9 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Rejection Reason" />
       ),
       cell: ({ row }) => (
-        <span className="w-64 block text-red-500 truncate">
+        <TruncateWithTooltip className="w-64 block text-red-500 ">
           {row.original.rejectionReason}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
   ];
