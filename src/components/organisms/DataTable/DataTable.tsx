@@ -37,12 +37,10 @@ import {
 type DataTableProps<T extends { id: string }> = {
   columns: ColumnDef<T>[];
   data: T[];
-  hideSelectionCount?: boolean;
 };
 
-// ...existing code...
 export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
-  const { columns, data, hideSelectionCount = false } = props;
+  const { columns, data } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -58,7 +56,7 @@ export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 25,
+    pageSize: 10,
   });
 
   const table = useReactTable({
@@ -99,8 +97,8 @@ export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
       <div
         className={cn(
           "relative flex flex-col gap-4",
-          table.getFilteredRowModel().rows.length > 25
-            ? "overflow-auto max-h-[60vh]"
+          table.getFilteredRowModel().rows.length > 10
+            ? "overflow-auto max-h-screen"
             : "overflow-visible"
         )}
       >
@@ -111,7 +109,7 @@ export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
             onDragEnd={handleDragEnd}
           >
             <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
+              <TableHeader className="bg-muted sticky top-0 z-6">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
@@ -158,14 +156,7 @@ export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
           </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
-          {!hideSelectionCount && (
-            <div className="text-muted-foreground flex-1 text-sm lg:flex">
-              {table.getFilteredSelectedRowModel().rows.length} of{" "}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
-          )}
-
-          {table.getFilteredRowModel().rows.length > 25 ? (
+          {table.getFilteredRowModel().rows.length > 10 ? (
             <div className="flex w-full items-center gap-8 lg:w-fit">
               <div className="flex w-fit items-center justify-center text-sm font-medium">
                 Page {table.getState().pagination.pageIndex + 1} of{" "}
