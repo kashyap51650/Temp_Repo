@@ -2,6 +2,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type { UserFilters, UsersResponse } from "../types/auth";
+import { FILE_SIZE_LIMITS } from "./constants";
 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
@@ -1124,8 +1125,7 @@ export const experimentDataApi = {
       throw new Error("Only .xlsx files are allowed");
     }
 
-    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
-    if (payload.file.size > maxSizeInBytes) {
+    if (payload.file.size > FILE_SIZE_LIMITS.EXCEL_FILE) {
       throw new Error("File size must be less than 10MB");
     }
 

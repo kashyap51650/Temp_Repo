@@ -89,7 +89,7 @@ export function BioDOrganEditModal({
     >
       <div className="flex-1 overflow-auto py-2">
         <div className="min-w-4xl mt-2">
-          <DataTable columns={columns} data={tableRows} hideSelectionCount />
+          <DataTable columns={columns} data={tableRows} />
         </div>
       </div>
       <div className="flex justify-end gap-3 border-t pt-4">

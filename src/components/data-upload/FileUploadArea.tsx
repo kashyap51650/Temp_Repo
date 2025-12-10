@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { Button, Input } from "@/components/atoms";
 import { Label } from "@/components/atoms/Label/Label";
+import { FILE_SIZE_LIMITS } from "@/lib/constants";
 
 interface FileUploadAreaProps {
   formData: any;
@@ -58,8 +59,7 @@ export function FileUploadArea({
       return false;
     }
 
-    const maxSizeInBytes = 10 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
+    if (file.size > FILE_SIZE_LIMITS.EXCEL_FILE) {
       toast.error(
         "File size too large. Please upload a file smaller than 10MB."
       );

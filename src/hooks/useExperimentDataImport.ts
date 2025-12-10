@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
   experimentDataApi,
+  handleApiError,
   type ImportExperimentDataPayload,
 } from "../lib/api";
-import { handleApiError } from "../lib/api";
+import { FILE_SIZE_LIMITS } from "../lib/constants";
 
 export interface UseExperimentDataImportProps {
   onSuccess?: () => void;
@@ -15,30 +16,33 @@ export interface UseExperimentDataImportReturn {
   uploadFile: (payload: ImportExperimentDataPayload) => Promise<void>;
   isUploading: boolean;
   validateXlsxFile: (file: File) => boolean;
+  error: string | null;
 }
 
 export const useExperimentDataImport = (
   props?: UseExperimentDataImportProps
 ): UseExperimentDataImportReturn => {
-  const [isUploading, setIsUploading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const uploadMutation = useMutation({
+    mutationFn: (payload: ImportExperimentDataPayload) =>
+      experimentDataApi.importExperimentData(payload),
+    retry: 0,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["experiment-data"] });
+      queryClient.invalidateQueries({ queryKey: ["uploaded-experiment-data"] });
+    },
+  });
 
   const validateXlsxFile = (file: File): boolean => {
-    // const allowedExtensions = [".xlsx"];
-    // const allowedMimeTypes = [
-    //   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    //   "application/vnd.ms-excel"
-    // ];
-
     const hasValidExtension = file.name.toLowerCase().endsWith(".xlsx");
-    // const hasValidMimeType = allowedMimeTypes.includes(file.type) || file.type === "";
 
     if (!hasValidExtension) {
       toast.error("Invalid file type. Please upload an Excel file (.xlsx).");
       return false;
     }
 
-    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSizeInBytes) {
+    if (file.size > FILE_SIZE_LIMITS.EXCEL_FILE) {
       toast.error(
         "File size too large. Please upload a file smaller than 10MB."
       );
@@ -70,10 +74,8 @@ export const useExperimentDataImport = (
       return;
     }
 
-    setIsUploading(true);
-
     try {
-      const response = await experimentDataApi.importExperimentData(payload);
+      const response = await uploadMutation.mutateAsync(payload);
 
       if (response.success) {
         toast.success(response.message || "Data uploaded successfully!");
@@ -88,14 +90,13 @@ export const useExperimentDataImport = (
         "Failed to upload data. Please try again."
       );
       toast.error(errorMessage);
-    } finally {
-      setIsUploading(false);
     }
   };
 
   return {
     uploadFile,
-    isUploading,
+    isUploading: uploadMutation.isPending,
     validateXlsxFile,
+    error: uploadMutation.error?.message || null,
   };
 };

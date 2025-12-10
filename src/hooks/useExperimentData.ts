@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { toast } from "@/components/atoms/Sonner/toast";
 
@@ -27,127 +28,128 @@ interface UseExperimentDataResult {
     mouseStrains: string | null;
   };
   loadExperimentData: () => void;
-  clearExperimentData: () => void;
 }
 
 export function useExperimentData(): UseExperimentDataResult {
-  const [isotopes, setIsotopes] = useState<Isotope[]>([]);
-  const [cellLines, setCellLines] = useState<CellLine[]>([]);
-  const [mouseStrains, setMouseStrains] = useState<MouseStrain[]>([]);
-
-  const [loading, setLoading] = useState({
-    isotopes: false,
-    cellLines: false,
-    mouseStrains: false,
-  });
-
-  const [errors, setErrors] = useState({
-    isotopes: null as string | null,
-    cellLines: null as string | null,
-    mouseStrains: null as string | null,
-  });
-
-  const loadIsotopes = async () => {
-    try {
-      setLoading((prev) => ({ ...prev, isotopes: true }));
-      setErrors((prev) => ({ ...prev, isotopes: null }));
-
-      const response = await isotopeApi.getIsotopes();
-
-      if (response.success) {
-        setIsotopes(response.data);
-      } else {
-        const errorMessage = response.message || "Failed to load isotopes";
-        setErrors((prev) => ({ ...prev, isotopes: errorMessage }));
+  const {
+    data: isotopes = [],
+    isLoading: isLoadingIsotopes,
+    error: isotopesError,
+    refetch: refetchIsotopes,
+  } = useQuery({
+    queryKey: ["isotopes"],
+    queryFn: async () => {
+      try {
+        const response = await isotopeApi.getIsotopes();
+        if (response.success) {
+          return response.data;
+        } else {
+          const errorMessage = response.message || "Failed to load isotopes";
+          toast.error("Failed to load isotopes", {
+            description: errorMessage,
+          });
+          throw new Error(errorMessage);
+        }
+      } catch (err) {
+        const errorMessage = handleApiError(err, "Failed to load isotopes");
         toast.error("Failed to load isotopes", {
           description: errorMessage,
         });
+        throw err;
       }
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to load isotopes");
-      setErrors((prev) => ({ ...prev, isotopes: errorMessage }));
-      console.error("Error loading isotopes:", err);
+    },
+    enabled: false,
+  });
 
-      toast.error("Failed to load isotopes", {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading((prev) => ({ ...prev, isotopes: false }));
-    }
-  };
-
-  const loadCellLines = async () => {
-    try {
-      setLoading((prev) => ({ ...prev, cellLines: true }));
-      setErrors((prev) => ({ ...prev, cellLines: null }));
-
-      const response = await cellLineApi.getCellLines();
-
-      if (response.success) {
-        setCellLines(response.data);
-      } else {
-        const errorMessage = response.message || "Failed to load cell lines";
-        setErrors((prev) => ({ ...prev, cellLines: errorMessage }));
+  const {
+    data: cellLines = [],
+    isLoading: isLoadingCellLines,
+    error: cellLinesError,
+    refetch: refetchCellLines,
+  } = useQuery({
+    queryKey: ["cellLines"],
+    queryFn: async () => {
+      try {
+        const response = await cellLineApi.getCellLines();
+        if (response.success) {
+          return response.data;
+        } else {
+          const errorMessage = response.message || "Failed to load cell lines";
+          toast.error("Failed to load cell lines", {
+            description: errorMessage,
+          });
+          throw new Error(errorMessage);
+        }
+      } catch (err) {
+        const errorMessage = handleApiError(err, "Failed to load cell lines");
         toast.error("Failed to load cell lines", {
           description: errorMessage,
         });
+        throw err;
       }
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to load cell lines");
-      setErrors((prev) => ({ ...prev, cellLines: errorMessage }));
-      console.error("Error loading cell lines:", err);
+    },
+    enabled: false,
+  });
 
-      toast.error("Failed to load cell lines", {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading((prev) => ({ ...prev, cellLines: false }));
-    }
-  };
-
-  const loadMouseStrains = async () => {
-    try {
-      setLoading((prev) => ({ ...prev, mouseStrains: true }));
-      setErrors((prev) => ({ ...prev, mouseStrains: null }));
-
-      const response = await mouseStrainApi.getMouseStrains();
-
-      if (response.success) {
-        setMouseStrains(response.data);
-      } else {
-        const errorMessage = response.message || "Failed to load mouse strains";
-        setErrors((prev) => ({ ...prev, mouseStrains: errorMessage }));
+  const {
+    data: mouseStrains = [],
+    isLoading: isLoadingMouseStrains,
+    error: mousestrainsError,
+    refetch: refetchMouseStrains,
+  } = useQuery({
+    queryKey: ["mouseStrains"],
+    queryFn: async () => {
+      try {
+        const response = await mouseStrainApi.getMouseStrains();
+        if (response.success) {
+          return response.data;
+        } else {
+          const errorMessage =
+            response.message || "Failed to load mouse strains";
+          toast.error("Failed to load mouse strains", {
+            description: errorMessage,
+          });
+          throw new Error(errorMessage);
+        }
+      } catch (err) {
+        const errorMessage = handleApiError(
+          err,
+          "Failed to load mouse strains"
+        );
         toast.error("Failed to load mouse strains", {
           description: errorMessage,
         });
+        throw err;
       }
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to load mouse strains");
-      setErrors((prev) => ({ ...prev, mouseStrains: errorMessage }));
-      console.error("Error loading mouse strains:", err);
+    },
+    enabled: false,
+  });
 
-      toast.error("Failed to load mouse strains", {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading((prev) => ({ ...prev, mouseStrains: false }));
-    }
+  const loading = {
+    isotopes: isLoadingIsotopes,
+    cellLines: isLoadingCellLines,
+    mouseStrains: isLoadingMouseStrains,
+  };
+
+  const errors = {
+    isotopes: isotopesError
+      ? handleApiError(isotopesError, "Failed to load isotopes")
+      : null,
+    cellLines: cellLinesError
+      ? handleApiError(cellLinesError, "Failed to load cell lines")
+      : null,
+    mouseStrains: mousestrainsError
+      ? handleApiError(mousestrainsError, "Failed to load mouse strains")
+      : null,
   };
 
   const loadExperimentData = useCallback(async () => {
-    await Promise.all([loadIsotopes(), loadCellLines(), loadMouseStrains()]);
-  }, []);
-
-  const clearExperimentData = useCallback(() => {
-    setIsotopes([]);
-    setCellLines([]);
-    setMouseStrains([]);
-    setErrors({
-      isotopes: null,
-      cellLines: null,
-      mouseStrains: null,
-    });
-  }, []);
+    await Promise.all([
+      refetchIsotopes(),
+      refetchCellLines(),
+      refetchMouseStrains(),
+    ]);
+  }, [refetchIsotopes, refetchCellLines, refetchMouseStrains]);
 
   return {
     isotopes,
@@ -156,6 +158,5 @@ export function useExperimentData(): UseExperimentDataResult {
     loading,
     errors,
     loadExperimentData,
-    clearExperimentData,
   };
 }
