@@ -32,7 +32,7 @@ export default function UserManagementPage() {
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 25;
+  const pageSize = 10;
 
   const filters = useMemo(() => {
     const apiFilters: UserFilters = {
