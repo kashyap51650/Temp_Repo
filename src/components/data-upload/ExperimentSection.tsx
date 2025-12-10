@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import { Label } from "@/components/atoms/Label/Label";
 import { ExperimentSelect } from "@/components/atoms/Selects";
 import { useExperimentsDropdown } from "@/hooks";
@@ -51,6 +53,14 @@ export function ExperimentSection({
     clearExperiments,
   } = useExperimentsDropdown();
 
+  const dispatch = useAppDispatch();
+
+  const { lastCreatedExperiment, experimentEventCounter } = useAppSelector(
+    (state) => state.experiment
+  );
+
+  const processedExperimentCounter = useRef<number>(0);
+
   useEffect(() => {
     if (isStudyTypeSelected && projectId && specialization && studyTypeId) {
       loadExperiments({
@@ -79,82 +89,44 @@ export function ExperimentSection({
   }, [studyTypeId, isStudyTypeSelected, loadDataTypes, clearDataTypes]);
 
   useEffect(() => {
-    const handleExperimentCreated = (event: CustomEvent) => {
-      const { experimentId, experimentName } = event.detail;
+    if (
+      lastCreatedExperiment &&
+      experimentEventCounter > 0 &&
+      processedExperimentCounter.current !== experimentEventCounter
+    ) {
+      processedExperimentCounter.current = experimentEventCounter;
+
+      const { experimentId, experimentName } = lastCreatedExperiment;
 
       if (projectId && specialization && studyTypeId) {
         loadExperiments({
           project_id: projectId,
           study_type_id: studyTypeId,
           specialization: specialization.toUpperCase(),
-        }).then(() => {
-          const experimentToSelect = {
-            id: experimentId.toString(),
-            name: experimentName,
-            cellLines: [],
-            isotope: "",
-            projectId: projectId?.toString() || "",
-            studyType: formData.studyType || "",
-          };
-
-          setFormData((prev: any) => ({
-            ...prev,
-            experiment: experimentToSelect,
-          }));
         });
       }
-    };
 
-    const handleProjectChanged = (event: CustomEvent) => {
-      const {
-        newProjectId,
-        specialization: newSpecialization,
-        studyType,
-      } = event.detail;
+      const formattedExperiment = {
+        id: experimentId,
+        experiment_name: experimentName,
+      };
 
-      clearExperiments();
       setFormData((prev: any) => ({
         ...prev,
-        experiment: null,
-        dataType: "",
+        experiment: formattedExperiment,
       }));
 
-      if (newProjectId && newSpecialization && studyType && studyTypeId) {
-        loadExperiments({
-          project_id: newProjectId,
-          study_type_id: studyTypeId,
-          specialization: newSpecialization.toUpperCase(),
-        });
-      }
-    };
-
-    window.addEventListener(
-      "experimentCreated",
-      handleExperimentCreated as EventListener
-    );
-    window.addEventListener(
-      "projectChanged",
-      handleProjectChanged as EventListener
-    );
-
-    return () => {
-      window.removeEventListener(
-        "experimentCreated",
-        handleExperimentCreated as EventListener
-      );
-      window.removeEventListener(
-        "projectChanged",
-        handleProjectChanged as EventListener
-      );
-    };
+      dispatch(clearExperimentEvents());
+    }
   }, [
+    experimentEventCounter,
+    lastCreatedExperiment,
     projectId,
     specialization,
     studyTypeId,
     loadExperiments,
-    clearExperiments,
     setFormData,
-    formData.studyType,
+    dispatch,
   ]);
 
   const experimentsToShow =
@@ -167,11 +139,26 @@ export function ExperimentSection({
           projectId: projectId?.toString() || "",
           studyType: formData.studyType || "",
         }))
-      : existingExperiments.filter(
-          (e: any) =>
-            e.projectId === formData.project?.id &&
-            e.studyType === formData.studyType
-        );
+      : existingExperiments
+          .filter(
+            (e: any) =>
+              e.projectId === formData.project?.id &&
+              e.studyType === formData.studyType
+          )
+          .map((exp: any) => ({
+            id: exp.id ? exp.id.toString() : "",
+            name: exp.experiment_name || exp.name,
+            cellLines: [],
+            isotope: "",
+            projectId: projectId?.toString() || "",
+            studyType: formData.studyType || "",
+          }));
+
+  const selectedExperimentId = formData.experiment
+    ? formData.experiment.id
+      ? formData.experiment.id.toString()
+      : ""
+    : "";
 
   const dataTypeOptions = apiDataTypes
     ? apiDataTypes.map((dataType: any) => ({
@@ -196,12 +183,20 @@ export function ExperimentSection({
 
         <ExperimentSelect
           experiments={experimentsToShow}
-          value={formData.experiment?.id || ""}
+          value={selectedExperimentId}
           onValueChange={(val: string) => {
             const experiment = experimentsToShow.find((e: any) => e.id === val);
+
+            const formattedExperiment = experiment
+              ? {
+                  id: parseInt(experiment.id),
+                  experiment_name: experiment.name,
+                }
+              : null;
+
             setFormData((prev: any) => ({
               ...prev,
-              experiment: experiment || null,
+              experiment: formattedExperiment,
             }));
           }}
           onCreateNew={() => onShowCreateExperimentModal?.()}

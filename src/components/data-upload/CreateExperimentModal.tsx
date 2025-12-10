@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useAppDispatch } from "@/app/store/hooks";
+import { experimentCreated } from "@/app/store/slices/experimentSlice";
 import { toast } from "@/components/atoms/Sonner/toast";
 import {
   cellsInjectedOptions,
@@ -85,6 +87,8 @@ export function CreateExperimentModal({
 
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [isLoading, setIsLoading] = useState(false);
+
+  const dispatch = useAppDispatch();
 
   const updateFormState = (updates: Partial<FormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
@@ -198,13 +202,12 @@ export function CreateExperimentModal({
             cellLines: formState.selectedCellLines,
           });
 
-          const event = new CustomEvent("experimentCreated", {
-            detail: {
+          dispatch(
+            experimentCreated({
               experimentId: response.data.id,
               experimentName: response.data.experiment_name,
-            },
-          });
-          window.dispatchEvent(event);
+            })
+          );
 
           if (onExperimentCreated && response.data) {
             onExperimentCreated({

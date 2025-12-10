@@ -25,6 +25,10 @@ export function ProjectSection({
   onProjectChange,
   projectsLoading = false,
 }: ProjectSectionProps) {
+  const selectedProjectId = formData.project
+    ? formData.project.id?.toString()
+    : "";
+
   return (
     <div className="space-y-2">
       <Label htmlFor="project">Project</Label>
@@ -33,15 +37,22 @@ export function ProjectSection({
           {!isCreatingNewProject ? (
             <ProjectSelect
               projects={existingProjects}
-              value={formData.project?.id || ""}
+              value={selectedProjectId}
               onValueChange={(val: string) => {
                 const project = existingProjects.find((p: any) => p.id === val);
+                const apiProject = project
+                  ? {
+                      id: parseInt(project.id),
+                      project_name: project.name,
+                    }
+                  : null;
+
                 if (onProjectChange) {
-                  onProjectChange(project || null);
+                  onProjectChange(apiProject);
                 } else {
                   setFormData((prev: any) => ({
                     ...prev,
-                    project: project || null,
+                    project: apiProject,
                   }));
                 }
               }}

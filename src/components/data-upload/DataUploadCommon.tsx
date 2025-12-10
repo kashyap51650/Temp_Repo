@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
+import { useAppDispatch } from "@/app/store/hooks";
+import { projectChanged } from "@/app/store/slices/experimentSlice";
 import type { Experiment } from "@/data/experiments";
 import {
   cellLineOptions,
@@ -15,6 +17,7 @@ import {
   useSampleFileDownload,
   useStudyTypes,
 } from "@/hooks";
+import type { ExperimentDropdownItem, Project } from "@/lib/api";
 
 import { Card } from "../atoms";
 import {
@@ -30,24 +33,19 @@ import UploadedList from "./UploadedList";
 import UploadPanel from "./UploadPanel";
 
 interface DataUploadFormData {
-  project: { id: string; name: string } | null; // Use the format expected by ProjectSelect
-  newProjectName: string;
+  project: Project | null;
   specialisation: string;
   studyType: string;
-  efficacy: string;
-  experiment: Experiment | null;
-  newExperimentName: string;
-  selectedCellLines: string[];
-  selectedIsotope: string;
+  experiment: ExperimentDropdownItem | null;
   dataType: string;
   uploadedFile: File | null;
+  newExperimentName?: string;
 }
 
 export default function DataUploadCommon() {
   const {
     projects: apiProjects,
     loading: projectsLoading,
-    searchProjects,
     createProject: apiCreateProject,
   } = useProjects();
 
@@ -70,7 +68,7 @@ export default function DataUploadCommon() {
   const { downloadSampleFile, loading: sampleFileLoading } =
     useSampleFileDownload();
 
-  const existingProjects = apiProjects.map((project) => ({
+  const existingProjectsForSelect = apiProjects.map((project) => ({
     id: project.id.toString(),
     name: project.project_name,
   }));
@@ -93,20 +91,14 @@ export default function DataUploadCommon() {
 
   const [formData, setFormData] = useState<DataUploadFormData>({
     project: null,
-    newProjectName: "",
     specialisation: "",
     studyType: "",
-    efficacy: "",
     experiment: null,
-    newExperimentName: "",
-    selectedCellLines: [],
-    selectedIsotope: "",
     dataType: "",
     uploadedFile: null,
   });
 
-  const [isCreatingNewProject, setIsCreatingNewProject] = useState(false);
-  const [isCreatingNewExperiment, setIsCreatingNewExperiment] = useState(false);
+  const [isCreatingNewProject] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [showCreateExperimentModal, setShowCreateExperimentModal] =
@@ -120,53 +112,64 @@ export default function DataUploadCommon() {
 
   const [experiments, setExperiments] = useState<Experiment[]>(experimentData);
 
-  const existingExperiments: Experiment[] = experiments;
+  const existingExperiments: ExperimentDropdownItem[] = experiments.map(
+    (exp) => ({
+      id: parseInt(exp.id),
+      experiment_name: exp.name,
+    })
+  );
+
+  const dispatch = useAppDispatch();
 
   const hasFormData = () => {
     return !!(
       formData.specialisation ||
       formData.studyType ||
-      formData.efficacy ||
       formData.experiment ||
       formData.dataType ||
       formData.uploadedFile
     );
   };
 
-  const handleProjectChange = (
-    newProject: { id: string; name: string } | null
-  ) => {
+  const handleProjectChange = (project: Project | null) => {
+    const convertedProject = project
+      ? {
+          id: project.id.toString(),
+          name: project.project_name,
+        }
+      : null;
+
     if (
       formData.project &&
-      newProject &&
-      formData.project.id !== newProject.id &&
+      convertedProject &&
+      formData.project.id.toString() !== convertedProject.id &&
       hasFormData()
     ) {
-      setPendingProjectChange(newProject);
+      setPendingProjectChange(convertedProject);
       setShowProjectChangeConfirm(true);
     } else {
       setFormData((prev) => ({
         ...prev,
-        project: newProject,
+        project,
       }));
     }
   };
 
   const confirmProjectChange = () => {
     if (pendingProjectChange) {
+      const actualProject = apiProjects.find(
+        (p) => p.id.toString() === pendingProjectChange.id
+      );
+
       setFormData((prev) => ({
         ...prev,
-        project: pendingProjectChange,
-
+        project: actualProject || null,
         experiment: null,
         newExperimentName: "",
-        selectedCellLines: [],
-        selectedIsotope: "",
-        uploadedFile: null,
         specialisation: prev.specialisation,
         studyType: prev.studyType,
-        efficacy: prev.efficacy,
         dataType: prev.dataType,
+        uploadedFile: null,
       }));
 
       refreshAPIsAfterProjectChange();
@@ -184,14 +187,13 @@ export default function DataUploadCommon() {
     }
 
     if (formData.studyType && formData.specialisation && pendingProjectChange) {
-      const event = new CustomEvent("projectChanged", {
-        detail: {
+      dispatch(
+        projectChanged({
           newProjectId: parseInt(pendingProjectChange.id),
           specialization: formData.specialisation,
           studyType: formData.studyType,
-        },
-      });
-      window.dispatchEvent(event);
+        })
+      );
     }
   };
 
@@ -207,15 +209,9 @@ export default function DataUploadCommon() {
     try {
       const newProject = await apiCreateProject(projectName, description);
       if (newProject) {
-        const convertedProject = {
-          id: newProject.id.toString(),
-          name: newProject.project_name,
-        };
-
         setFormData((prev) => ({
           ...prev,
-          project: convertedProject,
-          newProjectName: "",
+          project: newProject,
         }));
 
         setErrors((prev) => ({ ...prev, project: "" }));
@@ -233,35 +229,54 @@ export default function DataUploadCommon() {
   }) => {
     if (!formData.project) return;
 
-    const newId = (experiments.length + 1).toString();
+    if (formData.project.id && formData.specialisation && formData.studyType) {
+      return;
+    }
+
+    const newId = experiments.length + 1;
     const newExperiment: Experiment = {
-      id: newId,
+      id: newId.toString(),
       name: experimentData.name,
       cellLines: experimentData.cellLines,
       isotope: experimentData.isotope,
-      projectId: formData.project.id,
+      projectId: formData.project.id.toString(),
       studyType: formData.studyType || "Biodistribution",
     };
 
     setExperiments((prev) => [...prev, newExperiment]);
 
+    const formattedExperiment: ExperimentDropdownItem = {
+      id: newId,
+      experiment_name: experimentData.name,
+    };
+
     setFormData((prev) => ({
       ...prev,
-      experiment: newExperiment,
-      newExperimentName: "",
-      selectedCellLines: experimentData.cellLines,
-      selectedIsotope: experimentData.isotope,
+      experiment: formattedExperiment,
     }));
 
+    console.log("Local experiment created:", formattedExperiment);
     setErrors((prev) => ({ ...prev, experiment: "" }));
   };
 
   const handleSubmit = () => {
-    if (!formData.project && !formData.newProjectName) {
+    if (!formData.project) {
       setErrors((p) => ({ ...p, project: "Project required" }));
       return;
     }
   };
+
+  const handleLoadDataTypes = useCallback(() => {
+    const studyTypeId = apiStudyTypes.find(
+      (st) =>
+        st.study_type_name === formData.studyType ||
+        (st.study_type_name === "Bio Distribution" &&
+          formData.studyType === "Biodistribution")
+    )?.id;
+    if (studyTypeId) {
+      loadDataTypes(studyTypeId);
+    }
+  }, [apiStudyTypes, formData.studyType, loadDataTypes]);
 
   return (
     <>
@@ -277,16 +292,10 @@ export default function DataUploadCommon() {
               formData={formData}
               setFormData={setFormData}
               isCreatingNewProject={isCreatingNewProject}
-              setIsCreatingNewProject={setIsCreatingNewProject}
-              isCreatingNewExperiment={isCreatingNewExperiment}
-              setIsCreatingNewExperiment={setIsCreatingNewExperiment}
               errors={errors}
-              existingProjects={existingProjects}
+              existingProjects={existingProjectsForSelect}
               existingExperiments={existingExperiments}
               specialisationOptions={specialisationOptions}
-              cellLineOptions={cellLineOptions}
-              isotopeOptions={isotopeOptions}
-              strainOptions={strainOptions}
               studyTypeOptions={dynamicStudyTypeOptions}
               handleSubmit={handleSubmit}
               onShowCreateProjectModal={() => setShowCreateProjectModal(true)}
@@ -295,16 +304,16 @@ export default function DataUploadCommon() {
               }
               onProjectChange={handleProjectChange}
               projectsLoading={projectsLoading}
-              searchProjects={searchProjects}
               studyTypesLoading={studyTypesLoading}
               studyTypesError={studyTypesError}
               loadStudyTypes={loadStudyTypes}
               clearStudyTypes={clearStudyTypes}
+              strainOptions={strainOptions}
               apiStudyTypes={apiStudyTypes}
               apiDataTypes={apiDataTypes}
               dataTypesLoading={dataTypesLoading}
               dataTypesError={dataTypesError}
-              loadDataTypes={loadDataTypes}
+              loadDataTypes={handleLoadDataTypes}
               clearDataTypes={clearDataTypes}
               downloadSampleFile={downloadSampleFile}
               sampleFileLoading={sampleFileLoading}
@@ -330,7 +339,7 @@ export default function DataUploadCommon() {
         isotopeOptions={isotopeOptions}
         cellLineOptions={cellLineOptions}
         studyType={formData.studyType}
-        projectId={formData.project ? parseInt(formData.project.id) : undefined}
+        projectId={formData.project?.id}
         specialization={formData.specialisation}
         studyTypeId={
           apiStudyTypes.find(

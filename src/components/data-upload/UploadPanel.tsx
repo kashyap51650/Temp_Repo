@@ -46,7 +46,7 @@ interface UploadPanelProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   isCreatingNewProject: boolean;
   errors: ValidationErrors;
-  existingProjects: Project[];
+  existingProjects: Array<{ id: string; name: string }>; // Change to match ProjectSelect format
   existingExperiments: ExperimentDropdownItem[];
   specialisationOptions: SelectOption[];
   studyTypeOptions: SelectOption[];
