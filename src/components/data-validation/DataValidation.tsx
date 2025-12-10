@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Card } from "../atoms";
@@ -18,6 +19,7 @@ import {
 import { DataViewModal } from "./DataViewModal";
 
 export default function DataValidation() {
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
   const [dataTypeFilter, setDataTypeFilter] =
     useState<string>("All Data Types");
@@ -53,7 +55,10 @@ export default function DataValidation() {
     setShowDataViewModal(true);
   };
 
-  const columns = getValidationColumns(handleViewData);
+  const handleRandomize = () => {
+    navigate({ to: "/randomization-results" });
+  };
+  const columns = getValidationColumns(handleViewData, handleRandomize);
 
   return (
     <>

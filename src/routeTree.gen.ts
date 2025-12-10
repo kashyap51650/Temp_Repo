@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from "@tanstack/react-router";
+
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as UserManagementRouteImport } from "./routes/user-management";
 import { Route as TemplatesRouteImport } from "./routes/templates";
@@ -23,6 +25,18 @@ import { Route as IndexRouteImport } from "./routes/index";
 import { Route as AuthLoginRouteImport } from "./routes/auth/login";
 import { Route as AuthForgotPasswordRouteImport } from "./routes/auth/forgot-password";
 
+const RandomizationResultsLazyRouteImport = createFileRoute(
+  "/randomization-results",
+)();
+
+const RandomizationResultsLazyRoute =
+  RandomizationResultsLazyRouteImport.update({
+    id: "/randomization-results",
+    path: "/randomization-results",
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import("./routes/randomization-results.lazy").then((d) => d.Route),
+  );
 const UserManagementRoute = UserManagementRouteImport.update({
   id: "/user-management",
   path: "/user-management",
@@ -101,6 +115,7 @@ export interface FileRoutesByFullPath {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/randomization-results": typeof RandomizationResultsLazyRoute;
   "/auth/forgot-password": typeof AuthForgotPasswordRoute;
   "/auth/login": typeof AuthLoginRoute;
 }
@@ -116,6 +131,7 @@ export interface FileRoutesByTo {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/randomization-results": typeof RandomizationResultsLazyRoute;
   "/auth/forgot-password": typeof AuthForgotPasswordRoute;
   "/auth/login": typeof AuthLoginRoute;
 }
@@ -132,6 +148,7 @@ export interface FileRoutesById {
   "/settings": typeof SettingsRoute;
   "/templates": typeof TemplatesRoute;
   "/user-management": typeof UserManagementRoute;
+  "/randomization-results": typeof RandomizationResultsLazyRoute;
   "/auth/forgot-password": typeof AuthForgotPasswordRoute;
   "/auth/login": typeof AuthLoginRoute;
 }
@@ -149,6 +166,7 @@ export interface FileRouteTypes {
     | "/settings"
     | "/templates"
     | "/user-management"
+    | "/randomization-results"
     | "/auth/forgot-password"
     | "/auth/login";
   fileRoutesByTo: FileRoutesByTo;
@@ -164,6 +182,7 @@ export interface FileRouteTypes {
     | "/settings"
     | "/templates"
     | "/user-management"
+    | "/randomization-results"
     | "/auth/forgot-password"
     | "/auth/login";
   id:
@@ -179,6 +198,7 @@ export interface FileRouteTypes {
     | "/settings"
     | "/templates"
     | "/user-management"
+    | "/randomization-results"
     | "/auth/forgot-password"
     | "/auth/login";
   fileRoutesById: FileRoutesById;
@@ -195,12 +215,20 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute;
   TemplatesRoute: typeof TemplatesRoute;
   UserManagementRoute: typeof UserManagementRoute;
+  RandomizationResultsLazyRoute: typeof RandomizationResultsLazyRoute;
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute;
   AuthLoginRoute: typeof AuthLoginRoute;
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
+    "/randomization-results": {
+      id: "/randomization-results";
+      path: "/randomization-results";
+      fullPath: "/randomization-results";
+      preLoaderRoute: typeof RandomizationResultsLazyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/user-management": {
       id: "/user-management";
       path: "/user-management";
@@ -307,6 +335,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TemplatesRoute: TemplatesRoute,
   UserManagementRoute: UserManagementRoute,
+  RandomizationResultsLazyRoute: RandomizationResultsLazyRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
 };
