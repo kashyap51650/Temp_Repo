@@ -6,9 +6,11 @@ import {
   KeyIcon,
   MoreHorizontal,
   Share2,
+  Shuffle,
   UserCheck,
   UserX,
 } from "lucide-react";
+import * as React from "react";
 
 import {
   Badge,
@@ -25,6 +27,7 @@ import {
   DropdownMenuTrigger,
   SortableHeader,
 } from "../../molecules";
+import { RandomizeDateCell } from "./RandomizeDateCell";
 import type {
   NotificationRow,
   PermissionAssignment,
@@ -630,20 +633,38 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
   ];
 }
 export function getValidationColumns(
-  onViewData?: (row: ValidationRow) => void
+  onViewData?: (row: ValidationRow) => void,
+  onRandomize?: (row: ValidationRow) => void
 ): ColumnDef<ValidationRow>[] {
   return [
     {
       accessorKey: "experimentName",
       header: ({ column }) => (
         <SortableHeader
-          className="w-xs justify-start"
+          className="justify-start w-48"
           column={column}
           title="Experiment Name"
         />
       ),
       cell: ({ row }) => (
-        <span className="block w-xs">{row.original.experimentName}</span>
+        <span className="block truncate w-48">
+          {row.original.experimentName}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "dataType",
+      header: ({ column }) => (
+        <SortableHeader
+          className="w-32 justify-start"
+          column={column}
+          title="Data Type"
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="block w-32 text-muted-foreground">
+          {row.original.dataType}
+        </span>
       ),
     },
     {
@@ -653,6 +674,16 @@ export function getValidationColumns(
       ),
       cell: ({ row }) => (
         <span className="text-muted-foreground">{row.original.studyType}</span>
+      ),
+    },
+    {
+      accessorKey: "randomisationDate",
+      header: () => <span>Randomisation Date</span>,
+      cell: ({ row }) => (
+        <RandomizeDateCell
+          value={row.original.randomisationDate}
+          onChange={() => onRandomize?.(row.original)}
+        />
       ),
     },
     {
@@ -685,14 +716,24 @@ export function getValidationColumns(
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onViewData?.(row.original)}
-        >
-          <Eye className="size-4" />
-          View Data
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewData?.(row.original)}
+          >
+            <Eye className="size-4" />
+            View Data
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onRandomize?.(row.original)}
+          >
+            <Shuffle className="size-4" />
+            Randomize
+          </Button>
+        </div>
       ),
     },
   ];
@@ -725,7 +766,6 @@ export const createBioDOrganColumns = (
 export const getBioDOrganTableColumns = (data: { mouse: string[] }) =>
   createBioDOrganColumns(data.mouse);
 
-// Visual Data Filter Table Columns
 export function getVisualFilterColumns(
   onView?: (filter: VisualFilterRow) => void,
   renderShareAction?: (filter: VisualFilterRow) => React.ReactNode

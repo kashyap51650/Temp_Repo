@@ -269,15 +269,18 @@ export const uploadedDatasetData: UploadedDatasetRow[] = [
 export type ValidationRow = {
   id: string;
   experimentName: string;
+  dataType: string;
   studyType: string;
   uploadedDate: string;
   status: "Pending" | "Validated" | "Error";
+  randomisationDate?: string;
 };
 
 export const validationData: ValidationRow[] = [
   {
     id: "v1",
     experimentName: "PROT-001-Biodistribution",
+    dataType: "biod",
     studyType: "Biodistribution_ProtXXX",
     uploadedDate: "2024-01-15",
     status: "Validated",
@@ -285,6 +288,7 @@ export const validationData: ValidationRow[] = [
   {
     id: "v2",
     experimentName: "PROT-002-Biodistribution",
+    dataType: "calipering",
     studyType: "Biodistribution_ProtXXX",
     uploadedDate: "2024-01-14",
     status: "Pending",
@@ -292,6 +296,7 @@ export const validationData: ValidationRow[] = [
   {
     id: "v3",
     experimentName: "PROT-003-Biodistribution",
+    dataType: "biod",
     studyType: "Biodistribution_ProtXXX",
     uploadedDate: "2024-01-13",
     status: "Error",
@@ -299,6 +304,7 @@ export const validationData: ValidationRow[] = [
   {
     id: "v4",
     experimentName: "PROT-004-DRF",
+    dataType: "toxicity",
     studyType: "Dose Range Finding",
     uploadedDate: "2024-01-16",
     status: "Validated",
@@ -306,6 +312,7 @@ export const validationData: ValidationRow[] = [
   {
     id: "v5",
     experimentName: "PROT-005-Toxicity",
+    dataType: "calipering",
     studyType: "Toxicity",
     uploadedDate: "2024-01-17",
     status: "Validated",
@@ -313,6 +320,7 @@ export const validationData: ValidationRow[] = [
   {
     id: "v6",
     experimentName: "PROT-006-ModelStudy",
+    dataType: "modeling",
     studyType: "Model Study",
     uploadedDate: "2024-01-18",
     status: "Validated",
@@ -1288,3 +1296,136 @@ export const MASTER_DATA_OPTIONS = Object.values(MASTER_DATA_CONFIGS).map(
     label: config.label,
   })
 );
+
+// --- Randomization Results Table Data ---
+export type Group = {
+  key: string;
+  label: string;
+  options: string[];
+  data: Array<
+    { [key: string]: string | number } & { mouse: string; tumorVol: number }
+  >;
+};
+
+export const DEFAULT_GROUPS: Group[] = [
+  {
+    key: "A",
+    label: "Group A",
+    options: ["MAM279", "MAM280", "MAM281", "MAM282"],
+    data: [
+      { mouse: "24-01-61", tumorVol: 492.8 },
+      { mouse: "24-01-71", tumorVol: 333.4 },
+      { mouse: "24-01-65", tumorVol: 325.3 },
+      { mouse: "24-01-77", tumorVol: 299.4 },
+      { mouse: "24-01-78", tumorVol: 269.2 },
+    ],
+  },
+  {
+    key: "B",
+    label: "Group B",
+    options: ["MAM282", "MAM283", "MAM284", "MAM285", "MAM286", "MAM287"],
+    data: [
+      { mouse: "24-01-74", tumorVol: 540.9 },
+      { mouse: "24-01-79", tumorVol: 334.6 },
+      { mouse: "24-01-63", tumorVol: 323.6 },
+      { mouse: "24-01-63", tumorVol: 304.2 },
+      { mouse: "24-01-70", tumorVol: 241.9 },
+    ],
+  },
+  {
+    key: "C",
+    label: "Group C",
+    options: ["MAM282", "MAM283", "MAM284", "MAM285", "MAM286", "MAM287"],
+    data: [
+      { mouse: "24-01-72", tumorVol: 522.7 },
+      { mouse: "24-01-67", tumorVol: 342.1 },
+      { mouse: "24-01-75", tumorVol: 307.7 },
+      { mouse: "24-01-80", tumorVol: 307.7 },
+      { mouse: "24-01-66", tumorVol: 237.7 },
+    ],
+  },
+  {
+    key: "D",
+    label: "Group D",
+    options: ["MAM288", "MAM289", "MAM290", "MAM291"],
+    data: [
+      { mouse: "24-01-81", tumorVol: 445.2 },
+      { mouse: "24-01-82", tumorVol: 378.9 },
+      { mouse: "24-01-83", tumorVol: 412.6 },
+      { mouse: "24-01-84", tumorVol: 356.1 },
+      { mouse: "24-01-85", tumorVol: 389.8 },
+    ],
+  },
+  {
+    key: "E",
+    label: "Group E",
+    options: ["MAM292", "MAM293", "MAM294", "MAM295"],
+    data: [
+      { mouse: "24-01-86", tumorVol: 467.3 },
+      { mouse: "24-01-87", tumorVol: 398.5 },
+      { mouse: "24-01-88", tumorVol: 423.7 },
+      { mouse: "24-01-89", tumorVol: 381.9 },
+      { mouse: "24-01-90", tumorVol: 356.2 },
+    ],
+  },
+  {
+    key: "F",
+    label: "Group F",
+    options: ["MAM296", "MAM297", "MAM298", "MAM299"],
+    data: [
+      { mouse: "24-01-91", tumorVol: 512.8 },
+      { mouse: "24-01-92", tumorVol: 434.6 },
+      { mouse: "24-01-93", tumorVol: 398.1 },
+      { mouse: "24-01-94", tumorVol: 456.7 },
+      { mouse: "24-01-95", tumorVol: 387.3 },
+    ],
+  },
+  {
+    key: "G",
+    label: "Group G",
+    options: ["MAM300", "MAM301", "MAM302", "MAM303"],
+    data: [
+      { mouse: "24-01-96", tumorVol: 378.2 },
+      { mouse: "24-01-97", tumorVol: 445.9 },
+      { mouse: "24-01-98", tumorVol: 367.4 },
+      { mouse: "24-01-99", tumorVol: 412.8 },
+      { mouse: "24-01-100", tumorVol: 394.5 },
+    ],
+  },
+  {
+    key: "H",
+    label: "Group H",
+    options: ["MAM304", "MAM305", "MAM306", "MAM307"],
+    data: [
+      { mouse: "24-01-101", tumorVol: 489.7 },
+      { mouse: "24-01-102", tumorVol: 356.8 },
+      { mouse: "24-01-103", tumorVol: 423.1 },
+      { mouse: "24-01-104", tumorVol: 378.6 },
+      { mouse: "24-01-105", tumorVol: 445.2 },
+    ],
+  },
+  {
+    key: "I",
+    label: "Group I",
+    options: ["MAM308", "MAM309", "MAM310", "MAM311"],
+    data: [
+      { mouse: "24-01-106", tumorVol: 367.9 },
+      { mouse: "24-01-107", tumorVol: 498.3 },
+      { mouse: "24-01-108", tumorVol: 412.7 },
+      { mouse: "24-01-109", tumorVol: 334.5 },
+      { mouse: "24-01-110", tumorVol: 456.1 },
+    ],
+  },
+  {
+    key: "J",
+    label: "Group J",
+    options: ["MAM312", "MAM313", "MAM314", "MAM315"],
+    data: [
+      { mouse: "24-01-111", tumorVol: 423.8 },
+      { mouse: "24-01-112", tumorVol: 389.4 },
+      { mouse: "24-01-113", tumorVol: 467.2 },
+      { mouse: "24-01-114", tumorVol: 378.9 },
+      { mouse: "24-01-115", tumorVol: 401.6 },
+    ],
+  },
+];
