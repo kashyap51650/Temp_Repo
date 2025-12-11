@@ -10,8 +10,7 @@ import {
   strainOptions,
   vehicleOptions,
 } from "@/data/experiments";
-import { useExperimentData } from "@/hooks";
-import { experimentApi, handleApiError } from "@/lib/api";
+import { useCreateExperiment, useExperimentData } from "@/hooks";
 
 import { Button, Input } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
@@ -86,9 +85,34 @@ export function CreateExperimentModal({
   } = useExperimentData();
 
   const [formState, setFormState] = useState<FormState>(initialFormState);
-  const [isLoading, setIsLoading] = useState(false);
-
   const dispatch = useAppDispatch();
+
+  const { createExperiment, isCreating } = useCreateExperiment({
+    onSuccess: (data) => {
+      onCreateExperiment({
+        name: formState.experimentName.trim(),
+        isotope: formState.selectedIsotope,
+        cellLines: formState.selectedCellLines,
+      });
+
+      dispatch(
+        experimentCreated({
+          experimentId: data.id,
+          experimentName: data.experiment_name,
+        })
+      );
+
+      if (onExperimentCreated) {
+        onExperimentCreated({
+          id: data.id,
+          name: data.experiment_name,
+        });
+      }
+
+      handleReset();
+      onClose();
+    },
+  });
 
   const updateFormState = (updates: Partial<FormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
@@ -143,101 +167,52 @@ export function CreateExperimentModal({
       specialization &&
       studyTypeId
     ) {
-      setIsLoading(true);
-      try {
-        const selectedIsotopeId = apiIsotopes.find(
-          (isotope) => isotope.isotope_name === formState.selectedIsotope
-        )?.id;
+      const selectedIsotopeId = apiIsotopes.find(
+        (isotope) => isotope.isotope_name === formState.selectedIsotope
+      )?.id;
 
-        const selectedCellLineIds = formState.selectedCellLines
-          .map(
-            (cellLineName) =>
-              apiCellLines.find(
-                (cellLine) => cellLine.cell_line_name === cellLineName
-              )?.id
-          )
-          .filter((id) => id !== undefined) as number[];
+      const selectedCellLineIds = formState.selectedCellLines
+        .map(
+          (cellLineName) =>
+            apiCellLines.find(
+              (cellLine) => cellLine.cell_line_name === cellLineName
+            )?.id
+        )
+        .filter((id) => id !== undefined) as number[];
 
-        const selectedMouseStrainIds = formState.selectedMouseStrains
-          .map(
-            (strainName) =>
-              apiMouseStrains.find(
-                (strain) => strain.mouse_strain_name === strainName
-              )?.id
-          )
-          .filter((id) => id !== undefined) as number[];
+      const selectedMouseStrainIds = formState.selectedMouseStrains
+        .map(
+          (strainName) =>
+            apiMouseStrains.find(
+              (strain) => strain.mouse_strain_name === strainName
+            )?.id
+        )
+        .filter((id) => id !== undefined) as number[];
 
-        if (
-          !selectedIsotopeId ||
-          selectedCellLineIds.length === 0 ||
-          selectedMouseStrainIds.length === 0
-        ) {
-          toast.error("Failed to create experiment", {
-            description:
-              "Please ensure all required fields are selected with valid options",
-          });
-          return;
-        }
-
-        const payload = {
-          cell_line_ids: selectedCellLineIds,
-          experiment_name: formState.experimentName.trim(),
-          isotope_id: selectedIsotopeId,
-          mouse_strain_ids: selectedMouseStrainIds,
-          project_id: projectId,
-          specialization: specialization.toUpperCase(),
-          study_type_id: studyTypeId,
-        };
-
-        const response = await experimentApi.createExperiment(payload);
-
-        if (response.success) {
-          toast.success("Experiment created successfully", {
-            description: `"${formState.experimentName}" has been created`,
-          });
-
-          onCreateExperiment({
-            name: formState.experimentName.trim(),
-            isotope: formState.selectedIsotope,
-            cellLines: formState.selectedCellLines,
-          });
-
-          dispatch(
-            experimentCreated({
-              experimentId: response.data.id,
-              experimentName: response.data.experiment_name,
-            })
-          );
-
-          if (onExperimentCreated && response.data) {
-            onExperimentCreated({
-              id: response.data.id,
-              name: response.data.experiment_name,
-            });
-          }
-
-          handleReset();
-          onClose();
-        } else {
-          toast.error("Failed to create experiment", {
-            description: response.message || "Unknown error occurred",
-          });
-        }
-      } catch (error) {
-        const errorMessage = handleApiError(
-          error,
-          "Failed to create experiment"
-        );
-        console.error("Error creating experiment:", error);
-
+      if (
+        !selectedIsotopeId ||
+        selectedCellLineIds.length === 0 ||
+        selectedMouseStrainIds.length === 0
+      ) {
         toast.error("Failed to create experiment", {
-          description: errorMessage,
+          description:
+            "Please ensure all required fields are selected with valid options",
         });
-      } finally {
-        setIsLoading(false);
+        return;
       }
+
+      const payload = {
+        cell_line_ids: selectedCellLineIds,
+        experiment_name: formState.experimentName.trim(),
+        isotope_id: selectedIsotopeId,
+        mouse_strain_ids: selectedMouseStrainIds,
+        project_id: projectId,
+        specialization: specialization.toUpperCase(),
+        study_type_id: studyTypeId,
+      };
+
+      await createExperiment(payload);
     } else {
-      setIsLoading(true);
       try {
         await onCreateExperiment({
           name: formState.experimentName.trim(),
@@ -256,8 +231,6 @@ export function CreateExperimentModal({
         onClose();
       } catch (error) {
         console.error("Failed to create experiment:", error);
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -471,7 +444,7 @@ export function CreateExperimentModal({
             variant="outline"
             size={"lg"}
             onClick={handleCancel}
-            disabled={isLoading}
+            disabled={isCreating}
           >
             Cancel
           </Button>
@@ -480,7 +453,7 @@ export function CreateExperimentModal({
             size={"lg"}
             disabled={
               !formState.experimentName.trim() ||
-              isLoading ||
+              isCreating ||
               ((studyType === "Biodistribution" || studyType === "Toxicity") &&
                 (!formState.selectedIsotope ||
                   formState.selectedCellLines.length === 0)) ||
@@ -491,7 +464,7 @@ export function CreateExperimentModal({
                   !formState.selectedStrain))
             }
           >
-            {isLoading ? "Saving..." : "Save"}
+            {isCreating ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

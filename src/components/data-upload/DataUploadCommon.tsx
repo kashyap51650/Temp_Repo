@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { useAppDispatch } from "@/app/store/hooks";
 import { projectChanged } from "@/app/store/slices/experimentSlice";
@@ -49,46 +49,6 @@ export default function DataUploadCommon() {
     createProject: apiCreateProject,
   } = useProjects();
 
-  const {
-    studyTypes: apiStudyTypes,
-    loading: studyTypesLoading,
-    error: studyTypesError,
-    loadStudyTypes,
-    clearStudyTypes,
-  } = useStudyTypes();
-
-  const {
-    dataTypes: apiDataTypes,
-    loading: dataTypesLoading,
-    error: dataTypesError,
-    loadDataTypes,
-    clearDataTypes,
-  } = useDataTypes();
-
-  const { downloadSampleFile, loading: sampleFileLoading } =
-    useSampleFileDownload();
-
-  const existingProjectsForSelect = apiProjects.map((project) => ({
-    id: project.id.toString(),
-    name: project.project_name,
-  }));
-
-  const dynamicStudyTypeOptions =
-    apiStudyTypes.length > 0
-      ? apiStudyTypes.map((studyType) => {
-          let normalizedName = studyType.study_type_name;
-          if (normalizedName === "Bio Distribution") {
-            normalizedName = "Biodistribution";
-          }
-
-          return {
-            value: normalizedName,
-            label: studyType.study_type_name, // Keep original label for display
-            code: studyType.study_type_code,
-          };
-        })
-      : studyTypeOptions;
-
   const [formData, setFormData] = useState<DataUploadFormData>({
     project: null,
     specialisation: "",
@@ -96,6 +56,20 @@ export default function DataUploadCommon() {
     experiment: null,
     dataType: "",
     uploadedFile: null,
+  });
+
+  const isStudyTypesEnabled = useMemo(() => {
+    return formData.specialisation?.toLowerCase() === "preclinical";
+  }, [formData.specialisation]);
+
+  const {
+    studyTypes: apiStudyTypes,
+    loading: studyTypesLoading,
+    error: studyTypesError,
+    loadStudyTypes,
+    clearStudyTypes,
+  } = useStudyTypes({
+    enabled: isStudyTypesEnabled,
   });
 
   const [isCreatingNewProject] = useState(false);
@@ -179,13 +153,6 @@ export default function DataUploadCommon() {
   };
 
   const refreshAPIsAfterProjectChange = () => {
-    if (
-      formData.specialisation &&
-      formData.specialisation.toLowerCase() === "preclinical"
-    ) {
-      loadStudyTypes();
-    }
-
     if (formData.studyType && formData.specialisation && pendingProjectChange) {
       dispatch(
         projectChanged({
@@ -274,9 +241,59 @@ export default function DataUploadCommon() {
           formData.studyType === "Biodistribution")
     )?.id;
     if (studyTypeId) {
-      loadDataTypes(studyTypeId);
+      // will be used in future after other specialisations are added
     }
-  }, [apiStudyTypes, formData.studyType, loadDataTypes]);
+  }, [apiStudyTypes, formData.studyType]);
+
+  const existingProjectsForSelect = useMemo(() => {
+    return apiProjects.map((project) => ({
+      id: project.id.toString(),
+      name: project.project_name,
+    }));
+  }, [apiProjects]);
+
+  const currentStudyTypeId = useMemo(() => {
+    return apiStudyTypes.find(
+      (st) =>
+        st.study_type_name === formData.studyType ||
+        (st.study_type_name === "Bio Distribution" &&
+          formData.studyType === "Biodistribution")
+    )?.id;
+  }, [apiStudyTypes, formData.studyType]);
+
+  const isDataTypesEnabled = useMemo(() => {
+    return !!currentStudyTypeId && !!formData.studyType;
+  }, [currentStudyTypeId, formData.studyType]);
+
+  const {
+    dataTypes: apiDataTypes,
+    loading: dataTypesLoading,
+    error: dataTypesError,
+    clearDataTypes,
+  } = useDataTypes({
+    studyTypeId: currentStudyTypeId,
+    enabled: isDataTypesEnabled,
+  });
+
+  const { downloadSampleFile, loading: sampleFileLoading } =
+    useSampleFileDownload();
+
+  const dynamicStudyTypeOptions = useMemo(() => {
+    return apiStudyTypes.length > 0
+      ? apiStudyTypes.map((studyType) => {
+          let normalizedName = studyType.study_type_name;
+          if (normalizedName === "Bio Distribution") {
+            normalizedName = "Biodistribution";
+          }
+
+          return {
+            value: normalizedName,
+            label: studyType.study_type_name,
+            code: studyType.study_type_code,
+          };
+        })
+      : studyTypeOptions;
+  }, [apiStudyTypes]);
 
   return (
     <>

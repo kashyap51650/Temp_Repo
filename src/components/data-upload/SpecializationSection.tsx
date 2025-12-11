@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 import { Label } from "@/components/atoms/Label/Label";
 
 import { CustomSelect } from "./CustomSelect";
@@ -31,17 +29,7 @@ export function SpecializationSection({
   isSpecialisationSelected,
   studyTypesLoading = false,
   studyTypesError,
-  loadStudyTypes,
-  clearStudyTypes,
 }: SpecializationSectionProps) {
-  useEffect(() => {
-    if (isSpecialisationSelected && loadStudyTypes) {
-      loadStudyTypes();
-    } else if (!isSpecialisationSelected && clearStudyTypes) {
-      clearStudyTypes();
-    }
-  }, [isSpecialisationSelected, loadStudyTypes, clearStudyTypes]);
-
   const handleSpecialisationChange = (value: string | string[]) => {
     const selectedValue = typeof value === "string" ? value : value[0];
     setFormData((prev: any) => ({

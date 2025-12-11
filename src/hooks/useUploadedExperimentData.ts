@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 
 import { toast } from "@/components/atoms/Sonner/toast";
 
@@ -9,95 +10,81 @@ import {
   type UploadedExperimentDataItem,
   type UploadedExperimentDataResponse,
 } from "../lib/api";
+import { REACT_QUERY_CONFIG } from "../lib/constants";
+
+interface UseUploadedExperimentDataProps {
+  filters?: UploadedExperimentDataFilters;
+  enabled?: boolean;
+}
 
 interface UseUploadedExperimentDataResult {
   data: UploadedExperimentDataItem[];
   pagination: UploadedExperimentDataResponse["pagination"] | null;
   loading: boolean;
   error: string | null;
-  loadData: (filters?: UploadedExperimentDataFilters) => Promise<void>;
-  refetch: () => Promise<void>;
+  loadData: (filters?: UploadedExperimentDataFilters) => void;
+  refetch: () => void;
   clearData: () => void;
 }
 
-export function useUploadedExperimentData(): UseUploadedExperimentDataResult {
-  const [data, setData] = useState<UploadedExperimentDataItem[]>([]);
-  const [pagination, setPagination] = useState<
-    UploadedExperimentDataResponse["pagination"] | null
-  >(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useUploadedExperimentData(
+  props?: UseUploadedExperimentDataProps
+): UseUploadedExperimentDataResult {
+  const { filters, enabled = true } = props || {};
   const [currentFilters, setCurrentFilters] = useState<
     UploadedExperimentDataFilters | undefined
-  >();
+  >(filters);
 
-  const hasInitialLoadStarted = useRef(false);
-  const isLoadingRef = useRef(false);
+  const activeFilters = useMemo(
+    () => filters || currentFilters,
+    [filters, currentFilters]
+  );
 
-  const loadData = useCallback(
-    async (filters?: UploadedExperimentDataFilters) => {
-      if (isLoadingRef.current) {
-        return;
-      }
-
+  const {
+    data: queryData,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["uploaded-experiment-data", activeFilters],
+    queryFn: async () => {
       try {
-        isLoadingRef.current = true;
-        setLoading(true);
-        setError(null);
-        setCurrentFilters(filters);
-
         const response =
-          await uploadedExperimentDataApi.getMyExperimentData(filters);
-
-        setData(response.items);
-        setPagination(response.pagination);
+          await uploadedExperimentDataApi.getMyExperimentData(activeFilters);
+        return response;
       } catch (err) {
         const errorMessage = handleApiError(
           err,
           "Failed to load uploaded experiment data"
         );
-        setError(errorMessage);
         console.error("Error loading uploaded experiment data:", err);
-
         toast.error("Failed to load uploaded experiment data", {
           description: errorMessage,
         });
-      } finally {
-        setLoading(false);
-        isLoadingRef.current = false;
+        throw err;
       }
     },
-    []
-  );
+    enabled,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME.SHORT, // 2 minutes
+    retry: 1,
+  });
 
-  const refetch = useCallback(async () => {
-    if (currentFilters !== undefined) {
-      await loadData(currentFilters);
-    } else {
-      await loadData();
-    }
-  }, [loadData, currentFilters]);
+  const data = queryData?.items || [];
+  const pagination = queryData?.pagination || null;
 
-  const clearData = useCallback(() => {
-    setData([]);
-    setPagination(null);
-    setError(null);
+  const loadData = (newFilters?: UploadedExperimentDataFilters) => {
+    setCurrentFilters(newFilters);
+  };
+
+  const clearData = () => {
     setCurrentFilters(undefined);
-    hasInitialLoadStarted.current = false;
-  }, []);
-
-  useEffect(() => {
-    if (!hasInitialLoadStarted.current) {
-      hasInitialLoadStarted.current = true;
-      loadData();
-    }
-  }, []);
+  };
 
   return {
     data,
     pagination,
     loading,
-    error,
+    error: error?.message || null,
     loadData,
     refetch,
     clearData,

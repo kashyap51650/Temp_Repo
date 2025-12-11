@@ -42,7 +42,11 @@ export type SpecializationType =
 export type StudyType = (typeof STUDY_TYPE)[keyof typeof STUDY_TYPE];
 
 export const REACT_QUERY_CONFIG = {
-  STALE_TIME: 1000 * 60 * 5, // 5 minutes in milliseconds
+  STALE_TIME: {
+    SHORT: 2 * 60 * 1000, // 2 minutes - for frequently changing data
+    MEDIUM: 3 * 60 * 1000, // 3 minutes - for moderately stable data
+    LONG: 5 * 60 * 1000, // 5 minutes - for stable data
+  },
   CACHE_TIME: 1000 * 60 * 10, // 10 minutes in milliseconds
 } as const;
 

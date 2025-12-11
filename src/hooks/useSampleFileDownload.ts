@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { toast } from "sonner";
 
 import {
@@ -7,9 +8,39 @@ import {
   type SampleFileFilters,
 } from "@/lib/api";
 
-export const useSampleFileDownload = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export interface UseSampleFileDownloadReturn {
+  downloadSampleFile: (filters: SampleFileFilters) => Promise<void>;
+  loading: boolean;
+  error: string | null;
+}
+
+export const useSampleFileDownload = (): UseSampleFileDownloadReturn => {
+  const downloadMutation = useMutation({
+    mutationFn: async (filters: SampleFileFilters) => {
+      const response = await sampleFileApi.getSampleFileDownload(filters);
+
+      if (response.success && response.data?.download_url) {
+        return {
+          downloadUrl: response.data.download_url,
+          fileName: response.data.file_name,
+        };
+      } else {
+        throw new Error(response.message || "Failed to get download URL");
+      }
+    },
+    retry: 1,
+    onSuccess: async (data) => {
+      await downloadFile(data.downloadUrl, data.fileName);
+    },
+    onError: (error) => {
+      console.error("❌ Sample file download failed:", error);
+      const errorMessage = handleApiError(
+        error,
+        "Failed to download sample file"
+      );
+      toast.error(errorMessage);
+    },
+  });
 
   const downloadFile = useCallback(
     async (downloadUrl: string, fileName: string) => {
@@ -20,7 +51,6 @@ export const useSampleFileDownload = () => {
         }
 
         const blob = await response.blob();
-
         const objectUrl = URL.createObjectURL(blob);
 
         const link = document.createElement("a");
@@ -29,9 +59,7 @@ export const useSampleFileDownload = () => {
         link.download = fileName;
 
         document.body.appendChild(link);
-
         link.click();
-
         document.body.removeChild(link);
         URL.revokeObjectURL(objectUrl);
 
@@ -45,44 +73,15 @@ export const useSampleFileDownload = () => {
     []
   );
 
-  const downloadSampleFile = useCallback(
-    async (filters: SampleFileFilters) => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await sampleFileApi.getSampleFileDownload(filters);
-
-        if (response.success && response.data?.download_url) {
-          await downloadFile(
-            response.data.download_url,
-            response.data.file_name
-          );
-        } else {
-          console.error("❌ Invalid response:", {
-            success: response.success,
-            data: response.data,
-          });
-          throw new Error(response.message || "Failed to get download URL");
-        }
-      } catch (err) {
-        console.error("❌ Sample file download failed:", err);
-        const errorMessage = handleApiError(
-          err,
-          "Failed to download sample file"
-        );
-        setError(errorMessage);
-        toast.error(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [downloadFile]
-  );
+  const downloadSampleFile = async (
+    filters: SampleFileFilters
+  ): Promise<void> => {
+    await downloadMutation.mutateAsync(filters);
+  };
 
   return {
     downloadSampleFile,
-    loading,
-    error,
+    loading: downloadMutation.isPending,
+    error: downloadMutation.error?.message || null,
   };
 };

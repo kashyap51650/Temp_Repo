@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import { Label } from "@/components/atoms/Label/Label";
 import { ExperimentSelect } from "@/components/atoms/Selects";
-import { useExperimentsDropdown } from "@/hooks";
+import { useDataTypes, useExperimentsDropdown } from "@/hooks";
 
 import { CustomSelect } from "./CustomSelect";
 
@@ -49,9 +49,18 @@ export function ExperimentSection({
     experiments: apiExperiments,
     loading: experimentsLoading,
     error: experimentsError,
-    loadExperiments,
-    clearExperiments,
-  } = useExperimentsDropdown();
+  } = useExperimentsDropdown({
+    filters:
+      projectId && specialization && studyTypeId
+        ? {
+            project_id: projectId,
+            study_type_id: studyTypeId,
+            specialization: specialization.toUpperCase(),
+          }
+        : undefined,
+    enabled:
+      isStudyTypeSelected && !!projectId && !!specialization && !!studyTypeId,
+  });
 
   const dispatch = useAppDispatch();
 
@@ -60,25 +69,6 @@ export function ExperimentSection({
   );
 
   const processedExperimentCounter = useRef<number>(0);
-
-  useEffect(() => {
-    if (isStudyTypeSelected && projectId && specialization && studyTypeId) {
-      loadExperiments({
-        project_id: projectId,
-        study_type_id: studyTypeId,
-        specialization: specialization.toUpperCase(),
-      });
-    } else if (!isStudyTypeSelected) {
-      clearExperiments();
-    }
-  }, [
-    isStudyTypeSelected,
-    projectId,
-    specialization,
-    studyTypeId,
-    loadExperiments,
-    clearExperiments,
-  ]);
 
   useEffect(() => {
     if (studyTypeId && isStudyTypeSelected && loadDataTypes) {
@@ -98,14 +88,6 @@ export function ExperimentSection({
 
       const { experimentId, experimentName } = lastCreatedExperiment;
 
-      if (projectId && specialization && studyTypeId) {
-        loadExperiments({
-          project_id: projectId,
-          study_type_id: studyTypeId,
-          specialization: specialization.toUpperCase(),
-        });
-      }
-
       const formattedExperiment = {
         id: experimentId,
         experiment_name: experimentName,
@@ -118,16 +100,21 @@ export function ExperimentSection({
 
       dispatch(clearExperimentEvents());
     }
-  }, [
-    experimentEventCounter,
-    lastCreatedExperiment,
-    projectId,
-    specialization,
+  }, [experimentEventCounter, lastCreatedExperiment, setFormData, dispatch]);
+
+  const {
+    dataTypes: queryDataTypes,
+    loading: queryDataTypesLoading,
+    error: queryDataTypesError,
+  } = useDataTypes({
     studyTypeId,
-    loadExperiments,
-    setFormData,
-    dispatch,
-  ]);
+    enabled: isStudyTypeSelected && !!studyTypeId,
+  });
+
+  const actualDataTypes =
+    queryDataTypes.length > 0 ? queryDataTypes : apiDataTypes || [];
+  const actualDataTypesLoading = queryDataTypesLoading || dataTypesLoading;
+  const actualDataTypesError = queryDataTypesError || dataTypesError;
 
   const experimentsToShow =
     apiExperiments.length > 0
@@ -160,8 +147,8 @@ export function ExperimentSection({
       : ""
     : "";
 
-  const dataTypeOptions = apiDataTypes
-    ? apiDataTypes.map((dataType: any) => ({
+  const dataTypeOptions = actualDataTypes
+    ? actualDataTypes.map((dataType: any) => ({
         value: dataType.data_type_name,
         label: dataType.data_type_name,
       }))
@@ -241,9 +228,9 @@ export function ExperimentSection({
               dataType: selectedValue,
             }));
           }}
-          disabled={!isExperimentSelected || dataTypesLoading}
+          disabled={!isExperimentSelected || actualDataTypesLoading}
           className={
-            !isExperimentSelected || dataTypesLoading
+            !isExperimentSelected || actualDataTypesLoading
               ? "opacity-50 cursor-not-allowed w-full"
               : "w-full"
           }
@@ -253,14 +240,14 @@ export function ExperimentSection({
             Please select experiment to continue
           </span>
         )}
-        {dataTypesLoading && (
+        {actualDataTypesLoading && (
           <span className="text-xs text-muted-foreground">
             Loading data types...
           </span>
         )}
-        {dataTypesError && (
+        {actualDataTypesError && (
           <span className="text-xs text-red-500">
-            Error loading data types: {dataTypesError}
+            Error loading data types: {actualDataTypesError}
           </span>
         )}
         {errors.dataType && (

@@ -1,5 +1,6 @@
 export * from "./useAssignUserRole";
 export * from "./useAuthState";
+export * from "./useCreateExperiment";
 export * from "./useDataTypes";
 export * from "./useDebounce";
 export * from "./useExperimentData";

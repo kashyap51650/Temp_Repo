@@ -1,8 +1,13 @@
-import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { toast } from "@/components/atoms/Sonner/toast";
 
 import { handleApiError, type StudyType, studyTypeApi } from "../lib/api";
+import { REACT_QUERY_CONFIG } from "../lib/constants";
+
+interface UseStudyTypesProps {
+  enabled?: boolean;
+}
 
 interface UseStudyTypesResult {
   studyTypes: StudyType[];
@@ -12,48 +17,55 @@ interface UseStudyTypesResult {
   clearStudyTypes: () => void;
 }
 
-export function useStudyTypes(): UseStudyTypesResult {
-  const [studyTypes, setStudyTypes] = useState<StudyType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
+  const { enabled = false } = props || {};
 
-  const loadStudyTypes = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await studyTypeApi.getStudyTypes();
+  const {
+    data: studyTypes = [],
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["study-types"],
+    queryFn: async () => {
+      try {
+        const response = await studyTypeApi.getStudyTypes();
 
-      if (response.success) {
-        setStudyTypes(response.data);
-      } else {
-        const errorMessage = response.message || "Failed to load study types";
-        setError(errorMessage);
+        if (response.success) {
+          return response.data;
+        } else {
+          const errorMessage = response.message || "Failed to load study types";
+          toast.error("Failed to load study types", {
+            description: errorMessage,
+          });
+          throw new Error(errorMessage);
+        }
+      } catch (err) {
+        const errorMessage = handleApiError(err, "Failed to load study types");
+        console.error("Error loading study types:", err);
         toast.error("Failed to load study types", {
           description: errorMessage,
         });
+        throw err;
       }
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to load study types");
-      setError(errorMessage);
-      console.error("Error loading study types:", err);
+    },
+    enabled,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME.LONG, // 5 minutes
+    retry: 1,
+  });
 
-      toast.error("Failed to load study types", {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadStudyTypes = () => {
+    refetch();
+  };
 
-  const clearStudyTypes = useCallback(() => {
-    setStudyTypes([]);
-    setError(null);
-  }, []);
+  const clearStudyTypes = () => {
+    //To be used in future
+  };
 
   return {
     studyTypes,
     loading,
-    error,
+    error: error?.message || null,
     loadStudyTypes,
     clearStudyTypes,
   };
