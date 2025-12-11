@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-import { Button, Dialog, Input, Label } from "../atoms";
+import { Button, Dialog, Input, Label, Textarea } from "../atoms";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateProject: (projectName: string) => void;
+  onCreateProject: (projectName: string, description: string) => void;
 }
 
 export function CreateProjectModal({
@@ -14,6 +14,7 @@ export function CreateProjectModal({
   onCreateProject,
 }: CreateProjectModalProps) {
   const [projectName, setProjectName] = useState("");
+  const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCreate = async () => {
@@ -21,8 +22,9 @@ export function CreateProjectModal({
 
     setIsLoading(true);
     try {
-      await onCreateProject(projectName.trim());
+      await onCreateProject(projectName.trim(), description.trim());
       setProjectName("");
+      setDescription("");
       onClose();
     } catch (error) {
       console.error("Failed to create project:", error);
@@ -33,6 +35,7 @@ export function CreateProjectModal({
 
   const handleCancel = () => {
     setProjectName("");
+    setDescription("");
     onClose();
   };
 
@@ -43,7 +46,7 @@ export function CreateProjectModal({
         if (!open) handleCancel();
       }}
       title={"Create New Project"}
-      description={"Enter the name for your new project"}
+      description={"Enter the details for your new project"}
       showClose={true}
       className="max-w-lg"
       trigger={null}
@@ -51,7 +54,7 @@ export function CreateProjectModal({
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="project-name" className="text-sm font-medium">
-            Project Name
+            Project Name <span className="text-red-500">*</span>
           </Label>
           <Input
             id="project-name"
@@ -70,6 +73,25 @@ export function CreateProjectModal({
             }}
           />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="project-description" className="text-sm font-medium">
+            Description
+          </Label>
+          <Textarea
+            id="project-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Enter project description (optional)"
+            className="w-full min-h-[100px] resize-none"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                handleCancel();
+              }
+            }}
+          />
+        </div>
+
         <div className="flex justify-end gap-3 pt-4">
           <Button
             variant="outline"

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { type UploadedExperimentDataItem } from "../../../lib/api";
 import {
   Badge,
   Button,
@@ -33,7 +34,6 @@ import type {
   PermissionAssignment,
   RoleRow,
   TemplateRow,
-  UploadedDatasetRow,
   ValidationRow,
   VisualFilterRow,
 } from "./tableData";
@@ -537,72 +537,98 @@ export function getTemplateColumns(
   ];
 }
 
-export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
+export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataItem>[] {
+  const formatDateTime = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } catch {
+      return dateString;
+    }
+  };
+
   return [
     {
-      accessorKey: "projectName",
+      accessorKey: "project.project_name",
       header: ({ column }) => (
         <SortableHeader column={column} title="Project Name" />
       ),
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-40 block">
-          {row.original.projectName}
-        </TruncateWithTooltip>
+        <span className="w-40 block truncate">
+          {row.original.project.project_name}
+        </span>
       ),
     },
     {
-      accessorKey: "experimentName",
+      accessorKey: "experiment.experiment_name",
       header: ({ column }) => (
         <SortableHeader column={column} title="Experiment Name" />
       ),
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-48 block">
-          {row.original.experimentName}
-        </TruncateWithTooltip>
+        <span className="w-48 block truncate">
+          {row.original.experiment.experiment_name}
+        </span>
       ),
     },
     {
-      accessorKey: "dataType",
+      accessorKey: "data_type.data_type_name",
       header: ({ column }) => (
         <SortableHeader column={column} title="Data Type" />
       ),
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-44 block">
-          {row.original.dataType}
-        </TruncateWithTooltip>
+        <span className="w-44 block truncate">
+          {row.original.data_type.data_type_name}
+        </span>
       ),
     },
     {
-      accessorKey: "uploadDateTime",
+      accessorKey: "upload_date",
       header: ({ column }) => (
         <SortableHeader column={column} title="Upload Date/Time" />
       ),
       cell: ({ row }) => (
         <div className="w-40 flex items-center gap-2">
           <Clock className="size-4 text-muted-foreground" />
-          <span className="text-sm">{row.original.uploadDateTime}</span>
+          <span className="text-sm">
+            {formatDateTime(row.original.upload_date)}
+          </span>
         </div>
       ),
     },
     {
-      accessorKey: "currentStatus",
+      accessorKey: "status",
       header: ({ column }) => (
         <SortableHeader column={column} title="Current Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original.currentStatus;
+        const status = row.original.status;
+        const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         return (
           <div className="w-28">
             <Badge
               variant={
-                status === "Approved"
+                status === "approved"
                   ? "default"
-                  : status === "Rejected"
+                  : status === "rejected"
                     ? "destructive"
                     : "secondary"
               }
+              className={
+                status === "approved"
+                  ? "bg-green-100 text-green-700 border-green-200"
+                  : status === "rejected"
+                    ? "bg-red-100 text-red-700 border-red-200"
+                    : "bg-yellow-100 text-yellow-700 border-yellow-200"
+              }
             >
-              {status}
+              {displayStatus}
             </Badge>
           </div>
         );
@@ -614,24 +640,28 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedDatasetRow>[] {
         <SortableHeader column={column} title="Reviewer" />
       ),
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-44 block">
-          {row.original.reviewer}
-        </TruncateWithTooltip>
+        <span className="w-44 block truncate">
+          {row.original.reviewer?.full_name || "-"}
+        </span>
       ),
     },
     {
-      accessorKey: "rejectionReason",
+      accessorKey: "rejection_reason",
       header: ({ column }) => (
         <SortableHeader column={column} title="Rejection Reason" />
       ),
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-64 block text-red-500 ">
-          {row.original.rejectionReason}
-        </TruncateWithTooltip>
+        <span
+          className="w-64 block text-red-500 truncate"
+          title={row.original.rejection_reason || "-"}
+        >
+          {row.original.rejection_reason || "-"}
+        </span>
       ),
     },
   ];
 }
+
 export function getValidationColumns(
   onViewData?: (row: ValidationRow) => void,
   onRandomize?: (row: ValidationRow) => void

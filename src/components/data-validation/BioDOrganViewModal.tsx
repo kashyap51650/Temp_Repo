@@ -50,7 +50,7 @@ export function BioDOrganViewModal({
       trigger={null}
     >
       <div className="flex-1 overflow-auto mt-4">
-        <DataTable columns={columns} data={tableRows} hideSelectionCount />
+        <DataTable columns={columns} data={tableRows} />
       </div>
     </Dialog>
   );

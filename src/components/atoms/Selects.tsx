@@ -17,6 +17,7 @@ export interface ProjectSelectProps {
   onValueChange: (value: string) => void;
   onCreateNew?: (name?: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function ProjectSelect({
@@ -26,6 +27,7 @@ export function ProjectSelect({
   onValueChange,
   onCreateNew,
   className,
+  disabled = false,
 }: ProjectSelectProps) {
   const selectOptions = projects.map((project) => ({
     id: project.id,
@@ -43,6 +45,7 @@ export function ProjectSelect({
       className={className}
       searchPlaceholder="Search project..."
       showSearch={true}
+      disabled={disabled}
     />
   );
 }
@@ -54,6 +57,7 @@ export interface ExperimentSelectProps {
   onValueChange: (value: string) => void;
   onCreateNew?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function ExperimentSelect({
@@ -63,11 +67,12 @@ export function ExperimentSelect({
   onValueChange,
   onCreateNew,
   className,
+  disabled = false,
 }: ExperimentSelectProps) {
   const selectOptions = experiments.map((experiment) => ({
     id: experiment.id,
     name: experiment.name,
-    subtitle: `${experiment.isotope}  ${experiment.cellLines.join(", ")}`,
+    subtitle: `${experiment.isotope}  ${experiment.cellLines.join(", ")}`,
   }));
 
   return (
@@ -81,6 +86,7 @@ export function ExperimentSelect({
       className={className}
       searchPlaceholder="Search experiment..."
       showSearch={true}
+      disabled={disabled}
     />
   );
 }

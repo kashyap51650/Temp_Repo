@@ -1,16 +1,47 @@
 import { Label } from "@/components/atoms/Label/Label";
+import type { ExperimentDropdownItem, Project } from "@/lib/api";
 
 import { CustomSelect } from "./CustomSelect";
 
+interface SelectOption {
+  value: string;
+  label: string;
+  code?: string;
+}
+
+interface FormData {
+  project: Project | null;
+  specialisation: string;
+  studyType: string;
+  experiment: ExperimentDropdownItem | null;
+  dataType: string;
+  uploadedFile: File | null;
+  newExperimentName?: string;
+}
+
+interface ValidationErrors {
+  project?: string;
+  specialisation?: string;
+  studyType?: string;
+  experiment?: string;
+  dataType?: string;
+  uploadedFile?: string;
+}
+
 interface SpecializationSectionProps {
-  formData: any;
-  setFormData: (updater: (prev: any) => any) => void;
-  errors: any;
-  specialisationOptions: any[];
-  studyTypeOptions: any[];
+  formData: FormData;
+  setFormData: (updater: (prev: FormData) => FormData) => void;
+  errors: ValidationErrors;
+  specialisationOptions: SelectOption[];
+  studyTypeOptions: SelectOption[];
+  strainOptions: SelectOption[];
   isProjectSelected: boolean;
   isPreclinicSelected: boolean;
   isSpecialisationSelected: boolean;
+  studyTypesLoading?: boolean;
+  studyTypesError?: string | null;
+  loadStudyTypes?: () => void;
+  clearStudyTypes?: () => void;
 }
 
 export function SpecializationSection({
@@ -22,7 +53,18 @@ export function SpecializationSection({
   isProjectSelected,
   isPreclinicSelected,
   isSpecialisationSelected,
+  studyTypesLoading = false,
+  studyTypesError,
 }: SpecializationSectionProps) {
+  const handleSpecialisationChange = (value: string | string[]) => {
+    const selectedValue = typeof value === "string" ? value : value[0];
+    setFormData((prev: FormData) => ({
+      ...prev,
+      specialisation: selectedValue,
+      studyType: "",
+    }));
+  };
+
   return (
     <>
       {/* Specialisation */}
@@ -37,13 +79,7 @@ export function SpecializationSection({
           options={specialisationOptions}
           placeholder="Select specialisation"
           value={formData.specialisation}
-          onValueChange={(value: string | string[]) => {
-            const selectedValue = typeof value === "string" ? value : value[0];
-            setFormData((prev: any) => ({
-              ...prev,
-              specialisation: selectedValue,
-            }));
-          }}
+          onValueChange={handleSpecialisationChange}
           disabled={!isProjectSelected}
           className={
             !isProjectSelected
@@ -61,7 +97,7 @@ export function SpecializationSection({
         )}
       </div>
 
-      {/* Study Type - Only show when preclinic is selected */}
+      {/* Study Type - Only show when preclinical is selected */}
       {isPreclinicSelected && (
         <div className="space-y-2">
           <Label
@@ -77,14 +113,14 @@ export function SpecializationSection({
             onValueChange={(value: string | string[]) => {
               const selectedValue =
                 typeof value === "string" ? value : value[0];
-              setFormData((prev: any) => ({
+              setFormData((prev: FormData) => ({
                 ...prev,
                 studyType: selectedValue,
               }));
             }}
-            disabled={!isSpecialisationSelected}
+            disabled={!isSpecialisationSelected || studyTypesLoading}
             className={
-              !isSpecialisationSelected
+              !isSpecialisationSelected || studyTypesLoading
                 ? "opacity-50 cursor-not-allowed w-full"
                 : "w-full"
             }
@@ -92,6 +128,11 @@ export function SpecializationSection({
           {!isSpecialisationSelected && (
             <span className="text-xs text-muted-foreground">
               Please select specialisation to continue
+            </span>
+          )}
+          {studyTypesError && (
+            <span className="text-xs text-red-500">
+              Error loading study types: {studyTypesError}
             </span>
           )}
           {errors.studyType && (

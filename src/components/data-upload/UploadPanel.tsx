@@ -1,5 +1,14 @@
+import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { useExperimentDataImport } from "../../hooks";
+import type {
+  DataType,
+  ExperimentDropdownItem,
+  Project,
+  StudyType,
+} from "../../lib/api";
+import { SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
 import { Button } from "../atoms";
 import { ExperimentLinkDialog } from "./ExperimentLinkDialog";
 import { ExperimentSection } from "./ExperimentSection";
@@ -8,38 +17,208 @@ import { ProjectSection } from "./ProjectSection";
 import { SpecializationSection } from "./SpecializationSection";
 import { UploadedFilesList } from "./UploadedFilesList";
 
-export default function UploadPanel(props: any) {
+interface FormData {
+  project: Project | null;
+  specialisation: string;
+  studyType: string;
+  experiment: ExperimentDropdownItem | null;
+  dataType: string;
+  uploadedFile: File | null;
+  newExperimentName?: string;
+}
+
+interface ValidationErrors {
+  project?: string;
+  specialisation?: string;
+  studyType?: string;
+  experiment?: string;
+  dataType?: string;
+  uploadedFile?: string;
+}
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+// Define grouped prop interfaces
+interface FormProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  errors: ValidationErrors;
+  handleSubmit: () => void;
+  isCreatingNewProject: boolean;
+}
+
+interface ApiDataProps {
+  projects: Array<{ id: string; name: string }>;
+  experiments: ExperimentDropdownItem[];
+  studyTypes: SelectOption[];
+  dataTypes: DataType[];
+  specialisationOptions: SelectOption[];
+  strainOptions: SelectOption[];
+  apiStudyTypes: StudyType[];
+}
+
+interface LoadingProps {
+  projectsLoading: boolean;
+  studyTypesLoading: boolean;
+  dataTypesLoading: boolean;
+  sampleFileLoading: boolean;
+}
+
+interface ErrorProps {
+  studyTypesError: string | null;
+  dataTypesError: string | null;
+}
+
+interface ActionProps {
+  onProjectChange: (project: Project | null) => void;
+  onShowCreateProjectModal: () => void;
+  onShowCreateExperimentModal: () => void;
+  loadStudyTypes: () => void;
+  clearStudyTypes: () => void;
+  clearDataTypes: () => void;
+  downloadSampleFile: (params: {
+    study_type_id: number;
+    data_type_id: number;
+  }) => Promise<void>;
+}
+
+interface UploadPanelProps {
+  formProps: FormProps;
+  apiDataProps: ApiDataProps;
+  loadingProps: LoadingProps;
+  errorProps: ErrorProps;
+  actionProps: ActionProps;
+}
+
+const findStudyTypeId = (
+  apiStudyTypes: StudyType[],
+  studyTypeName: string
+): number | undefined => {
+  return apiStudyTypes?.find(
+    (st: StudyType) =>
+      st.study_type_name === studyTypeName ||
+      (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
+        studyTypeName === STUDY_TYPE.BIODISTRIBUTION)
+  )?.id;
+};
+
+export default function UploadPanel(props: UploadPanelProps) {
   const {
-    formData,
-    setFormData,
-    isCreatingNewProject,
-    errors,
-    existingProjects,
-    existingExperiments,
-    specialisationOptions,
-    studyTypeOptions,
-    getDataTypeOptions,
-    handleSubmit,
-    onShowCreateProjectModal,
-    onShowCreateExperimentModal,
-    onProjectChange,
+    formProps: {
+      formData,
+      setFormData,
+      errors,
+      handleSubmit,
+      isCreatingNewProject,
+    },
+    apiDataProps: {
+      projects: existingProjects,
+      experiments: existingExperiments,
+      studyTypes: studyTypeOptions,
+      dataTypes: apiDataTypes,
+      specialisationOptions,
+      strainOptions,
+      apiStudyTypes,
+    },
+    loadingProps: {
+      projectsLoading,
+      studyTypesLoading,
+      dataTypesLoading,
+      sampleFileLoading,
+    },
+    errorProps: { studyTypesError, dataTypesError },
+    actionProps: {
+      onProjectChange,
+      onShowCreateProjectModal,
+      onShowCreateExperimentModal,
+      loadStudyTypes,
+      clearStudyTypes,
+      clearDataTypes,
+      downloadSampleFile,
+    },
   } = props;
 
   const isProjectSelected = !!formData.project;
   const isSpecialisationSelected = !!formData.specialisation;
-  const isHotlabSelected = formData.specialisation?.toLowerCase() === "hotlab";
+  const isHotlabSelected =
+    formData.specialisation?.toLowerCase() === SPECIALIZATION.HOTLAB;
   const isPreclinicSelected =
-    formData.specialisation?.toLowerCase() === "preclinic";
+    formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL;
   const isStudyTypeSelected = !!formData.studyType;
 
-  console.log("Current specialisation:", formData.specialisation);
-  console.log("isPreclinicSelected:", isPreclinicSelected);
-  console.log("isHotlabSelected:", isHotlabSelected);
   const isExperimentSelected =
-    !!formData.experiment || formData.studyType === "Efficacy";
+    !!formData.experiment || formData.studyType === STUDY_TYPE.EFFICACY;
   const isDataTypeSelected = !!formData.dataType;
 
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
+
+  const { uploadFile, isUploading } = useExperimentDataImport({
+    onSuccess: () => {
+      setFormData((prev: FormData) => ({
+        ...prev,
+        uploadedFile: null,
+      }));
+    },
+  });
+
+  const handleSampleFileDownload = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const studyTypeId = findStudyTypeId(apiStudyTypes, formData.studyType);
+
+    const dataTypeId = apiDataTypes?.find(
+      (dt: DataType) => dt.data_type_name === formData.dataType
+    )?.id;
+
+    if (studyTypeId && dataTypeId) {
+      await downloadSampleFile({
+        study_type_id: studyTypeId,
+        data_type_id: dataTypeId,
+      });
+    }
+  };
+
+  const handleDataUpload = async () => {
+    if (!formData.uploadedFile) {
+      console.error("No file selected for upload");
+      return;
+    }
+
+    let experimentId: number | null = null;
+    if (formData.experiment?.id) {
+      experimentId = parseInt(formData.experiment.id.toString());
+    }
+
+    const dataTypeId =
+      apiDataTypes?.find(
+        (dt: DataType) => dt.data_type_name === formData.dataType
+      )?.id || null;
+
+    await uploadFile({
+      experiment_id: experimentId,
+      data_type_id: dataTypeId,
+      file: formData.uploadedFile,
+    });
+  };
+
+  const canShowDownloadButton =
+    isPreclinicSelected && isStudyTypeSelected && isDataTypeSelected;
+
+  const canUploadData =
+    formData.project &&
+    formData.specialisation &&
+    formData.uploadedFile &&
+    (isHotlabSelected
+      ? true
+      : isPreclinicSelected
+        ? formData.studyType && formData.dataType
+        : true);
 
   return (
     <>
@@ -61,6 +240,7 @@ export default function UploadPanel(props: any) {
           existingProjects={existingProjects}
           onShowCreateProjectModal={onShowCreateProjectModal}
           onProjectChange={onProjectChange}
+          projectsLoading={projectsLoading}
         />
 
         <SpecializationSection
@@ -69,9 +249,14 @@ export default function UploadPanel(props: any) {
           errors={errors}
           specialisationOptions={specialisationOptions}
           studyTypeOptions={studyTypeOptions}
+          strainOptions={strainOptions}
           isProjectSelected={isProjectSelected}
           isPreclinicSelected={isPreclinicSelected}
           isSpecialisationSelected={isSpecialisationSelected}
+          studyTypesLoading={studyTypesLoading}
+          studyTypesError={studyTypesError}
+          loadStudyTypes={loadStudyTypes}
+          clearStudyTypes={clearStudyTypes}
         />
       </div>
 
@@ -80,11 +265,17 @@ export default function UploadPanel(props: any) {
         setFormData={setFormData}
         errors={errors}
         existingExperiments={existingExperiments}
-        getDataTypeOptions={getDataTypeOptions}
         onShowCreateExperimentModal={onShowCreateExperimentModal}
         isPreclinicSelected={isPreclinicSelected}
         isStudyTypeSelected={isStudyTypeSelected}
         isExperimentSelected={isExperimentSelected}
+        projectId={formData.project?.id}
+        specialization={formData.specialisation}
+        studyTypeId={findStudyTypeId(apiStudyTypes, formData.studyType)}
+        apiDataTypes={apiDataTypes}
+        dataTypesLoading={dataTypesLoading}
+        dataTypesError={dataTypesError}
+        clearDataTypes={clearDataTypes}
       />
 
       <FileUploadArea
@@ -99,38 +290,32 @@ export default function UploadPanel(props: any) {
 
       <UploadedFilesList formData={formData} setFormData={setFormData} />
 
-      <div className="flex justify-end pt-4">
-        {formData.uploadedFiles && formData.uploadedFiles.length > 0 ? (
-          <Button size="lg" onClick={() => setShowImportDialog(true)}>
-            Import Files
-          </Button>
-        ) : (
-          <Button
-            size="lg"
-            onClick={handleSubmit}
-            disabled={
-              !formData.project ||
-              !formData.specialisation ||
-              (isHotlabSelected
-                ? !(formData.uploadedFiles && formData.uploadedFiles.length > 0)
-                : isPreclinicSelected
-                  ? !formData.studyType || !formData.dataType
-                  : !(
-                      formData.uploadedFiles &&
-                      formData.uploadedFiles.length > 0
-                    ))
-            }
-          >
-            Upload Data
-          </Button>
-        )}
+      <div className="flex justify-between items-center pt-4">
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={handleSampleFileDownload}
+          disabled={!canShowDownloadButton || sampleFileLoading}
+          type="button"
+        >
+          <Download className="mr-2 h-4 w-4" />
+          {sampleFileLoading ? "Downloading..." : "Download Sample File"}
+        </Button>
+
+        <Button
+          size="lg"
+          onClick={handleDataUpload}
+          disabled={!canUploadData || isUploading}
+        >
+          {isUploading ? "Uploading..." : "Upload Data"}
+        </Button>
       </div>
 
       <ExperimentLinkDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         existingExperiments={existingExperiments}
-        projectId={formData.project?.id || null}
+        projectId={formData.project?.id.toString() || null}
         onSubmit={(
           linkToExisting: boolean,
           experimentId?: string,
@@ -138,14 +323,14 @@ export default function UploadPanel(props: any) {
         ) => {
           if (linkToExisting && experimentId) {
             const selectedExperiment = existingExperiments.find(
-              (e: any) => e.id === experimentId
+              (e: ExperimentDropdownItem) => e.id.toString() === experimentId
             );
-            setFormData((prev: any) => ({
+            setFormData((prev: FormData) => ({
               ...prev,
-              experiment: selectedExperiment,
+              experiment: selectedExperiment || null,
             }));
           } else if (!linkToExisting && newExperimentName?.trim()) {
-            setFormData((prev: any) => ({
+            setFormData((prev: FormData) => ({
               ...prev,
               newExperimentName: newExperimentName.trim(),
             }));

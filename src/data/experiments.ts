@@ -49,7 +49,7 @@ export const isotopeOptions = [
 ];
 
 export const specialisationOptions = [
-  { value: "Preclinic", label: "Preclinic" },
+  { value: "Preclinical", label: "Preclinical" },
   { value: "CMC", label: "CMC" },
   { value: "Chemistry", label: "Chemistry" },
   { value: "Hotlab", label: "Hotlab" },

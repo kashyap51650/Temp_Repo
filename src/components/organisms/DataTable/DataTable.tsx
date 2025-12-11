@@ -34,12 +34,14 @@ import {
   TableRow,
 } from "../Table/Table";
 
-type DataTableProps<T extends { id: string }> = {
+type DataTableProps<T extends { id: string | number }> = {
   columns: ColumnDef<T>[];
   data: T[];
 };
 
-export function DataTable<T extends { id: string }>(props: DataTableProps<T>) {
+export function DataTable<T extends { id: string | number }>(
+  props: DataTableProps<T>
+) {
   const { columns, data } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
