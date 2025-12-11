@@ -5,14 +5,49 @@ import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import { Label } from "@/components/atoms/Label/Label";
 import { ExperimentSelect } from "@/components/atoms/Selects";
 import { useDataTypes, useExperimentsDropdown } from "@/hooks";
+import type { DataType, ExperimentDropdownItem, Project } from "@/lib/api";
 
 import { CustomSelect } from "./CustomSelect";
 
+interface SelectOption {
+  value: string;
+  label: string;
+  code?: string;
+}
+
+interface FormData {
+  project: Project | null;
+  specialisation: string;
+  studyType: string;
+  experiment: ExperimentDropdownItem | null;
+  dataType: string;
+  uploadedFile: File | null;
+  newExperimentName?: string;
+}
+
+interface ValidationErrors {
+  project?: string;
+  specialisation?: string;
+  studyType?: string;
+  experiment?: string;
+  dataType?: string;
+  uploadedFile?: string;
+}
+
+interface LocalExperiment {
+  id: string;
+  name: string;
+  cellLines: string[];
+  isotope: string;
+  projectId: string;
+  studyType: string;
+}
+
 interface ExperimentSectionProps {
-  formData: any;
-  setFormData: (updater: (prev: any) => any) => void;
-  errors: any;
-  existingExperiments: any[];
+  formData: FormData;
+  setFormData: (updater: (prev: FormData) => FormData) => void;
+  errors: ValidationErrors;
+  existingExperiments: ExperimentDropdownItem[];
   onShowCreateExperimentModal?: () => void;
   isPreclinicSelected: boolean;
   isStudyTypeSelected: boolean;
@@ -20,11 +55,11 @@ interface ExperimentSectionProps {
   projectId?: number;
   specialization?: string;
   studyTypeId?: number;
-  apiDataTypes?: any[];
+  apiDataTypes?: DataType[];
   dataTypesLoading?: boolean;
   dataTypesError?: string | null;
-  loadDataTypes?: (studyTypeId: number) => void;
-  clearDataTypes?: () => void;
+  loadDataTypes?: (studyTypeId: number) => void; // Keep for interface compatibility
+  clearDataTypes?: () => void; // Keep for interface compatibility
 }
 
 export function ExperimentSection({
@@ -88,12 +123,12 @@ export function ExperimentSection({
 
       const { experimentId, experimentName } = lastCreatedExperiment;
 
-      const formattedExperiment = {
+      const formattedExperiment: ExperimentDropdownItem = {
         id: experimentId,
         experiment_name: experimentName,
       };
 
-      setFormData((prev: any) => ({
+      setFormData((prev: FormData) => ({
         ...prev,
         experiment: formattedExperiment,
       }));
@@ -116,9 +151,9 @@ export function ExperimentSection({
   const actualDataTypesLoading = queryDataTypesLoading || dataTypesLoading;
   const actualDataTypesError = queryDataTypesError || dataTypesError;
 
-  const experimentsToShow =
+  const experimentsToShow: LocalExperiment[] =
     apiExperiments.length > 0
-      ? apiExperiments.map((exp: any) => ({
+      ? apiExperiments.map((exp: ExperimentDropdownItem) => ({
           id: exp.id.toString(),
           name: exp.experiment_name,
           cellLines: [],
@@ -128,13 +163,12 @@ export function ExperimentSection({
         }))
       : existingExperiments
           .filter(
-            (e: any) =>
-              e.projectId === formData.project?.id &&
-              e.studyType === formData.studyType
+            (e: ExperimentDropdownItem) =>
+              e.id.toString() === formData.project?.id?.toString()
           )
-          .map((exp: any) => ({
-            id: exp.id ? exp.id.toString() : "",
-            name: exp.experiment_name || exp.name,
+          .map((exp: ExperimentDropdownItem) => ({
+            id: exp.id.toString(),
+            name: exp.experiment_name,
             cellLines: [],
             isotope: "",
             projectId: projectId?.toString() || "",
@@ -142,17 +176,15 @@ export function ExperimentSection({
           }));
 
   const selectedExperimentId = formData.experiment
-    ? formData.experiment.id
-      ? formData.experiment.id.toString()
-      : ""
+    ? formData.experiment.id.toString()
     : "";
 
-  const dataTypeOptions = actualDataTypes
-    ? actualDataTypes.map((dataType: any) => ({
-        value: dataType.data_type_name,
-        label: dataType.data_type_name,
-      }))
-    : [];
+  const dataTypeOptions: SelectOption[] = actualDataTypes.map(
+    (dataType: DataType) => ({
+      value: dataType.data_type_name,
+      label: dataType.data_type_name,
+    })
+  );
 
   if (!isPreclinicSelected) {
     return null;
@@ -172,16 +204,19 @@ export function ExperimentSection({
           experiments={experimentsToShow}
           value={selectedExperimentId}
           onValueChange={(val: string) => {
-            const experiment = experimentsToShow.find((e: any) => e.id === val);
+            const experiment = experimentsToShow.find(
+              (e: LocalExperiment) => e.id === val
+            );
 
-            const formattedExperiment = experiment
-              ? {
-                  id: parseInt(experiment.id),
-                  experiment_name: experiment.name,
-                }
-              : null;
+            const formattedExperiment: ExperimentDropdownItem | null =
+              experiment
+                ? {
+                    id: parseInt(experiment.id),
+                    experiment_name: experiment.name,
+                  }
+                : null;
 
-            setFormData((prev: any) => ({
+            setFormData((prev: FormData) => ({
               ...prev,
               experiment: formattedExperiment,
             }));
@@ -223,7 +258,7 @@ export function ExperimentSection({
           value={formData.dataType}
           onValueChange={(value: string | string[]) => {
             const selectedValue = typeof value === "string" ? value : value[0];
-            setFormData((prev: any) => ({
+            setFormData((prev: FormData) => ({
               ...prev,
               dataType: selectedValue,
             }));

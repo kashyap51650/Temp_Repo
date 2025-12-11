@@ -41,36 +41,56 @@ interface SelectOption {
   label: string;
 }
 
-interface UploadPanelProps {
+// Define grouped prop interfaces
+interface FormProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  isCreatingNewProject: boolean;
   errors: ValidationErrors;
-  existingProjects: Array<{ id: string; name: string }>; // Change to match ProjectSelect format
-  existingExperiments: ExperimentDropdownItem[];
-  specialisationOptions: SelectOption[];
-  studyTypeOptions: SelectOption[];
   handleSubmit: () => void;
-  onShowCreateProjectModal: () => void;
-  onShowCreateExperimentModal: () => void;
-  onProjectChange: (project: Project | null) => void;
-  projectsLoading: boolean;
-  studyTypesLoading: boolean;
-  studyTypesError: string | null;
-  loadStudyTypes: () => void;
-  clearStudyTypes: () => void;
+  isCreatingNewProject: boolean;
+}
+
+interface ApiDataProps {
+  projects: Array<{ id: string; name: string }>;
+  experiments: ExperimentDropdownItem[];
+  studyTypes: SelectOption[];
+  dataTypes: DataType[];
+  specialisationOptions: SelectOption[];
   strainOptions: SelectOption[];
   apiStudyTypes: StudyType[];
-  apiDataTypes: DataType[];
+}
+
+interface LoadingProps {
+  projectsLoading: boolean;
+  studyTypesLoading: boolean;
   dataTypesLoading: boolean;
+  sampleFileLoading: boolean;
+}
+
+interface ErrorProps {
+  studyTypesError: string | null;
   dataTypesError: string | null;
-  loadDataTypes: () => void;
+}
+
+interface ActionProps {
+  onProjectChange: (project: Project | null) => void;
+  onShowCreateProjectModal: () => void;
+  onShowCreateExperimentModal: () => void;
+  loadStudyTypes: () => void;
+  clearStudyTypes: () => void;
   clearDataTypes: () => void;
   downloadSampleFile: (params: {
     study_type_id: number;
     data_type_id: number;
   }) => Promise<void>;
-  sampleFileLoading: boolean;
+}
+
+interface UploadPanelProps {
+  formProps: FormProps;
+  apiDataProps: ApiDataProps;
+  loadingProps: LoadingProps;
+  errorProps: ErrorProps;
+  actionProps: ActionProps;
 }
 
 const findStudyTypeId = (
@@ -87,31 +107,38 @@ const findStudyTypeId = (
 
 export default function UploadPanel(props: UploadPanelProps) {
   const {
-    formData,
-    setFormData,
-    isCreatingNewProject,
-    errors,
-    existingProjects,
-    existingExperiments,
-    specialisationOptions,
-    studyTypeOptions,
-    handleSubmit,
-    onShowCreateProjectModal,
-    onShowCreateExperimentModal,
-    onProjectChange,
-    projectsLoading,
-    studyTypesLoading,
-    studyTypesError,
-    loadStudyTypes,
-    clearStudyTypes,
-    strainOptions,
-    apiDataTypes,
-    dataTypesLoading,
-    dataTypesError,
-    loadDataTypes,
-    clearDataTypes,
-    downloadSampleFile,
-    sampleFileLoading,
+    formProps: {
+      formData,
+      setFormData,
+      errors,
+      handleSubmit,
+      isCreatingNewProject,
+    },
+    apiDataProps: {
+      projects: existingProjects,
+      experiments: existingExperiments,
+      studyTypes: studyTypeOptions,
+      dataTypes: apiDataTypes,
+      specialisationOptions,
+      strainOptions,
+      apiStudyTypes,
+    },
+    loadingProps: {
+      projectsLoading,
+      studyTypesLoading,
+      dataTypesLoading,
+      sampleFileLoading,
+    },
+    errorProps: { studyTypesError, dataTypesError },
+    actionProps: {
+      onProjectChange,
+      onShowCreateProjectModal,
+      onShowCreateExperimentModal,
+      loadStudyTypes,
+      clearStudyTypes,
+      clearDataTypes,
+      downloadSampleFile,
+    },
   } = props;
 
   const isProjectSelected = !!formData.project;
@@ -143,10 +170,7 @@ export default function UploadPanel(props: UploadPanelProps) {
     event.preventDefault();
     event.stopPropagation();
 
-    const studyTypeId = findStudyTypeId(
-      props.apiStudyTypes,
-      formData.studyType
-    );
+    const studyTypeId = findStudyTypeId(apiStudyTypes, formData.studyType);
 
     const dataTypeId = apiDataTypes?.find(
       (dt: DataType) => dt.data_type_name === formData.dataType
@@ -247,11 +271,10 @@ export default function UploadPanel(props: UploadPanelProps) {
         isExperimentSelected={isExperimentSelected}
         projectId={formData.project?.id}
         specialization={formData.specialisation}
-        studyTypeId={findStudyTypeId(props.apiStudyTypes, formData.studyType)}
+        studyTypeId={findStudyTypeId(apiStudyTypes, formData.studyType)}
         apiDataTypes={apiDataTypes}
         dataTypesLoading={dataTypesLoading}
         dataTypesError={dataTypesError}
-        loadDataTypes={loadDataTypes}
         clearDataTypes={clearDataTypes}
       />
 

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppDispatch } from "@/app/store/hooks";
 import { projectChanged } from "@/app/store/slices/experimentSlice";
@@ -233,18 +233,6 @@ export default function DataUploadCommon() {
     }
   };
 
-  const handleLoadDataTypes = useCallback(() => {
-    const studyTypeId = apiStudyTypes.find(
-      (st) =>
-        st.study_type_name === formData.studyType ||
-        (st.study_type_name === "Bio Distribution" &&
-          formData.studyType === "Biodistribution")
-    )?.id;
-    if (studyTypeId) {
-      // will be used in future after other specialisations are added
-    }
-  }, [apiStudyTypes, formData.studyType]);
-
   const existingProjectsForSelect = useMemo(() => {
     return apiProjects.map((project) => ({
       id: project.id.toString(),
@@ -295,6 +283,46 @@ export default function DataUploadCommon() {
       : studyTypeOptions;
   }, [apiStudyTypes]);
 
+  const formProps = {
+    formData,
+    setFormData,
+    errors,
+    handleSubmit,
+    isCreatingNewProject,
+  };
+
+  const apiDataProps = {
+    projects: existingProjectsForSelect,
+    experiments: existingExperiments,
+    studyTypes: dynamicStudyTypeOptions,
+    dataTypes: apiDataTypes,
+    specialisationOptions,
+    strainOptions,
+    apiStudyTypes,
+  };
+
+  const loadingProps = {
+    projectsLoading,
+    studyTypesLoading,
+    dataTypesLoading,
+    sampleFileLoading,
+  };
+
+  const errorProps = {
+    studyTypesError,
+    dataTypesError,
+  };
+
+  const actionProps = {
+    onProjectChange: handleProjectChange,
+    onShowCreateProjectModal: () => setShowCreateProjectModal(true),
+    onShowCreateExperimentModal: () => setShowCreateExperimentModal(true),
+    loadStudyTypes,
+    clearStudyTypes,
+    clearDataTypes,
+    downloadSampleFile,
+  };
+
   return (
     <>
       <Card className="p-6 w-full mx-auto shadow-none">
@@ -306,34 +334,11 @@ export default function DataUploadCommon() {
 
           <TabsContent value="upload-data" className="space-y-6 mt-6">
             <UploadPanel
-              formData={formData}
-              setFormData={setFormData}
-              isCreatingNewProject={isCreatingNewProject}
-              errors={errors}
-              existingProjects={existingProjectsForSelect}
-              existingExperiments={existingExperiments}
-              specialisationOptions={specialisationOptions}
-              studyTypeOptions={dynamicStudyTypeOptions}
-              handleSubmit={handleSubmit}
-              onShowCreateProjectModal={() => setShowCreateProjectModal(true)}
-              onShowCreateExperimentModal={() =>
-                setShowCreateExperimentModal(true)
-              }
-              onProjectChange={handleProjectChange}
-              projectsLoading={projectsLoading}
-              studyTypesLoading={studyTypesLoading}
-              studyTypesError={studyTypesError}
-              loadStudyTypes={loadStudyTypes}
-              clearStudyTypes={clearStudyTypes}
-              strainOptions={strainOptions}
-              apiStudyTypes={apiStudyTypes}
-              apiDataTypes={apiDataTypes}
-              dataTypesLoading={dataTypesLoading}
-              dataTypesError={dataTypesError}
-              loadDataTypes={handleLoadDataTypes}
-              clearDataTypes={clearDataTypes}
-              downloadSampleFile={downloadSampleFile}
-              sampleFileLoading={sampleFileLoading}
+              formProps={formProps}
+              apiDataProps={apiDataProps}
+              loadingProps={loadingProps}
+              errorProps={errorProps}
+              actionProps={actionProps}
             />
           </TabsContent>
 

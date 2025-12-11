@@ -57,5 +57,17 @@ export const FILE_SIZE_LIMITS = {
   EXCEL_FILE: 10 * 1024 * 1024, // 10MB in bytes for Excel uploads
 } as const;
 
+// File type constants
+export const FILE_TYPES = {
+  EXCEL: {
+    EXTENSIONS: [".xlsx"],
+    MIME_TYPES: [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ],
+    ACCEPT:
+      ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  },
+} as const;
+
 // Legacy constant for backward compatibility
 export const MAX_FILE_SIZE = FILE_SIZE_LIMITS.SMALL_FILE;

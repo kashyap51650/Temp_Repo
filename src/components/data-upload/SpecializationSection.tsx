@@ -1,14 +1,40 @@
 import { Label } from "@/components/atoms/Label/Label";
+import type { ExperimentDropdownItem, Project } from "@/lib/api";
 
 import { CustomSelect } from "./CustomSelect";
 
+interface SelectOption {
+  value: string;
+  label: string;
+  code?: string;
+}
+
+interface FormData {
+  project: Project | null;
+  specialisation: string;
+  studyType: string;
+  experiment: ExperimentDropdownItem | null;
+  dataType: string;
+  uploadedFile: File | null;
+  newExperimentName?: string;
+}
+
+interface ValidationErrors {
+  project?: string;
+  specialisation?: string;
+  studyType?: string;
+  experiment?: string;
+  dataType?: string;
+  uploadedFile?: string;
+}
+
 interface SpecializationSectionProps {
-  formData: any;
-  setFormData: (updater: (prev: any) => any) => void;
-  errors: any;
-  specialisationOptions: any[];
-  studyTypeOptions: any[];
-  strainOptions: any[];
+  formData: FormData;
+  setFormData: (updater: (prev: FormData) => FormData) => void;
+  errors: ValidationErrors;
+  specialisationOptions: SelectOption[];
+  studyTypeOptions: SelectOption[];
+  strainOptions: SelectOption[];
   isProjectSelected: boolean;
   isPreclinicSelected: boolean;
   isSpecialisationSelected: boolean;
@@ -32,7 +58,7 @@ export function SpecializationSection({
 }: SpecializationSectionProps) {
   const handleSpecialisationChange = (value: string | string[]) => {
     const selectedValue = typeof value === "string" ? value : value[0];
-    setFormData((prev: any) => ({
+    setFormData((prev: FormData) => ({
       ...prev,
       specialisation: selectedValue,
       studyType: "",
@@ -87,7 +113,7 @@ export function SpecializationSection({
             onValueChange={(value: string | string[]) => {
               const selectedValue =
                 typeof value === "string" ? value : value[0];
-              setFormData((prev: any) => ({
+              setFormData((prev: FormData) => ({
                 ...prev,
                 studyType: selectedValue,
               }));

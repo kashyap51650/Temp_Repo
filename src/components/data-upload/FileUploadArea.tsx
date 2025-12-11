@@ -4,11 +4,22 @@ import { toast } from "sonner";
 
 import { Button, Input } from "@/components/atoms";
 import { Label } from "@/components/atoms/Label/Label";
-import { FILE_SIZE_LIMITS } from "@/lib/constants";
+import type { ExperimentDropdownItem, Project } from "@/lib/api";
+import { FILE_SIZE_LIMITS, FILE_TYPES } from "@/lib/constants";
+
+interface FormData {
+  project: Project | null;
+  specialisation: string;
+  studyType: string;
+  experiment: ExperimentDropdownItem | null;
+  dataType: string;
+  uploadedFile: File | null;
+  newExperimentName?: string;
+}
 
 interface FileUploadAreaProps {
-  formData: any;
-  setFormData: (updater: (prev: any) => any) => void;
+  formData: FormData;
+  setFormData: (updater: (prev: FormData) => FormData) => void;
   isProjectSelected: boolean;
   isHotlabSelected: boolean;
   isPreclinicSelected: boolean;
@@ -49,10 +60,12 @@ export function FileUploadArea({
   }, [isUploading]);
 
   const validateXlsxFile = (file: File): boolean => {
-    const isValidExtension = file.name.toLowerCase().endsWith(".xlsx");
-    const isValidMimeType =
-      file.type ===
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const isValidExtension = FILE_TYPES.EXCEL.EXTENSIONS.some((ext) =>
+      file.name.toLowerCase().endsWith(ext)
+    );
+    const isValidMimeType = (
+      FILE_TYPES.EXCEL.MIME_TYPES as readonly string[]
+    ).includes(file.type);
 
     if (!isValidExtension && !isValidMimeType) {
       toast.error("Invalid file type. Please upload an Excel file (.xlsx).");
@@ -78,7 +91,7 @@ export function FileUploadArea({
       return;
     }
 
-    setFormData((prev: any) => ({
+    setFormData((prev: FormData) => ({
       ...prev,
       uploadedFile: file,
     }));
@@ -133,7 +146,11 @@ export function FileUploadArea({
   return (
     <div className="space-y-2">
       <Label
-        className={`${isPreclinicSelected && !isDataTypeSelected ? "text-muted-foreground" : ""}`}
+        className={`${
+          isPreclinicSelected && !isDataTypeSelected
+            ? "text-muted-foreground"
+            : ""
+        }`}
       >
         {formData.dataType
           ? `Upload ${formData.dataType} (.xlsx)`
@@ -158,7 +175,7 @@ export function FileUploadArea({
             ref={fileInputRef}
             type="file"
             id="file-upload"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            accept={FILE_TYPES.EXCEL.ACCEPT}
             disabled={isUploadDisabled}
             className="hidden"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
