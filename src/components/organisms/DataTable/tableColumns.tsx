@@ -682,7 +682,9 @@ export function getValidationColumns(
       cell: ({ row }) => (
         <RandomizeDateCell
           value={row.original.randomisationDate}
-          onChange={() => onRandomize?.(row.original)}
+          onChange={(date) => {
+            row.original.randomisationDate = date;
+          }}
         />
       ),
     },

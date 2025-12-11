@@ -76,7 +76,7 @@ export default function RandomizationResults({
   }, [results]);
 
   const [selections, setSelections] = React.useState<string[]>(() =>
-    groups.map((g) => g.options[0])
+    groups.map(() => "All")
   );
   const [nameFilter, setNameFilter] = React.useState("");
 
@@ -110,11 +110,11 @@ export default function RandomizationResults({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center mb-3 gap-3 py-2">
         <div className="flex flex-col gap-2">
-          <Label>Name Filter</Label>
+          <Label>Filter Group</Label>
           <Input
-            placeholder="Enter name filter..."
+            placeholder="Enter group name"
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             className="w-64"
@@ -125,16 +125,15 @@ export default function RandomizationResults({
         </Button>
       </div>
 
-      <div className="bg-white  shadow-sm border ">
-        {/* table is unique per group so we can't use data table here  */}
-        <Table className="min-w-full border border-gray-200">
+      <div className="bg-white p-2 border border-gray-200 rounded-md text-right">
+        <Table className="min-w-full border border-gray-200 ">
           <TableHeader>
             <TableRow>
               {groups.map((g, idx) => (
                 <TableHead
                   key={g.key}
                   colSpan={TABLE_COLUMNS.length}
-                  className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 p-3`}
+                  className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 px-3 py-2`}
                 >
                   {g.label}
                 </TableHead>
@@ -145,7 +144,7 @@ export default function RandomizationResults({
                 <TableHead
                   key={g.key + "-select"}
                   colSpan={TABLE_COLUMNS.length}
-                  className={`border border-gray-200 ${getGroupColorBody(idx)} p-3`}
+                  className={`border border-gray-200 ${getGroupColorBody(idx)} px-3 py-2`}
                 >
                   <div className="flex justify-center">
                     <Select
@@ -160,6 +159,9 @@ export default function RandomizationResults({
                         <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem key="all" value="All">
+                          All
+                        </SelectItem>
                         {g.options.map((opt) => (
                           <SelectItem key={opt} value={opt}>
                             {opt}
@@ -177,7 +179,7 @@ export default function RandomizationResults({
                   {TABLE_COLUMNS.map((col) => (
                     <TableHead
                       key={g.key + "-" + col.key}
-                      className={`text-left font-semibold border border-gray-200 ${getGroupColorBody(idx)} p-3`}
+                      className={`text-left font-semibold border border-gray-200 ${getGroupColorBody(idx)} px-3 py-2`}
                     >
                       {col.label}
                     </TableHead>
@@ -194,7 +196,7 @@ export default function RandomizationResults({
                     {TABLE_COLUMNS.map((col) => (
                       <TableCell
                         key={g.key + "-" + col.key + "-" + i}
-                        className={`${getGroupColorBody(idx)} border border-gray-200 p-3`}
+                        className={`${getGroupColorBody(idx)} border border-gray-200 px-3 py-2`}
                       >
                         {(g.data[i] as Record<string, string | number>)?.[
                           col.key
@@ -211,7 +213,7 @@ export default function RandomizationResults({
                   {TABLE_COLUMNS.map((col, colIdx) => (
                     <TableCell
                       key={g.key + "-avg-" + col.key}
-                      className={`${getGroupColorHeader(idx)} border border-gray-200 font-bold text-left p-3`}
+                      className={`${getGroupColorHeader(idx)} border border-gray-200 font-bold text-left px-3 py-2`}
                     >
                       {colIdx === 0
                         ? "AVERAGE"
@@ -229,7 +231,7 @@ export default function RandomizationResults({
                   {TABLE_COLUMNS.map((col, colIdx) => (
                     <TableCell
                       key={g.key + "-stdev-" + col.key}
-                      className="border border-gray-200 p-3"
+                      className="border border-gray-200 px-3 py-2"
                     >
                       {colIdx === 0
                         ? "Stdev"
@@ -243,6 +245,9 @@ export default function RandomizationResults({
             </TableRow>
           </TableBody>
         </Table>
+        <Button size="lg" className="mt-3 ml-auto">
+          Apply
+        </Button>
       </div>
     </div>
   );
