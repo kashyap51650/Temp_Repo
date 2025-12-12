@@ -1,6 +1,11 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
+import type {
+  RandomizationPreviewData,
+  RandomizationPreviewResponse,
+} from "@/types/randomization";
+
 import type { UserFilters, UsersResponse } from "../types/auth";
 import { FILE_SIZE_LIMITS } from "./constants";
 
@@ -80,6 +85,13 @@ export const API_CONFIG = {
       IMPORT: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-experiment-data`,
       MY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/my-experiment-data`,
     },
+    EXPERIMENT_DRUGS: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
+    },
+    RANDOMIZATION: {
+      PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,
+      CONFIRM: `/api/${import.meta.env.VITE_API_VERSION}/randomization/confirm`,
+    },
   },
 } as const;
 
@@ -105,6 +117,21 @@ export interface ApiResponse<T = unknown> {
   success?: boolean;
 }
 
+export interface ExperimentDropdownItem {
+  id: number;
+  experiment_name: string;
+}
+
+export interface ExperimentsDropdownResponse {
+  success: boolean;
+  message: string;
+  data: ExperimentDropdownItem[];
+}
+export interface ExperimentFilters {
+  project_id: number;
+  study_type_id: number;
+  specialization: string;
+}
 // Common error handling utility functions
 export function extractValidationErrors(error: ApiError): string {
   if (!error.details || !Array.isArray(error.details)) {
@@ -1227,5 +1254,36 @@ export const uploadedExperimentDataApi = {
       : API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.MY_EXPERIMENT_DATA;
 
     return apiClient.get<UploadedExperimentDataResponse>(endpoint);
+  },
+};
+
+export const experimentDrugApi = {
+  getExperimentDrugsDropdown: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: Array<{
+      id: number;
+      drug_name: string;
+      om_number: string;
+    }>;
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN);
+  },
+};
+
+export const randomizationApi = {
+  previewRandomization: async (payload: {
+    experiment_id: number;
+    mice_per_group: number;
+    randomization_type: string;
+  }): Promise<RandomizationPreviewResponse> => {
+    return apiClient.post(API_CONFIG.ENDPOINTS.RANDOMIZATION.PREVIEW, {
+      ...payload,
+    });
+  },
+  confirmRandomization: async (payload: RandomizationPreviewData) => {
+    return apiClient.post(API_CONFIG.ENDPOINTS.RANDOMIZATION.CONFIRM, {
+      ...payload,
+    });
   },
 };

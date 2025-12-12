@@ -71,3 +71,8 @@ export const FILE_TYPES = {
 
 // Legacy constant for backward compatibility
 export const MAX_FILE_SIZE = FILE_SIZE_LIMITS.SMALL_FILE;
+
+export const RANDOMIZATION_PREVIEW_TYPES = {
+  VOLUME: "volume",
+  BODY_WEIGHT: "body_weight",
+} as const;

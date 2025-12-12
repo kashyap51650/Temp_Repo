@@ -1,6 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { RANDOMIZATION_PREVIEW_TYPES } from "@/lib/constants";
+
 import { Card } from "../atoms";
 import { Label } from "../atoms/Label/Label";
 import {
@@ -56,7 +58,14 @@ export default function DataValidation() {
   };
 
   const handleRandomize = () => {
-    navigate({ to: "/randomization-results" });
+    navigate({
+      to: "/randomization-results",
+      search: {
+        experiment_id: 19,
+        mice_per_group: 5,
+        randomization_type: RANDOMIZATION_PREVIEW_TYPES.VOLUME,
+      },
+    });
   };
   const columns = getValidationColumns(handleViewData, handleRandomize);
 

@@ -1,5 +1,6 @@
+import { useRouterState } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { Label } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
@@ -11,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/atoms/Select/Select";
-import { DEFAULT_GROUPS } from "@/components/organisms/DataTable/tableData";
 import {
   Table,
   TableBody,
@@ -20,90 +20,75 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/organisms/Table/Table";
+import { useRendomizationResult } from "@/hooks/useRendomizationResult";
+import {
+  getGroupColorBody,
+  getGroupColorHeader,
+  TABLE_COLUMNS,
+} from "@/lib/randomization-result-table-utils";
+import type { Group } from "@/types/randomization";
 
-export interface RandomizationResultsProps {
-  results?: Record<string, Array<{ mouse: string; tumorVol: number }>>;
-}
+const transformApiGroupsForUI = (apiGroups: Group[]) =>
+  apiGroups.map((g) => ({
+    key: g.group_code,
+    label: g.group_name,
+    avarage_measurement: g.average_measurement,
+    std_deviation: g.std_deviation,
+    data: g.mice.map((m) => ({
+      mouse: m.mouse_delivery_id,
+      tumorVol: m.measurement_value,
+    })),
+  }));
 
-export interface TableColumn {
-  key: string;
-  label: string;
-}
+export default function RandomizationResults() {
+  const {
+    experimentDrugs,
+    selectedGroupDrug,
+    setSelectedGroupDrug,
+    isPending,
+    previewRandomizationfn,
+    isConfirmationPending,
+    handleConfirmClick,
+    randomizationData,
+    handleBack,
+  } = useRendomizationResult();
 
-export const TABLE_COLUMNS: TableColumn[] = [
-  { key: "mouse", label: "Mouse #" },
-  { key: "tumorVol", label: "Tumor Vol" },
-];
+  const groups = useMemo(() => {
+    if (!randomizationData) return null;
+    return transformApiGroupsForUI(randomizationData.groups);
+  }, [randomizationData]);
 
-const GROUP_COLORS_HEADER = [
-  "bg-green-300",
-  "bg-yellow-300",
-  "bg-orange-300",
-  "bg-red-300",
-  "bg-pink-300",
-  "bg-purple-300",
-  "bg-blue-300",
-  "bg-cyan-300",
-  "bg-teal-300",
-  "bg-lime-300",
-];
-const GROUP_COLORS_BODY = [
-  "bg-green-100",
-  "bg-yellow-100",
-  "bg-orange-100",
-  "bg-red-100",
-  "bg-pink-100",
-  "bg-purple-100",
-  "bg-blue-100",
-  "bg-cyan-100",
-  "bg-teal-100",
-  "bg-lime-100",
-];
-const getGroupColorHeader = (idx: number) =>
-  GROUP_COLORS_HEADER[idx % GROUP_COLORS_HEADER.length];
-const getGroupColorBody = (idx: number) =>
-  GROUP_COLORS_BODY[idx % GROUP_COLORS_BODY.length];
-
-export default function RandomizationResults({
-  results,
-}: RandomizationResultsProps) {
-  const groups = React.useMemo(() => {
-    if (!results) return DEFAULT_GROUPS;
-    return DEFAULT_GROUPS.map((g) => ({
-      ...g,
-      data: results[g.key] ?? g.data,
-    }));
-  }, [results]);
-
-  const [selections, setSelections] = React.useState<string[]>(() =>
-    groups.map(() => "All")
-  );
-  const [nameFilter, setNameFilter] = React.useState("");
-
-  const numRows = Math.max(...groups.map((g) => g.data.length));
-  const average = (arr: number[]) =>
-    arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : "-";
-  const stdev = (arr: number[]) => {
-    if (!arr.length) return "-";
-    const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
-    const variance =
-      arr.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / arr.length;
-    return Math.sqrt(variance).toFixed(6);
+  const state = useRouterState({ select: (s) => s.location.search }) as {
+    experiment_id: number;
+    mice_per_group: number;
+    randomization_type: string;
   };
 
+  const [nameFilter, setNameFilter] = React.useState("");
+
+  useEffect(() => {
+    previewRandomizationfn({
+      experiment_id: state.experiment_id,
+      mice_per_group: state.mice_per_group,
+      randomization_type: state.randomization_type,
+    });
+  }, [previewRandomizationfn]);
+
   const applyFilters = () => {
-    console.log("Applying filters:", { nameFilter });
+    // clear all selections
+    setSelectedGroupDrug({});
+    previewRandomizationfn({
+      experiment_id: 19,
+      mice_per_group: nameFilter ? Number(nameFilter) : 5,
+      randomization_type: "volume",
+    });
   };
 
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center ">
-          <Button
-            variant="link"
-            size={"icon-lg"}
-            onClick={() => (window.location.href = "/data-validate")}
-          >
+          <Button variant="link" size={"icon-lg"} onClick={handleBack}>
             <ArrowLeft className="size-6" />
           </Button>
           <h1 className="text-3xl font-bold">Randomization Results</h1>
@@ -112,143 +97,157 @@ export default function RandomizationResults({
 
       <div className="flex items-center mb-3 gap-3 py-2">
         <div className="flex flex-col gap-2">
-          <Label>Filter Group</Label>
+          <Label>Number of Mouse in Group</Label>
           <Input
-            placeholder="Enter group name"
+            placeholder="Enter mouse count"
             value={nameFilter}
             onChange={(e) => setNameFilter(e.target.value)}
             className="w-64"
+            type="number"
           />
         </div>
-        <Button onClick={applyFilters} className="mt-6">
+        <Button onClick={applyFilters} className="mt-6" disabled={isPending}>
           Apply
         </Button>
       </div>
 
-      <div className="bg-white p-2 border border-gray-200 rounded-md text-right">
-        <Table className="min-w-full border border-gray-200 ">
-          <TableHeader>
-            <TableRow>
-              {groups.map((g, idx) => (
-                <TableHead
-                  key={g.key}
-                  colSpan={TABLE_COLUMNS.length}
-                  className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 px-3 py-2`}
-                >
-                  {g.label}
-                </TableHead>
-              ))}
-            </TableRow>
-            <TableRow>
-              {groups.map((g, idx) => (
-                <TableHead
-                  key={g.key + "-select"}
-                  colSpan={TABLE_COLUMNS.length}
-                  className={`border border-gray-200 ${getGroupColorBody(idx)} px-3 py-2`}
-                >
-                  <div className="flex justify-center">
-                    <Select
-                      value={selections[idx]}
-                      onValueChange={(v) =>
-                        setSelections((s) =>
-                          s.map((x, i) => (i === idx ? v : x))
-                        )
-                      }
-                    >
-                      <SelectTrigger className="w-44 bg-white">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem key="all" value="All">
-                          All
-                        </SelectItem>
-                        {g.options.map((opt) => (
-                          <SelectItem key={opt} value={opt}>
-                            {opt}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-            <TableRow>
-              {groups.map((g, idx) => (
-                <React.Fragment key={g.key + "-headers"}>
-                  {TABLE_COLUMNS.map((col) => (
-                    <TableHead
-                      key={g.key + "-" + col.key}
-                      className={`text-left font-semibold border border-gray-200 ${getGroupColorBody(idx)} px-3 py-2`}
-                    >
-                      {col.label}
-                    </TableHead>
-                  ))}
-                </React.Fragment>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: numRows }).map((_, i) => (
-              <TableRow key={i}>
-                {groups.map((g, idx) => (
-                  <React.Fragment key={g.key + "-row-" + i}>
-                    {TABLE_COLUMNS.map((col) => (
-                      <TableCell
-                        key={g.key + "-" + col.key + "-" + i}
-                        className={`${getGroupColorBody(idx)} border border-gray-200 px-3 py-2`}
+      {isPending ? (
+        <p>Loading randomization results...</p>
+      ) : (
+        <div className="bg-white p-2 border border-gray-200 rounded-md text-right">
+          <Table className="min-w-full border border-gray-200">
+            <TableHeader>
+              <TableRow>
+                {groups?.map((g, idx) => (
+                  <TableHead
+                    key={g.key}
+                    colSpan={TABLE_COLUMNS.length}
+                    className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 p-3`}
+                  >
+                    {g.label}
+                  </TableHead>
+                ))}
+              </TableRow>
+              <TableRow>
+                {groups?.map((g, idx) => (
+                  <TableHead
+                    key={g.key + "-select"}
+                    colSpan={TABLE_COLUMNS.length}
+                    className={`border border-gray-200 ${getGroupColorBody(idx)} p-3`}
+                  >
+                    <div className="flex justify-center">
+                      <Select
+                        value={selectedGroupDrug[g.key] ?? ""}
+                        onValueChange={(v) => {
+                          setSelectedGroupDrug((prev) => ({
+                            ...prev,
+                            [g.key]: v,
+                          }));
+                        }}
                       >
-                        {(g.data[i] as Record<string, string | number>)?.[
-                          col.key
-                        ] ?? ""}
-                      </TableCell>
+                        <SelectTrigger className="w-44 bg-white">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {experimentDrugs.map((drug) => (
+                            <SelectItem
+                              key={drug.id}
+                              value={drug.id.toString()}
+                            >
+                              {drug.drug_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </TableHead>
+                ))}
+              </TableRow>
+              <TableRow>
+                {groups?.map((g, idx) => (
+                  <React.Fragment key={g.key + "-headers"}>
+                    {TABLE_COLUMNS.map((col) => (
+                      <TableHead
+                        key={g.key + "-" + col.key}
+                        className={`text-left font-semibold border border-gray-200 ${getGroupColorBody(idx)} p-3`}
+                      >
+                        {col.label}
+                      </TableHead>
                     ))}
                   </React.Fragment>
                 ))}
               </TableRow>
-            ))}
-            <TableRow>
-              {groups.map((g, idx) => (
-                <React.Fragment key={g.key + "-avg"}>
-                  {TABLE_COLUMNS.map((col, colIdx) => (
-                    <TableCell
-                      key={g.key + "-avg-" + col.key}
-                      className={`${getGroupColorHeader(idx)} border border-gray-200 font-bold text-left px-3 py-2`}
-                    >
-                      {colIdx === 0
-                        ? "AVERAGE"
-                        : col.key === "tumorVol"
-                          ? average(g.data.map((x) => x.tumorVol))
-                          : "-"}
-                    </TableCell>
+            </TableHeader>
+            <TableBody>
+              {Array.from({
+                length: randomizationData?.mice_per_group || 0,
+              }).map((_, i) => (
+                <TableRow key={i}>
+                  {groups?.map((g, idx) => (
+                    <React.Fragment key={g.key + "-row-" + i}>
+                      {TABLE_COLUMNS.map((col) => (
+                        <TableCell
+                          key={g.key + "-" + col.key + "-" + i}
+                          className={`${getGroupColorBody(idx)} border border-gray-200 p-3`}
+                        >
+                          {(g.data[i] as Record<string, string | number>)?.[
+                            col.key
+                          ] ?? ""}
+                        </TableCell>
+                      ))}
+                    </React.Fragment>
                   ))}
-                </React.Fragment>
+                </TableRow>
               ))}
-            </TableRow>
-            <TableRow>
-              {groups.map((g) => (
-                <React.Fragment key={g.key + "-stdev"}>
-                  {TABLE_COLUMNS.map((col, colIdx) => (
+              <TableRow>
+                {groups?.map((g, idx) => (
+                  <React.Fragment key={g.key + "-avg"}>
                     <TableCell
-                      key={g.key + "-stdev-" + col.key}
-                      className="border border-gray-200 px-3 py-2"
+                      key={g.key + "-avg-label"}
+                      className={`${getGroupColorHeader(idx)} border border-gray-200 font-bold text-left p-3`}
                     >
-                      {colIdx === 0
-                        ? "Stdev"
-                        : col.key === "tumorVol"
-                          ? stdev(g.data.map((x) => x.tumorVol))
-                          : "-"}
+                      AVERAGE
                     </TableCell>
-                  ))}
-                </React.Fragment>
-              ))}
-            </TableRow>
-          </TableBody>
-        </Table>
-        <Button size="lg" className="mt-3 ml-auto">
-          Apply
-        </Button>
-      </div>
+                    <TableCell
+                      key={g.key + "-avg-value"}
+                      className={`${getGroupColorHeader(idx)} border border-gray-200 font-bold text-left p-3`}
+                    >
+                      {g.avarage_measurement}
+                    </TableCell>
+                  </React.Fragment>
+                ))}
+              </TableRow>
+
+              <TableRow>
+                {groups?.map((g) => (
+                  <React.Fragment key={g.key + "-stdev"}>
+                    <TableCell
+                      key={g.key + "-stdev-label"}
+                      className=" border border-gray-200 font-bold text-left px-3 py-2"
+                    >
+                      STDEV
+                    </TableCell>
+                    <TableCell
+                      key={g.key + "-stdev-value"}
+                      className=" border border-gray-200 font-bold text-left px-3 py-2"
+                    >
+                      {g.std_deviation}
+                    </TableCell>
+                  </React.Fragment>
+                ))}
+              </TableRow>
+            </TableBody>
+          </Table>
+          <Button
+            size="lg"
+            className="mt-3 ml-auto"
+            onClick={handleConfirmClick}
+            disabled={isConfirmationPending}
+          >
+            {isConfirmationPending ? "Applying..." : "Apply"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

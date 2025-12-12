@@ -5,6 +5,7 @@ export * from "./useDataTypes";
 export * from "./useDebounce";
 export * from "./useExperimentData";
 export * from "./useExperimentDataImport";
+export * from "./useExperimentDrugsDropdown";
 export * from "./useExperimentsDropdown";
 export * from "./useFetch";
 export { useMasterData, type UseMasterDataResult } from "./useMasterData";
