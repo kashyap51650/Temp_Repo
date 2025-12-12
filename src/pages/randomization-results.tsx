@@ -72,15 +72,15 @@ export default function RandomizationResults() {
       mice_per_group: state.mice_per_group,
       randomization_type: state.randomization_type,
     });
-  }, [previewRandomizationfn]);
+  }, []);
 
   const applyFilters = () => {
     // clear all selections
     setSelectedGroupDrug({});
     previewRandomizationfn({
-      experiment_id: 19,
-      mice_per_group: nameFilter ? Number(nameFilter) : 5,
-      randomization_type: "volume",
+      experiment_id: state.experiment_id,
+      mice_per_group: state.mice_per_group,
+      randomization_type: state.randomization_type,
     });
   };
 

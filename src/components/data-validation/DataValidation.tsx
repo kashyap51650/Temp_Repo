@@ -87,11 +87,18 @@ export default function DataValidation() {
     setShowDataViewModal(true);
   };
 
-  const handleRandomize = () => {
+  const handleRandomize = (row: ValidationRow) => {
+    const experimentData = data?.items.find(
+      (item) => item.id === Number(row.id)
+    );
+    if (!experimentData) {
+      console.error("Experiment data not found for row:", row);
+      return;
+    }
     navigate({
       to: "/randomization-results",
       search: {
-        experiment_id: 19,
+        experiment_id: experimentData?.experiment.id,
         mice_per_group: 5,
         randomization_type: RANDOMIZATION_PREVIEW_TYPES.VOLUME,
       },
