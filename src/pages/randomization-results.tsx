@@ -79,7 +79,7 @@ export default function RandomizationResults() {
     setSelectedGroupDrug({});
     previewRandomizationfn({
       experiment_id: state.experiment_id,
-      mice_per_group: state.mice_per_group,
+      mice_per_group: nameFilter ? Number(nameFilter) : state.mice_per_group,
       randomization_type: state.randomization_type,
     });
   };
