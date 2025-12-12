@@ -8,8 +8,11 @@ import {
   getDataViewItems,
   type ValidationRow,
 } from "../organisms/DataTable/tableData";
+import { biodWeightSheetData } from "../organisms/DataTable/tableData";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
+import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
+import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SuccessAlert } from "./SuccessAlert";
 
@@ -29,15 +32,25 @@ export function DataViewModal({
   );
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showWeightSheetModal, setShowWeightSheetModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [selectedItem, setSelectedItem] = useState<DataViewItem | null>(null);
+  const [bioDWeightSheetMode, setBioDWeightSheetMode] = useState<
+    "view" | "edit" | null
+  >(null);
 
   const handleAction = (
     item: DataViewItem,
     action: "view" | "edit" | "approve" | "reject"
   ) => {
     setSelectedItem(item);
+
+    if (item.name === "BioD Weight Sheet") {
+      setShowWeightSheetModal(true);
+      setBioDWeightSheetMode(action === "edit" ? "edit" : "view");
+      return;
+    }
 
     switch (action) {
       case "view":
@@ -187,6 +200,32 @@ export function DataViewModal({
         onSave={handleSaveEdit}
         experimentName={experiment.experimentName}
       />
+
+      {selectedItem &&
+        selectedItem.name === "BioD Weight Sheet" &&
+        showWeightSheetModal &&
+        (bioDWeightSheetMode === "edit" ? (
+          <BioDWeightSheetModal
+            isOpen={showWeightSheetModal}
+            onClose={() => {
+              setShowWeightSheetModal(false);
+              setBioDWeightSheetMode(null);
+            }}
+            onSave={handleSaveEdit}
+            experimentName={experiment.experimentName}
+            data={biodWeightSheetData}
+          />
+        ) : (
+          <BioDWeightSheetViewModal
+            isOpen={showWeightSheetModal}
+            onClose={() => {
+              setShowWeightSheetModal(false);
+              setBioDWeightSheetMode(null);
+            }}
+            experimentName={experiment.experimentName}
+            data={biodWeightSheetData}
+          />
+        ))}
 
       <RejectExperimentModal
         isOpen={showRejectModal}
