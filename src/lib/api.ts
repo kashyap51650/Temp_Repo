@@ -84,6 +84,9 @@ export const API_CONFIG = {
     EXPERIMENT_DATA: {
       IMPORT: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-experiment-data`,
       MY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/my-experiment-data`,
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data`,
+      UPDATE_TREATMENT_DATE: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
     },
     EXPERIMENT_DRUGS: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
@@ -973,6 +976,112 @@ export interface ExperimentFilters {
   specialization: string;
 }
 
+export interface ExperimentDataFilters {
+  status?: string;
+  data_type?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface ExperimentDataItem {
+  id: number;
+  created_at: string;
+  measurement_date?: string;
+  treatment_date?: string;
+  randomization_status: string;
+  status: string;
+  data_type: {
+    id: number;
+    data_type_code: string;
+    data_type_name: string;
+  };
+  experiment: {
+    id: number;
+    experiment_name: string;
+  };
+  project: {
+    id: number;
+    project_name: string;
+  };
+  study_type: {
+    id: number;
+    study_type_code: string;
+    study_type_name: string;
+  };
+  reviewer?: {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+    username: string;
+  };
+}
+
+export interface ExperimentDataResponse {
+  items: ExperimentDataItem[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}
+
+export interface UploadedExperimentDataItem {
+  id: number;
+  project: {
+    id: number;
+    project_name: string;
+  };
+  experiment: {
+    id: number;
+    experiment_name: string;
+  };
+  data_type: {
+    id: number;
+    data_type_name: string;
+    data_type_code: string;
+  };
+  study_type: {
+    id: number;
+    study_type_name: string;
+    study_type_code: string;
+  };
+  upload_date: string;
+  status: "pending" | "approved" | "rejected";
+  reviewer: {
+    id: number;
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+  } | null;
+  rejection_reason: string;
+  uploaded_data: any;
+}
+
+export interface UploadedExperimentDataResponse {
+  items: UploadedExperimentDataItem[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}
+
+export interface UploadedExperimentDataFilters {
+  page?: number;
+  size?: number;
+  status?: string;
+}
+
 export const projectApi = {
   getProjects: async (): Promise<ProjectsResponse> => {
     return apiClient.get<ProjectsResponse>(API_CONFIG.ENDPOINTS.PROJECTS.LIST);
@@ -1180,60 +1289,37 @@ export const experimentDataApi = {
       throw error;
     }
   },
+
+  getExperimentData: async (
+    filters?: ExperimentDataFilters
+  ): Promise<ExperimentDataResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.data_type) params.append("data_type", filters.data_type);
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.size) params.append("size", filters.size.toString());
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `${API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.LIST}?${queryString}`
+      : API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.LIST;
+
+    return apiClient.get<ExperimentDataResponse>(endpoint);
+  },
+
+  updateTreatmentDate: async (
+    experimentDataId: string,
+    treatmentDate: string
+  ): Promise<ApiResponse> => {
+    return apiClient.patch<ApiResponse>(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.UPDATE_TREATMENT_DATE(
+        experimentDataId
+      ),
+      { treatment_date: treatmentDate }
+    );
+  },
 };
-
-// Uploaded Experiment Data Types
-export interface UploadedExperimentDataItem {
-  id: number;
-  project: {
-    id: number;
-    project_name: string;
-  };
-  experiment: {
-    id: number;
-    experiment_name: string;
-  };
-  data_type: {
-    id: number;
-    data_type_name: string;
-    data_type_code: string;
-  };
-  study_type: {
-    id: number;
-    study_type_name: string;
-    study_type_code: string;
-  };
-  upload_date: string;
-  status: "pending" | "approved" | "rejected";
-  reviewer: {
-    id: number;
-    email: string;
-    username: string;
-    first_name: string;
-    last_name: string;
-    full_name: string;
-  } | null;
-  rejection_reason: string;
-  uploaded_data: any;
-}
-
-export interface UploadedExperimentDataResponse {
-  items: UploadedExperimentDataItem[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
-}
-
-export interface UploadedExperimentDataFilters {
-  page?: number;
-  size?: number;
-  status?: string;
-}
 
 // Add to experimentDataApi
 export const uploadedExperimentDataApi = {

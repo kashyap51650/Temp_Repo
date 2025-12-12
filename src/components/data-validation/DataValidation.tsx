@@ -1,8 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { RANDOMIZATION_PREVIEW_TYPES } from "@/lib/constants";
 
+import { useValidationData } from "../../hooks";
+import type { ExperimentDataItem } from "../../lib/api";
+import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
 import { Label } from "../atoms/Label/Label";
 import {
@@ -14,10 +17,7 @@ import {
 } from "../atoms/Select/Select";
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
-import {
-  validationData,
-  type ValidationRow,
-} from "../organisms/DataTable/tableData";
+import type { ValidationRow } from "../organisms/DataTable/tableData";
 import { DataViewModal } from "./DataViewModal";
 
 export default function DataValidation() {
@@ -29,28 +29,58 @@ export default function DataValidation() {
     useState<ValidationRow | null>(null);
   const [showDataViewModal, setShowDataViewModal] = useState(false);
 
+  const { data, isLoading, error, setFilters } = useValidationData();
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setFilters({
+      status: value === "All Status" ? undefined : value.toLowerCase(),
+      data_type:
+        dataTypeFilter === "All Data Types" ? undefined : dataTypeFilter,
+    });
+  };
+
+  const handleDataTypeFilterChange = (value: string) => {
+    setDataTypeFilter(value);
+    setFilters({
+      status:
+        statusFilter === "All Status" ? undefined : statusFilter.toLowerCase(),
+      data_type: value === "All Data Types" ? undefined : value,
+    });
+  };
+
   const statusOptions = [
     { value: "All Status", label: "All Status" },
     { value: "Pending", label: "Pending" },
-    { value: "Validated", label: "Validated" },
-    { value: "Error", label: "Error" },
+    { value: "Approved", label: "Approved" },
+    { value: "Rejected", label: "Rejected" },
   ];
 
-  const dataTypeOptions = [
-    { value: "All Data Types", label: "All Data Types" },
-    { value: "Biodistribution_ProtXXX", label: "Biodistribution_ProtXXX" },
-    { value: "Dose Range Finding", label: "Dose Range Finding" },
-    { value: "Toxicity", label: "Toxicity" },
-    { value: "Model Study", label: "Model Study" },
-  ];
+  const dataTypeOptions = useMemo(() => {
+    const baseOptions = [{ value: "All Data Types", label: "All Data Types" }];
 
-  const filteredData = validationData.filter((item) => {
-    const statusMatch =
-      statusFilter === "All Status" || item.status === statusFilter;
-    const dataTypeMatch =
-      dataTypeFilter === "All Data Types" || item.studyType === dataTypeFilter;
-    return statusMatch && dataTypeMatch;
-  });
+    if (data?.items) {
+      const uniqueDataTypes = Array.from(
+        new Set(
+          data.items.map(
+            (item: ExperimentDataItem) => item.data_type.data_type_name
+          )
+        )
+      ).map((dataType: string) => ({
+        value: dataType,
+        label: dataType,
+      }));
+
+      return [...baseOptions, ...uniqueDataTypes];
+    }
+
+    return baseOptions;
+  }, [data?.items]);
+
+  const tableData = useMemo(() => {
+    if (!data?.items) return [];
+    return transformExperimentDataToValidationRows(data.items);
+  }, [data?.items]);
 
   const handleViewData = (experiment: ValidationRow) => {
     setSelectedExperiment(experiment);
@@ -67,7 +97,32 @@ export default function DataValidation() {
       },
     });
   };
-  const columns = getValidationColumns(handleViewData, handleRandomize);
+
+  const columns = getValidationColumns(
+    handleViewData,
+    handleRandomize,
+    tableData
+  );
+
+  if (error) {
+    return (
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">
+            Data Validation
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Review and validate uploaded experiment data
+          </p>
+        </div>
+        <Card className="p-8 shadow-none border-0">
+          <div className="text-center text-red-600">
+            Error loading data: {error.message}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -86,7 +141,10 @@ export default function DataValidation() {
             <Label className="text-sm font-medium mb-2 inline-block">
               Filter by Status
             </Label>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={statusFilter}
+              onValueChange={handleStatusFilterChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
@@ -104,7 +162,10 @@ export default function DataValidation() {
             <Label className="text-sm font-medium mb-2 inline-block">
               Filter by Data Type
             </Label>
-            <Select value={dataTypeFilter} onValueChange={setDataTypeFilter}>
+            <Select
+              value={dataTypeFilter}
+              onValueChange={handleDataTypeFilterChange}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Data Types" />
               </SelectTrigger>
@@ -120,8 +181,12 @@ export default function DataValidation() {
         </div>
 
         <Card className="p-0 shadow-none border-0">
-          {filteredData.length > 0 ? (
-            <DataTable columns={columns} data={filteredData} />
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground">
+              Loading experiment data...
+            </div>
+          ) : tableData.length > 0 ? (
+            <DataTable columns={columns} data={tableData} />
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               No data available for validation.

@@ -664,9 +664,14 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
 
 export function getValidationColumns(
   onViewData?: (row: ValidationRow) => void,
-  onRandomize?: (row: ValidationRow) => void
+  onRandomize?: (row: ValidationRow) => void,
+  data?: ValidationRow[]
 ): ColumnDef<ValidationRow>[] {
-  return [
+  const hasCalliperingSsheet =
+    data?.some((row) => row.dataType.toLowerCase().includes("callipering")) ??
+    false;
+
+  const columns: ColumnDef<ValidationRow>[] = [
     {
       accessorKey: "experimentName",
       header: ({ column }) => (
@@ -680,6 +685,15 @@ export function getValidationColumns(
         <span className="block truncate w-48">
           {row.original.experimentName}
         </span>
+      ),
+    },
+    {
+      accessorKey: "studyType",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Study Type" />
+      ),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.studyType}</span>
       ),
     },
     {
@@ -698,27 +712,6 @@ export function getValidationColumns(
       ),
     },
     {
-      accessorKey: "studyType",
-      header: ({ column }) => (
-        <SortableHeader column={column} title="Study Type" />
-      ),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.studyType}</span>
-      ),
-    },
-    {
-      accessorKey: "randomisationDate",
-      header: () => <span>Randomisation Date</span>,
-      cell: ({ row }) => (
-        <RandomizeDateCell
-          value={row.original.randomisationDate}
-          onChange={(date) => {
-            row.original.randomisationDate = date;
-          }}
-        />
-      ),
-    },
-    {
       accessorKey: "uploadedDate",
       header: ({ column }) => (
         <SortableHeader column={column} title="Uploaded Date" />
@@ -729,15 +722,43 @@ export function getValidationColumns(
         </span>
       ),
     },
+  ];
+
+  if (hasCalliperingSsheet) {
+    columns.push({
+      accessorKey: "randomisationDate",
+      header: () => <span>Randomisation Date</span>,
+      cell: ({ row }) => {
+        const isCalliperingSsheet = row.original.dataType
+          .toLowerCase()
+          .includes("callipering");
+
+        if (isCalliperingSsheet) {
+          return (
+            <RandomizeDateCell
+              value={row.original.randomisationDate}
+              experimentDataId={row.original.id}
+              onChange={(date) => {
+                row.original.randomisationDate = date;
+              }}
+            />
+          );
+        }
+        return <span className="text-muted-foreground">-</span>;
+      },
+    });
+  }
+
+  columns.push(
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status;
         const variant =
-          status === "Validated"
+          status === "approved"
             ? "success"
-            : status === "Error"
+            : status === "rejected"
               ? "destructive"
               : "secondary";
 
@@ -747,28 +768,43 @@ export function getValidationColumns(
     {
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onViewData?.(row.original)}
-          >
-            <Eye className="size-4" />
-            View Data
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onRandomize?.(row.original)}
-          >
-            <Shuffle className="size-4" />
-            Randomize
-          </Button>
-        </div>
-      ),
-    },
-  ];
+      cell: ({ row }) => {
+        const rowData = row.original;
+
+        const isCalliperingSsheet = rowData.dataType
+          .toLowerCase()
+          .includes("callipering");
+        const isRandomizationReady = rowData.randomizationStatus === "ready";
+
+        return (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onViewData?.(rowData)}
+            >
+              <Eye className="size-4" />
+              View Data
+            </Button>
+            {isCalliperingSsheet && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!isRandomizationReady}
+                onClick={() => onRandomize?.(rowData)}
+                title={!isRandomizationReady ? "Randomization not ready" : ""}
+              >
+                <Shuffle className="size-4" />
+                Randomize
+              </Button>
+            )}
+          </div>
+        );
+      },
+    }
+  );
+
+  return columns;
 }
 
 // BioD Organ Table Column Definitions
