@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { REACT_QUERY_CONFIG } from "@/lib/constants";
+
 import {
   experimentDataApi,
   type ExperimentDataFilters,
@@ -25,7 +27,7 @@ export function useValidationData(): UseValidationDataResult {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["validationData", filters],
     queryFn: () => experimentDataApi.getExperimentData(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME.LONG,
     retry: 3,
   });
 

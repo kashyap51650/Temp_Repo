@@ -1030,6 +1030,8 @@ export interface ExperimentDataResponse {
   };
 }
 
+export type StatusType = "pending" | "approved" | "rejected";
+
 export interface UploadedExperimentDataItem {
   id: number;
   project: {
@@ -1051,7 +1053,7 @@ export interface UploadedExperimentDataItem {
     study_type_code: string;
   };
   upload_date: string;
-  status: "pending" | "approved" | "rejected";
+  status: StatusType;
   reviewer: {
     id: number;
     email: string;

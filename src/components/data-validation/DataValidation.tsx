@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { RANDOMIZATION_PREVIEW_TYPES } from "@/lib/constants";
+import { RANDOMIZATION_PREVIEW_TYPES, statusOptions } from "@/lib/constants";
 
 import { useValidationData } from "../../hooks";
 import type { ExperimentDataItem } from "../../lib/api";
@@ -20,6 +20,8 @@ import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
 import { DataViewModal } from "./DataViewModal";
 
+type FilterType = "status" | "data_type";
+
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
@@ -31,30 +33,25 @@ export default function DataValidation() {
 
   const { data, isLoading, error, setFilters } = useValidationData();
 
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
+  const normalizeStatus = (value: string) =>
+    value === "All Status" ? undefined : value.toLowerCase();
+
+  const normalizeDataType = (value: string) =>
+    value === "All Data Types" ? undefined : value;
+
+  const handleFilterChange = (type: FilterType, value: string) => {
+    const nextStatus = type === "status" ? value : statusFilter;
+
+    const nextDataType = type === "data_type" ? value : dataTypeFilter;
+
+    if (type === "status") setStatusFilter(value);
+    if (type === "data_type") setDataTypeFilter(value);
+
     setFilters({
-      status: value === "All Status" ? undefined : value.toLowerCase(),
-      data_type:
-        dataTypeFilter === "All Data Types" ? undefined : dataTypeFilter,
+      status: normalizeStatus(nextStatus),
+      data_type: normalizeDataType(nextDataType),
     });
   };
-
-  const handleDataTypeFilterChange = (value: string) => {
-    setDataTypeFilter(value);
-    setFilters({
-      status:
-        statusFilter === "All Status" ? undefined : statusFilter.toLowerCase(),
-      data_type: value === "All Data Types" ? undefined : value,
-    });
-  };
-
-  const statusOptions = [
-    { value: "All Status", label: "All Status" },
-    { value: "Pending", label: "Pending" },
-    { value: "Approved", label: "Approved" },
-    { value: "Rejected", label: "Rejected" },
-  ];
 
   const dataTypeOptions = useMemo(() => {
     const baseOptions = [{ value: "All Data Types", label: "All Data Types" }];
@@ -82,33 +79,35 @@ export default function DataValidation() {
     return transformExperimentDataToValidationRows(data.items);
   }, [data?.items]);
 
-  const handleViewData = (experiment: ValidationRow) => {
+  const handleViewData = useCallback((experiment: ValidationRow) => {
     setSelectedExperiment(experiment);
     setShowDataViewModal(true);
-  };
+  }, []);
 
-  const handleRandomize = (row: ValidationRow) => {
-    const experimentData = data?.items.find(
-      (item) => item.id === Number(row.id)
-    );
-    if (!experimentData) {
-      console.error("Experiment data not found for row:", row);
-      return;
-    }
-    navigate({
-      to: "/randomization-results",
-      search: {
-        experiment_id: experimentData?.experiment.id,
-        mice_per_group: 5,
-        randomization_type: RANDOMIZATION_PREVIEW_TYPES.VOLUME,
-      },
-    });
-  };
+  const handleRandomize = useCallback(
+    (row: ValidationRow) => {
+      const experimentData = data?.items.find(
+        (item) => item.id === Number(row.id)
+      );
+      if (!experimentData) {
+        console.error("Experiment data not found for row:", row);
+        return;
+      }
+      navigate({
+        to: "/randomization-results",
+        search: {
+          experiment_id: experimentData?.experiment.id,
+          mice_per_group: 5,
+          randomization_type: RANDOMIZATION_PREVIEW_TYPES.VOLUME,
+        },
+      });
+    },
+    [data?.items]
+  );
 
-  const columns = getValidationColumns(
-    handleViewData,
-    handleRandomize,
-    tableData
+  const columns = useMemo(
+    () => getValidationColumns(handleViewData, handleRandomize, tableData),
+    [handleViewData, handleRandomize, tableData]
   );
 
   if (error) {
@@ -150,7 +149,7 @@ export default function DataValidation() {
             </Label>
             <Select
               value={statusFilter}
-              onValueChange={handleStatusFilterChange}
+              onValueChange={(value) => handleFilterChange("status", value)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Status" />
@@ -171,7 +170,7 @@ export default function DataValidation() {
             </Label>
             <Select
               value={dataTypeFilter}
-              onValueChange={handleDataTypeFilterChange}
+              onValueChange={(value) => handleFilterChange("data_type", value)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Data Types" />

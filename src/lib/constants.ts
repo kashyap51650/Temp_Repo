@@ -76,3 +76,10 @@ export const RANDOMIZATION_PREVIEW_TYPES = {
   VOLUME: "volume",
   BODY_WEIGHT: "body_weight",
 } as const;
+
+export const statusOptions = [
+  { value: "All Status", label: "All Status" },
+  { value: "Pending", label: "Pending" },
+  { value: "Approved", label: "Approved" },
+  { value: "Rejected", label: "Rejected" },
+];
