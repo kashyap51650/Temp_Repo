@@ -1,4 +1,4 @@
-import { format, isBefore, startOfDay } from "date-fns";
+import { format, isBefore, isValid, startOfDay } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -12,22 +12,36 @@ import { Calendar } from "@/components/organisms/Calendar/Calendar";
 
 import { ConfirmDateDialog } from "./ConfirmDateDialog";
 
+function isValidDateString(value: string | undefined): boolean {
+  if (!value) return false;
+  const date = new Date(value);
+  return isValid(date);
+}
+
 export function RandomizeDateCell({
   value,
   onChange,
+  experimentDataId,
 }: {
   value?: string;
   onChange?: (date: string) => void;
+  experimentDataId?: string;
 }) {
   const today = startOfDay(new Date());
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Date | null>(
-    value ? new Date(value) : today
-  );
+  const [selected, setSelected] = useState<Date | null>(() => {
+    if (value && isValidDateString(value)) {
+      return new Date(value);
+    }
+    return null;
+  });
   const [pendingDate, setPendingDate] = useState<Date | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
   function formatDate(date: Date) {
+    if (!isValid(date)) {
+      return "Select date";
+    }
     return format(date, "MMMM do, yyyy");
   }
 
@@ -46,7 +60,9 @@ export function RandomizeDateCell({
           >
             <CalendarIcon className="size-4 text-muted-foreground" />
             <span className="text-sm">
-              {selected ? formatDate(selected) : formatDate(today)}
+              {selected && isValid(selected)
+                ? formatDate(selected)
+                : "Select date"}
             </span>
           </Button>
         </PopoverTrigger>
@@ -72,6 +88,7 @@ export function RandomizeDateCell({
         open={showConfirm}
         onOpenChange={setShowConfirm}
         pendingDate={pendingDate}
+        experimentDataId={experimentDataId}
         onCancel={() => {
           setShowConfirm(false);
           setPendingDate(null);

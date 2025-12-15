@@ -28,7 +28,11 @@ export function DataViewModal({
   experiment,
 }: DataViewModalProps) {
   const [dataItems, setDataItems] = useState<DataViewItem[]>(() =>
-    getDataViewItems(experiment.experimentName)
+    getDataViewItems(
+      experiment.experimentName,
+      experiment.studyType,
+      experiment.dataType
+    )
   );
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);

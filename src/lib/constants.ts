@@ -71,3 +71,15 @@ export const FILE_TYPES = {
 
 // Legacy constant for backward compatibility
 export const MAX_FILE_SIZE = FILE_SIZE_LIMITS.SMALL_FILE;
+
+export const RANDOMIZATION_PREVIEW_TYPES = {
+  VOLUME: "volume",
+  BODY_WEIGHT: "body_weight",
+} as const;
+
+export const statusOptions = [
+  { value: "All Status", label: "All Status" },
+  { value: "Pending", label: "Pending" },
+  { value: "Approved", label: "Approved" },
+  { value: "Rejected", label: "Rejected" },
+];

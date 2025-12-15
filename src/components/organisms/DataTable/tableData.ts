@@ -1,3 +1,5 @@
+import type { StatusType } from "@/lib/api";
+
 import type { UserRow } from "./tableColumns";
 
 export const tableData: UserRow[] = [
@@ -111,6 +113,8 @@ export const rolesTableData: RoleRow[] = [
   },
 ];
 
+export type NotificationStatus = "Delivered" | "Failed" | "Pending";
+
 // Notification Table Data
 export type NotificationRow = {
   id: string;
@@ -120,7 +124,7 @@ export type NotificationRow = {
   date: string;
   type: string[];
   recipients: number;
-  status: "Delivered" | "Failed" | "Pending" | string;
+  status: NotificationStatus | string;
 };
 
 export const notificationData: NotificationRow[] = [
@@ -272,60 +276,20 @@ export type ValidationRow = {
   dataType: string;
   studyType: string;
   uploadedDate: string;
-  status: "Pending" | "Validated" | "Error";
+  status: StatusType;
   randomisationDate?: string;
+  projectName: string;
+  measurementDate?: string;
+  treatmentDate?: string;
+  randomizationStatus: string;
+  reviewer?: {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+  };
 };
-
-export const validationData: ValidationRow[] = [
-  {
-    id: "v1",
-    experimentName: "PROT-001-Biodistribution",
-    dataType: "biod",
-    studyType: "Biodistribution_ProtXXX",
-    uploadedDate: "2024-01-15",
-    status: "Validated",
-  },
-  {
-    id: "v2",
-    experimentName: "PROT-002-Biodistribution",
-    dataType: "calipering",
-    studyType: "Biodistribution_ProtXXX",
-    uploadedDate: "2024-01-14",
-    status: "Pending",
-  },
-  {
-    id: "v3",
-    experimentName: "PROT-003-Biodistribution",
-    dataType: "biod",
-    studyType: "Biodistribution_ProtXXX",
-    uploadedDate: "2024-01-13",
-    status: "Error",
-  },
-  {
-    id: "v4",
-    experimentName: "PROT-004-DRF",
-    dataType: "toxicity",
-    studyType: "Dose Range Finding",
-    uploadedDate: "2024-01-16",
-    status: "Validated",
-  },
-  {
-    id: "v5",
-    experimentName: "PROT-005-Toxicity",
-    dataType: "calipering",
-    studyType: "Toxicity",
-    uploadedDate: "2024-01-17",
-    status: "Validated",
-  },
-  {
-    id: "v6",
-    experimentName: "PROT-006-ModelStudy",
-    dataType: "modeling",
-    studyType: "Model Study",
-    uploadedDate: "2024-01-18",
-    status: "Validated",
-  },
-];
 
 // Data View Modal Data (for individual experiment data types)
 export type DataViewItem = {
@@ -338,9 +302,18 @@ export type DataViewItem = {
   canReject: boolean;
 };
 
-export const getDataViewItems = (experimentName: string): DataViewItem[] => {
-  // Return different data types based on experiment
-  if (experimentName.includes("Biodistribution")) {
+export const getDataViewItems = (
+  experimentName: string,
+  studyType?: string,
+  dataType?: string
+): DataViewItem[] => {
+  const isBiodistribution =
+    experimentName.toLowerCase().includes("biodistribution") ||
+    studyType?.toLowerCase().includes("biodistribution") ||
+    studyType?.toLowerCase().includes("biod") ||
+    dataType?.toLowerCase().includes("biodistribution");
+
+  if (isBiodistribution) {
     return [
       {
         id: "dv1",
@@ -399,6 +372,114 @@ export const getDataViewItems = (experimentName: string): DataViewItem[] => {
       {
         id: "dv7",
         name: "BioD Weight Sheet",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+    ];
+  }
+
+  if (studyType?.toLowerCase().includes("toxicity")) {
+    return [
+      {
+        id: "dv1",
+        name: "Weight Sheet",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv2",
+        name: "Hematology",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv3",
+        name: "Blood Chemistry",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv4",
+        name: "Necropsy",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+    ];
+  }
+
+  if (
+    studyType?.toLowerCase().includes("dose") ||
+    studyType?.toLowerCase().includes("range")
+  ) {
+    return [
+      {
+        id: "dv1",
+        name: "Weight Sheet",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv2",
+        name: "Hematology",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv3",
+        name: "Blood Chemistry",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv4",
+        name: "Necropsy",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+    ];
+  }
+
+  if (studyType?.toLowerCase().includes("efficacy")) {
+    return [
+      {
+        id: "dv1",
+        name: "Weight Sheet",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
+      {
+        id: "dv2",
+        name: "Callipering",
         status: "Validated",
         canView: true,
         canEdit: true,
