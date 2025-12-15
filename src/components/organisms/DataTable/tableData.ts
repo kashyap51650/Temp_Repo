@@ -365,6 +365,15 @@ export const getDataViewItems = (
         canApprove: true,
         canReject: true,
       },
+      {
+        id: "dv7",
+        name: "BioD Weight Sheet",
+        status: "Validated",
+        canView: true,
+        canEdit: true,
+        canApprove: true,
+        canReject: true,
+      },
     ];
   }
 
@@ -1506,3 +1515,57 @@ export const DEFAULT_GROUPS: Group[] = [
     ],
   },
 ];
+
+// BioDWeightSheet Data Types and Data
+export interface BioDWeightMouse {
+  id: string;
+  bodyWeight: number;
+}
+
+export interface BioDWeightData {
+  sex: string;
+  strain: string;
+  dob: string;
+  cellInjectionDate: string;
+  cellLine: string;
+  treatmentDate: string;
+  measurementDate: string;
+  mice: BioDWeightMouse[];
+}
+
+export const biodWeightSheetData: BioDWeightData = {
+  sex: "Female",
+  strain: "R2G2",
+  dob: "2024-01-11",
+  cellInjectionDate: "",
+  cellLine: "",
+  treatmentDate: "",
+  measurementDate: "1 Nov 25",
+  mice: [
+    { id: "MUS01", bodyWeight: 101 },
+    { id: "MUS02", bodyWeight: 102 },
+    { id: "MUS03", bodyWeight: 103 },
+    { id: "MUS04", bodyWeight: 104 },
+    { id: "MUS05", bodyWeight: 105 },
+    { id: "MUS06", bodyWeight: 106 },
+    { id: "MUS07", bodyWeight: 107 },
+    { id: "MUS08", bodyWeight: 108 },
+    { id: "MUS09", bodyWeight: 109 },
+    { id: "MUS10", bodyWeight: 110 },
+    { id: "MUS11", bodyWeight: 111 },
+    { id: "MUS12", bodyWeight: 112 },
+    { id: "MUS13", bodyWeight: 113 },
+    { id: "MUS14", bodyWeight: 114 },
+    { id: "MUS15", bodyWeight: 115 },
+    { id: "MUS16", bodyWeight: 116 },
+    { id: "MUS17", bodyWeight: 117 },
+    { id: "MUS18", bodyWeight: 118 },
+    { id: "MUS19", bodyWeight: 119 },
+    { id: "MUS20", bodyWeight: 120 },
+    { id: "MUS21", bodyWeight: 121 },
+    { id: "MUS22", bodyWeight: 122 },
+    { id: "MUS23", bodyWeight: 123 },
+    { id: "MUS24", bodyWeight: 124 },
+    { id: "MUS25", bodyWeight: 125 },
+  ],
+};
