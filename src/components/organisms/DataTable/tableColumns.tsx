@@ -667,7 +667,7 @@ export function getValidationColumns(
   onRandomize?: (row: ValidationRow) => void,
   data?: ValidationRow[]
 ): ColumnDef<ValidationRow>[] {
-  const hasCalliperingSsheet =
+  const hasCalliperingsheet =
     data?.some((row) => row.dataType.toLowerCase().includes("callipering")) ??
     false;
 
@@ -724,7 +724,7 @@ export function getValidationColumns(
     },
   ];
 
-  if (hasCalliperingSsheet) {
+  if (hasCalliperingsheet) {
     columns.push({
       accessorKey: "randomisationDate",
       header: () => <span>Randomisation Date</span>,

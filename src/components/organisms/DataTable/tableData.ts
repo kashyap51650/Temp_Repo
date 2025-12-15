@@ -1,3 +1,5 @@
+import type { StatusType } from "@/lib/api";
+
 import type { UserRow } from "./tableColumns";
 
 export const tableData: UserRow[] = [
@@ -111,6 +113,8 @@ export const rolesTableData: RoleRow[] = [
   },
 ];
 
+export type NotificationStatus = "Delivered" | "Failed" | "Pending";
+
 // Notification Table Data
 export type NotificationRow = {
   id: string;
@@ -120,7 +124,7 @@ export type NotificationRow = {
   date: string;
   type: string[];
   recipients: number;
-  status: "Delivered" | "Failed" | "Pending" | string;
+  status: NotificationStatus | string;
 };
 
 export const notificationData: NotificationRow[] = [
@@ -272,7 +276,7 @@ export type ValidationRow = {
   dataType: string;
   studyType: string;
   uploadedDate: string;
-  status: "pending" | "approved" | "rejected";
+  status: StatusType;
   randomisationDate?: string;
   projectName: string;
   measurementDate?: string;
