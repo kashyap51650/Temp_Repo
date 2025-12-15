@@ -1492,3 +1492,42 @@ export const biodWeightSheetData: BioDWeightData = {
     { id: "MUS25", bodyWeight: 125 },
   ],
 };
+
+export interface CalliperingMouseRow {
+  id: string;
+  length_mm: number;
+  width_mm: number;
+}
+
+export interface CalliperingData {
+  sex: string;
+  strain: string;
+  dob: string;
+  cell_injection_date: string;
+  cell_line: string;
+  treatment_date: string;
+  measurement_date: string;
+  mice: CalliperingMouseRow[];
+}
+
+export const calliperingData: CalliperingData = {
+  sex: "Female",
+  strain: "R2G2",
+  dob: "2024-01-11",
+  cell_injection_date: "2024-01-15",
+  cell_line: "A549",
+  treatment_date: "2024-01-20",
+  measurement_date: "2024-01-25",
+  mice: [
+    { id: "MUS01", length_mm: 12.1, width_mm: 8.2 },
+    { id: "MUS02", length_mm: 13.0, width_mm: 8.5 },
+    { id: "MUS03", length_mm: 11.8, width_mm: 7.9 },
+    { id: "MUS04", length_mm: 12.5, width_mm: 8.1 },
+    { id: "MUS05", length_mm: 13.2, width_mm: 8.7 },
+    { id: "MUS06", length_mm: 12.7, width_mm: 8.0 },
+    { id: "MUS07", length_mm: 12.9, width_mm: 8.3 },
+    { id: "MUS08", length_mm: 13.1, width_mm: 8.6 },
+    { id: "MUS09", length_mm: 12.3, width_mm: 8.0 },
+    { id: "MUS10", length_mm: 12.8, width_mm: 8.4 },
+  ],
+};
