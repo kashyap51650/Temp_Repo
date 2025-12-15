@@ -37,7 +37,7 @@ export function BioDWeightSheetModal({
     >
       <BioDWeightSheet data={data} onSave={handleSave} />
       <div className="mt-auto flex justify-end gap-3">
-        <Button variant="outline" size={"lg"}>
+        <Button variant="outline" size={"lg"} onClick={onClose}>
           Cancel
         </Button>
         <Button variant={"default"} size={"lg"}>
