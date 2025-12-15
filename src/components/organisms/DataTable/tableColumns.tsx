@@ -10,12 +10,14 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
+import type { Dispatch, SetStateAction } from "react";
 import * as React from "react";
 
 import { type UploadedExperimentDataItem } from "../../../lib/api";
 import {
   Badge,
   Button,
+  Input,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -1173,4 +1175,81 @@ export function getMasterDataColumns(
   }
 
   return baseColumns;
+}
+
+export type MousePairRow = {
+  id: string;
+  leftId: string;
+  leftWeight: number;
+  rightId?: string;
+  rightWeight?: number;
+};
+
+export function getBioDWeightMousePairColumns(
+  setFormData: Dispatch<SetStateAction<any>>
+): ColumnDef<MousePairRow>[] {
+  return [
+    {
+      accessorKey: "leftId",
+      header: "Mouse Delivery ID",
+      cell: ({ row }) => (
+        <span className="font-medium text-center">{row.original.leftId}</span>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: "leftWeight",
+      header: "Body Weight (g)",
+      cell: ({ row, getValue }) => (
+        <Input
+          value={getValue() as number}
+          onChange={(e) => {
+            const numValue = parseFloat(e.target.value) || 0;
+            setFormData((prev: any) => ({
+              ...prev,
+              mice: prev.mice.map((m: any) =>
+                m.id === row.original.leftId
+                  ? { ...m, bodyWeight: numValue }
+                  : m
+              ),
+            }));
+          }}
+        />
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: "rightId",
+      header: "Mouse Delivery ID",
+      cell: ({ row }) =>
+        row.original.rightId ? (
+          <span className="font-medium text-center">
+            {row.original.rightId}
+          </span>
+        ) : null,
+      enableSorting: false,
+    },
+    {
+      accessorKey: "rightWeight",
+      header: "Body Weight (g)",
+      cell: ({ row, getValue }) =>
+        row.original.rightId ? (
+          <Input
+            value={getValue() as number}
+            onChange={(e) => {
+              const numValue = parseFloat(e.target.value) || 0;
+              setFormData((prev: any) => ({
+                ...prev,
+                mice: prev.mice.map((m: any) =>
+                  m.id === row.original.rightId
+                    ? { ...m, bodyWeight: numValue }
+                    : m
+                ),
+              }));
+            }}
+          />
+        ) : null,
+      enableSorting: false,
+    },
+  ];
 }
