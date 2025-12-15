@@ -731,11 +731,11 @@ export function getValidationColumns(
       accessorKey: "randomisationDate",
       header: () => <span>Randomisation Date</span>,
       cell: ({ row }) => {
-        const isCalliperingSsheet = row.original.dataType
+        const isCalliperingsheet = row.original.dataType
           .toLowerCase()
           .includes("callipering");
 
-        if (isCalliperingSsheet) {
+        if (isCalliperingsheet) {
           return (
             <RandomizeDateCell
               value={row.original.randomisationDate}
