@@ -37,12 +37,13 @@ import {
 type DataTableProps<T extends { id: string | number }> = {
   columns: ColumnDef<T>[];
   data: T[];
+  pagination?: boolean;
 };
 
 export function DataTable<T extends { id: string | number }>(
   props: DataTableProps<T>
 ) {
-  const { columns, data } = props;
+  const { columns, data, pagination: enablePagination = true } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -158,7 +159,7 @@ export function DataTable<T extends { id: string | number }>(
           </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
-          {table.getFilteredRowModel().rows.length > 10 ? (
+          {enablePagination && table.getFilteredRowModel().rows.length > 10 ? (
             <div className="flex w-full items-center gap-8 lg:w-fit">
               <div className="flex w-fit items-center justify-center text-sm font-medium">
                 Page {table.getState().pagination.pageIndex + 1} of{" "}
