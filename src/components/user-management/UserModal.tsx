@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/organisms/Form/Form";
 import { useRoles } from "@/hooks/useFetch";
+import type { Role } from "@/types/auth";
 
 export interface UserModalProps {
   open: boolean;
@@ -204,7 +205,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((role) => (
+                        {roles.map((role: Role) => (
                           <SelectItem key={role.id} value={role.id.toString()}>
                             {role.name}
                           </SelectItem>

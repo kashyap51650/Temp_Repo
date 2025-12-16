@@ -65,7 +65,7 @@ export function useUploadedExperimentData(
       }
     },
     enabled,
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME.SHORT, // 2 minutes
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.SHORT, // 2 minutes
     retry: 1,
   });
 

@@ -12,7 +12,7 @@ export const useUsers = (filters?: UserFilters) => {
   return useQuery<UsersResponse>({
     queryKey: ["users", filters],
     queryFn: () => userApi.getUsers(filters),
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
     refetchOnWindowFocus: false,
   });
 };
@@ -21,7 +21,7 @@ export const useRoles = () => {
   return useQuery<RolesResponse>({
     queryKey: ["roles"],
     queryFn: () => roleApi.getRoles(),
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
   });
 };
 

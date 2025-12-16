@@ -20,7 +20,7 @@ import {
   useUsers,
 } from "@/hooks/useFetch";
 import { handleApiError } from "@/lib/api";
-import { transformUserToRow, type UserFilters } from "@/types/auth";
+import { type Role, transformUserToRow, type UserFilters } from "@/types/auth";
 
 export default function UserManagementPage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -235,7 +235,7 @@ export default function UserManagementPage() {
                 const [firstName = "", ...lastNameParts] = name.split(" ");
                 const lastName = lastNameParts.join(" ");
                 const roleId =
-                  roles.find((r) => r.name === role)?.id.toString() || "";
+                  roles.find((r: Role) => r.name === role)?.id.toString() || "";
 
                 return {
                   firstName,
