@@ -1191,9 +1191,11 @@ export function getBioDWeightMousePairColumns(
   return [
     {
       accessorKey: "leftId",
-      header: "Mouse Delivery ID",
+      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
       cell: ({ row }) => (
-        <span className="font-medium text-center">{row.original.leftId}</span>
+        <span className="font-medium text-center w-80">
+          {row.original.leftId}
+        </span>
       ),
       enableSorting: false,
     },
@@ -1220,10 +1222,10 @@ export function getBioDWeightMousePairColumns(
     },
     {
       accessorKey: "rightId",
-      header: "Mouse Delivery ID",
+      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
       cell: ({ row }) =>
         row.original.rightId ? (
-          <span className="font-medium text-center">
+          <span className="font-medium text-center w-80">
             {row.original.rightId}
           </span>
         ) : null,

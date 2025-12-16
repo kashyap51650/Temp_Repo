@@ -8,11 +8,16 @@ import {
   getDataViewItems,
   type ValidationRow,
 } from "../organisms/DataTable/tableData";
-import { biodWeightSheetData } from "../organisms/DataTable/tableData";
+import {
+  biodWeightSheetData,
+  calliperingData,
+} from "../organisms/DataTable/tableData";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
 import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
+import { CalliperingSheetModal } from "./CalliperingSheetEditModal";
+import { CalliperingSheetViewModal } from "./CalliperingSheetViewModal";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SuccessAlert } from "./SuccessAlert";
 
@@ -43,6 +48,11 @@ export function DataViewModal({
   const [bioDWeightSheetMode, setBioDWeightSheetMode] = useState<
     "view" | "edit" | null
   >(null);
+  const [calliperingSheetMode, setCalliperingSheetMode] = useState<
+    "view" | "edit" | null
+  >(null);
+  const [showCalliperingSheetModal, setShowCalliperingSheetModal] =
+    useState(false);
 
   const handleAction = (
     item: DataViewItem,
@@ -53,6 +63,11 @@ export function DataViewModal({
     if (item.name === "BioD Weight Sheet") {
       setShowWeightSheetModal(true);
       setBioDWeightSheetMode(action === "edit" ? "edit" : "view");
+      return;
+    }
+    if (item.name === "Callipering Data" || item.name === "Callipering") {
+      setShowCalliperingSheetModal(true);
+      setCalliperingSheetMode(action === "edit" ? "edit" : "view");
       return;
     }
 
@@ -228,6 +243,33 @@ export function DataViewModal({
             }}
             experimentName={experiment.experimentName}
             data={biodWeightSheetData}
+          />
+        ))}
+
+      {selectedItem &&
+        (selectedItem.name === "Callipering Data" ||
+          selectedItem.name === "Callipering") &&
+        showCalliperingSheetModal &&
+        (calliperingSheetMode === "edit" ? (
+          <CalliperingSheetModal
+            isOpen={showCalliperingSheetModal}
+            onClose={() => {
+              setShowCalliperingSheetModal(false);
+              setCalliperingSheetMode(null);
+            }}
+            onSave={handleSaveEdit}
+            experimentName={experiment.experimentName}
+            data={calliperingData}
+          />
+        ) : (
+          <CalliperingSheetViewModal
+            isOpen={showCalliperingSheetModal}
+            onClose={() => {
+              setShowCalliperingSheetModal(false);
+              setCalliperingSheetMode(null);
+            }}
+            experimentName={experiment.experimentName}
+            data={calliperingData}
           />
         ))}
 

@@ -52,80 +52,56 @@ export function BioDWeightSheet({ data }: BioDWeightSheetProps) {
     <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-10">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">Sex:</Label>
-              <Input
-                size="sm"
-                value={formData.sex}
-                onChange={(e) => handleHeaderChange("sex", e.target.value)}
-                className="flex-1"
-              />
+          {[
+            [
+              { key: "sex", label: "Sex:", type: "input" },
+              { key: "strain", label: "Strain:", type: "input" },
+              { key: "dob", label: "DOB:", type: "date" },
+              {
+                key: "cellInjectionDate",
+                label: "Cell Injection Date:",
+                type: "date",
+              },
+            ],
+            [
+              { key: "cellLine", label: "Cell Line:", type: "input" },
+              { key: "treatmentDate", label: "Treatment Date:", type: "date" },
+              {
+                key: "measurementDate",
+                label: "Measurement Date:",
+                type: "input",
+              },
+            ],
+          ].map((group, groupIdx) => (
+            <div className="space-y-3" key={groupIdx}>
+              {group.map(({ key, label, type }) => (
+                <div className="flex items-center gap-3" key={key}>
+                  <Label className="font-semibold text-sm w-56">{label}</Label>
+                  {type === "input" ? (
+                    <Input
+                      size="sm"
+                      value={formData[key as keyof BioDWeightData] as string}
+                      onChange={(e) =>
+                        handleHeaderChange(
+                          key as keyof BioDWeightData,
+                          e.target.value
+                        )
+                      }
+                      className="flex-1"
+                    />
+                  ) : (
+                    <DatePicker
+                      value={formData[key as keyof BioDWeightData] as string}
+                      onChange={(date) =>
+                        handleHeaderChange(key as keyof BioDWeightData, date)
+                      }
+                      className="flex-1"
+                    />
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">Strain:</Label>
-              <Input
-                size="sm"
-                value={formData.strain}
-                onChange={(e) => handleHeaderChange("strain", e.target.value)}
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">DOB:</Label>
-              <DatePicker
-                value={formData.dob}
-                onChange={(date) => handleHeaderChange("dob", date)}
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">
-                Cell Injection Date:
-              </Label>
-              <DatePicker
-                value={formData.cellInjectionDate}
-                onChange={(date) =>
-                  handleHeaderChange("cellInjectionDate", date)
-                }
-                className="flex-1"
-              />
-            </div>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">Cell Line:</Label>
-              <Input
-                size="sm"
-                value={formData.cellLine}
-                onChange={(e) => handleHeaderChange("cellLine", e.target.value)}
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">
-                Treatment Date:
-              </Label>
-              <DatePicker
-                value={formData.treatmentDate}
-                onChange={(date) => handleHeaderChange("treatmentDate", date)}
-                className="flex-1"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Label className="font-semibold text-sm w-56">
-                Measurement Date:
-              </Label>
-              <Input
-                size="sm"
-                value={formData.measurementDate}
-                onChange={(e) =>
-                  handleHeaderChange("measurementDate", e.target.value)
-                }
-                className="flex-1"
-              />
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
