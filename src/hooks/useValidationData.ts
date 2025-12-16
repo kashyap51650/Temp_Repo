@@ -27,7 +27,7 @@ export function useValidationData(): UseValidationDataResult {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["validationData", filters],
     queryFn: () => experimentDataApi.getExperimentData(filters),
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME.LONG,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: 3,
   });
 

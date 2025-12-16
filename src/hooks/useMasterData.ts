@@ -30,14 +30,14 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
     isLoading: loading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<MasterDataItem[]>({
     queryKey: ["master-data", slug],
     queryFn: async () => {
       const response = await masterDataApi.getMasterData(slug!);
       return response.data.items;
     },
     enabled: !!slug,
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
   });
 
   const addMutation = useMutation({

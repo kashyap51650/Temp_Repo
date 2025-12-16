@@ -56,7 +56,7 @@ export function useDataTypes(props?: UseDataTypesProps): UseDataTypesResult {
       }
     },
     enabled: enabled && !!studyTypeId,
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME.LONG, // 5 minutes
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG, // 5 minutes
     retry: 1,
   });
 

@@ -61,7 +61,7 @@ export function useExperimentsDropdown(
       }
     },
     enabled: enabled && !!filters,
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME.MEDIUM, // 3 minutes
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM, // 3 minutes
     retry: 1,
   });
 

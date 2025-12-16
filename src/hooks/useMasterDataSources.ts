@@ -16,7 +16,7 @@ export const useMasterDataSources = () => {
       const response = await masterDataApi.getMasterDataSources();
       return response.data;
     },
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
     gcTime: REACT_QUERY_CONFIG.CACHE_TIME,
   });
 };

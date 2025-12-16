@@ -19,6 +19,12 @@ export interface UserProfile {
   roles: any[];
 }
 
+interface ProfileResponse {
+  success: boolean;
+  message: string;
+  data: UserProfile;
+}
+
 export function useProfile() {
   const queryClient = useQueryClient();
 
@@ -27,10 +33,10 @@ export function useProfile() {
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<ProfileResponse>({
     queryKey: ["profile"],
     queryFn: authApi.getProfile,
-    staleTime: REACT_QUERY_CONFIG.STALE_TIME || 5 * 60 * 1000,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
   });
 
   const updateProfileMutation = useMutation({
