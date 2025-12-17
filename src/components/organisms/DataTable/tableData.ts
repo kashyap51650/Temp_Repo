@@ -307,6 +307,82 @@ export const getDataViewItems = (
   studyType?: string,
   dataType?: string
 ): DataViewItem[] => {
+  if (dataType) {
+    const normalizedDataType = dataType.toLowerCase().trim();
+
+    if (
+      normalizedDataType === "weight sheet" ||
+      (normalizedDataType.includes("weight") &&
+        normalizedDataType.includes("sheet"))
+    ) {
+      return [
+        {
+          id: "weight-sheet",
+          name: "BioD Weight Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "callipering sheet" ||
+      normalizedDataType === "callipering" ||
+      normalizedDataType.includes("calliper")
+    ) {
+      return [
+        {
+          id: "callipering-sheet",
+          name: "Callipering Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "necropsy sheet" ||
+      normalizedDataType === "necropsy" ||
+      normalizedDataType.includes("necropsy")
+    ) {
+      return [
+        {
+          id: "necropsy-sheet",
+          name: "Necropsy Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "agc sheet" ||
+      normalizedDataType === "agc" ||
+      normalizedDataType.includes("agc")
+    ) {
+      return [
+        {
+          id: "agc-sheet",
+          name: "AGC Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+  }
+
   const isBiodistribution =
     experimentName.toLowerCase().includes("biodistribution") ||
     studyType?.toLowerCase().includes("biodistribution") ||
@@ -501,6 +577,15 @@ export const getDataViewItems = (
       canReject: true,
     },
     {
+      id: "dv1",
+      name: "BioD Weight Sheet",
+      status: "Validated",
+      canView: true,
+      canEdit: true,
+      canApprove: true,
+      canReject: true,
+    },
+    {
       id: "dv2",
       name: "Cage Cards",
       status: "Validated",
@@ -535,9 +620,6 @@ export const createBioDOrganColumns = (
     width: "min-w-20",
   })),
 ];
-
-export const getBioDOrganTableColumns = (data: BioDOrganData) =>
-  createBioDOrganColumns(data.mouse);
 
 // BioD Organ Data Structure for Experiment Tables
 export interface BioDOrganData {
@@ -1524,6 +1606,7 @@ export const DEFAULT_GROUPS: Group[] = [
 export interface BioDWeightMouse {
   id: string;
   bodyWeight: number;
+  measurementId?: number;
 }
 
 export interface BioDWeightData {

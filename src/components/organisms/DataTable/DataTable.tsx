@@ -38,12 +38,18 @@ type DataTableProps<T extends { id: string | number }> = {
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: boolean;
+  pageSize?: number;
 };
 
 export function DataTable<T extends { id: string | number }>(
   props: DataTableProps<T>
 ) {
-  const { columns, data, pagination: enablePagination = true } = props;
+  const {
+    columns,
+    data,
+    pagination: enablePagination = true,
+    pageSize = 10,
+  } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -59,7 +65,7 @@ export function DataTable<T extends { id: string | number }>(
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: pageSize,
   });
 
   const table = useReactTable({

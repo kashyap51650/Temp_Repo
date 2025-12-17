@@ -1,6 +1,8 @@
 import { Check, Edit, Eye, X as XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
+import { useApproveExperimentData, useRejectExperimentData } from "../../hooks";
 import { Button } from "../atoms/Button/Button";
 import { Dialog } from "../atoms/Dialog/Dialog";
 import {
@@ -8,10 +10,7 @@ import {
   getDataViewItems,
   type ValidationRow,
 } from "../organisms/DataTable/tableData";
-import {
-  biodWeightSheetData,
-  calliperingData,
-} from "../organisms/DataTable/tableData";
+import { calliperingData } from "../organisms/DataTable/tableData";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
@@ -32,13 +31,17 @@ export function DataViewModal({
   onClose,
   experiment,
 }: DataViewModalProps) {
-  const [dataItems, setDataItems] = useState<DataViewItem[]>(() =>
-    getDataViewItems(
+  const [dataItems, setDataItems] = useState<DataViewItem[]>([]);
+
+  useEffect(() => {
+    const items = getDataViewItems(
       experiment.experimentName,
       experiment.studyType,
       experiment.dataType
-    )
-  );
+    );
+    setDataItems(items);
+  }, [experiment.experimentName, experiment.studyType, experiment.dataType]);
+
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showWeightSheetModal, setShowWeightSheetModal] = useState(false);
@@ -54,21 +57,30 @@ export function DataViewModal({
   const [showCalliperingSheetModal, setShowCalliperingSheetModal] =
     useState(false);
 
+  const approveMutation = useApproveExperimentData();
+  const rejectMutation = useRejectExperimentData();
+
   const handleAction = (
     item: DataViewItem,
     action: "view" | "edit" | "approve" | "reject"
   ) => {
     setSelectedItem(item);
 
-    if (item.name === "BioD Weight Sheet") {
-      setShowWeightSheetModal(true);
-      setBioDWeightSheetMode(action === "edit" ? "edit" : "view");
-      return;
-    }
-    if (item.name === "Callipering Data" || item.name === "Callipering") {
-      setShowCalliperingSheetModal(true);
-      setCalliperingSheetMode(action === "edit" ? "edit" : "view");
-      return;
+    if (action === "view" || action === "edit") {
+      if (item.name === "BioD Weight Sheet" || item.name === "Weight Sheet") {
+        setShowWeightSheetModal(true);
+        setBioDWeightSheetMode(action === "edit" ? "edit" : "view");
+        return;
+      }
+      if (
+        item.name === "Callipering Data" ||
+        item.name === "Callipering Sheet" ||
+        item.name === "Callipering"
+      ) {
+        setShowCalliperingSheetModal(true);
+        setCalliperingSheetMode(action === "edit" ? "edit" : "view");
+        return;
+      }
     }
 
     switch (action) {
@@ -79,14 +91,14 @@ export function DataViewModal({
         setShowEditModal(true);
         break;
       case "approve":
-        setDataItems((prev) =>
-          prev.map((prevItem) =>
-            prevItem.id === item.id
-              ? { ...prevItem, status: "Validated" as const }
-              : prevItem
-          )
-        );
-        setShowSuccessAlert(true);
+        approveMutation.mutate(experiment.id, {
+          onSuccess: (data) => {
+            toast.success("Experiment data approved successfully", {
+              description: `Status updated to ${data.status}`,
+            });
+            onClose();
+          },
+        });
         break;
       case "reject":
         setShowRejectModal(true);
@@ -94,14 +106,22 @@ export function DataViewModal({
     }
   };
 
-  const handleReject = () => {
+  const handleReject = (rejectionReason: string) => {
     if (selectedItem) {
-      setDataItems((prev) =>
-        prev.map((item) =>
-          item.id === selectedItem.id
-            ? { ...item, status: "Error" as const }
-            : item
-        )
+      rejectMutation.mutate(
+        {
+          experimentDataId: experiment.id,
+          rejectionReason,
+        },
+        {
+          onSuccess: (data) => {
+            toast.success("Experiment data rejected successfully", {
+              description: `Status updated to ${data.status}`,
+            });
+
+            onClose();
+          },
+        }
       );
     }
   };
@@ -170,25 +190,29 @@ export function DataViewModal({
                   <Edit className="size-4" />
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleAction(item, "approve")}
-                  title="Approve"
-                >
-                  <Check className="size-4 text-green-700" />
-                </Button>
+                {experiment.status === "pending" && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleAction(item, "approve")}
+                      title="Approve"
+                    >
+                      <Check className="size-4 text-green-700" />
+                    </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleAction(item, "reject")}
-                  disabled={!item.canReject || item.status === "Error"}
-                  className=" hover:text-red-700 hover:bg-red-50"
-                  title="Reject"
-                >
-                  <XIcon className="size-4 text-red-600" />
-                </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleAction(item, "reject")}
+                      disabled={!item.canReject || item.status === "Error"}
+                      className=" hover:text-red-700 hover:bg-red-50"
+                      title="Reject"
+                    >
+                      <XIcon className="size-4 text-red-600" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -232,7 +256,7 @@ export function DataViewModal({
             }}
             onSave={handleSaveEdit}
             experimentName={experiment.experimentName}
-            data={biodWeightSheetData}
+            experimentDataId={experiment.id}
           />
         ) : (
           <BioDWeightSheetViewModal
@@ -242,7 +266,7 @@ export function DataViewModal({
               setBioDWeightSheetMode(null);
             }}
             experimentName={experiment.experimentName}
-            data={biodWeightSheetData}
+            experimentDataId={experiment.id}
           />
         ))}
 
