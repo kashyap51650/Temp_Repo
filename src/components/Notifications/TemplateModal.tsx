@@ -121,13 +121,14 @@ export default function TemplateModal({
       title={title}
       description={mode === "view" ? undefined : "Fill template details"}
       trigger={null}
+      className="max-w-4xl"
     >
       {mode === "view" ? (
         <div className="space-y-4 py-2 mt-4">
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-5">
             {templateDetails.map(({ label, value }) => (
               <div className="flex justify-between items-start" key={label}>
-                <div className="mb-1 text-sm font-medium text-muted-foreground w-30">
+                <div className="mb-1 text-sm font-medium text-muted-foreground min-w-36">
                   {label}
                 </div>
                 <div className="font-normal ml-4 text-sm text-end">{value}</div>
