@@ -1,8 +1,7 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
-import { useAgcExperimentDataImport } from "@/hooks/useAgcExperimentDataImport";
-import { useNecropsyFileDownload } from "@/hooks/useNecropsyFileDownload";
+import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 
 import { useExperimentDataImport } from "../../hooks";
 import {
@@ -147,9 +146,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     },
   } = props;
 
-  const { handleFileDownload } = useNecropsyFileDownload();
-  const { handleUploadAgcSheet, isAgcSheetUploading } =
-    useAgcExperimentDataImport();
   const isProjectSelected = !!formData.project;
   const isSpecialisationSelected = !!formData.specialisation;
   const isHotlabSelected =
@@ -173,6 +169,17 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     useState(false);
   const [isOpenGroupSelectionModalForAGC, setIsOpenGroupSelectionModalForAGC] =
     useState(false);
+
+  const handleAgcFileUploadSuccess = () => {
+    setIsOpenGroupSelectionModalForAGC(false);
+    setFormData((prev: FormData) => ({
+      ...prev,
+      uploadAGCFile: null,
+    }));
+  };
+
+  const { handleUploadAGCSheet, isAGCSheetUploading } =
+    useAGCExperimentDataImport({ onSuccess: handleAgcFileUploadSuccess });
 
   const { uploadFile, isUploading } = useExperimentDataImport({
     onSuccess: () => {
@@ -201,18 +208,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         data_type_id: dataTypeId,
       });
     }
-  };
-
-  const onProceedFileDownload = async (selectedGroupCodes: string[]) => {
-    if (formData.experiment?.id === undefined) {
-      return;
-    }
-
-    handleFileDownload({
-      experimentId: formData.experiment?.id,
-      groupIds: selectedGroupCodes.map((code) => Number(code)),
-    });
-    setIsOpenDownloadOrganSheetModal(false);
   };
 
   const downloadButtonClickHandler = (
@@ -263,7 +258,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const handleAgcFileUpload = async (selectedCodes: string[]) => {
     if (isNecropsyData && formData.uploadAGCFile && formData.experiment?.id) {
-      handleUploadAgcSheet({
+      handleUploadAGCSheet({
         experiment_id: formData.experiment?.id,
         group_ids: selectedCodes,
         file: formData.uploadAGCFile,
@@ -391,9 +386,9 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             <Button
               size="lg"
               onClick={() => setIsOpenGroupSelectionModalForAGC(true)}
-              disabled={isAgcSheetUploading || formData.uploadAGCFile === null}
+              disabled={isAGCSheetUploading || formData.uploadAGCFile === null}
             >
-              {isAgcSheetUploading ? "Uploading..." : "Upload AGC Data"}
+              Upload AGC Data
             </Button>
           </div>
         </>
@@ -404,7 +399,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           open={isOpenDownloadOrganSheetModal}
           onOpenChange={setIsOpenDownloadOrganSheetModal}
           experimentId={formData.experiment?.id}
-          onProceed={onProceedFileDownload}
         />
       )}
 
@@ -414,14 +408,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           onOpenChange={setIsOpenGroupSelectionModalForAGC}
           experimentId={formData.experiment?.id}
           onProceed={handleAgcFileUpload}
-          isUploading={isAgcSheetUploading}
-          onSuccess={() => {
-            setIsOpenGroupSelectionModalForAGC(false);
-            setFormData((prev: FormData) => ({
-              ...prev,
-              uploadAGCFile: null,
-            }));
-          }}
+          isUploading={isAGCSheetUploading}
         />
       )}
 

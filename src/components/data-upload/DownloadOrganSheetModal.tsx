@@ -3,20 +3,24 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { useMouseGroupsByExperiment } from "@/hooks/useMouseGroupsByExperiment";
+import { useNecropsyFileDownload } from "@/hooks/useNecropsyFileDownload";
 
 interface DownloadOrganSheetModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   experimentId?: number;
-  /** Called when user clicks Proceed with the array of selected group codes */
-  onProceed?: (selectedGroupCodes: string[]) => void;
 }
 
 export const DownloadOrganSheetModal: React.FC<
   DownloadOrganSheetModalProps
-> = ({ open, onOpenChange, experimentId, onProceed }) => {
+> = ({ open, onOpenChange, experimentId }) => {
   const { mouseGroups, isLoading } = useMouseGroupsByExperiment(experimentId);
 
+  const { handleFileDownload, isPending } = useNecropsyFileDownload({
+    onSuccess: () => {
+      onOpenChange(false);
+    },
+  });
   const [selectedGroups, setSelectedGroups] = useState<Record<string, boolean>>(
     {}
   );
@@ -31,8 +35,11 @@ export const DownloadOrganSheetModal: React.FC<
   );
 
   const handleProceed = useCallback(() => {
-    if (onProceed) onProceed(selectedGroupCodes);
-  }, [onProceed, selectedGroupCodes]);
+    handleFileDownload({
+      experimentId: experimentId!,
+      groupIds: selectedGroupCodes.map((code) => parseInt(code, 10)),
+    });
+  }, [selectedGroupCodes, handleFileDownload, experimentId]);
 
   const renderRandomizationGroups = () => {
     if (isLoading) {
@@ -41,7 +48,7 @@ export const DownloadOrganSheetModal: React.FC<
       );
     }
 
-    if (mouseGroups && mouseGroups.length > 0) {
+    if (mouseGroups?.length) {
       return mouseGroups?.map((g) => (
         <label key={g.id} className="flex items-center gap-2">
           <input
@@ -78,9 +85,9 @@ export const DownloadOrganSheetModal: React.FC<
           </Button>
           <Button
             onClick={handleProceed}
-            disabled={selectedGroupCodes.length === 0}
+            disabled={selectedGroupCodes.length === 0 || isPending}
           >
-            Proceed ({selectedGroupCodes.length})
+            {isPending ? "Downloading..." : "Download Organ Weight Sheet"}
           </Button>
         </div>
       </div>

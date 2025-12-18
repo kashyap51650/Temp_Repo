@@ -54,7 +54,7 @@ export const MouseGroupForAgcSelectionModal: React.FC<
       );
     }
 
-    if (mouseGroupsWithOrganWeights && mouseGroupsWithOrganWeights.length > 0) {
+    if (mouseGroupsWithOrganWeights?.length) {
       return mouseGroupsWithOrganWeights?.map((g) => (
         <label key={g.id} className="flex items-center gap-2">
           <input

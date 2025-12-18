@@ -83,3 +83,5 @@ export const statusOptions = [
   { value: "Approved", label: "Approved" },
   { value: "Rejected", label: "Rejected" },
 ];
+
+export const API_CUSTOM_TIMEOUT = 60000;

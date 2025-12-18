@@ -7,7 +7,7 @@ import type {
 } from "@/types/randomization";
 
 import type { UserFilters, UsersResponse } from "../types/auth";
-import { FILE_SIZE_LIMITS } from "./constants";
+import { API_CUSTOM_TIMEOUT, FILE_SIZE_LIMITS } from "./constants";
 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
@@ -1246,7 +1246,7 @@ export interface ImportExperimentDataPayload {
   file: File;
 }
 
-export interface ImportAgecDataPayload {
+export interface ImportAGCDataPayload {
   experiment_id: number;
   group_ids: string[];
   file: File;
@@ -1299,7 +1299,7 @@ export const experimentDataApi = {
         API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
         formData,
         {
-          timeout: 60000,
+          timeout: API_CUSTOM_TIMEOUT,
         }
       );
     } catch (error) {
@@ -1308,7 +1308,7 @@ export const experimentDataApi = {
     }
   },
 
-  importAgcExperimentData: async (payload: ImportAgecDataPayload) => {
+  importAGCExperimentData: async (payload: ImportAGCDataPayload) => {
     if (!payload.file) {
       throw new Error("File is required");
     }
@@ -1330,7 +1330,7 @@ export const experimentDataApi = {
         API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_AGC_EXPERIMENT_DATA,
         formData,
         {
-          timeout: 60000,
+          timeout: API_CUSTOM_TIMEOUT,
         }
       );
     } catch (error) {
