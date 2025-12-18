@@ -10,7 +10,6 @@ import {
   getDataViewItems,
   type ValidationRow,
 } from "../organisms/DataTable/tableData";
-import { calliperingData } from "../organisms/DataTable/tableData";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
@@ -272,6 +271,7 @@ export function DataViewModal({
 
       {selectedItem &&
         (selectedItem.name === "Callipering Data" ||
+          selectedItem.name === "Callipering Sheet" ||
           selectedItem.name === "Callipering") &&
         showCalliperingSheetModal &&
         (calliperingSheetMode === "edit" ? (
@@ -283,7 +283,7 @@ export function DataViewModal({
             }}
             onSave={handleSaveEdit}
             experimentName={experiment.experimentName}
-            data={calliperingData}
+            experimentDataId={experiment.id}
           />
         ) : (
           <CalliperingSheetViewModal
@@ -293,7 +293,7 @@ export function DataViewModal({
               setCalliperingSheetMode(null);
             }}
             experimentName={experiment.experimentName}
-            data={calliperingData}
+            experimentDataId={experiment.id}
           />
         ))}
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/atoms/Input/Input";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import type { MousePairRow } from "@/components/organisms/DataTable/tableColumns";
 import { getBioDWeightMousePairColumns } from "@/components/organisms/DataTable/tableColumns";
-import { useExperimentDataById } from "@/hooks";
+import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
 
@@ -50,7 +50,7 @@ export function BioDWeightSheet({
     data: apiData,
     isLoading,
     error,
-  } = useExperimentDataById(experimentDataId || "");
+  } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
 
   useEffect(() => {
     if (apiData && !data) {

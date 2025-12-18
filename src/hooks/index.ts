@@ -2,11 +2,12 @@ export { default as useApproveExperimentData } from "./useApproveExperimentData"
 export * from "./useAssignUserRole";
 export * from "./useAuthState";
 export { default as useBulkUpdateBodyWeights } from "./useBulkUpdateBodyWeights";
+export { default as useBulkUpdateCalliperMeasurements } from "./useBulkUpdateCalliperMeasurements";
 export * from "./useCreateExperiment";
 export * from "./useDataTypes";
 export * from "./useDebounce";
 export * from "./useExperimentData";
-export { default as useExperimentDataById } from "./useExperimentDataById";
+export * from "./useExperimentDataById";
 export * from "./useExperimentDataImport";
 export * from "./useExperimentDrugsDropdown";
 export * from "./useExperimentsDropdown";

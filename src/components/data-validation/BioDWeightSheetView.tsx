@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
-import { useExperimentDataById } from "@/hooks";
+import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
 
@@ -59,7 +59,7 @@ export function BioDWeightSheetView({
     data: apiData,
     isLoading,
     error,
-  } = useExperimentDataById(experimentDataId || "");
+  } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
 
   useEffect(() => {
     if (apiData && !data) {

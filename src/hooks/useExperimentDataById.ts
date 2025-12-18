@@ -86,17 +86,107 @@ export interface ExperimentDataResponse {
   };
 }
 
-const fetchExperimentData = async (
-  experimentDataId: string
-): Promise<ExperimentDataResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}`;
-  return apiClient.get<ExperimentDataResponse>(endpoint);
+export type ExperimentDataForCaliperingResponse = {
+  id: number;
+  project: Project;
+  experiment: Experiment;
+  data_type: DataType;
+  study_type: StudyType;
+  created_at: string;
+  measurement_date: string;
+  treatment_date: string;
+  status: "approved" | "pending" | "rejected";
+  randomization_status: "completed" | "pending";
+  reviewer: Reviewer;
+  rejection_reason: string | null;
+  uploaded_data: {
+    calliper_measurements: {
+      id: number;
+      mouse: Mouse;
+      measurement_date: string;
+      treatment_date: string | null;
+      length_mm: number;
+      width_mm: number;
+      volume_mm3: number;
+      is_flagged: boolean;
+    }[];
+    sex: "Male" | "Female";
+    strain: string;
+    date_of_birth: string;
+    cell_line: CellLine;
+    cell_inj_date: string | null;
+    treatment_date: string;
+    measurement_date: string;
+  };
 };
 
-export default function useExperimentDataById(experimentDataId: string) {
+export type ExperimentDataForWeightSheetResponse = {
+  id: number;
+  project: Project;
+  experiment: Experiment;
+  data_type: DataType;
+  study_type: StudyType;
+  created_at: string;
+  measurement_date: string;
+  treatment_date: string;
+  status: "approved" | "pending" | "rejected";
+  randomization_status: "completed" | "pending";
+  reviewer: Reviewer;
+  rejection_reason: string | null;
+  uploaded_data: {
+    body_weight_measurements: {
+      id: number;
+      mouse: Mouse;
+      measurement_date: string;
+      body_weight_grams: number;
+      baseline_weight_grams: number;
+      percent_change: number;
+      is_flagged: boolean;
+      terminated: boolean;
+      treatment_date: string | null;
+      treatment_phase: "Baseline" | "Treatment" | "Post-Treatment";
+    }[];
+    sex: "Male" | "Female";
+    strain: string;
+    date_of_birth: string;
+    cell_line: CellLine;
+    cell_inj_date: string | null;
+    treatment_date: string | null;
+    measurement_date: string;
+  };
+};
+
+const fetchExperimentDataForWeightSheet = async (
+  experimentDataId: string
+): Promise<ExperimentDataForWeightSheetResponse> => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/weight-sheet`;
+  return apiClient.get<ExperimentDataForWeightSheetResponse>(endpoint);
+};
+
+const fetchExperimentDataForCalliperingSheet = async (
+  experimentDataId: string
+): Promise<ExperimentDataForCaliperingResponse> => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/callipering-sheet`;
+  return apiClient.get<ExperimentDataForCaliperingResponse>(endpoint);
+};
+
+export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
-    queryKey: ["experimentData", experimentDataId],
-    queryFn: () => fetchExperimentData(experimentDataId),
+    queryKey: ["experimentData", "weightSheet", experimentDataId],
+    queryFn: () => fetchExperimentDataForWeightSheet(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+}
+
+export function useExperimentDataByIdForCalliperingSheet(
+  experimentDataId: string
+) {
+  return useQuery({
+    queryKey: ["experimentData", "calliperingSheet", experimentDataId],
+    queryFn: () => fetchExperimentDataForCalliperingSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: 3,
