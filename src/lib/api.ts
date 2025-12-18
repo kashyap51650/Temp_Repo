@@ -7,7 +7,7 @@ import type {
 } from "@/types/randomization";
 
 import type { UserFilters, UsersResponse } from "../types/auth";
-import { FILE_SIZE_LIMITS } from "./constants";
+import { API_CUSTOM_TIMEOUT, FILE_SIZE_LIMITS } from "./constants";
 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
@@ -87,6 +87,7 @@ export const API_CONFIG = {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data`,
       UPDATE_TREATMENT_DATE: (experimentDataId: string) =>
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
+      IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
@@ -94,6 +95,15 @@ export const API_CONFIG = {
     RANDOMIZATION: {
       PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,
       CONFIRM: `/api/${import.meta.env.VITE_API_VERSION}/randomization/confirm`,
+    },
+    MOUSE_GROUPS: {
+      MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
+      MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
+        `api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+    },
+    NECROPSY: {
+      EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
     },
   },
 } as const;
@@ -1236,6 +1246,12 @@ export interface ImportExperimentDataPayload {
   file: File;
 }
 
+export interface ImportAGCDataPayload {
+  experiment_id: number;
+  group_ids: string[];
+  file: File;
+}
+
 export interface ImportExperimentDataResponse {
   success: boolean;
   message: string;
@@ -1283,11 +1299,42 @@ export const experimentDataApi = {
         API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
         formData,
         {
-          timeout: 60000,
+          timeout: API_CUSTOM_TIMEOUT,
         }
       );
     } catch (error) {
       console.error("Experiment data import error:", error);
+      throw error;
+    }
+  },
+
+  importAGCExperimentData: async (payload: ImportAGCDataPayload) => {
+    if (!payload.file) {
+      throw new Error("File is required");
+    }
+
+    const fileName = payload.file.name.toLowerCase();
+
+    if (!fileName.endsWith(".xlsx")) {
+      throw new Error("Only .xlsx files are allowed");
+    }
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("group_ids", payload.group_ids.join(","));
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_AGC_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment agc data import error:", error);
       throw error;
     }
   },
@@ -1373,5 +1420,56 @@ export const randomizationApi = {
     return apiClient.post(API_CONFIG.ENDPOINTS.RANDOMIZATION.CONFIRM, {
       ...payload,
     });
+  },
+};
+export interface RandomizationGroup {
+  id: number;
+  experiment_id: number;
+  group_code: string;
+  group_name: string;
+  group_type: string;
+  cell_line_id: number | null;
+  cell_dose: number | null;
+  strain: string | null;
+  is_locked: boolean;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const mouseGroupApi = {
+  getMouseGroupsByExperiment: async (
+    experimentId: number
+  ): Promise<ApiResponse<RandomizationGroup[]>> => {
+    return await apiClient.get(
+      API_CONFIG.ENDPOINTS.MOUSE_GROUPS.MOUSE_GROUPS_BY_EXPERIMENT(experimentId)
+    );
+  },
+  getMouseGroupWithOrganWeights: async (
+    experimentId: number
+  ): Promise<ApiResponse<RandomizationGroup[]>> => {
+    return await apiClient.get(
+      API_CONFIG.ENDPOINTS.MOUSE_GROUPS.MOUSE_GROUPS_WITH_ORGAN_WEIGHTS(
+        experimentId
+      )
+    );
+  },
+};
+
+export const necropsyApi = {
+  downloadOrganSheet: async (payload: {
+    experimentId: number;
+    groupIds: number[];
+  }): Promise<Blob> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.NECROPSY.EXPORT_ORGAN_WEIGHT_SHEET,
+      {
+        experiment_id: payload.experimentId,
+        group_ids: payload.groupIds,
+      },
+      {
+        responseType: "blob",
+      }
+    );
   },
 };

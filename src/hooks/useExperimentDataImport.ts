@@ -9,7 +9,12 @@ import {
 import { FILE_SIZE_LIMITS } from "../lib/constants";
 
 export interface UseExperimentDataImportProps {
-  onSuccess?: () => void;
+  onSuccess?: (data: {
+    filename: string;
+    experiment_id: number;
+    experiment_data_id: number;
+    uploaded_by: number;
+  }) => void;
 }
 
 export interface UseExperimentDataImportReturn {
@@ -79,7 +84,7 @@ export const useExperimentDataImport = (
 
       if (response.success) {
         toast.success(response.message || "Data uploaded successfully!");
-        props?.onSuccess?.();
+        props?.onSuccess?.(response.data);
       } else {
         toast.error(response.message || "Upload failed. Please try again.");
       }
