@@ -70,19 +70,21 @@ export function BioDWeightSheetView({
   useEffect(() => {
     if (apiData && !data) {
       const transformedData: BioDWeightData = {
-        sex: apiData.uploaded_data.sex || "",
-        strain: apiData.uploaded_data.strain || "",
-        dob: apiData.uploaded_data.date_of_birth || "",
-        cellInjectionDate: apiData.uploaded_data.cell_inj_date || "",
-        cellLine: apiData.uploaded_data.cell_line.cell_line_name || "",
-        treatmentDate: apiData.uploaded_data.treatment_date || "",
-        measurementDate: apiData.uploaded_data.measurement_date || "",
-        mice: apiData.uploaded_data.body_weight_measurements.map(
-          (measurement) => ({
-            id: measurement.mouse.mouse_delivery_id,
-            bodyWeight: measurement.body_weight_grams,
-          })
-        ),
+        sex: apiData.uploaded_data.sex ?? "",
+        strain: apiData.uploaded_data.strain ?? "",
+        dob: apiData.uploaded_data.date_of_birth ?? "",
+        cellInjectionDate: apiData.uploaded_data.cell_inj_date ?? "",
+        cellLine: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
+        treatmentDate: apiData.uploaded_data.treatment_date ?? "",
+        measurementDate: apiData.uploaded_data.measurement_date ?? "",
+        mice:
+          apiData.uploaded_data.body_weight_measurements?.map(
+            (measurement) => ({
+              id: measurement.mouse?.mouse_delivery_id ?? "",
+              bodyWeight: measurement.body_weight_grams ?? 0,
+              measurementId: measurement.id,
+            })
+          ) ?? [],
       };
       setViewData(transformedData);
     } else if (data) {

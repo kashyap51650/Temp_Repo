@@ -10,13 +10,13 @@ import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataBy
 import { Label } from "../atoms";
 
 interface BioDWeightData {
-  sex: string;
-  strain: string;
-  dob: string;
-  cellInjectionDate: string;
-  cellLine: string;
-  treatmentDate: string;
-  measurementDate: string;
+  sex?: string;
+  strain?: string;
+  dob?: string;
+  cellInjectionDate?: string;
+  cellLine?: string;
+  treatmentDate?: string;
+  measurementDate?: string;
   mice: {
     id: string;
     bodyWeight: number;
@@ -31,7 +31,7 @@ interface BioDWeightSheetProps {
 }
 
 export function BioDWeightSheet({
-  data: BioDWeightData,
+  data,
   experimentDataId,
   onSave,
 }: BioDWeightSheetProps) {
@@ -53,34 +53,32 @@ export function BioDWeightSheet({
   } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
 
   useEffect(() => {
-    if (apiData && !BioDWeightData) {
+    if (apiData && !data) {
       const transformedData: BioDWeightData = {
-        sex: apiData.uploaded_data.sex || "",
-        strain: apiData.uploaded_data.strain || "",
-        dob: apiData.uploaded_data.date_of_birth || "",
-        cellInjectionDate: apiData.uploaded_data.cell_inj_date || "",
-        cellLine: apiData.uploaded_data.cell_line.cell_line_name || "",
-        treatmentDate: apiData.uploaded_data.treatment_date || "",
-        measurementDate: apiData.uploaded_data.measurement_date || "",
-        mice: apiData.uploaded_data.body_weight_measurements.map(
-          (measurement) => ({
-            id: measurement.mouse.mouse_delivery_id,
-            bodyWeight: measurement.body_weight_grams,
-            measurementId: measurement.id, // Add measurement ID for API updates
-          })
-        ),
+        sex: apiData.uploaded_data.sex ?? "",
+        strain: apiData.uploaded_data.strain ?? "",
+        dob: apiData.uploaded_data.date_of_birth ?? "",
+        cellInjectionDate: apiData.uploaded_data.cell_inj_date ?? "",
+        cellLine: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
+        treatmentDate: apiData.uploaded_data.treatment_date ?? "",
+        measurementDate: apiData.uploaded_data.measurement_date ?? "",
+        mice:
+          apiData.uploaded_data.body_weight_measurements?.map(
+            (measurement) => ({
+              id: measurement.mouse?.mouse_delivery_id ?? "",
+              bodyWeight: measurement.body_weight_grams ?? 0,
+              measurementId: measurement.id,
+            })
+          ) ?? [],
       };
+
       setFormData(transformedData);
-      if (onSave) {
-        onSave(transformedData);
-      }
-    } else if (BioDWeightData) {
-      setFormData(BioDWeightData);
-      if (onSave) {
-        onSave(BioDWeightData);
-      }
+      onSave?.(transformedData);
+    } else if (data) {
+      setFormData(data);
+      onSave?.(data);
     }
-  }, [apiData, BioDWeightData]);
+  }, [apiData, data]);
 
   const handleHeaderChange = (field: keyof BioDWeightData, value: string) => {
     const updatedData = { ...formData, [field]: value };
