@@ -1666,14 +1666,14 @@ export interface CalliperingMouseRow {
 }
 
 export interface CalliperingData {
-  sex: string;
-  strain: string;
-  dob: string;
-  cell_injection_date: string;
-  cell_line: string;
-  treatment_date: string;
-  measurement_date: string;
-  mice: CalliperingMouseRow[];
+  sex?: string;
+  strain?: string;
+  dob?: string;
+  cell_injection_date?: string;
+  cell_line?: string;
+  treatment_date?: string;
+  measurement_date?: string;
+  mice?: CalliperingMouseRow[];
 }
 
 export const calliperingData: CalliperingData = {

@@ -129,21 +129,20 @@ export function CalliperingSheetEdit({
   useEffect(() => {
     if (apiData && !data) {
       const transformedData = {
-        sex: apiData.uploaded_data.sex || "",
-        strain: apiData.uploaded_data.strain || "",
-        dob: apiData.uploaded_data.date_of_birth || "",
-        cell_injection_date: apiData.uploaded_data.cell_inj_date || "",
-        cell_line: apiData.uploaded_data.cell_line.cell_line_name || "",
-        treatment_date: apiData.uploaded_data.treatment_date || "",
-        measurement_date: apiData.uploaded_data.measurement_date || "",
-        mice: apiData.uploaded_data.calliper_measurements.map(
-          (measurement) => ({
-            id: measurement.mouse.mouse_delivery_id,
+        sex: apiData?.uploaded_data.sex ?? "",
+        strain: apiData?.uploaded_data.strain ?? "",
+        dob: apiData?.uploaded_data.date_of_birth ?? "",
+        cell_injection_date: apiData?.uploaded_data.cell_inj_date ?? "",
+        cell_line: apiData?.uploaded_data.cell_line?.cell_line_name ?? "",
+        treatment_date: apiData?.uploaded_data.treatment_date ?? "",
+        measurement_date: apiData?.uploaded_data.measurement_date ?? "",
+        mice:
+          apiData?.uploaded_data.calliper_measurements?.map((measurement) => ({
+            id: measurement.mouse?.mouse_delivery_id ?? "",
             measurement_id: measurement.id,
-            length_mm: measurement.length_mm,
-            width_mm: measurement.width_mm,
-          })
-        ),
+            length_mm: measurement.length_mm ?? 0,
+            width_mm: measurement.width_mm ?? 0,
+          })) ?? [],
       };
       setForm(transformedData);
     } else if (data) {
