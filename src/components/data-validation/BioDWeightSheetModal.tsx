@@ -25,7 +25,7 @@ export function BioDWeightSheetModal({
   experimentName,
   experimentDataId,
   data,
-}: BioDWeightSheetModalProps) {
+}: Readonly<BioDWeightSheetModalProps>) {
   const [currentData, setCurrentData] = useState<BioDWeightData | null>(null);
   const [originalData, setOriginalData] = useState<BioDWeightData | null>(null);
   const bulkUpdateMutation = useBulkUpdateBodyWeights();
@@ -34,7 +34,7 @@ export function BioDWeightSheetModal({
     setCurrentData(weightData);
 
     if (!originalData && weightData.mice.length > 0) {
-      setOriginalData(JSON.parse(JSON.stringify(weightData))); // Deep copy to avoid reference issues
+      setOriginalData(structuredClone(weightData));
     }
   };
 
