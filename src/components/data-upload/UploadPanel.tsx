@@ -1,18 +1,22 @@
 import { Download } from "lucide-react";
 import { useState } from "react";
 
+import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
+
 import { useExperimentDataImport } from "../../hooks";
-import type {
-  DataType,
-  ExperimentDropdownItem,
-  Project,
-  StudyType,
+import {
+  type DataType,
+  type ExperimentDropdownItem,
+  type Project,
+  type StudyType,
 } from "../../lib/api";
 import { SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
 import { Button } from "../atoms";
+import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
 import { ExperimentLinkDialog } from "./ExperimentLinkDialog";
 import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
+import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
 import { ProjectSection } from "./ProjectSection";
 import { SpecializationSection } from "./SpecializationSection";
 import { UploadedFilesList } from "./UploadedFilesList";
@@ -25,6 +29,7 @@ interface FormData {
   dataType: string;
   uploadedFile: File | null;
   newExperimentName?: string;
+  uploadAGCFile?: File | null;
 }
 
 interface ValidationErrors {
@@ -105,7 +110,7 @@ const findStudyTypeId = (
   )?.id;
 };
 
-export default function UploadPanel(props: UploadPanelProps) {
+export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const {
     formProps: {
       formData,
@@ -153,7 +158,28 @@ export default function UploadPanel(props: UploadPanelProps) {
     !!formData.experiment || formData.studyType === STUDY_TYPE.EFFICACY;
   const isDataTypeSelected = !!formData.dataType;
 
+  const isNecropsyData =
+    formData.specialisation === "Preclinical" &&
+    formData.studyType === "Biodistribution" &&
+    formData.dataType === "Necropsy Sheet";
+
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
+
+  const [isOpenDownloadOrganSheetModal, setIsOpenDownloadOrganSheetModal] =
+    useState(false);
+  const [isOpenGroupSelectionModalForAGC, setIsOpenGroupSelectionModalForAGC] =
+    useState(false);
+
+  const handleAgcFileUploadSuccess = () => {
+    setIsOpenGroupSelectionModalForAGC(false);
+    setFormData((prev: FormData) => ({
+      ...prev,
+      uploadAGCFile: null,
+    }));
+  };
+
+  const { handleUploadAGCSheet, isAGCSheetUploading } =
+    useAGCExperimentDataImport({ onSuccess: handleAgcFileUploadSuccess });
 
   const { uploadFile, isUploading } = useExperimentDataImport({
     onSuccess: () => {
@@ -182,6 +208,16 @@ export default function UploadPanel(props: UploadPanelProps) {
         data_type_id: dataTypeId,
       });
     }
+  };
+
+  const downloadButtonClickHandler = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    if (isNecropsyData) {
+      setIsOpenDownloadOrganSheetModal(true);
+      return;
+    }
+    handleSampleFileDownload(event);
   };
 
   const handleDataUpload = async () => {
@@ -219,6 +255,27 @@ export default function UploadPanel(props: UploadPanelProps) {
       : isPreclinicSelected
         ? formData.studyType && formData.dataType
         : true);
+
+  const handleAgcFileUpload = async (selectedCodes: string[]) => {
+    if (isNecropsyData && formData.uploadAGCFile && formData.experiment?.id) {
+      handleUploadAGCSheet({
+        experiment_id: formData.experiment?.id,
+        group_ids: selectedCodes,
+        file: formData.uploadAGCFile,
+      });
+    }
+  };
+
+  const renderDownloadButtonText = () => {
+    if (isNecropsyData) {
+      return "Download Organ Sheet";
+    }
+
+    if (sampleFileLoading) {
+      return "Downloading...";
+    }
+    return "Download Sample File";
+  };
 
   return (
     <>
@@ -294,12 +351,12 @@ export default function UploadPanel(props: UploadPanelProps) {
         <Button
           size="lg"
           variant="outline"
-          onClick={handleSampleFileDownload}
+          onClick={downloadButtonClickHandler}
           disabled={!canShowDownloadButton || sampleFileLoading}
           type="button"
         >
           <Download className="mr-2 h-4 w-4" />
-          {sampleFileLoading ? "Downloading..." : "Download Sample File"}
+          {renderDownloadButtonText()}
         </Button>
 
         <Button
@@ -310,6 +367,50 @@ export default function UploadPanel(props: UploadPanelProps) {
           {isUploading ? "Uploading..." : "Upload Data"}
         </Button>
       </div>
+
+      {/* AGC Sheet Upload Area */}
+
+      {isNecropsyData && (
+        <>
+          <FileUploadArea
+            formData={formData}
+            setFormData={setFormData}
+            isProjectSelected={isProjectSelected}
+            isHotlabSelected={isHotlabSelected}
+            isPreclinicSelected={isPreclinicSelected}
+            isSpecialisationSelected={isSpecialisationSelected}
+            isDataTypeSelected={isDataTypeSelected}
+            isAgcUploadApplicable={isNecropsyData}
+          />
+          <div className="flex justify-end items-center pt-4">
+            <Button
+              size="lg"
+              onClick={() => setIsOpenGroupSelectionModalForAGC(true)}
+              disabled={isAGCSheetUploading || formData.uploadAGCFile === null}
+            >
+              Upload AGC Data
+            </Button>
+          </div>
+        </>
+      )}
+
+      {isOpenDownloadOrganSheetModal && (
+        <DownloadOrganSheetModal
+          open={isOpenDownloadOrganSheetModal}
+          onOpenChange={setIsOpenDownloadOrganSheetModal}
+          experimentId={formData.experiment?.id}
+        />
+      )}
+
+      {isNecropsyData && isOpenGroupSelectionModalForAGC && (
+        <MouseGroupForAgcSelectionModal
+          open={isOpenGroupSelectionModalForAGC}
+          onOpenChange={setIsOpenGroupSelectionModalForAGC}
+          experimentId={formData.experiment?.id}
+          onProceed={handleAgcFileUpload}
+          isUploading={isAGCSheetUploading}
+        />
+      )}
 
       <ExperimentLinkDialog
         open={showImportDialog}

@@ -302,13 +302,15 @@ export type DataViewItem = {
   canReject: boolean;
 };
 
+const toLowerTrimmed = (value?: string) => value?.toLowerCase().trim() ?? "";
+
 export const getDataViewItems = (
   experimentName: string,
   studyType?: string,
   dataType?: string
 ): DataViewItem[] => {
   if (dataType) {
-    const normalizedDataType = dataType.toLowerCase().trim();
+    const normalizedDataType = toLowerTrimmed(dataType);
 
     if (
       normalizedDataType === "weight sheet" ||
@@ -384,10 +386,10 @@ export const getDataViewItems = (
   }
 
   const isBiodistribution =
-    experimentName.toLowerCase().includes("biodistribution") ||
-    studyType?.toLowerCase().includes("biodistribution") ||
-    studyType?.toLowerCase().includes("biod") ||
-    dataType?.toLowerCase().includes("biodistribution");
+    toLowerTrimmed(experimentName).includes("biodistribution") ||
+    toLowerTrimmed(studyType).includes("biodistribution") ||
+    toLowerTrimmed(studyType).includes("biod") ||
+    toLowerTrimmed(dataType).includes("biodistribution");
 
   if (isBiodistribution) {
     return [
@@ -457,7 +459,7 @@ export const getDataViewItems = (
     ];
   }
 
-  if (studyType?.toLowerCase().includes("toxicity")) {
+  if (toLowerTrimmed(studyType).includes("toxicity")) {
     return [
       {
         id: "dv1",
@@ -499,8 +501,8 @@ export const getDataViewItems = (
   }
 
   if (
-    studyType?.toLowerCase().includes("dose") ||
-    studyType?.toLowerCase().includes("range")
+    toLowerTrimmed(studyType).includes("dose") ||
+    toLowerTrimmed(studyType).includes("range")
   ) {
     return [
       {
@@ -542,7 +544,7 @@ export const getDataViewItems = (
     ];
   }
 
-  if (studyType?.toLowerCase().includes("efficacy")) {
+  if (toLowerTrimmed(studyType).includes("efficacy")) {
     return [
       {
         id: "dv1",

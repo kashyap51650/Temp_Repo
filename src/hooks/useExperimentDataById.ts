@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api";
-import { REACT_QUERY_CONFIG } from "@/lib/constants";
+import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 
 // Type definitions for the API response
 interface Mouse {
@@ -61,6 +61,9 @@ interface Reviewer {
   last_name: string;
 }
 
+type ExperimentStatus = "approved" | "pending" | "rejected";
+type RandomizationStatus = "completed" | "pending";
+type TreatmentPhase = "Baseline" | "Treatment" | "Post-Treatment";
 export interface ExperimentDataResponse {
   id: number;
   project: Project;
@@ -95,8 +98,8 @@ export type ExperimentDataForCaliperingResponse = {
   created_at: string;
   measurement_date: string;
   treatment_date: string;
-  status: "approved" | "pending" | "rejected";
-  randomization_status: "completed" | "pending";
+  status: ExperimentStatus;
+  randomization_status: RandomizationStatus;
   reviewer: Reviewer;
   rejection_reason: string | null;
   uploaded_data: {
@@ -129,8 +132,8 @@ export type ExperimentDataForWeightSheetResponse = {
   created_at: string;
   measurement_date: string;
   treatment_date: string;
-  status: "approved" | "pending" | "rejected";
-  randomization_status: "completed" | "pending";
+  status: ExperimentStatus;
+  randomization_status: RandomizationStatus;
   reviewer: Reviewer;
   rejection_reason: string | null;
   uploaded_data: {
@@ -144,7 +147,7 @@ export type ExperimentDataForWeightSheetResponse = {
       is_flagged: boolean;
       terminated: boolean;
       treatment_date: string | null;
-      treatment_phase: "Baseline" | "Treatment" | "Post-Treatment";
+      treatment_phase: TreatmentPhase;
     }[];
     sex: "Male" | "Female";
     strain: string;
@@ -177,7 +180,7 @@ export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: DEFAULT_RETRY_DELAY,
   });
 }
 
@@ -190,6 +193,6 @@ export function useExperimentDataByIdForCalliperingSheet(
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: DEFAULT_RETRY_DELAY,
   });
 }

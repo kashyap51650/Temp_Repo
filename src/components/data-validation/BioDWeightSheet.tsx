@@ -31,7 +31,7 @@ interface BioDWeightSheetProps {
 }
 
 export function BioDWeightSheet({
-  data,
+  data: BioDWeightData,
   experimentDataId,
   onSave,
 }: BioDWeightSheetProps) {
@@ -53,7 +53,7 @@ export function BioDWeightSheet({
   } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
 
   useEffect(() => {
-    if (apiData && !data) {
+    if (apiData && !BioDWeightData) {
       const transformedData: BioDWeightData = {
         sex: apiData.uploaded_data.sex || "",
         strain: apiData.uploaded_data.strain || "",
@@ -74,13 +74,13 @@ export function BioDWeightSheet({
       if (onSave) {
         onSave(transformedData);
       }
-    } else if (data) {
-      setFormData(data);
+    } else if (BioDWeightData) {
+      setFormData(BioDWeightData);
       if (onSave) {
-        onSave(data);
+        onSave(BioDWeightData);
       }
     }
-  }, [apiData, data]);
+  }, [apiData, BioDWeightData]);
 
   const handleHeaderChange = (field: keyof BioDWeightData, value: string) => {
     const updatedData = { ...formData, [field]: value };
@@ -90,7 +90,9 @@ export function BioDWeightSheet({
     }
   };
 
-  const handleFormDataChange = (updater: any) => {
+  const handleFormDataChange = (
+    updater: (prevData: BioDWeightData) => BioDWeightData | BioDWeightData
+  ) => {
     setFormData((prevData) => {
       const newData =
         typeof updater === "function" ? updater(prevData) : updater;

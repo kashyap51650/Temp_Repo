@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import * as React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { type UploadedExperimentDataItem } from "../../../lib/api";
 import {
@@ -1207,7 +1207,7 @@ const WeightInput: React.FC<{
     setLocalValue(finalValue.toString());
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const numericLocalValue = parseFloat(localValue);
     if (
       value !== numericLocalValue &&
