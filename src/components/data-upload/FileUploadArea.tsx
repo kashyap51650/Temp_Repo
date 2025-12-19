@@ -15,6 +15,7 @@ interface FormData {
   dataType: string;
   uploadedFile: File | null;
   newExperimentName?: string;
+  uploadAGCFile?: File | null;
 }
 
 interface FileUploadAreaProps {
@@ -25,6 +26,7 @@ interface FileUploadAreaProps {
   isPreclinicSelected: boolean;
   isSpecialisationSelected: boolean;
   isDataTypeSelected: boolean;
+  isAgcUploadApplicable?: boolean;
 }
 
 export function FileUploadArea({
@@ -35,7 +37,8 @@ export function FileUploadArea({
   isPreclinicSelected,
   isSpecialisationSelected,
   isDataTypeSelected,
-}: FileUploadAreaProps) {
+  isAgcUploadApplicable = false,
+}: Readonly<FileUploadAreaProps>) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -93,7 +96,8 @@ export function FileUploadArea({
 
     setFormData((prev: FormData) => ({
       ...prev,
-      uploadedFile: file,
+      uploadedFile: isAgcUploadApplicable ? null : file,
+      uploadAGCFile: isAgcUploadApplicable ? file : null,
     }));
     setIsUploading(true);
     toast.success(`File "${file.name}" selected successfully!`);
@@ -143,6 +147,43 @@ export function FileUploadArea({
     (isPreclinicSelected && !isDataTypeSelected) ||
     isUploading;
 
+  const generateLabelText = () => {
+    if (isAgcUploadApplicable) {
+      return "Upload AGC Data File (.xlsx)";
+    }
+
+    if (formData.dataType) {
+      return `Upload ${formData.dataType} (.xlsx)`;
+    }
+    return "Upload Excel File (.xlsx)";
+  };
+
+  const generateButtonText = () => {
+    if (isAgcUploadApplicable) {
+      if (formData.uploadAGCFile) {
+        if (isUploading) {
+          return `Processing ${formData.uploadAGCFile.name}...`;
+        } else {
+          return `Selected: ${formData.uploadAGCFile.name}`;
+        }
+      }
+      return "Upload AGC Data File (.xlsx)";
+    }
+
+    if (formData.uploadedFile) {
+      if (isUploading) {
+        return `Processing ${formData.uploadedFile.name}...`;
+      } else {
+        return `Selected: ${formData.uploadedFile.name}`;
+      }
+    }
+
+    if (formData.dataType) {
+      return `Upload ${formData.dataType} file (.xlsx)`;
+    }
+
+    return "Upload Excel File (.xlsx)";
+  };
   return (
     <div className="space-y-2">
       <Label
@@ -152,9 +193,7 @@ export function FileUploadArea({
             : ""
         }`}
       >
-        {formData.dataType
-          ? `Upload ${formData.dataType} (.xlsx)`
-          : "Upload Excel File (.xlsx)"}
+        {generateLabelText()}
       </Label>
       <div
         className={`border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors ${
@@ -195,13 +234,7 @@ export function FileUploadArea({
               }
             }}
           >
-            {formData.uploadedFile
-              ? isUploading
-                ? `Processing ${formData.uploadedFile.name}...`
-                : `Selected: ${formData.uploadedFile.name}`
-              : formData.dataType
-                ? `Upload ${formData.dataType} file (.xlsx)`
-                : "Upload Excel File (.xlsx)"}
+            {generateButtonText()}
           </Button>
 
           {isUploading && (

@@ -86,3 +86,5 @@ export const statusOptions = [
 
 export const DEFAULT_RETRY_DELAY = (attemptIndex: number) =>
   Math.min(1000 * 2 ** attemptIndex, 30000);
+
+export const API_CUSTOM_TIMEOUT = 60000;

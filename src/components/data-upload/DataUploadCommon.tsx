@@ -40,6 +40,7 @@ interface DataUploadFormData {
   dataType: string;
   uploadedFile: File | null;
   newExperimentName?: string;
+  uploadAGCFile?: File | null;
 }
 
 export default function DataUploadCommon() {
@@ -56,6 +57,7 @@ export default function DataUploadCommon() {
     experiment: null,
     dataType: "",
     uploadedFile: null,
+    uploadAGCFile: null,
   });
 
   const isStudyTypesEnabled = useMemo(() => {
