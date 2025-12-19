@@ -9,7 +9,7 @@ import type {
 import useBulkUpdateCalliperMeasurements from "@/hooks/useBulkUpdateCalliperMeasurements";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
 
-import { Button, Input, Label } from "../atoms";
+import { Input, Label } from "../atoms";
 
 interface CalliperingMouseRowWithMeasurementId extends CalliperingMouseRow {
   measurement_id: number;
@@ -27,14 +27,14 @@ const getEditableCalliperingColumns = (
 ): ColumnDef<CalliperingMouseRow>[] => [
   {
     accessorKey: "id",
-    header: () => <span className="block">Mouse Delivery ID</span>,
+    header: () => <span className="block lg:w-96">Mouse Delivery ID</span>,
     cell: ({ row }) => (
       <span className="font-medium text-center">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "length_mm",
-    header: "Length (mm)",
+    header: () => <span className="block lg:w-96">Length (mm)</span>,
     cell: ({ row }) => (
       <Input
         type="number"
@@ -48,7 +48,7 @@ const getEditableCalliperingColumns = (
   },
   {
     accessorKey: "width_mm",
-    header: "Width (mm)",
+    header: () => <span className="block lg:w-96">Width (mm)</span>,
     cell: ({ row }) => (
       <Input
         type="number"
@@ -65,7 +65,6 @@ const getEditableCalliperingColumns = (
 export function CalliperingSheetEdit({
   data,
   onSave,
-  onCancel,
   experimentDataId,
 }: Readonly<CalliperingSheetProps>) {
   const [form, setForm] = useState<
@@ -244,19 +243,6 @@ export function CalliperingSheetEdit({
           />
         </div>
       )}
-      <div className="flex gap-2 justify-end mt-auto">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={
-            bulkUpdateMutation.isPending || editedMeasurementIds.size === 0
-          }
-        >
-          {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"}
-        </Button>
-      </div>
     </form>
   );
 }
