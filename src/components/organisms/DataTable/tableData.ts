@@ -304,19 +304,51 @@ export type DataViewItem = {
 
 const toLowerTrimmed = (value?: string) => value?.toLowerCase().trim() ?? "";
 
+const checkNormalizeDataType = (
+  dataType:
+    | "weight sheet"
+    | "callipering sheet"
+    | "necropsy sheet"
+    | "agc sheet"
+) => {
+  const normalizedDataType = toLowerTrimmed(dataType);
+  switch (dataType) {
+    case "weight sheet":
+      return (
+        normalizedDataType === "weight sheet" ||
+        (normalizedDataType.includes("weight") &&
+          normalizedDataType.includes("sheet"))
+      );
+    case "callipering sheet":
+      return (
+        normalizedDataType === "callipering sheet" ||
+        normalizedDataType === "callipering" ||
+        normalizedDataType.includes("calliper")
+      );
+    case "necropsy sheet":
+      return (
+        normalizedDataType === "necropsy sheet" ||
+        normalizedDataType === "necropsy" ||
+        normalizedDataType.includes("necropsy")
+      );
+    case "agc sheet":
+      return (
+        normalizedDataType === "agc sheet" ||
+        normalizedDataType === "agc" ||
+        normalizedDataType.includes("agc")
+      );
+    default:
+      return false;
+  }
+};
+
 export const getDataViewItems = (
   experimentName: string,
   studyType?: string,
   dataType?: string
 ): DataViewItem[] => {
   if (dataType) {
-    const normalizedDataType = toLowerTrimmed(dataType);
-
-    if (
-      normalizedDataType === "weight sheet" ||
-      (normalizedDataType.includes("weight") &&
-        normalizedDataType.includes("sheet"))
-    ) {
+    if (checkNormalizeDataType("weight sheet")) {
       return [
         {
           id: "weight-sheet",
@@ -330,11 +362,7 @@ export const getDataViewItems = (
       ];
     }
 
-    if (
-      normalizedDataType === "callipering sheet" ||
-      normalizedDataType === "callipering" ||
-      normalizedDataType.includes("calliper")
-    ) {
+    if (checkNormalizeDataType("callipering sheet")) {
       return [
         {
           id: "callipering-sheet",
@@ -348,11 +376,7 @@ export const getDataViewItems = (
       ];
     }
 
-    if (
-      normalizedDataType === "necropsy sheet" ||
-      normalizedDataType === "necropsy" ||
-      normalizedDataType.includes("necropsy")
-    ) {
+    if (checkNormalizeDataType("necropsy sheet")) {
       return [
         {
           id: "necropsy-sheet",
@@ -366,11 +390,7 @@ export const getDataViewItems = (
       ];
     }
 
-    if (
-      normalizedDataType === "agc sheet" ||
-      normalizedDataType === "agc" ||
-      normalizedDataType.includes("agc")
-    ) {
+    if (checkNormalizeDataType("agc sheet")) {
       return [
         {
           id: "agc-sheet",

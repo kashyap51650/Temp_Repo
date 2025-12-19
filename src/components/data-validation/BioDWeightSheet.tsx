@@ -91,7 +91,7 @@ export function BioDWeightSheet({
   };
 
   const handleFormDataChange = (
-    updater: (prevData: BioDWeightData) => BioDWeightData | BioDWeightData
+    updater: (prevData: BioDWeightData) => BioDWeightData
   ) => {
     setFormData((prevData) => {
       const newData =
