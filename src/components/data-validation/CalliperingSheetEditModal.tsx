@@ -1,6 +1,7 @@
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { CalliperingData } from "@/components/organisms/DataTable/tableData";
 
+import { Button } from "../atoms";
 import { CalliperingSheetEdit } from "./CalliperingSheetEdit";
 
 interface CalliperingSheetModalProps {
@@ -42,6 +43,20 @@ export function CalliperingSheetModal({
         onCancel={onClose}
         experimentDataId={experimentDataId}
       />
+      <div className="flex gap-2 justify-end mt-auto">
+        <Button type="button" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          // disabled={
+          //   bulkUpdateMutation.isPending || editedMeasurementIds.size === 0
+          // }
+        >
+          {/* {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"} */}
+          Save Changes
+        </Button>
+      </div>
     </Dialog>
   );
 }
