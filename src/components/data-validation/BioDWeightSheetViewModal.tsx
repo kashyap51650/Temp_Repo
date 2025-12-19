@@ -8,6 +8,7 @@ interface BioDWeightSheetViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
+  experimentDataId?: string;
   data?: BioDWeightData;
 }
 
@@ -15,6 +16,7 @@ export function BioDWeightSheetViewModal({
   isOpen,
   onClose,
   experimentName,
+  experimentDataId,
   data,
 }: BioDWeightSheetViewModalProps) {
   return (
@@ -28,7 +30,7 @@ export function BioDWeightSheetViewModal({
       trigger={null}
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
     >
-      <BioDWeightSheetView data={data} />
+      <BioDWeightSheetView data={data} experimentDataId={experimentDataId} />
       <div className="mt-auto flex justify-end ">
         <Button size={"lg"} onClick={onClose}>
           Close

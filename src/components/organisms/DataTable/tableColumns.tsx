@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { type UploadedExperimentDataItem } from "../../../lib/api";
 import {
@@ -757,6 +758,7 @@ export function getValidationColumns(
       header: "Status",
       cell: ({ row }) => {
         const status = row.original.status;
+        const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         const variant =
           status === "approved"
             ? "success"
@@ -764,7 +766,7 @@ export function getValidationColumns(
               ? "destructive"
               : "secondary";
 
-        return <Badge variant={variant}>{status}</Badge>;
+        return <Badge variant={variant}>{displayStatus}</Badge>;
       },
     },
     {
@@ -832,9 +834,6 @@ export const createBioDOrganColumns = (
     width: "min-w-20",
   })),
 ];
-
-export const getBioDOrganTableColumns = (data: { mouse: string[] }) =>
-  createBioDOrganColumns(data.mouse);
 
 export function getVisualFilterColumns(
   onView?: (filter: VisualFilterRow) => void,
@@ -1185,47 +1184,98 @@ export type MousePairRow = {
   rightWeight?: number;
 };
 
+const WeightInput: React.FC<{
+  value: number;
+  mouseId: string;
+  onValueChange: (mouseId: string, value: number) => void;
+}> = React.memo(({ value, mouseId, onValueChange }) => {
+  const [localValue, setLocalValue] = useState<string>(value.toString());
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+  };
+
+  const handleBlur = () => {
+    const numValue = parseFloat(localValue);
+    const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+
+    if (finalValue !== value) {
+      onValueChange(mouseId, finalValue);
+    }
+
+    setLocalValue(finalValue.toString());
+  };
+
+  useEffect(() => {
+    const numericLocalValue = parseFloat(localValue);
+    if (
+      value !== numericLocalValue &&
+      !document.activeElement?.closest(`input[value="${localValue}"]`)
+    ) {
+      setLocalValue(value.toString());
+    }
+  }, [value]);
+
+  return (
+    <Input
+      type="number"
+      step="0.01"
+      min="0"
+      max="1000"
+      value={localValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder="Enter weight"
+    />
+  );
+});
+
+WeightInput.displayName = "WeightInput";
+
 export function getBioDWeightMousePairColumns(
   setFormData: Dispatch<SetStateAction<any>>
 ): ColumnDef<MousePairRow>[] {
+  const handleWeightChange = (mouseId: string, newWeight: number) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      mice: prev.mice.map((m: any) =>
+        m.id === mouseId ? { ...m, bodyWeight: newWeight } : m
+      ),
+    }));
+  };
+
   return [
     {
       accessorKey: "leftId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="block lg:w-72">Mouse Delivery ID</span>,
       cell: ({ row }) => (
-        <span className="font-medium text-center w-80">
-          {row.original.leftId}
-        </span>
+        <span className="font-medium text-center">{row.original.leftId}</span>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "leftWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) => (
-        <Input
-          value={getValue() as number}
-          onChange={(e) => {
-            const numValue = parseFloat(e.target.value) || 0;
-            setFormData((prev: any) => ({
-              ...prev,
-              mice: prev.mice.map((m: any) =>
-                m.id === row.original.leftId
-                  ? { ...m, bodyWeight: numValue }
-                  : m
-              ),
-            }));
-          }}
-        />
+        <div className="flex items-stretch h-full min-h-12">
+          <div className="border-r border-gray-200 h-auto pr-5 flex items-center w-full">
+            <WeightInput
+              value={getValue() as number}
+              mouseId={row.original.leftId}
+              onValueChange={handleWeightChange}
+            />
+          </div>
+        </div>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "rightId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="lg:w-72 block">Mouse Delivery ID</span>,
       cell: ({ row }) =>
         row.original.rightId ? (
-          <span className="font-medium text-center w-80">
+          <span className="font-medium text-center">
             {row.original.rightId}
           </span>
         ) : null,
@@ -1233,22 +1283,13 @@ export function getBioDWeightMousePairColumns(
     },
     {
       accessorKey: "rightWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) =>
         row.original.rightId ? (
-          <Input
+          <WeightInput
             value={getValue() as number}
-            onChange={(e) => {
-              const numValue = parseFloat(e.target.value) || 0;
-              setFormData((prev: any) => ({
-                ...prev,
-                mice: prev.mice.map((m: any) =>
-                  m.id === row.original.rightId
-                    ? { ...m, bodyWeight: numValue }
-                    : m
-                ),
-              }));
-            }}
+            mouseId={row.original.rightId}
+            onValueChange={handleWeightChange}
           />
         ) : null,
       enableSorting: false,
