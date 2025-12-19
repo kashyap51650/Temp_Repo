@@ -16,19 +16,19 @@ interface CalliperingMouseRow {
 const getReadOnlyCalliperingColumns = (): ColumnDef<CalliperingMouseRow>[] => [
   {
     accessorKey: "id",
-    header: () => <span className="block">Mouse Delivery ID</span>,
+    header: () => <span className="block lg:w-96">Mouse Delivery ID</span>,
     cell: ({ row }) => (
       <span className="font-medium text-center">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "length_mm",
-    header: "Length (mm)",
+    header: () => <span className="block lg:w-96">Length (mm)</span>,
     cell: ({ row }) => <span>{row.original.length_mm}</span>,
   },
   {
     accessorKey: "width_mm",
-    header: "Width (mm)",
+    header: () => <span className="block lg:w-96">Width (mm)</span>,
     cell: ({ row }) => <span>{row.original.width_mm}</span>,
   },
 ];

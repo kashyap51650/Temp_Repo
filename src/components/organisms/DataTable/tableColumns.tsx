@@ -1248,32 +1248,34 @@ export function getBioDWeightMousePairColumns(
   return [
     {
       accessorKey: "leftId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="block lg:w-72">Mouse Delivery ID</span>,
       cell: ({ row }) => (
-        <span className="font-medium text-center w-80">
-          {row.original.leftId}
-        </span>
+        <span className="font-medium text-center">{row.original.leftId}</span>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "leftWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) => (
-        <WeightInput
-          value={getValue() as number}
-          mouseId={row.original.leftId}
-          onValueChange={handleWeightChange}
-        />
+        <div className="flex items-stretch h-full min-h-12">
+          <div className="border-r border-gray-200 h-auto pr-5 flex items-center w-full">
+            <WeightInput
+              value={getValue() as number}
+              mouseId={row.original.leftId}
+              onValueChange={handleWeightChange}
+            />
+          </div>
+        </div>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "rightId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="lg:w-72 block">Mouse Delivery ID</span>,
       cell: ({ row }) =>
         row.original.rightId ? (
-          <span className="font-medium text-center w-80">
+          <span className="font-medium text-center">
             {row.original.rightId}
           </span>
         ) : null,
@@ -1281,7 +1283,7 @@ export function getBioDWeightMousePairColumns(
     },
     {
       accessorKey: "rightWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) =>
         row.original.rightId ? (
           <WeightInput

@@ -18,19 +18,25 @@ interface MousePairRow {
 const getReadOnlyMousePairColumns = (): ColumnDef<MousePairRow>[] => [
   {
     accessorKey: "leftId",
-    header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+    header: () => <span className="block lg:w-72">Mouse Delivery ID</span>,
     cell: ({ row }) => (
       <span className="font-medium text-center">{row.original.leftId}</span>
     ),
   },
   {
     accessorKey: "leftWeight",
-    header: "Body Weight (g)",
-    cell: ({ row }) => <span>{row.original.leftWeight}</span>,
+    header: () => <span className="block lg:w-72">Body Weight (g)</span>,
+    cell: ({ row }) => (
+      <div className="flex items-stretch h-full min-h-12">
+        <div className="border-r border-gray-200 h-auto flex items-center w-full">
+          {row.original.leftWeight}
+        </div>
+      </div>
+    ),
   },
   {
     accessorKey: "rightId",
-    header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+    header: () => <span className="lg:w-72 block">Mouse Delivery ID</span>,
     cell: ({ row }) =>
       row.original.rightId ? (
         <span className="font-medium text-center">{row.original.rightId}</span>
@@ -38,7 +44,7 @@ const getReadOnlyMousePairColumns = (): ColumnDef<MousePairRow>[] => [
   },
   {
     accessorKey: "rightWeight",
-    header: "Body Weight (g)",
+    header: () => <span className="block lg:w-72">Body Weight (g)</span>,
     cell: ({ row }) =>
       row.original.rightId ? <span>{row.original.rightWeight}</span> : null,
   },
