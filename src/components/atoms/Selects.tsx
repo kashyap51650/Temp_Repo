@@ -58,6 +58,7 @@ export interface ExperimentSelectProps {
   onCreateNew?: () => void;
   className?: string;
   disabled?: boolean;
+  showSearch?: boolean;
 }
 
 export function ExperimentSelect({
@@ -68,6 +69,7 @@ export function ExperimentSelect({
   onCreateNew,
   className,
   disabled = false,
+  showSearch = true,
 }: ExperimentSelectProps) {
   const selectOptions = experiments.map((experiment) => ({
     id: experiment.id,
@@ -85,7 +87,7 @@ export function ExperimentSelect({
       createNewLabel="Create New Experiment"
       className={className}
       searchPlaceholder="Search experiment..."
-      showSearch={true}
+      showSearch={showSearch}
       disabled={disabled}
     />
   );
