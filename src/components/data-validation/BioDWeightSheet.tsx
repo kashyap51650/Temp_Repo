@@ -5,24 +5,10 @@ import { Input } from "@/components/atoms/Input/Input";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import type { MousePairRow } from "@/components/organisms/DataTable/tableColumns";
 import { getBioDWeightMousePairColumns } from "@/components/organisms/DataTable/tableColumns";
+import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
-
-interface BioDWeightData {
-  sex?: string;
-  strain?: string;
-  dob?: string;
-  cellInjectionDate?: string;
-  cellLine?: string;
-  treatmentDate?: string;
-  measurementDate?: string;
-  mice: {
-    id: string;
-    bodyWeight: number;
-    measurementId?: number;
-  }[];
-}
 
 interface BioDWeightSheetProps {
   data?: BioDWeightData;
@@ -34,7 +20,7 @@ export function BioDWeightSheet({
   data,
   experimentDataId,
   onSave,
-}: BioDWeightSheetProps) {
+}: Readonly<BioDWeightSheetProps>) {
   const [formData, setFormData] = useState<BioDWeightData>({
     sex: "",
     strain: "",
@@ -89,7 +75,7 @@ export function BioDWeightSheet({
   };
 
   const handleFormDataChange = (
-    updater: (prevData: BioDWeightData) => BioDWeightData | BioDWeightData
+    updater: (prevData: BioDWeightData) => BioDWeightData
   ) => {
     setFormData((prevData) => {
       const newData =
@@ -143,8 +129,8 @@ export function BioDWeightSheet({
                 type: "input",
               },
             ],
-          ].map((group, groupIdx) => (
-            <div className="space-y-3" key={groupIdx}>
+          ].map((group) => (
+            <div className="space-y-3" key={group[0].key}>
               {group.map(({ key, label, type }) => (
                 <div className="flex items-center gap-3" key={key}>
                   <Label className="font-semibold text-sm w-56">{label}</Label>
