@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { apiClient, handleApiError } from "@/lib/api";
+import { apiClient, type ApiResponse, handleApiError } from "@/lib/api";
 
 export interface CalliperMeasurementUpdate {
   id: number;
@@ -15,12 +15,14 @@ interface BulkUpdateCalliperMeasurementsRequest {
 
 interface BulkUpdateCalliperMeasurementsResponse {
   message: string;
-  updated_count: number;
+  total: number;
+  successful: number;
+  failed: number;
 }
 
 const bulkUpdateCalliperMeasurements = async (
   request: BulkUpdateCalliperMeasurementsRequest
-): Promise<BulkUpdateCalliperMeasurementsResponse> => {
+): Promise<ApiResponse<BulkUpdateCalliperMeasurementsResponse>> => {
   const endpoint = `/api/v1/caliper-measurements/bulk-update`;
 
   if (!request.measurements || request.measurements.length === 0) {
@@ -49,7 +51,7 @@ export default function useBulkUpdateCalliperMeasurements() {
     mutationFn: bulkUpdateCalliperMeasurements,
     onSuccess: (data) => {
       toast.success("Calliper measurements updated successfully", {
-        description: `${data.updated_count} measurements updated`,
+        description: `${data.data?.successful} measurements updated`,
       });
 
       queryClient.invalidateQueries({

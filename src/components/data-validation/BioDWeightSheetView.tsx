@@ -144,7 +144,6 @@ export function BioDWeightSheetView({
           <DataTable
             pagination={false}
             columns={getReadOnlyMousePairColumns()}
-            pageSize={50}
             data={Array.from({
               length: Math.ceil(viewData.mice.length / 2),
             }).map((_, idx) => {

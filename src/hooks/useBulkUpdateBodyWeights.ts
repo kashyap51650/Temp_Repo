@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { apiClient, handleApiError } from "@/lib/api";
+import { apiClient, type ApiResponse, handleApiError } from "@/lib/api";
 
 export interface BodyWeightMeasurementUpdate {
   id: number;
@@ -14,12 +14,14 @@ interface BulkUpdateBodyWeightsRequest {
 
 interface BulkUpdateBodyWeightsResponse {
   message: string;
-  updated_count: number;
+  total: number;
+  successful: number;
+  failed: number;
 }
 
 const bulkUpdateBodyWeights = async (
   request: BulkUpdateBodyWeightsRequest
-): Promise<BulkUpdateBodyWeightsResponse> => {
+): Promise<ApiResponse<BulkUpdateBodyWeightsResponse>> => {
   const endpoint = `/api/v1/body-weight-measurements/bulk-update`;
 
   if (!request.measurements || request.measurements.length === 0) {
@@ -44,7 +46,7 @@ export default function useBulkUpdateBodyWeights() {
     mutationFn: bulkUpdateBodyWeights,
     onSuccess: (data) => {
       toast.success("Body weight measurements updated successfully", {
-        description: `${data.updated_count} measurements updated`,
+        description: `${data?.data?.successful} measurements updated`,
       });
 
       queryClient.invalidateQueries({

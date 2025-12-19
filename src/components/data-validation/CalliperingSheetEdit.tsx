@@ -248,7 +248,14 @@ export function CalliperingSheetEdit({
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">Save</Button>
+        <Button
+          type="submit"
+          disabled={
+            bulkUpdateMutation.isPending || editedMeasurementIds.size === 0
+          }
+        >
+          {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"}
+        </Button>
       </div>
     </form>
   );

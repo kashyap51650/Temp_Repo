@@ -22,8 +22,6 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
-
 import { Button } from "../../atoms/Button/Button";
 import {
   Table,
@@ -76,7 +74,7 @@ export function DataTable<T extends { id: string | number }>(
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination,
+      ...(enablePagination && { pagination }),
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
@@ -84,10 +82,12 @@ export function DataTable<T extends { id: string | number }>(
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    ...(enablePagination && { onPaginationChange: setPagination }),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: enablePagination
+      ? getPaginationRowModel()
+      : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -103,14 +103,7 @@ export function DataTable<T extends { id: string | number }>(
 
   return (
     <div className="w-full flex-col justify-start gap-6">
-      <div
-        className={cn(
-          "relative flex flex-col gap-4",
-          table.getFilteredRowModel().rows.length > 10
-            ? "overflow-auto max-h-screen"
-            : "overflow-visible"
-        )}
-      >
+      <div className="relative flex flex-col gap-4">
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}

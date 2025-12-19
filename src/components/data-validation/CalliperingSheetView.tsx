@@ -135,7 +135,6 @@ export function CalliperingSheetView({
           <DataTable
             pagination={false}
             columns={getReadOnlyCalliperingColumns()}
-            pageSize={50}
             data={viewData.mice}
           />
         </div>
