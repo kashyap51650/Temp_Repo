@@ -22,8 +22,6 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
-
 import { Button } from "../../atoms/Button/Button";
 import {
   Table,
@@ -38,12 +36,18 @@ type DataTableProps<T extends { id: string | number }> = {
   columns: ColumnDef<T>[];
   data: T[];
   pagination?: boolean;
+  pageSize?: number;
 };
 
 export function DataTable<T extends { id: string | number }>(
   props: DataTableProps<T>
 ) {
-  const { columns, data, pagination: enablePagination = true } = props;
+  const {
+    columns,
+    data,
+    pagination: enablePagination = true,
+    pageSize = 10,
+  } = props;
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -59,7 +63,7 @@ export function DataTable<T extends { id: string | number }>(
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: pageSize,
   });
 
   const table = useReactTable({
@@ -70,7 +74,7 @@ export function DataTable<T extends { id: string | number }>(
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination,
+      ...(enablePagination && { pagination }),
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
@@ -78,10 +82,12 @@ export function DataTable<T extends { id: string | number }>(
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    ...(enablePagination && { onPaginationChange: setPagination }),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: enablePagination
+      ? getPaginationRowModel()
+      : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -97,14 +103,7 @@ export function DataTable<T extends { id: string | number }>(
 
   return (
     <div className="w-full flex-col justify-start gap-6">
-      <div
-        className={cn(
-          "relative flex flex-col gap-4",
-          table.getFilteredRowModel().rows.length > 10
-            ? "overflow-auto max-h-screen"
-            : "overflow-visible"
-        )}
-      >
+      <div className="relative flex flex-col gap-4">
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}

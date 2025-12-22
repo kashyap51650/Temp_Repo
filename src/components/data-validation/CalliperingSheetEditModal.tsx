@@ -9,6 +9,7 @@ interface CalliperingSheetModalProps {
   onSave: (data: CalliperingData) => void;
   experimentName: string;
   data?: CalliperingData;
+  experimentDataId?: string;
 }
 
 export function CalliperingSheetModal({
@@ -17,7 +18,8 @@ export function CalliperingSheetModal({
   onSave,
   experimentName,
   data,
-}: CalliperingSheetModalProps) {
+  experimentDataId,
+}: Readonly<CalliperingSheetModalProps>) {
   const handleSave = (sheetData: CalliperingData) => {
     onSave(sheetData);
     onClose();
@@ -38,6 +40,7 @@ export function CalliperingSheetModal({
         data={data}
         onSave={handleSave}
         onCancel={onClose}
+        experimentDataId={experimentDataId}
       />
     </Dialog>
   );

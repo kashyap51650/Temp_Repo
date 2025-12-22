@@ -8,6 +8,7 @@ interface CalliperingSheetViewModalProps {
   onClose: () => void;
   experimentName: string;
   data?: CalliperingData;
+  experimentDataId?: string;
 }
 
 export function CalliperingSheetViewModal({
@@ -15,7 +16,8 @@ export function CalliperingSheetViewModal({
   onClose,
   experimentName,
   data,
-}: CalliperingSheetViewModalProps) {
+  experimentDataId,
+}: Readonly<CalliperingSheetViewModalProps>) {
   return (
     <Dialog
       open={isOpen}
@@ -27,7 +29,7 @@ export function CalliperingSheetViewModal({
       trigger={null}
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
     >
-      <CalliperingSheetView data={data} />
+      <CalliperingSheetView data={data} experimentDataId={experimentDataId} />
     </Dialog>
   );
 }

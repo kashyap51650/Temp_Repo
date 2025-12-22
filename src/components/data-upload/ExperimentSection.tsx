@@ -66,7 +66,6 @@ export function ExperimentSection({
   formData,
   setFormData,
   errors,
-  existingExperiments,
   onShowCreateExperimentModal,
   isPreclinicSelected,
   isStudyTypeSelected,
@@ -151,29 +150,16 @@ export function ExperimentSection({
   const actualDataTypesLoading = queryDataTypesLoading || dataTypesLoading;
   const actualDataTypesError = queryDataTypesError || dataTypesError;
 
-  const experimentsToShow: LocalExperiment[] =
-    apiExperiments.length > 0
-      ? apiExperiments.map((exp: ExperimentDropdownItem) => ({
-          id: exp.id.toString(),
-          name: exp.experiment_name,
-          cellLines: [],
-          isotope: "",
-          projectId: projectId?.toString() || "",
-          studyType: formData.studyType || "",
-        }))
-      : existingExperiments
-          .filter(
-            (e: ExperimentDropdownItem) =>
-              e.id.toString() === formData.project?.id?.toString()
-          )
-          .map((exp: ExperimentDropdownItem) => ({
-            id: exp.id.toString(),
-            name: exp.experiment_name,
-            cellLines: [],
-            isotope: "",
-            projectId: projectId?.toString() || "",
-            studyType: formData.studyType || "",
-          }));
+  const experimentsToShow: LocalExperiment[] = apiExperiments.map(
+    (exp: ExperimentDropdownItem) => ({
+      id: exp.id.toString(),
+      name: exp.experiment_name,
+      cellLines: [],
+      isotope: "",
+      projectId: projectId?.toString() || "",
+      studyType: formData.studyType || "",
+    })
+  );
 
   const selectedExperimentId = formData.experiment
     ? formData.experiment.id.toString()
@@ -203,6 +189,7 @@ export function ExperimentSection({
         <ExperimentSelect
           experiments={experimentsToShow}
           value={selectedExperimentId}
+          showSearch={apiExperiments.length > 0}
           onValueChange={(val: string) => {
             const experiment = experimentsToShow.find(
               (e: LocalExperiment) => e.id === val
@@ -261,6 +248,7 @@ export function ExperimentSection({
             setFormData((prev: FormData) => ({
               ...prev,
               dataType: selectedValue,
+              uploadedFile: null, // Reset uploaded file when data type changes
             }));
           }}
           disabled={!isExperimentSelected || actualDataTypesLoading}

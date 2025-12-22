@@ -1,52 +1,109 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DatePicker } from "@/components/atoms/Input/DatePicker";
 import { Input } from "@/components/atoms/Input/Input";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import type { MousePairRow } from "@/components/organisms/DataTable/tableColumns";
 import { getBioDWeightMousePairColumns } from "@/components/organisms/DataTable/tableColumns";
+import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
+import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
-
-interface BioDWeightData {
-  sex: string;
-  strain: string;
-  dob: string;
-  cellInjectionDate: string;
-  cellLine: string;
-  treatmentDate: string;
-  measurementDate: string;
-  mice: {
-    id: string;
-    bodyWeight: number;
-  }[];
-}
 
 interface BioDWeightSheetProps {
   data?: BioDWeightData;
   onSave?: (data: BioDWeightData) => void;
+  experimentDataId?: string;
 }
 
-export function BioDWeightSheet({ data }: BioDWeightSheetProps) {
-  const [formData, setFormData] = useState<BioDWeightData>(
-    data || {
-      sex: "Female",
-      strain: "R2G2",
-      dob: "01/11/2024",
-      cellInjectionDate: "",
-      cellLine: "",
-      treatmentDate: "",
-      measurementDate: "1 Nov 25",
-      mice: Array.from({ length: 25 }, (_, i) => ({
-        id: `MUS${String(i + 1).padStart(2, "0")}`,
-        bodyWeight: 101 + i,
-      })),
+export function BioDWeightSheet({
+  data,
+  experimentDataId,
+  onSave,
+}: Readonly<BioDWeightSheetProps>) {
+  const [formData, setFormData] = useState<BioDWeightData>({
+    sex: "",
+    strain: "",
+    dob: "",
+    cellInjectionDate: "",
+    cellLine: "",
+    treatmentDate: "",
+    measurementDate: "",
+    mice: [],
+  });
+
+  const {
+    data: apiData,
+    isLoading,
+    error,
+  } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
+
+  useEffect(() => {
+    if (apiData && !data) {
+      const transformedData: BioDWeightData = {
+        sex: apiData.uploaded_data.sex ?? "",
+        strain: apiData.uploaded_data.strain ?? "",
+        dob: apiData.uploaded_data.date_of_birth ?? "",
+        cellInjectionDate: apiData.uploaded_data.cell_inj_date ?? "",
+        cellLine: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
+        treatmentDate: apiData.uploaded_data.treatment_date ?? "",
+        measurementDate: apiData.uploaded_data.measurement_date ?? "",
+        mice:
+          apiData.uploaded_data.body_weight_measurements?.map(
+            (measurement) => ({
+              id: measurement.mouse?.mouse_delivery_id ?? "",
+              bodyWeight: measurement.body_weight_grams ?? 0,
+              measurementId: measurement.id,
+            })
+          ) ?? [],
+      };
+
+      setFormData(transformedData);
+      onSave?.(transformedData);
+    } else if (data) {
+      setFormData(data);
+      onSave?.(data);
     }
-  );
+  }, [apiData, data]);
 
   const handleHeaderChange = (field: keyof BioDWeightData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    const updatedData = { ...formData, [field]: value };
+    setFormData(updatedData);
+    if (onSave) {
+      onSave(updatedData);
+    }
   };
+
+  const handleFormDataChange = (
+    updater: (prevData: BioDWeightData) => BioDWeightData
+  ) => {
+    setFormData((prevData) => {
+      const newData =
+        typeof updater === "function" ? updater(prevData) : updater;
+      if (onSave) {
+        onSave(newData);
+      }
+      return newData;
+    });
+  };
+
+  if (isLoading && experimentDataId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600">Loading experiment data...</div>
+      </div>
+    );
+  }
+
+  if (error && experimentDataId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">
+          Error loading experiment data. Please try again.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
@@ -72,8 +129,8 @@ export function BioDWeightSheet({ data }: BioDWeightSheetProps) {
                 type: "input",
               },
             ],
-          ].map((group, groupIdx) => (
-            <div className="space-y-3" key={groupIdx}>
+          ].map((group) => (
+            <div className="space-y-3" key={group[0].key}>
               {group.map(({ key, label, type }) => (
                 <div className="flex items-center gap-3" key={key}>
                   <Label className="font-semibold text-sm w-56">{label}</Label>
@@ -119,13 +176,14 @@ export function BioDWeightSheet({ data }: BioDWeightSheetProps) {
             rightWeight: right?.bodyWeight,
           };
         });
-        const columns = getBioDWeightMousePairColumns(setFormData);
+        const columns = getBioDWeightMousePairColumns(handleFormDataChange);
         return (
           <div className="bg-white h-96">
             <DataTable
               columns={columns}
               data={mousePairRows}
               pagination={false}
+              pageSize={50}
             />
           </div>
         );

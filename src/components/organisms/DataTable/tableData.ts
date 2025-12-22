@@ -302,16 +302,94 @@ export type DataViewItem = {
   canReject: boolean;
 };
 
+const toLowerTrimmed = (value?: string) => value?.toLowerCase().trim() ?? "";
+
 export const getDataViewItems = (
   experimentName: string,
   studyType?: string,
   dataType?: string
 ): DataViewItem[] => {
+  if (dataType) {
+    const normalizedDataType = toLowerTrimmed(dataType);
+
+    if (
+      normalizedDataType === "weight sheet" ||
+      (normalizedDataType.includes("weight") &&
+        normalizedDataType.includes("sheet"))
+    ) {
+      return [
+        {
+          id: "weight-sheet",
+          name: "BioD Weight Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "callipering sheet" ||
+      normalizedDataType === "callipering" ||
+      normalizedDataType.includes("calliper")
+    ) {
+      return [
+        {
+          id: "callipering-sheet",
+          name: "Callipering Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "necropsy sheet" ||
+      normalizedDataType === "necropsy" ||
+      normalizedDataType.includes("necropsy")
+    ) {
+      return [
+        {
+          id: "necropsy-sheet",
+          name: "Necropsy Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+
+    if (
+      normalizedDataType === "agc sheet" ||
+      normalizedDataType === "agc" ||
+      normalizedDataType.includes("agc")
+    ) {
+      return [
+        {
+          id: "agc-sheet",
+          name: "AGC Sheet",
+          status: "Validated",
+          canView: true,
+          canEdit: true,
+          canApprove: true,
+          canReject: true,
+        },
+      ];
+    }
+  }
+
   const isBiodistribution =
-    experimentName.toLowerCase().includes("biodistribution") ||
-    studyType?.toLowerCase().includes("biodistribution") ||
-    studyType?.toLowerCase().includes("biod") ||
-    dataType?.toLowerCase().includes("biodistribution");
+    toLowerTrimmed(experimentName).includes("biodistribution") ||
+    toLowerTrimmed(studyType).includes("biodistribution") ||
+    toLowerTrimmed(studyType).includes("biod") ||
+    toLowerTrimmed(dataType).includes("biodistribution");
 
   if (isBiodistribution) {
     return [
@@ -381,7 +459,7 @@ export const getDataViewItems = (
     ];
   }
 
-  if (studyType?.toLowerCase().includes("toxicity")) {
+  if (toLowerTrimmed(studyType).includes("toxicity")) {
     return [
       {
         id: "dv1",
@@ -423,8 +501,8 @@ export const getDataViewItems = (
   }
 
   if (
-    studyType?.toLowerCase().includes("dose") ||
-    studyType?.toLowerCase().includes("range")
+    toLowerTrimmed(studyType).includes("dose") ||
+    toLowerTrimmed(studyType).includes("range")
   ) {
     return [
       {
@@ -466,7 +544,7 @@ export const getDataViewItems = (
     ];
   }
 
-  if (studyType?.toLowerCase().includes("efficacy")) {
+  if (toLowerTrimmed(studyType).includes("efficacy")) {
     return [
       {
         id: "dv1",
@@ -495,6 +573,15 @@ export const getDataViewItems = (
       id: "dv1",
       name: "Study Protocol",
       status: "Pending",
+      canView: true,
+      canEdit: true,
+      canApprove: true,
+      canReject: true,
+    },
+    {
+      id: "dv1",
+      name: "BioD Weight Sheet",
+      status: "Validated",
       canView: true,
       canEdit: true,
       canApprove: true,
@@ -535,9 +622,6 @@ export const createBioDOrganColumns = (
     width: "min-w-20",
   })),
 ];
-
-export const getBioDOrganTableColumns = (data: BioDOrganData) =>
-  createBioDOrganColumns(data.mouse);
 
 // BioD Organ Data Structure for Experiment Tables
 export interface BioDOrganData {
@@ -2049,6 +2133,7 @@ export const DEFAULT_GROUPS: Group[] = [
 export interface BioDWeightMouse {
   id: string;
   bodyWeight: number;
+  measurementId?: number;
 }
 
 export interface BioDWeightData {
@@ -2106,14 +2191,14 @@ export interface CalliperingMouseRow {
 }
 
 export interface CalliperingData {
-  sex: string;
-  strain: string;
-  dob: string;
-  cell_injection_date: string;
-  cell_line: string;
-  treatment_date: string;
-  measurement_date: string;
-  mice: CalliperingMouseRow[];
+  sex?: string;
+  strain?: string;
+  dob?: string;
+  cell_injection_date?: string;
+  cell_line?: string;
+  treatment_date?: string;
+  measurement_date?: string;
+  mice?: CalliperingMouseRow[];
 }
 
 export const calliperingData: CalliperingData = {
