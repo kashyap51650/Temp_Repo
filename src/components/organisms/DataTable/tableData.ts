@@ -550,165 +550,690 @@ export interface BioDOrganRow {
   label: string;
   isRequired?: boolean;
   data: Record<string, string | number>;
+  groupedData?: Record<
+    string,
+    {
+      value: string;
+      colspan: number;
+      startColumn: string;
+      endColumn: string;
+    }
+  >;
 }
 
 // Sample data for BioD Organ experiments
-export const bioDOrganData: BioDOrganData = {
-  mouse: ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5"],
-  rows: [
+// Sample API response data structure
+export interface BioDOrganAPIResponse {
+  groups: Record<
+    string,
+    {
+      id: number;
+      group_code: string;
+      group_name: string;
+      group_type: string;
+      cell_line: {
+        id: number;
+        cell_line_name: string;
+        vendor_name: string;
+      };
+      experiment_drug: {
+        id: number;
+        drug_name: string;
+      };
+      mouse_count: number;
+    }
+  >;
+  organs: Record<
+    string,
+    {
+      id: number;
+      organ_name: string;
+      description: string | null;
+    }
+  >;
+  mice: Record<
+    string,
+    {
+      id: number;
+      mouse_delivery_id: string;
+      mouse_code: string;
+      experiment_id: number;
+    }
+  >;
+  organ_weights: Record<
+    string,
+    Record<
+      string,
+      {
+        id: number;
+        value: string | number | null;
+        type?: string;
+      }
+    >
+  >;
+}
+
+// Function to generate BioDOrganData from API response
+export const generateBioDOrganData = (
+  apiResponse: BioDOrganAPIResponse
+): BioDOrganData => {
+  const { groups, organs, mice, organ_weights } = apiResponse;
+
+  const mouseList = Object.keys(mice).sort();
+  const createGroupedData = (
+    getValueForGroup: (groupCode: string) => string
+  ) => {
+    const groupedData: Record<
+      string,
+      { value: string; colspan: number; startColumn: string; endColumn: string }
+    > = {};
+    const regularData: Record<string, string> = {};
+
+    const mouseGroups: Record<string, string[]> = {};
+    mouseList.forEach((mouseCode) => {
+      const groupCode = mouseCode.charAt(0);
+      if (!mouseGroups[groupCode]) mouseGroups[groupCode] = [];
+      mouseGroups[groupCode].push(mouseCode);
+    });
+
+    Object.entries(mouseGroups).forEach(([groupCode, groupMice]) => {
+      if (groupMice.length > 0) {
+        groupedData[groupCode] = {
+          value: getValueForGroup(groupCode),
+          colspan: groupMice.length,
+          startColumn: groupMice[0],
+          endColumn: groupMice[groupMice.length - 1],
+        };
+      }
+    });
+
+    // Also create regular data for backward compatibility
+    mouseList.forEach((mouseCode) => {
+      const groupCode = mouseCode.charAt(0);
+      regularData[mouseCode] = getValueForGroup(groupCode);
+    });
+
+    return { groupedData, regularData };
+  };
+
+  // Helper function to format datetime values
+  const formatDateTime = (value: string | number | null) => {
+    if (!value || typeof value !== "string") return "";
+    try {
+      const date = new Date(value);
+      return (
+        date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "2-digit",
+        }) +
+        " " +
+        date.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
+    } catch {
+      return value.toString();
+    }
+  };
+
+  // Create fixed rows with grouped data
+  const longGroupData = createGroupedData((groupCode) => {
+    const group = groups[groupCode];
+    return group ? group.group_name : "";
+  });
+
+  const shortGroupData = createGroupedData((groupCode) => {
+    const group = groups[groupCode];
+    return group ? group.group_code : "";
+  });
+
+  const cellLineData = createGroupedData((groupCode) => {
+    const group = groups[groupCode];
+    return group ? group.cell_line.cell_line_name : "";
+  });
+
+  const drugNameData = createGroupedData((groupCode) => {
+    const group = groups[groupCode];
+    return group ? group.experiment_drug.drug_name : "";
+  });
+
+  const fixedRows: BioDOrganRow[] = [
     {
       id: "longGroupName",
       label: "Long Group Name",
       isRequired: true,
-      data: {
-        A1: "A-1H",
-        A2: "",
-        A3: "",
-        A4: "",
-        A5: "",
-        B1: "B-4H",
-        B2: "",
-        B3: "",
-        B4: "",
-        B5: "",
-      },
+      data: longGroupData.regularData,
+      groupedData: longGroupData.groupedData,
+    },
+    {
+      id: "shortGroupName",
+      label: "Short Group Name",
+      isRequired: true,
+      data: shortGroupData.regularData,
+      groupedData: shortGroupData.groupedData,
     },
     {
       id: "cellLine",
       label: "Cell line",
       isRequired: true,
-      data: {
-        A1: "BxPC3",
-        A2: "",
-        A3: "",
-        A4: "",
-        A5: "",
-        B1: "BxPC3",
-        B2: "",
-        B3: "",
-        B4: "",
-        B5: "",
-      },
+      data: cellLineData.regularData,
+      groupedData: cellLineData.groupedData,
     },
     {
       id: "drugName",
       label: "Drug Name",
       isRequired: true,
-      data: {
-        A1: "DOTAM-Malemeide",
-        A2: "",
-        A3: "",
-        A4: "",
-        A5: "",
-        B1: "DOTAM",
-        B2: "",
-        B3: "",
-        B4: "",
-        B5: "",
-      },
+      data: drugNameData.regularData,
+      groupedData: drugNameData.groupedData,
     },
+  ];
+
+  // Create time-based rows
+  const timeRows: BioDOrganRow[] = [
     {
-      id: "injection212Pb",
+      id: "injection_time",
       label: "212Pb injection time",
-      data: {},
+      data: mouseList.reduce(
+        (acc, mouseCode) => {
+          const timeData = organ_weights.injection_time?.[mouseCode];
+          acc[mouseCode] = timeData ? formatDateTime(timeData.value) : "";
+          return acc;
+        },
+        {} as Record<string, string>
+      ),
     },
     {
-      id: "necropsyTime",
+      id: "necropsy_time",
       label: "Necropsy time",
-      data: {},
+      data: mouseList.reduce(
+        (acc, mouseCode) => {
+          const timeData = organ_weights.necropsy_time?.[mouseCode];
+          acc[mouseCode] = timeData ? formatDateTime(timeData.value) : "";
+          return acc;
+        },
+        {} as Record<string, string>
+      ),
     },
-    {
-      id: "blood",
-      label: "Blood",
-      data: {},
-    },
-    {
-      id: "bladder",
-      label: "Bladder",
-      data: {},
-    },
-    {
-      id: "reproductiveOrgans",
-      label: "Reproductive organs",
-      data: {},
-    },
-    {
-      id: "smallIntestine",
-      label: "Small intestine",
-      data: {},
-    },
-    {
-      id: "colon",
-      label: "Colon",
-      data: {},
-    },
-    {
-      id: "spleen",
-      label: "Spleen",
-      data: {},
-    },
-    {
-      id: "pancreas",
-      label: "Pancreas",
-      data: {},
-    },
-    {
-      id: "kidneys",
-      label: "Kidneys",
-      data: {},
-    },
-    {
-      id: "stomach",
-      label: "Stomach",
-      data: {},
-    },
-    {
-      id: "liver",
-      label: "Liver",
-      data: {},
-    },
-    {
-      id: "lung",
-      label: "Lung",
-      data: {},
-    },
-    {
-      id: "heart",
-      label: "Heart",
-      data: {},
-    },
-    {
-      id: "brain",
-      label: "Brain",
-      data: {},
-    },
-    {
-      id: "femoralBone",
-      label: "Femoral Bone",
-      data: {},
-    },
-    {
-      id: "abdominalFat",
-      label: "Abdominal Fat",
-      data: {},
-    },
-    {
-      id: "skeletalMuscle",
-      label: "Skeletal Muscle",
-      data: {},
-    },
-    {
-      id: "tail",
-      label: "Tail",
-      data: {},
-    },
-    {
-      id: "cellLine2",
-      label: "cell line",
-      data: {},
-    },
-  ],
+  ];
+
+  // Create organ rows dynamically
+  const organRows: BioDOrganRow[] = Object.keys(organs).map((organKey) => {
+    const organ = organs[organKey];
+    return {
+      id: organKey.toLowerCase().replace(/\s+/g, ""),
+      label: organ.organ_name,
+      data: mouseList.reduce(
+        (acc, mouseCode) => {
+          const organData = organ_weights[organKey]?.[mouseCode];
+          acc[mouseCode] = organData ? organData.value?.toString() || "" : "";
+          return acc;
+        },
+        {} as Record<string, string>
+      ),
+    };
+  });
+
+  return {
+    mouse: mouseList,
+    rows: [...fixedRows, ...timeRows, ...organRows],
+  };
 };
+
+// Sample data combining both provided JSONs
+const sampleAPIData: BioDOrganAPIResponse = {
+  groups: {
+    A: {
+      id: 92,
+      group_code: "A",
+      group_name: "A",
+      group_type: "TREATMENT",
+      cell_line: {
+        id: 1,
+        cell_line_name: "BxPC3",
+        vendor_name: "BxPC3",
+      },
+      experiment_drug: {
+        id: 4,
+        drug_name: "AGC-1",
+      },
+      mouse_count: 5,
+    },
+    B: {
+      id: 93,
+      group_code: "B",
+      group_name: "B",
+      group_type: "TREATMENT",
+      cell_line: {
+        id: 1,
+        cell_line_name: "BxPC3",
+        vendor_name: "BxPC3",
+      },
+      experiment_drug: {
+        id: 4,
+        drug_name: "AGC-1",
+      },
+      mouse_count: 5,
+    },
+    C: {
+      id: 94,
+      group_code: "C",
+      group_name: "C",
+      group_type: "TREATMENT",
+      cell_line: {
+        id: 1,
+        cell_line_name: "BxPC3",
+        vendor_name: "BxPC3",
+      },
+      experiment_drug: {
+        id: 4,
+        drug_name: "AGC-1",
+      },
+      mouse_count: 5,
+    },
+  },
+  organs: {
+    Kidneys: { id: 7, organ_name: "Kidneys", description: null },
+    Liver: { id: 9, organ_name: "Liver", description: null },
+    Tail: { id: 16, organ_name: "Tail", description: null },
+    "cell line": { id: 17, organ_name: "cell line", description: null },
+    Bladder: { id: 1, organ_name: "Bladder", description: null },
+    "Reproductive organs": {
+      id: 2,
+      organ_name: "Reproductive organs",
+      description: null,
+    },
+    "Small intestine": {
+      id: 3,
+      organ_name: "Small intestine",
+      description: null,
+    },
+    Colon: { id: 4, organ_name: "Colon", description: null },
+    Spleen: { id: 5, organ_name: "Spleen", description: null },
+    Pancreas: { id: 6, organ_name: "Pancreas", description: null },
+    Stomach: { id: 8, organ_name: "Stomach", description: null },
+    Lung: { id: 10, organ_name: "Lung", description: null },
+    Heart: { id: 11, organ_name: "Heart", description: null },
+    Brain: { id: 12, organ_name: "Brain", description: null },
+    "Femoral Bone": { id: 13, organ_name: "Femoral Bone", description: null },
+    "Abdominal Fat": { id: 14, organ_name: "Abdominal Fat", description: null },
+    "Skeletal Muscle": {
+      id: 15,
+      organ_name: "Skeletal Muscle",
+      description: null,
+    },
+  },
+  mice: {
+    A1: {
+      id: 667,
+      mouse_delivery_id: "25-11-106",
+      mouse_code: "A1",
+      experiment_id: 4,
+    },
+    A2: {
+      id: 686,
+      mouse_delivery_id: "25-11-125",
+      mouse_code: "A2",
+      experiment_id: 4,
+    },
+    A3: {
+      id: 681,
+      mouse_delivery_id: "25-11-120",
+      mouse_code: "A3",
+      experiment_id: 4,
+    },
+    A4: {
+      id: 685,
+      mouse_delivery_id: "25-11-124",
+      mouse_code: "A4",
+      experiment_id: 4,
+    },
+    A5: {
+      id: 673,
+      mouse_delivery_id: "25-11-112",
+      mouse_code: "A5",
+      experiment_id: 4,
+    },
+    B1: {
+      id: 669,
+      mouse_delivery_id: "25-11-108",
+      mouse_code: "B1",
+      experiment_id: 4,
+    },
+    B2: {
+      id: 679,
+      mouse_delivery_id: "25-11-118",
+      mouse_code: "B2",
+      experiment_id: 4,
+    },
+    B3: {
+      id: 663,
+      mouse_delivery_id: "25-11-102",
+      mouse_code: "B3",
+      experiment_id: 4,
+    },
+    B4: {
+      id: 671,
+      mouse_delivery_id: "25-11-110",
+      mouse_code: "B4",
+      experiment_id: 4,
+    },
+    B5: {
+      id: 675,
+      mouse_delivery_id: "25-11-114",
+      mouse_code: "B5",
+      experiment_id: 4,
+    },
+    C1: {
+      id: 683,
+      mouse_delivery_id: "25-11-122",
+      mouse_code: "C1",
+      experiment_id: 4,
+    },
+    C2: {
+      id: 677,
+      mouse_delivery_id: "25-11-116",
+      mouse_code: "C2",
+      experiment_id: 4,
+    },
+    C3: {
+      id: 665,
+      mouse_delivery_id: "25-11-104",
+      mouse_code: "C3",
+      experiment_id: 4,
+    },
+    C4: {
+      id: 668,
+      mouse_delivery_id: "25-11-107",
+      mouse_code: "C4",
+      experiment_id: 4,
+    },
+    C5: {
+      id: 684,
+      mouse_delivery_id: "25-11-123",
+      mouse_code: "C5",
+      experiment_id: 4,
+    },
+  },
+  organ_weights: {
+    injection_time: {
+      A1: { id: 1026, value: null, type: "datetime" },
+      A2: { id: 1030, value: "2025-11-01T10:00:00", type: "datetime" },
+      A3: { id: 1034, value: "2025-11-01T11:00:00", type: "datetime" },
+      A4: { id: 1038, value: "2025-11-01T11:00:00", type: "datetime" },
+      A5: { id: 1042, value: "2025-11-01T10:00:00", type: "datetime" },
+      B1: { id: 1046, value: "2025-11-01T10:00:00", type: "datetime" },
+      B2: { id: 1063, value: "2025-11-01T10:00:00" },
+      B3: { id: 1080, value: "2025-11-01T10:00:00" },
+      B4: { id: 1097, value: "2025-11-01T10:00:00" },
+      B5: { id: 1114, value: "2025-11-01T10:00:00" },
+      C1: { id: 1131, value: "2025-11-01T11:00:00" },
+      C2: { id: 1148, value: "2025-11-01T11:00:00" },
+      C3: { id: 1165, value: "2025-11-01T11:00:00" },
+      C4: { id: 1182, value: "2025-11-01T11:00:00" },
+      C5: { id: 1199, value: "2025-11-01T11:00:00" },
+    },
+    necropsy_time: {
+      A1: { id: 1026, value: "2025-11-01T11:00:00", type: "datetime" },
+      A2: { id: 1030, value: "2025-11-01T11:00:00", type: "datetime" },
+      A3: { id: 1034, value: "2025-11-01T11:00:00", type: "datetime" },
+      A4: { id: 1038, value: "2025-11-01T11:00:00", type: "datetime" },
+      A5: { id: 1042, value: "2025-11-01T11:00:00", type: "datetime" },
+      B1: { id: 1046, value: "2025-11-01T11:00:00" },
+      B2: { id: 1063, value: "2025-11-01T11:00:00" },
+      B3: { id: 1080, value: "2025-11-01T11:00:00" },
+      B4: { id: 1097, value: "2025-11-01T11:00:00" },
+      B5: { id: 1114, value: "2025-11-01T11:00:00" },
+      C1: { id: 1131, value: "2025-11-01T16:00:00" },
+      C2: { id: 1148, value: "2025-11-01T16:00:00" },
+      C3: { id: 1165, value: "2025-11-01T16:00:00" },
+      C4: { id: 1182, value: "2025-11-01T16:00:00" },
+      C5: { id: 1199, value: "2025-11-01T16:00:00" },
+    },
+    Kidneys: {
+      A1: { id: 1026, value: 0.61, type: "float" },
+      A2: { id: 1030, value: 0.61, type: "float" },
+      A3: { id: 1034, value: 0.61, type: "float" },
+      A4: { id: 1038, value: 0.61, type: "float" },
+      A5: { id: 1042, value: 0.61, type: "float" },
+      B1: { id: 1052, value: 0.61, type: "float" },
+      B2: { id: 1069, value: 0.61, type: "float" },
+      B3: { id: 1086, value: 0.61, type: "float" },
+      B4: { id: 1103, value: 0.61, type: "float" },
+      B5: { id: 1120, value: 0.61, type: "float" },
+      C1: { id: 1137, value: 0.61, type: "float" },
+      C2: { id: 1154, value: 0.61, type: "float" },
+      C3: { id: 1171, value: 0.61, type: "float" },
+      C4: { id: 1188, value: 0.61, type: "float" },
+      C5: { id: 1205, value: 0.61, type: "float" },
+    },
+    Liver: {
+      A1: { id: 1027, value: 0.63, type: "float" },
+      A2: { id: 1031, value: 0.63, type: "float" },
+      A3: { id: 1035, value: 0.63, type: "float" },
+      A4: { id: 1039, value: 0.63, type: "float" },
+      A5: { id: 1043, value: 0.63, type: "float" },
+      B1: { id: 1054, value: 0.63, type: "float" },
+      B2: { id: 1071, value: 0.63, type: "float" },
+      B3: { id: 1088, value: 0.63, type: "float" },
+      B4: { id: 1105, value: 0.63, type: "float" },
+      B5: { id: 1122, value: 0.63, type: "float" },
+      C1: { id: 1139, value: 0.63, type: "float" },
+      C2: { id: 1156, value: 0.63, type: "float" },
+      C3: { id: 1173, value: 0.63, type: "float" },
+      C4: { id: 1190, value: 0.63, type: "float" },
+      C5: { id: 1207, value: 0.63, type: "float" },
+    },
+    Tail: {
+      A1: { id: 1028, value: 0.7, type: "float" },
+      A2: { id: 1032, value: 0.7, type: "float" },
+      A3: { id: 1036, value: 0.7, type: "float" },
+      A4: { id: 1040, value: 0.7, type: "float" },
+      A5: { id: 1044, value: 0.7, type: "float" },
+      B1: { id: 1061, value: 0.7, type: "float" },
+      B2: { id: 1078, value: 0.7, type: "float" },
+      B3: { id: 1095, value: 0.7, type: "float" },
+      B4: { id: 1112, value: 0.7, type: "float" },
+      B5: { id: 1129, value: 0.7, type: "float" },
+      C1: { id: 1146, value: 0.7, type: "float" },
+      C2: { id: 1163, value: 0.7, type: "float" },
+      C3: { id: 1180, value: 0.7, type: "float" },
+      C4: { id: 1197, value: 0.7, type: "float" },
+      C5: { id: 1214, value: 0.7, type: "float" },
+    },
+    "cell line": {
+      A1: { id: 1029, value: 0.71, type: "float" },
+      A2: { id: 1033, value: 0.71, type: "float" },
+      A3: { id: 1037, value: 0.71, type: "float" },
+      A4: { id: 1041, value: 0.71, type: "float" },
+      A5: { id: 1045, value: 0.71, type: "float" },
+      B1: { id: 1062, value: 0.71, type: "float" },
+      B2: { id: 1079, value: 0.71, type: "float" },
+      B3: { id: 1096, value: 0.71, type: "float" },
+      B4: { id: 1113, value: 0.71, type: "float" },
+      B5: { id: 1130, value: 0.71, type: "float" },
+      C1: { id: 1147, value: 0.71, type: "float" },
+      C2: { id: 1164, value: 0.71, type: "float" },
+      C3: { id: 1181, value: 0.71, type: "float" },
+      C4: { id: 1198, value: 0.71, type: "float" },
+      C5: { id: 1215, value: 0.71, type: "float" },
+    },
+    Bladder: {
+      B1: { id: 1046, value: 0.55, type: "float" },
+      B2: { id: 1063, value: 0.55, type: "float" },
+      B3: { id: 1080, value: 0.55, type: "float" },
+      B4: { id: 1097, value: 0.55, type: "float" },
+      B5: { id: 1114, value: 0.55, type: "float" },
+      C1: { id: 1131, value: 0.55, type: "float" },
+      C2: { id: 1148, value: 0.55, type: "float" },
+      C3: { id: 1165, value: 0.55, type: "float" },
+      C4: { id: 1182, value: 0.55, type: "float" },
+      C5: { id: 1199, value: 0.55, type: "float" },
+    },
+    "Reproductive organs": {
+      B1: { id: 1047, value: 0.56, type: "float" },
+      B2: { id: 1064, value: 0.56, type: "float" },
+      B3: { id: 1081, value: 0.56, type: "float" },
+      B4: { id: 1098, value: 0.56, type: "float" },
+      B5: { id: 1115, value: 0.56, type: "float" },
+      C1: { id: 1132, value: 0.56, type: "float" },
+      C2: { id: 1149, value: 0.56, type: "float" },
+      C3: { id: 1166, value: 0.56, type: "float" },
+      C4: { id: 1183, value: 0.56, type: "float" },
+      C5: { id: 1200, value: 0.56, type: "float" },
+    },
+    "Small intestine": {
+      B1: { id: 1048, value: 0.57, type: "float" },
+      B2: { id: 1065, value: 0.57, type: "float" },
+      B3: { id: 1082, value: 0.57, type: "float" },
+      B4: { id: 1099, value: 0.57, type: "float" },
+      B5: { id: 1116, value: 0.57, type: "float" },
+      C1: { id: 1133, value: 0.57, type: "float" },
+      C2: { id: 1150, value: 0.57, type: "float" },
+      C3: { id: 1167, value: 0.57, type: "float" },
+      C4: { id: 1184, value: 0.57, type: "float" },
+      C5: { id: 1201, value: 0.57, type: "float" },
+    },
+    Colon: {
+      B1: { id: 1049, value: 0.58, type: "float" },
+      B2: { id: 1066, value: 0.58, type: "float" },
+      B3: { id: 1083, value: 0.58, type: "float" },
+      B4: { id: 1100, value: 0.58, type: "float" },
+      B5: { id: 1117, value: 0.58, type: "float" },
+      C1: { id: 1134, value: 0.58, type: "float" },
+      C2: { id: 1151, value: 0.58, type: "float" },
+      C3: { id: 1168, value: 0.58, type: "float" },
+      C4: { id: 1185, value: 0.58, type: "float" },
+      C5: { id: 1202, value: 0.58, type: "float" },
+    },
+    Spleen: {
+      B1: { id: 1050, value: 0.59, type: "float" },
+      B2: { id: 1067, value: 0.59, type: "float" },
+      B3: { id: 1084, value: 0.59, type: "float" },
+      B4: { id: 1101, value: 0.59, type: "float" },
+      B5: { id: 1118, value: 0.59, type: "float" },
+      C1: { id: 1135, value: 0.59, type: "float" },
+      C2: { id: 1152, value: 0.59, type: "float" },
+      C3: { id: 1169, value: 0.59, type: "float" },
+      C4: { id: 1186, value: 0.59, type: "float" },
+      C5: { id: 1203, value: 0.59, type: "float" },
+    },
+    Pancreas: {
+      B1: { id: 1051, value: 0.6, type: "float" },
+      B2: { id: 1068, value: 0.6, type: "float" },
+      B3: { id: 1085, value: 0.6, type: "float" },
+      B4: { id: 1102, value: 0.6, type: "float" },
+      B5: { id: 1119, value: 0.6, type: "float" },
+      C1: { id: 1136, value: 0.6, type: "float" },
+      C2: { id: 1153, value: 0.6, type: "float" },
+      C3: { id: 1170, value: 0.6, type: "float" },
+      C4: { id: 1187, value: 0.6, type: "float" },
+      C5: { id: 1204, value: 0.6, type: "float" },
+    },
+    Stomach: {
+      B1: { id: 1053, value: 0.62, type: "float" },
+      B2: { id: 1070, value: 0.62, type: "float" },
+      B3: { id: 1087, value: 0.62, type: "float" },
+      B4: { id: 1104, value: 0.62, type: "float" },
+      B5: { id: 1121, value: 0.62, type: "float" },
+      C1: { id: 1138, value: 0.62, type: "float" },
+      C2: { id: 1155, value: 0.62, type: "float" },
+      C3: { id: 1172, value: 0.62, type: "float" },
+      C4: { id: 1189, value: 0.62, type: "float" },
+      C5: { id: 1206, value: 0.62, type: "float" },
+    },
+    Lung: {
+      B1: { id: 1055, value: 0.64, type: "float" },
+      B2: { id: 1072, value: 0.64, type: "float" },
+      B3: { id: 1089, value: 0.64, type: "float" },
+      B4: { id: 1106, value: 0.64, type: "float" },
+      B5: { id: 1123, value: 0.64, type: "float" },
+      C1: { id: 1140, value: 0.64, type: "float" },
+      C2: { id: 1157, value: 0.64, type: "float" },
+      C3: { id: 1174, value: 0.64, type: "float" },
+      C4: { id: 1191, value: 0.64, type: "float" },
+      C5: { id: 1208, value: 0.64, type: "float" },
+    },
+    Heart: {
+      B1: { id: 1056, value: 0.65, type: "float" },
+      B2: { id: 1073, value: 0.65, type: "float" },
+      B3: { id: 1090, value: 0.65, type: "float" },
+      B4: { id: 1107, value: 0.65, type: "float" },
+      B5: { id: 1124, value: 0.65, type: "float" },
+      C1: { id: 1141, value: 0.65, type: "float" },
+      C2: { id: 1158, value: 0.65, type: "float" },
+      C3: { id: 1175, value: 0.65, type: "float" },
+      C4: { id: 1192, value: 0.65, type: "float" },
+      C5: { id: 1209, value: 0.65, type: "float" },
+    },
+    Brain: {
+      B1: { id: 1057, value: 0.66, type: "float" },
+      B2: { id: 1074, value: 0.66, type: "float" },
+      B3: { id: 1091, value: 0.66, type: "float" },
+      B4: { id: 1108, value: 0.66, type: "float" },
+      B5: { id: 1125, value: 0.66, type: "float" },
+      C1: { id: 1142, value: 0.66, type: "float" },
+      C2: { id: 1159, value: 0.66, type: "float" },
+      C3: { id: 1176, value: 0.66, type: "float" },
+      C4: { id: 1193, value: 0.66, type: "float" },
+      C5: { id: 1210, value: 0.66, type: "float" },
+    },
+    "Femoral Bone": {
+      B1: { id: 1058, value: 0.67, type: "float" },
+      B2: { id: 1075, value: 0.67, type: "float" },
+      B3: { id: 1092, value: 0.67, type: "float" },
+      B4: { id: 1109, value: 0.67, type: "float" },
+      B5: { id: 1126, value: 0.67, type: "float" },
+      C1: { id: 1143, value: 0.67, type: "float" },
+      C2: { id: 1160, value: 0.67, type: "float" },
+      C3: { id: 1177, value: 0.67, type: "float" },
+      C4: { id: 1194, value: 0.67, type: "float" },
+      C5: { id: 1211, value: 0.67, type: "float" },
+    },
+    "Abdominal Fat": {
+      B1: { id: 1059, value: 0.68, type: "float" },
+      B2: { id: 1076, value: 0.68, type: "float" },
+      B3: { id: 1093, value: 0.68, type: "float" },
+      B4: { id: 1110, value: 0.68, type: "float" },
+      B5: { id: 1127, value: 0.68, type: "float" },
+      C1: { id: 1144, value: 0.68, type: "float" },
+      C2: { id: 1161, value: 0.68, type: "float" },
+      C3: { id: 1178, value: 0.68, type: "float" },
+      C4: { id: 1195, value: 0.68, type: "float" },
+      C5: { id: 1212, value: 0.68, type: "float" },
+    },
+    "Skeletal Muscle": {
+      B1: { id: 1060, value: 0.69, type: "float" },
+      B2: { id: 1077, value: 0.69, type: "float" },
+      B3: { id: 1094, value: 0.69, type: "float" },
+      B4: { id: 1111, value: 0.69, type: "float" },
+      B5: { id: 1128, value: 0.69, type: "float" },
+      C1: { id: 1145, value: 0.69, type: "float" },
+      C2: { id: 1162, value: 0.69, type: "float" },
+      C3: { id: 1179, value: 0.69, type: "float" },
+      C4: { id: 1196, value: 0.69, type: "float" },
+      C5: { id: 1213, value: 0.69, type: "float" },
+    },
+  },
+};
+
+// Generate the bioDOrganData from the sample API data
+export const bioDOrganData: BioDOrganData =
+  generateBioDOrganData(sampleAPIData);
+
+// Example of how the grouped data looks for the Long Group Name row:
+// bioDOrganData.rows[0].groupedData = {
+//   "A": { value: "A", colspan: 5, startColumn: "A1", endColumn: "A5" },
+//   "B": { value: "B", colspan: 5, startColumn: "B1", endColumn: "B5" },
+//   "C": { value: "C", colspan: 5, startColumn: "C1", endColumn: "C5" }
+// }
+//
+// When rendering:
+// - Check if row.groupedData exists
+// - If yes, render merged cells using groupedData (A spans A1-A5, B spans B1-B5, etc.)
+// - If no, render individual cells using row.data
 
 // Visual Data Filter Table Data
 export type VisualFilterRow = {

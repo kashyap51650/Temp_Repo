@@ -1,7 +1,6 @@
-import { type ColumnDef } from "@tanstack/react-table";
-
+import { Button } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
-import { DataTable } from "../organisms/DataTable/DataTable";
+import { BioDOrganTable } from "../organisms/DataTable/BioDOrganTable";
 import { bioDOrganData } from "../organisms/DataTable/tableData";
 
 interface BioDOrganViewModalProps {
@@ -14,30 +13,6 @@ export function BioDOrganViewModal({
   isOpen,
   onClose,
 }: BioDOrganViewModalProps) {
-  const columns: ColumnDef<any>[] = [
-    {
-      accessorKey: "label",
-      header: "Parameter",
-      cell: ({ row }: { row: any }) => (
-        <span className="font-medium text-sm">{row.original.label}</span>
-      ),
-    },
-    ...bioDOrganData.mouse.map((mouseId) => ({
-      accessorKey: mouseId,
-      header: mouseId,
-      cell: ({ row }: { row: any }) => (
-        <span className="text-sm">{row.original.data[mouseId] || ""}</span>
-      ),
-    })),
-  ];
-
-  const tableRows = bioDOrganData.rows.map((row) => ({
-    id: row.id,
-    label: row.label,
-    data: row.data,
-    ...row.data,
-  }));
-
   return (
     <Dialog
       open={isOpen}
@@ -50,7 +25,12 @@ export function BioDOrganViewModal({
       trigger={null}
     >
       <div className="flex-1 overflow-auto mt-4">
-        <DataTable columns={columns} data={tableRows} />
+        <BioDOrganTable data={bioDOrganData} editable={false} />
+      </div>
+      <div className="flex justify-end gap-3 border-t pt-4">
+        <Button variant="outline" size={"lg"} onClick={onClose}>
+          Close
+        </Button>
       </div>
     </Dialog>
   );
