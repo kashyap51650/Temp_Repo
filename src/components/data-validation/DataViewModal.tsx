@@ -2,7 +2,11 @@ import { Check, Edit, Eye, X as XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { useApproveExperimentData, useRejectExperimentData } from "../../hooks";
+import {
+  useApproveExperimentData,
+  useModal,
+  useRejectExperimentData,
+} from "../../hooks";
 import { Button } from "../atoms/Button/Button";
 import { Dialog } from "../atoms/Dialog/Dialog";
 import {
@@ -41,11 +45,12 @@ export function DataViewModal({
     setDataItems(items);
   }, [experiment.experimentName, experiment.studyType, experiment.dataType]);
 
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showWeightSheetModal, setShowWeightSheetModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const viewModal = useModal();
+  const editModal = useModal();
+  const weightSheetModal = useModal();
+  const rejectModal = useModal();
+  const successAlert = useModal();
+  const calliperingSheetModal = useModal();
   const [selectedItem, setSelectedItem] = useState<DataViewItem | null>(null);
   const [bioDWeightSheetMode, setBioDWeightSheetMode] = useState<
     "view" | "edit" | null
@@ -53,8 +58,6 @@ export function DataViewModal({
   const [calliperingSheetMode, setCalliperingSheetMode] = useState<
     "view" | "edit" | null
   >(null);
-  const [showCalliperingSheetModal, setShowCalliperingSheetModal] =
-    useState(false);
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
@@ -67,7 +70,7 @@ export function DataViewModal({
 
     if (action === "view" || action === "edit") {
       if (item.name === "BioD Weight Sheet" || item.name === "Weight Sheet") {
-        setShowWeightSheetModal(true);
+        weightSheetModal.openModal();
         setBioDWeightSheetMode(action === "edit" ? "edit" : "view");
         return;
       }
@@ -76,7 +79,7 @@ export function DataViewModal({
         item.name === "Callipering Sheet" ||
         item.name === "Callipering"
       ) {
-        setShowCalliperingSheetModal(true);
+        calliperingSheetModal.openModal();
         setCalliperingSheetMode(action === "edit" ? "edit" : "view");
         return;
       }
@@ -84,10 +87,10 @@ export function DataViewModal({
 
     switch (action) {
       case "view":
-        setShowViewModal(true);
+        viewModal.openModal();
         break;
       case "edit":
-        setShowEditModal(true);
+        editModal.openModal();
         break;
       case "approve":
         approveMutation.mutate(experiment.id, {
@@ -100,7 +103,7 @@ export function DataViewModal({
         });
         break;
       case "reject":
-        setShowRejectModal(true);
+        rejectModal.openModal();
         break;
     }
   };
@@ -132,9 +135,9 @@ export function DataViewModal({
   return (
     <>
       <SuccessAlert
-        isVisible={showSuccessAlert}
+        isVisible={successAlert.isOpen}
         message={`BioD Organ has been approved for experiment ${experiment.experimentName}`}
-        onClose={() => setShowSuccessAlert(false)}
+        onClose={successAlert.closeModal}
       />
 
       <Dialog
@@ -231,26 +234,26 @@ export function DataViewModal({
       </Dialog>
 
       <BioDOrganViewModal
-        isOpen={showViewModal}
-        onClose={() => setShowViewModal(false)}
+        isOpen={viewModal.isOpen}
+        onClose={viewModal.closeModal}
         experimentName={experiment.experimentName}
       />
 
       <BioDOrganEditModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
+        isOpen={editModal.isOpen}
+        onClose={editModal.closeModal}
         onSave={handleSaveEdit}
         experimentName={experiment.experimentName}
       />
 
       {selectedItem &&
         selectedItem.name === "BioD Weight Sheet" &&
-        showWeightSheetModal &&
+        weightSheetModal.isOpen &&
         (bioDWeightSheetMode === "edit" ? (
           <BioDWeightSheetModal
-            isOpen={showWeightSheetModal}
+            isOpen={weightSheetModal.isOpen}
             onClose={() => {
-              setShowWeightSheetModal(false);
+              weightSheetModal.closeModal();
               setBioDWeightSheetMode(null);
             }}
             onSave={handleSaveEdit}
@@ -259,9 +262,9 @@ export function DataViewModal({
           />
         ) : (
           <BioDWeightSheetViewModal
-            isOpen={showWeightSheetModal}
+            isOpen={weightSheetModal.isOpen}
             onClose={() => {
-              setShowWeightSheetModal(false);
+              weightSheetModal.closeModal();
               setBioDWeightSheetMode(null);
             }}
             experimentName={experiment.experimentName}
@@ -273,12 +276,12 @@ export function DataViewModal({
         (selectedItem.name === "Callipering Data" ||
           selectedItem.name === "Callipering Sheet" ||
           selectedItem.name === "Callipering") &&
-        showCalliperingSheetModal &&
+        calliperingSheetModal.isOpen &&
         (calliperingSheetMode === "edit" ? (
           <CalliperingSheetModal
-            isOpen={showCalliperingSheetModal}
+            isOpen={calliperingSheetModal.isOpen}
             onClose={() => {
-              setShowCalliperingSheetModal(false);
+              calliperingSheetModal.closeModal();
               setCalliperingSheetMode(null);
             }}
             onSave={handleSaveEdit}
@@ -287,9 +290,9 @@ export function DataViewModal({
           />
         ) : (
           <CalliperingSheetViewModal
-            isOpen={showCalliperingSheetModal}
+            isOpen={calliperingSheetModal.isOpen}
             onClose={() => {
-              setShowCalliperingSheetModal(false);
+              calliperingSheetModal.closeModal();
               setCalliperingSheetMode(null);
             }}
             experimentName={experiment.experimentName}
@@ -298,8 +301,8 @@ export function DataViewModal({
         ))}
 
       <RejectExperimentModal
-        isOpen={showRejectModal}
-        onClose={() => setShowRejectModal(false)}
+        isOpen={rejectModal.isOpen}
+        onClose={rejectModal.closeModal}
         onReject={handleReject}
         item={selectedItem}
       />

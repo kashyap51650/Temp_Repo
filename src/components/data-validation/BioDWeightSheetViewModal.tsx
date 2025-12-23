@@ -1,11 +1,14 @@
 import { Check, Edit, X as XIcon } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
-import { useApproveExperimentData, useRejectExperimentData } from "@/hooks";
+import {
+  useApproveExperimentData,
+  useModal,
+  useRejectExperimentData,
+} from "@/hooks";
 
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
 import { BioDWeightSheetView } from "./BioDWeightSheetView";
@@ -28,14 +31,14 @@ export function BioDWeightSheetViewModal({
   data,
   experimentStatus,
 }: Readonly<BioDWeightSheetViewModalProps>) {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
+  const editModal = useModal();
+  const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
   const handleEdit = () => {
-    setShowEditModal(true);
+    editModal.openModal();
   };
 
   const handleApprove = () => {
@@ -67,7 +70,7 @@ export function BioDWeightSheetViewModal({
           toast.success("Experiment data rejected successfully", {
             description: `Status updated to ${data.status}`,
           });
-          setShowRejectModal(false);
+          rejectModal.closeModal();
           onClose();
         },
         onError: (error) => {
@@ -77,11 +80,6 @@ export function BioDWeightSheetViewModal({
         },
       }
     );
-  };
-
-  const handleSaveEdit = (editedData: BioDWeightData) => {
-    console.log("Saved data:", editedData);
-    setShowEditModal(false);
   };
 
   const isPending = experimentStatus === "pending";
@@ -130,7 +128,7 @@ export function BioDWeightSheetViewModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowRejectModal(true)}
+                    onClick={() => rejectModal.openModal()}
                     className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
                     disabled={rejectMutation.isPending}
                   >
@@ -148,19 +146,19 @@ export function BioDWeightSheetViewModal({
         <BioDWeightSheetView data={data} experimentDataId={experimentDataId} />
       </Dialog>
 
-      {showEditModal && (
+      {editModal.isOpen && (
         <BioDWeightSheetModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onSave={handleSaveEdit}
+          isOpen={editModal.isOpen}
+          onClose={editModal.closeModal}
+          onSave={editModal.closeModal}
           experimentName={experimentName}
           experimentDataId={experimentDataId}
         />
       )}
 
       <RejectExperimentModal
-        isOpen={showRejectModal}
-        onClose={() => setShowRejectModal(false)}
+        isOpen={rejectModal.isOpen}
+        onClose={rejectModal.closeModal}
         onReject={handleReject}
         item={{
           id: experimentDataId || "",

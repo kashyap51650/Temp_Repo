@@ -1,11 +1,14 @@
-import { Check, Edit, X as XIcon } from "lucide-react";
-import { useState } from "react";
+import { ChartBar, Check, Edit, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { CalliperingData } from "@/components/organisms/DataTable/tableData";
-import { useApproveExperimentData, useRejectExperimentData } from "@/hooks";
+import {
+  useApproveExperimentData,
+  useModal,
+  useRejectExperimentData,
+} from "@/hooks";
 
 import { CalliperingSheetModal } from "./CalliperingSheetEditModal";
 import { CalliperingSheetView } from "./CalliperingSheetView";
@@ -28,14 +31,14 @@ export function CalliperingSheetViewModal({
   experimentDataId,
   experimentStatus,
 }: Readonly<CalliperingSheetViewModalProps>) {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
+  const editModal = useModal();
+  const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
   const handleEdit = () => {
-    setShowEditModal(true);
+    editModal.openModal();
   };
 
   const handleApprove = () => {
@@ -67,7 +70,7 @@ export function CalliperingSheetViewModal({
           toast.success("Experiment data rejected successfully", {
             description: `Status updated to ${data.status}`,
           });
-          setShowRejectModal(false);
+          rejectModal.closeModal();
           onClose();
         },
         onError: (error) => {
@@ -81,7 +84,7 @@ export function CalliperingSheetViewModal({
 
   const handleSaveEdit = (editedData: CalliperingData) => {
     console.log("Saved data:", editedData);
-    setShowEditModal(false);
+    editModal.closeModal();
   };
 
   const isPending = experimentStatus === "pending";
@@ -95,13 +98,24 @@ export function CalliperingSheetViewModal({
         }}
         title={
           <div className="flex items-center justify-between w-full pr-8">
-            <div>
-              <h2 className="text-xl font-semibold">
-                Callipering Sheet - {experimentName}
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                View callipering data for the experiment
-              </p>
+            <div className="flex gap-4 mb-2 items-center">
+              <div>
+                <h2 className="text-xl font-semibold">
+                  Callipering Sheet - {experimentName}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  View callipering data for the experiment
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={true}
+                className="flex items-center gap-2"
+              >
+                <ChartBar className="size-4" />
+                View Graph
+              </Button>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -130,7 +144,7 @@ export function CalliperingSheetViewModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowRejectModal(true)}
+                    onClick={() => rejectModal.openModal()}
                     className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
                     disabled={rejectMutation.isPending}
                   >
@@ -148,10 +162,10 @@ export function CalliperingSheetViewModal({
         <CalliperingSheetView data={data} experimentDataId={experimentDataId} />
       </Dialog>
 
-      {showEditModal && (
+      {editModal.isOpen && (
         <CalliperingSheetModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
+          isOpen={editModal.isOpen}
+          onClose={editModal.closeModal}
           onSave={handleSaveEdit}
           experimentName={experimentName}
           experimentDataId={experimentDataId}
@@ -159,8 +173,8 @@ export function CalliperingSheetViewModal({
       )}
 
       <RejectExperimentModal
-        isOpen={showRejectModal}
-        onClose={() => setShowRejectModal(false)}
+        isOpen={rejectModal.isOpen}
+        onClose={rejectModal.closeModal}
         onReject={handleReject}
         item={{
           id: experimentDataId || "",
