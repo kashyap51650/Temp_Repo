@@ -592,7 +592,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
       ),
     },
     {
-      accessorKey: "upload_date",
+      accessorKey: "created_at",
       header: ({ column }) => (
         <SortableHeader column={column} title="Upload Date/Time" />
       ),
@@ -600,7 +600,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
         <div className="w-40 flex items-center gap-2">
           <Clock className="size-4 text-muted-foreground" />
           <span className="text-sm">
-            {formatDateTime(row.original.upload_date)}
+            {formatDateTime(row.original.created_at)}
           </span>
         </div>
       ),
