@@ -1,14 +1,18 @@
-import { type CellContext, type ColumnDef } from "@tanstack/react-table";
 import { Check, Edit, X as XIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
-import { useApproveExperimentData, useRejectExperimentData } from "@/hooks";
+import {
+  useApproveExperimentData,
+  useExperimentDataByIdForOrganSheet,
+  useModal,
+  useRejectExperimentData,
+} from "@/hooks";
+import { generateBioDOrganData } from "@/utils/bioDOrganUtils";
 
 import { Dialog } from "../atoms/Dialog/Dialog";
-import { DataTable } from "../organisms";
-import { bioDOrganData } from "../organisms/DataTable/tableData";
+import { BioDOrganTable } from "../organisms/DataTable/BioDOrganTable";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 
@@ -19,11 +23,6 @@ interface BioDOrganViewModalProps {
   experimentDataId?: string;
   experimentStatus?: string;
 }
-type BioDOrganTableRow = {
-  id: string;
-  label: string;
-  data: Record<string, string | number>;
-};
 
 export function BioDOrganViewModal({
   isOpen,
@@ -32,14 +31,23 @@ export function BioDOrganViewModal({
   experimentDataId,
   experimentStatus,
 }: Readonly<BioDOrganViewModalProps>) {
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
+  const editModal = useModal();
+  const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
+  const { data, isLoading } = useExperimentDataByIdForOrganSheet(
+    experimentDataId || ""
+  );
+
+  const bioDOrganData = useMemo(() => {
+    if (!data) return null;
+    return generateBioDOrganData(data.uploaded_data!);
+  }, [data]);
+
   const handleEdit = () => {
-    setShowEditModal(true);
+    editModal.openModal();
   };
 
   const handleApprove = () => {
@@ -71,7 +79,7 @@ export function BioDOrganViewModal({
           toast.success("Experiment data rejected successfully", {
             description: `Status updated to ${data.status}`,
           });
-          setShowRejectModal(false);
+          rejectModal.closeModal();
           onClose();
         },
         onError: (error) => {
@@ -83,38 +91,7 @@ export function BioDOrganViewModal({
     );
   };
 
-  const handleSaveEdit = () => {
-    setShowEditModal(false);
-  };
-
   const isPending = experimentStatus === "pending";
-
-  const columns: ColumnDef<BioDOrganTableRow>[] = [
-    {
-      accessorKey: "label",
-      header: "Parameter",
-      cell: (ctx: CellContext<BioDOrganTableRow, unknown>) => (
-        <span className="font-medium text-sm">{ctx.row.original.label}</span>
-      ),
-    },
-    ...bioDOrganData.mouse.map((mouseId) => ({
-      id: mouseId,
-      header: mouseId,
-      accessorFn: (row: BioDOrganTableRow) => row.data[mouseId],
-      cell: (ctx: CellContext<BioDOrganTableRow, unknown>) => (
-        <span className="text-sm">
-          {(ctx.getValue() as string | number) || ""}
-        </span>
-      ),
-    })),
-  ];
-
-  const tableRows = bioDOrganData.rows.map((row) => ({
-    id: row.id,
-    label: row.label,
-    data: row.data,
-    ...row.data,
-  }));
 
   return (
     <>
@@ -139,6 +116,7 @@ export function BioDOrganViewModal({
                 size="sm"
                 onClick={handleEdit}
                 className="flex items-center gap-2"
+                disabled={isLoading}
               >
                 <Edit className="size-4" />
                 Edit
@@ -151,7 +129,7 @@ export function BioDOrganViewModal({
                     size="sm"
                     onClick={handleApprove}
                     className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-                    disabled={approveMutation.isPending}
+                    disabled={approveMutation.isPending || isLoading}
                   >
                     <Check className="size-4" />
                     Approve
@@ -160,9 +138,9 @@ export function BioDOrganViewModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowRejectModal(true)}
+                    onClick={() => rejectModal.openModal()}
                     className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    disabled={rejectMutation.isPending}
+                    disabled={rejectMutation.isPending || isLoading}
                   >
                     <XIcon className="size-4" />
                     Reject
@@ -177,22 +155,35 @@ export function BioDOrganViewModal({
         trigger={null}
       >
         <div className="flex-1 overflow-auto mt-4">
-          <DataTable columns={columns} data={tableRows} />
+          {isLoading && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-muted-foreground">Loading data...</p>
+            </div>
+          )}
+          {!isLoading && bioDOrganData && (
+            <BioDOrganTable data={bioDOrganData} />
+          )}
+
+          {!isLoading && !bioDOrganData && (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-sm text-muted-foreground">
+                No data available.
+              </p>
+            </div>
+          )}
         </div>
       </Dialog>
 
-      {showEditModal && (
-        <BioDOrganEditModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onSave={handleSaveEdit}
-          experimentName={experimentName}
-        />
-      )}
+      <BioDOrganEditModal
+        isOpen={editModal.isOpen}
+        onClose={editModal.closeModal}
+        onSave={editModal.closeModal}
+        experimentName={experimentName}
+      />
 
       <RejectExperimentModal
-        isOpen={showRejectModal}
-        onClose={() => setShowRejectModal(false)}
+        isOpen={rejectModal.isOpen}
+        onClose={rejectModal.closeModal}
         onReject={handleReject}
         item={{
           id: experimentDataId || "",
