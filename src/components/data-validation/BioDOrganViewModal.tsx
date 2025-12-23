@@ -1,4 +1,4 @@
-import { type ColumnDef } from "@tanstack/react-table";
+import { type CellContext, type ColumnDef } from "@tanstack/react-table";
 import { Check, Edit, X as XIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,6 +19,11 @@ interface BioDOrganViewModalProps {
   experimentDataId?: string;
   experimentStatus?: string;
 }
+type BioDOrganTableRow = {
+  id: string;
+  label: string;
+  data: Record<string, string | number>;
+};
 
 export function BioDOrganViewModal({
   isOpen,
@@ -78,25 +83,28 @@ export function BioDOrganViewModal({
     );
   };
 
-  const handleSaveEdit = (editedData: any) => {
-    console.log("Saved data:", editedData);
+  const handleSaveEdit = () => {
     setShowEditModal(false);
   };
 
   const isPending = experimentStatus === "pending";
-  const columns: ColumnDef<any>[] = [
+
+  const columns: ColumnDef<BioDOrganTableRow>[] = [
     {
       accessorKey: "label",
       header: "Parameter",
-      cell: ({ row }: { row: any }) => (
-        <span className="font-medium text-sm">{row.original.label}</span>
+      cell: (ctx: CellContext<BioDOrganTableRow, unknown>) => (
+        <span className="font-medium text-sm">{ctx.row.original.label}</span>
       ),
     },
     ...bioDOrganData.mouse.map((mouseId) => ({
-      accessorKey: mouseId,
+      id: mouseId,
       header: mouseId,
-      cell: ({ row }: { row: any }) => (
-        <span className="text-sm">{row.original.data[mouseId] || ""}</span>
+      accessorFn: (row: BioDOrganTableRow) => row.data[mouseId],
+      cell: (ctx: CellContext<BioDOrganTableRow, unknown>) => (
+        <span className="text-sm">
+          {(ctx.getValue() as string | number) || ""}
+        </span>
       ),
     })),
   ];
