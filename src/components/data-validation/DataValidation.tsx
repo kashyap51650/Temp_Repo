@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 
 import { RANDOMIZATION_PREVIEW_TYPES, statusOptions } from "@/lib/constants";
 
-import { useValidationData } from "../../hooks";
+import { useModal, useValidationData } from "../../hooks";
 import type { ExperimentDataItem } from "../../lib/api";
 import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
@@ -18,6 +18,9 @@ import {
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
+import { BioDOrganViewModal } from "./BioDOrganViewModal";
+import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
+import { CalliperingSheetViewModal } from "./CalliperingSheetViewModal";
 import { DataViewModal } from "./DataViewModal";
 
 type FilterType = "status" | "data_type" | "study_type";
@@ -31,7 +34,10 @@ export default function DataValidation() {
     useState<string>("All Data Types");
   const [selectedExperiment, setSelectedExperiment] =
     useState<ValidationRow | null>(null);
-  const [showDataViewModal, setShowDataViewModal] = useState(false);
+  const dataViewModal = useModal();
+  const calliperingViewModal = useModal();
+  const weightSheetViewModal = useModal();
+  const organViewModal = useModal();
 
   const { data, isLoading, error, setFilters } = useValidationData();
 
@@ -111,7 +117,26 @@ export default function DataValidation() {
 
   const handleViewData = useCallback((experiment: ValidationRow) => {
     setSelectedExperiment(experiment);
-    setShowDataViewModal(true);
+    const dataTypeLower = experiment.dataType.toLowerCase();
+
+    // Check if it's a callipering type sheet
+    const isCalliperingSheet = dataTypeLower.includes("callipering");
+    // Check if it's a weight sheet
+    const isWeightSheet =
+      dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
+    // Check if it's a necropsy/organ sheet
+    const isOrganSheet =
+      dataTypeLower.includes("necropsy") || dataTypeLower.includes("organ");
+
+    if (isCalliperingSheet) {
+      calliperingViewModal.openModal();
+    } else if (isWeightSheet) {
+      weightSheetViewModal.openModal();
+    } else if (isOrganSheet) {
+      organViewModal.openModal();
+    } else {
+      dataViewModal.openModal();
+    }
   }, []);
 
   const handleRandomize = useCallback(
@@ -252,11 +277,34 @@ export default function DataValidation() {
       </div>
 
       {selectedExperiment && (
-        <DataViewModal
-          isOpen={showDataViewModal}
-          onClose={() => setShowDataViewModal(false)}
-          experiment={selectedExperiment}
-        />
+        <>
+          <DataViewModal
+            isOpen={dataViewModal.isOpen}
+            onClose={dataViewModal.closeModal}
+            experiment={selectedExperiment}
+          />
+          <CalliperingSheetViewModal
+            isOpen={calliperingViewModal.isOpen}
+            onClose={calliperingViewModal.closeModal}
+            experimentName={selectedExperiment.experimentName}
+            experimentDataId={selectedExperiment.id}
+            experimentStatus={selectedExperiment.status}
+          />
+          <BioDWeightSheetViewModal
+            isOpen={weightSheetViewModal.isOpen}
+            onClose={weightSheetViewModal.closeModal}
+            experimentName={selectedExperiment.experimentName}
+            experimentDataId={selectedExperiment.id}
+            experimentStatus={selectedExperiment.status}
+          />
+          <BioDOrganViewModal
+            isOpen={organViewModal.isOpen}
+            onClose={organViewModal.closeModal}
+            experimentName={selectedExperiment.experimentName}
+            experimentDataId={selectedExperiment.id}
+            experimentStatus={selectedExperiment.status}
+          />
+        </>
       )}
     </>
   );

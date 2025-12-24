@@ -15,6 +15,7 @@ export * from "./useFetch";
 export { useMasterData, type UseMasterDataResult } from "./useMasterData";
 export { useMasterDataSources } from "./useMasterDataSources";
 export * from "./useMobile";
+export * from "./useModal";
 export * from "./useProfile";
 export * from "./useProjects";
 export { default as useRejectExperimentData } from "./useRejectExperimentData";
