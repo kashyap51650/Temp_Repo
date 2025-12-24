@@ -104,27 +104,32 @@ export function SearchableSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
 
-      <SelectContent className="max-h-96">
+      <SelectContent className="max-h-96 relative p-0">
         {shouldShowSearch && (
-          <div className="flex items-center relative border-b px-3 pb-2 mb-2">
-            <SearchIcon className="size-4 absolute shrink-0 opacity-50" />
-            <Input
-              ref={inputRef}
-              value={query}
-              onChange={handleQueryChange}
-              placeholder={searchPlaceholder}
-              className="flex h-8 w-full border-0 ml-4 shadow-none rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-0 focus-visible:ring-0"
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-            />
+          <div className="sticky top-0 z-10 bg-background border-b px-3 pb-2 pt-0">
+            <div className="flex items-center relative">
+              <SearchIcon className="size-4 absolute shrink-0 opacity-50" />
+              <Input
+                ref={inputRef}
+                value={query}
+                onChange={handleQueryChange}
+                placeholder={searchPlaceholder}
+                className="flex h-8 w-full border-0 ml-4 shadow-none rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-0 focus-visible:ring-0"
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                }}
+              />
+            </div>
           </div>
         )}
 
-        {filtered.length > 0
-          ? filtered.map((option) => (
-              <SelectItem key={option.id} value={option.id}>
-                <div>
+        <div
+          className="max-h-64 overflow-y-auto px-0 py-1"
+          style={{ scrollbarGutter: "stable" }}
+        >
+          {filtered.length > 0
+            ? filtered.map((option) => (
+                <SelectItem key={option.id} value={option.id}>
                   <div className="truncate">
                     {option.name}
                     {option.subtitle && (
@@ -133,17 +138,16 @@ export function SearchableSelect({
                       </span>
                     )}
                   </div>
+                </SelectItem>
+              ))
+            : query && (
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  No results found for &quot;{query}&quot;
                 </div>
-              </SelectItem>
-            ))
-          : query && (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                No results found for &quot;{query}&quot;
-              </div>
-            )}
-
+              )}
+        </div>
         {onCreateNew && (
-          <div className="mt-1 border-t pt-1">
+          <div className="sticky bottom-0 z-10 bg-background border-t pt-1">
             <SelectItem
               value="__CREATE_NEW__"
               className="text-primary focus:text-primary"
