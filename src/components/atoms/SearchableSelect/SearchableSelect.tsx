@@ -101,7 +101,7 @@ export function SearchableSelect({
         className={cn("w-full", className)}
         aria-label={placeholder}
       >
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder} className="text-xs" />
       </SelectTrigger>
 
       <SelectContent className="max-h-96 relative p-0">

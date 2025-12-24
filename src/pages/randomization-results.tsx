@@ -176,7 +176,7 @@ export default function RandomizationResults() {
                       {TABLE_COLUMNS.map((col) => (
                         <TableCell
                           key={g.key + "-" + col.key + "-" + i}
-                          className={`${getGroupColorBody(idx)} border border-gray-200 p-3`}
+                          className={`${getGroupColorBody(idx)} border border-gray-200 p-3 text-left`}
                         >
                           {(g.data[i] as Record<string, string | number>)?.[
                             col.key
