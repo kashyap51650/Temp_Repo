@@ -20,11 +20,13 @@ import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
 import { DataViewModal } from "./DataViewModal";
 
-type FilterType = "status" | "data_type";
+type FilterType = "status" | "data_type" | "study_type";
 
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
+  const [studyTypeFilter, setStudyTypeFilter] =
+    useState<string>("All Study Types");
   const [dataTypeFilter, setDataTypeFilter] =
     useState<string>("All Data Types");
   const [selectedExperiment, setSelectedExperiment] =
@@ -39,17 +41,22 @@ export default function DataValidation() {
   const normalizeDataType = (value: string) =>
     value === "All Data Types" ? undefined : value;
 
+  const normalizeStudyType = (value: string) =>
+    value === "All Study Types" ? undefined : value;
+
   const handleFilterChange = (type: FilterType, value: string) => {
     const nextStatus = type === "status" ? value : statusFilter;
-
     const nextDataType = type === "data_type" ? value : dataTypeFilter;
+    const nextStudyType = type === "study_type" ? value : studyTypeFilter;
 
     if (type === "status") setStatusFilter(value);
     if (type === "data_type") setDataTypeFilter(value);
+    if (type === "study_type") setStudyTypeFilter(value);
 
     setFilters({
       status: normalizeStatus(nextStatus),
       data_type: normalizeDataType(nextDataType),
+      study_type: normalizeStudyType(nextStudyType),
     });
   };
 
@@ -69,6 +76,29 @@ export default function DataValidation() {
       }));
 
       return [...baseOptions, ...uniqueDataTypes];
+    }
+
+    return baseOptions;
+  }, [data?.items]);
+
+  const studyTypeOptions = useMemo(() => {
+    const baseOptions = [
+      { value: "All Study Types", label: "All Study Types" },
+    ];
+
+    if (data?.items) {
+      const uniqueStudyTypes = Array.from(
+        new Set(
+          data.items.map(
+            (item: ExperimentDataItem) => item.study_type.study_type_name
+          )
+        )
+      ).map((studyType: string) => ({
+        value: studyType,
+        label: studyType,
+      }));
+
+      return [...baseOptions, ...uniqueStudyTypes];
     }
 
     return baseOptions;
@@ -156,6 +186,26 @@ export default function DataValidation() {
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="w-full md:w-48">
+            <Label className="text-sm font-medium mb-2 inline-block">
+              Filter by Study Type
+            </Label>
+            <Select
+              value={studyTypeFilter}
+              onValueChange={(value) => handleFilterChange("study_type", value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Study Types" />
+              </SelectTrigger>
+              <SelectContent>
+                {studyTypeOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
