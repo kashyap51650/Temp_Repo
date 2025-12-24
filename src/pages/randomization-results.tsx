@@ -5,13 +5,7 @@ import React, { useEffect, useMemo } from "react";
 import { Label } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/atoms/Select/Select";
+import { SearchableSelect } from "@/components/atoms/SearchableSelect/SearchableSelect";
 import {
   Table,
   TableBody,
@@ -136,7 +130,11 @@ export default function RandomizationResults() {
                     className={`border border-gray-200 ${getGroupColorBody(idx)} p-3`}
                   >
                     <div className="flex justify-center">
-                      <Select
+                      <SearchableSelect
+                        options={experimentDrugs.map((drug) => ({
+                          id: drug.id.toString(),
+                          name: drug.drug_name,
+                        }))}
                         value={selectedGroupDrug[g.key] ?? ""}
                         onValueChange={(v) => {
                           setSelectedGroupDrug((prev) => ({
@@ -144,21 +142,11 @@ export default function RandomizationResults() {
                             [g.key]: v,
                           }));
                         }}
-                      >
-                        <SelectTrigger className="w-44 bg-white">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {experimentDrugs.map((drug) => (
-                            <SelectItem
-                              key={drug.id}
-                              value={drug.id.toString()}
-                            >
-                              {drug.drug_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select Drug"
+                        searchPlaceholder="Search drugs..."
+                        className="w-44 bg-white text-xs"
+                        showSearch={true}
+                      />
                     </div>
                   </TableHead>
                 ))}
@@ -188,7 +176,7 @@ export default function RandomizationResults() {
                       {TABLE_COLUMNS.map((col) => (
                         <TableCell
                           key={g.key + "-" + col.key + "-" + i}
-                          className={`${getGroupColorBody(idx)} border border-gray-200 p-3`}
+                          className={`${getGroupColorBody(idx)} border border-gray-200 p-3 text-left`}
                         >
                           {(g.data[i] as Record<string, string | number>)?.[
                             col.key

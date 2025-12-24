@@ -989,6 +989,7 @@ export interface ExperimentFilters {
 export interface ExperimentDataFilters {
   status?: string;
   data_type?: string;
+  study_type?: string;
   page?: number;
   size?: number;
 }
