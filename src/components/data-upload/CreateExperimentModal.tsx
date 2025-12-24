@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch } from "@/app/store/hooks";
 import { experimentCreated } from "@/app/store/slices/experimentSlice";
@@ -85,6 +85,7 @@ export function CreateExperimentModal({
   } = useExperimentData();
 
   const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [isIsotopeAutoSet, setIsIsotopeAutoSet] = useState(false);
   const dispatch = useAppDispatch();
 
   const { createExperiment, isCreating } = useCreateExperiment({
@@ -114,33 +115,67 @@ export function CreateExperimentModal({
     },
   });
 
-  const updateFormState = (updates: Partial<FormState>) => {
+  const updateFormState = useCallback((updates: Partial<FormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
-  const dynamicIsotopeOptions =
-    apiIsotopes.length > 0
-      ? apiIsotopes.map((isotope) => ({
-          value: isotope.isotope_name,
-          label: isotope.isotope_name,
-        }))
-      : isotopeOptions;
+  const dynamicIsotopeOptions = useMemo(
+    () =>
+      apiIsotopes.length > 0
+        ? apiIsotopes.map((isotope) => ({
+            value: isotope.isotope_name,
+            label: isotope.isotope_name,
+          }))
+        : isotopeOptions,
+    [apiIsotopes, isotopeOptions]
+  );
 
-  const dynamicCellLineOptions =
-    apiCellLines.length > 0
-      ? apiCellLines.map((cellLine) => ({
-          value: cellLine.cell_line_name,
-          label: `${cellLine.cell_line_name} (${cellLine.vendor_name})`,
-        }))
-      : cellLineOptions;
+  const dynamicCellLineOptions = useMemo(
+    () =>
+      apiCellLines.length > 0
+        ? apiCellLines.map((cellLine) => ({
+            value: cellLine.cell_line_name,
+            label: `${cellLine.cell_line_name} (${cellLine.vendor_name})`,
+          }))
+        : cellLineOptions,
+    [apiCellLines, cellLineOptions]
+  );
 
-  const dynamicMouseStrainOptions =
-    apiMouseStrains.length > 0
-      ? apiMouseStrains.map((strain) => ({
-          value: strain.mouse_strain_name,
-          label: strain.mouse_strain_name,
-        }))
-      : strainOptions;
+  const dynamicMouseStrainOptions = useMemo(
+    () =>
+      apiMouseStrains.length > 0
+        ? apiMouseStrains.map((strain) => ({
+            value: strain.mouse_strain_name,
+            label: strain.mouse_strain_name,
+          }))
+        : strainOptions,
+    [apiMouseStrains]
+  );
+
+  useEffect(() => {
+    if (
+      isOpen &&
+      !isIsotopeAutoSet &&
+      dynamicIsotopeOptions.length > 0 &&
+      !formState.selectedIsotope
+    ) {
+      const pb212Option = dynamicIsotopeOptions.find(
+        (option) => option.value.toLowerCase() === "pb-212"
+      );
+
+      if (pb212Option) {
+        updateFormState({ selectedIsotope: pb212Option.value });
+      }
+
+      setIsIsotopeAutoSet(true);
+    }
+  }, [
+    isOpen,
+    dynamicIsotopeOptions,
+    formState.selectedIsotope,
+    isIsotopeAutoSet,
+    updateFormState,
+  ]);
 
   const handleSave = async () => {
     if (!formState.experimentName.trim()) {
@@ -242,6 +277,7 @@ export function CreateExperimentModal({
 
   const handleReset = () => {
     setFormState(initialFormState);
+    setIsIsotopeAutoSet(false);
   };
 
   useEffect(() => {
