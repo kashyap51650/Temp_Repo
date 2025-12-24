@@ -1,3 +1,4 @@
+import { ORGAN_KEYS } from "@/lib/constants";
 import type {
   BioDOrganData,
   BioDOrganRow,
@@ -146,7 +147,7 @@ export const generateBioDOrganData = (
       label: "212Pb injection time",
       data: buildMouseDataMap(mouseList, (mouseCode) =>
         formatDateTime(
-          organ_weights["Pb-212 Injection time"]?.[mouseCode]?.value ?? null
+          organ_weights[ORGAN_KEYS.INJECTION_TIME]?.[mouseCode]?.value ?? null
         )
       ),
     },
@@ -155,7 +156,7 @@ export const generateBioDOrganData = (
       label: "Necropsy time",
       data: buildMouseDataMap(mouseList, (mouseCode) =>
         formatDateTime(
-          organ_weights["Necropsy time"]?.[mouseCode]?.value ?? null
+          organ_weights[ORGAN_KEYS.NECROPSY_TIME]?.[mouseCode]?.value ?? null
         )
       ),
     },

@@ -37,7 +37,7 @@ export function BioDOrganViewModal({
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
-  const { data, isLoading } = useExperimentDataByIdForOrganSheet(
+  const { data, isLoading, isFetching } = useExperimentDataByIdForOrganSheet(
     experimentDataId || ""
   );
 
@@ -93,6 +93,12 @@ export function BioDOrganViewModal({
 
   const isPending = experimentStatus === "pending";
 
+  const isApiProcessing =
+    isLoading ||
+    isFetching ||
+    approveMutation.isPending ||
+    rejectMutation.isPending;
+
   return (
     <>
       <Dialog
@@ -116,7 +122,7 @@ export function BioDOrganViewModal({
                 size="sm"
                 onClick={handleEdit}
                 className="flex items-center gap-2"
-                disabled={isLoading}
+                disabled={isApiProcessing}
               >
                 <Edit className="size-4" />
                 Edit
@@ -129,7 +135,7 @@ export function BioDOrganViewModal({
                     size="sm"
                     onClick={handleApprove}
                     className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-                    disabled={approveMutation.isPending || isLoading}
+                    disabled={isApiProcessing}
                   >
                     <Check className="size-4" />
                     Approve
@@ -140,7 +146,7 @@ export function BioDOrganViewModal({
                     size="sm"
                     onClick={() => rejectModal.openModal()}
                     className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    disabled={rejectMutation.isPending || isLoading}
+                    disabled={isApiProcessing}
                   >
                     <XIcon className="size-4" />
                     Reject
@@ -153,18 +159,19 @@ export function BioDOrganViewModal({
         showClose={true}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
         trigger={null}
+        preventOutsideClose={isApiProcessing}
       >
         <div className="flex-1 overflow-auto mt-4">
-          {isLoading && (
+          {(isLoading || isFetching) && (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm text-muted-foreground">Loading data...</p>
             </div>
           )}
-          {!isLoading && bioDOrganData && (
+          {!isLoading && !isFetching && bioDOrganData && (
             <BioDOrganTable data={bioDOrganData} />
           )}
 
-          {!isLoading && !bioDOrganData && (
+          {!isLoading && !isFetching && !bioDOrganData && (
             <div className="flex items-center justify-center h-full">
               <p className="text-sm text-muted-foreground">
                 No data available.
@@ -174,12 +181,16 @@ export function BioDOrganViewModal({
         </div>
       </Dialog>
 
-      <BioDOrganEditModal
-        isOpen={editModal.isOpen}
-        onClose={editModal.closeModal}
-        onSave={editModal.closeModal}
-        experimentName={experimentName}
-      />
+      {bioDOrganData && data?.uploaded_data && (
+        <BioDOrganEditModal
+          isOpen={editModal.isOpen}
+          onClose={editModal.closeModal}
+          onSave={editModal.closeModal}
+          experimentData={bioDOrganData}
+          rawUploadedData={data.uploaded_data}
+          experimentId={Number(experimentDataId)}
+        />
+      )}
 
       <RejectExperimentModal
         isOpen={rejectModal.isOpen}
