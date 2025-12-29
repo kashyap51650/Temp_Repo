@@ -136,19 +136,28 @@ export const useBioDOrganEditModal = ({
   const getOrganMeasurementIds = (rowId: string, mouseCode: string) => {
     const { organ_weights, mice, organs } = rawUploadedData;
 
-    // Map rowId back to organ name
-    const organName = Object.values(organs).find(
-      (organ) => organ.organ_name.toLowerCase().replace(/\s+/g, "") === rowId
-    )?.organ_name;
+    // Map rowId to organKey with fallback to special keys
+    let organKey: string | undefined;
 
-    // Handle time-based rows
-    let organKey = organName;
-    if (rowId === "injection_time") organKey = ORGAN_KEYS.INJECTION_TIME;
-    if (rowId === "necropsy_time") organKey = ORGAN_KEYS.NECROPSY_TIME;
+    if (rowId === "injection_time") {
+      organKey = ORGAN_KEYS.INJECTION_TIME;
+    } else if (rowId === "necropsy_time") {
+      organKey = ORGAN_KEYS.NECROPSY_TIME;
+    } else {
+      const normalizedRowId = rowId.toLowerCase().replace(/\s+/g, "");
+      const organ = Object.values(organs).find(
+        (o) =>
+          o.organ_name.toLowerCase().replace(/\s+/g, "") === normalizedRowId
+      );
+      organKey = organ?.organ_name;
+    }
 
-    const measurementId = organKey
-      ? (organ_weights[organKey]?.[mouseCode]?.id ?? 0)
-      : 0;
+    if (!organKey) {
+      console.warn(`No organ key found for rowId: ${rowId}`);
+      return { measurementId: 0, mouseId: 0 };
+    }
+
+    const measurementId = organ_weights[organKey]?.[mouseCode]?.id ?? 0;
     const mouseId = mice[mouseCode]?.id ?? 0;
 
     return { measurementId, mouseId };
