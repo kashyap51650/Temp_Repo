@@ -114,15 +114,46 @@ export function getPermissionColumns(
     {
       accessorKey: "permissions",
       header: () => <span className="w-96 block">Permissions</span>,
-      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <div className="flex flex-wrap gap-2">
-          {row.original.permissions.map((perm: string) => (
-            <Badge key={perm} variant="secondary" className="px-3 py-1">
-              {perm}
-            </Badge>
-          ))}
-        </div>
-      ),
+      cell: ({ row }: { row: { original: PermissionAssignment } }) => {
+        const perms = row.original.permissions;
+        const showCount = 3;
+        const visible = perms.slice(0, showCount);
+        const hidden = perms.slice(showCount);
+        return (
+          <div className="flex flex-wrap gap-2">
+            {visible.map((perm: string) => (
+              <Badge key={perm} variant="secondary" className="px-3 py-1">
+                {perm}
+              </Badge>
+            ))}
+            {hidden.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="secondary"
+                    className="px-3 py-1 cursor-pointer"
+                  >
+                    +{hidden.length} more
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <div className="flex flex-wrap gap-1 max-w-xs">
+                    {hidden.map((perm: string) => (
+                      <Badge
+                        key={perm}
+                        variant="secondary"
+                        className="px-2 py-0.5 mb-1"
+                      >
+                        {perm}
+                      </Badge>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       id: "actions",
@@ -346,15 +377,44 @@ export function getNotificationColumns(
           role.toLowerCase().includes(value.toLowerCase())
         );
       },
-      cell: ({ row }) => (
-        <div className="w-48 flex flex-wrap gap-1">
-          {row.original.sentTo.map((role, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {role}
-            </Badge>
-          ))}
-        </div>
-      ),
+      cell: ({ row }) =>
+        (() => {
+          const sentTo = row.original.sentTo;
+          const showCount = 3;
+          const visible = sentTo.slice(0, showCount);
+          const hidden = sentTo.slice(showCount);
+          return (
+            <div className="w-52 flex flex-wrap gap-1">
+              {visible.map((role, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {role}
+                </Badge>
+              ))}
+              {hidden.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="text-xs cursor-pointer">
+                      +{hidden.length} more
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <div className="flex flex-wrap flex-col gap-0 max-w-xs">
+                      {hidden.map((role, index) => (
+                        <Badge
+                          key={"hidden-" + index}
+                          variant="default"
+                          className="text-xs text-white/90 mb-1 bg-gray-700/60"
+                        >
+                          {role}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          );
+        })(),
     },
     {
       accessorKey: "sentBy",
@@ -369,27 +429,62 @@ export function getNotificationColumns(
       accessorKey: "date",
       header: () => <span className="w-40 block">Date & Time</span>,
       cell: ({ row }) => (
-        <div className="w-40 flex items-center gap-2">
+        <div className="w-40 flex items-center gap-1">
           <Clock className="size-4 text-muted-foreground" />
-          <div>{row.original.date.split(" ")[0]}</div>
-          <div className="text-xs text-muted-foreground">
-            {row.original.date.split(" ")[1]}
+          <div>
+            {row.original.date.split(" ")[0]}{" "}
+            <span className="text-sm text-muted-foreground">
+              {row.original.date.split(" ")[1]}
+            </span>
           </div>
+          {/* <div className="text-sm text-muted-foreground"></div> */}
         </div>
       ),
     },
     {
       accessorKey: "type",
       header: () => <span className="w-32 block">Type</span>,
-      cell: ({ row }) => (
-        <div className="w-32 flex flex-wrap gap-1">
-          {row.original.type.map((type, index) => (
-            <Badge key={index} variant={"secondary"} className="text-xs">
-              {type}
-            </Badge>
-          ))}
-        </div>
-      ),
+      cell: ({ row }) =>
+        (() => {
+          const types = row.original.type;
+          const showCount = 3;
+          const visible = types.slice(0, showCount);
+          const hidden = types.slice(showCount);
+          return (
+            <div className="w-32 flex flex-wrap gap-1">
+              {visible.map((type, index) => (
+                <Badge key={index} variant={"secondary"} className="text-xs">
+                  {type}
+                </Badge>
+              ))}
+              {hidden.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="secondary"
+                      className="text-xs cursor-pointer"
+                    >
+                      +{hidden.length} more
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {hidden.map((type, index) => (
+                        <Badge
+                          key={"hidden-" + index}
+                          variant={"secondary"}
+                          className="text-xs mb-1"
+                        >
+                          {type}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          );
+        })(),
     },
     {
       accessorKey: "recipients",
@@ -592,7 +687,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
       ),
     },
     {
-      accessorKey: "upload_date",
+      accessorKey: "created_at",
       header: ({ column }) => (
         <SortableHeader column={column} title="Upload Date/Time" />
       ),
@@ -600,7 +695,7 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
         <div className="w-40 flex items-center gap-2">
           <Clock className="size-4 text-muted-foreground" />
           <span className="text-sm">
-            {formatDateTime(row.original.upload_date)}
+            {formatDateTime(row.original.created_at)}
           </span>
         </div>
       ),
@@ -654,12 +749,16 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
         <SortableHeader column={column} title="Rejection Reason" />
       ),
       cell: ({ row }) => (
-        <span
-          className="w-64 block text-red-500 truncate"
-          title={row.original.rejection_reason || "-"}
-        >
-          {row.original.rejection_reason || "-"}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="w-48 block text-red-500 truncate cursor-pointer">
+              {row.original.rejection_reason || "-"}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent align="start" className="max-w-xl">
+            {row.original.rejection_reason || "-"}
+          </TooltipContent>
+        </Tooltip>
       ),
     },
   ];
@@ -759,14 +858,28 @@ export function getValidationColumns(
       cell: ({ row }) => {
         const status = row.original.status;
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
-        const variant =
-          status === "approved"
-            ? "success"
-            : status === "rejected"
-              ? "destructive"
-              : "secondary";
-
-        return <Badge variant={variant}>{displayStatus}</Badge>;
+        return (
+          <div className="w-28">
+            <Badge
+              variant={
+                status === "approved"
+                  ? "default"
+                  : status === "rejected"
+                    ? "destructive"
+                    : "secondary"
+              }
+              className={
+                status === "approved"
+                  ? "bg-green-100 text-green-700 border-green-200"
+                  : status === "rejected"
+                    ? "bg-red-100 text-red-700 border-red-200"
+                    : "bg-yellow-100 text-yellow-700 border-yellow-200"
+              }
+            >
+              {displayStatus}
+            </Badge>
+          </div>
+        );
       },
     },
     {
@@ -1248,32 +1361,34 @@ export function getBioDWeightMousePairColumns(
   return [
     {
       accessorKey: "leftId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="block lg:w-72">Mouse Delivery ID</span>,
       cell: ({ row }) => (
-        <span className="font-medium text-center w-80">
-          {row.original.leftId}
-        </span>
+        <span className="font-medium text-center">{row.original.leftId}</span>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "leftWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) => (
-        <WeightInput
-          value={getValue() as number}
-          mouseId={row.original.leftId}
-          onValueChange={handleWeightChange}
-        />
+        <div className="flex items-stretch h-full min-h-12">
+          <div className="border-r border-gray-200 h-auto pr-5 flex items-center w-full">
+            <WeightInput
+              value={getValue() as number}
+              mouseId={row.original.leftId}
+              onValueChange={handleWeightChange}
+            />
+          </div>
+        </div>
       ),
       enableSorting: false,
     },
     {
       accessorKey: "rightId",
-      header: () => <span className="w-80 block">Mouse Delivery ID</span>,
+      header: () => <span className="lg:w-72 block">Mouse Delivery ID</span>,
       cell: ({ row }) =>
         row.original.rightId ? (
-          <span className="font-medium text-center w-80">
+          <span className="font-medium text-center">
             {row.original.rightId}
           </span>
         ) : null,
@@ -1281,7 +1396,7 @@ export function getBioDWeightMousePairColumns(
     },
     {
       accessorKey: "rightWeight",
-      header: "Body Weight (g)",
+      header: () => <span className="block lg:w-72">Body Weight (g)</span>,
       cell: ({ row, getValue }) =>
         row.original.rightId ? (
           <WeightInput

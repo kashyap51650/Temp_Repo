@@ -16,19 +16,19 @@ interface CalliperingMouseRow {
 const getReadOnlyCalliperingColumns = (): ColumnDef<CalliperingMouseRow>[] => [
   {
     accessorKey: "id",
-    header: () => <span className="block">Mouse Delivery ID</span>,
+    header: () => <span className="block lg:w-96">Mouse Delivery ID</span>,
     cell: ({ row }) => (
       <span className="font-medium text-center">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "length_mm",
-    header: "Length (mm)",
+    header: () => <span className="block lg:w-96">Length (mm)</span>,
     cell: ({ row }) => <span>{row.original.length_mm}</span>,
   },
   {
     accessorKey: "width_mm",
-    header: "Width (mm)",
+    header: () => <span className="block lg:w-96">Width (mm)</span>,
     cell: ({ row }) => <span>{row.original.width_mm}</span>,
   },
 ];
@@ -55,20 +55,19 @@ export function CalliperingSheetView({
   useEffect(() => {
     if (apiData && !data) {
       const transformedData: CalliperingData = {
-        sex: apiData.uploaded_data.sex || "",
-        strain: apiData.uploaded_data.strain || "",
-        dob: apiData.uploaded_data.date_of_birth || "",
-        cell_injection_date: apiData.uploaded_data.cell_inj_date || "",
-        cell_line: apiData.uploaded_data.cell_line.cell_line_name || "",
-        treatment_date: apiData.uploaded_data.treatment_date || "",
-        measurement_date: apiData.uploaded_data.measurement_date || "",
-        mice: apiData.uploaded_data.calliper_measurements.map(
-          (measurement) => ({
-            id: measurement.mouse.mouse_delivery_id,
-            length_mm: measurement.length_mm,
-            width_mm: measurement.width_mm,
-          })
-        ),
+        sex: apiData.uploaded_data.sex ?? "",
+        strain: apiData.uploaded_data.strain ?? "",
+        dob: apiData.uploaded_data.date_of_birth ?? "",
+        cell_injection_date: apiData.uploaded_data.cell_inj_date ?? "",
+        cell_line: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
+        treatment_date: apiData.uploaded_data.treatment_date ?? "",
+        measurement_date: apiData.uploaded_data.measurement_date ?? "",
+        mice:
+          apiData.uploaded_data.calliper_measurements?.map((measurement) => ({
+            id: measurement.mouse?.mouse_delivery_id ?? "",
+            length_mm: measurement.length_mm ?? 0,
+            width_mm: measurement.width_mm ?? 0,
+          })) ?? [],
       };
       setViewData(transformedData);
     } else if (data) {

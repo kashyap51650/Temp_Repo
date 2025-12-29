@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiClient } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
+import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 
 // Type definitions for the API response
 interface Mouse {
@@ -173,13 +174,22 @@ const fetchExperimentDataForCalliperingSheet = async (
   return apiClient.get<ExperimentDataForCaliperingResponse>(endpoint);
 };
 
+const fetchExperimentDataForBioDOrganSheet = async (
+  experimentDataId: string
+): Promise<ExperimentDataForBioDOrganSheetResponse> => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/necropsy-sheet`;
+  const response =
+    apiClient.get<ExperimentDataForBioDOrganSheetResponse>(endpoint);
+  return response;
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
     queryFn: () => fetchExperimentDataForWeightSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
-    retry: 3,
+    retry: REACT_QUERY_CONFIG.RETRY,
     retryDelay: DEFAULT_RETRY_DELAY,
   });
 }
@@ -192,7 +202,18 @@ export function useExperimentDataByIdForCalliperingSheet(
     queryFn: () => fetchExperimentDataForCalliperingSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
-    retry: 3,
+    retry: REACT_QUERY_CONFIG.RETRY,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForOrganSheet(experimentDataId: string) {
+  return useQuery({
+    queryKey: ["experimentData", "organSheet", experimentDataId],
+    queryFn: () => fetchExperimentDataForBioDOrganSheet(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY,
     retryDelay: DEFAULT_RETRY_DELAY,
   });
 }

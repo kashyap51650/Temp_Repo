@@ -989,6 +989,7 @@ export interface ExperimentFilters {
 export interface ExperimentDataFilters {
   status?: string;
   data_type?: string;
+  study_type?: string;
   page?: number;
   size?: number;
 }
@@ -1062,7 +1063,9 @@ export interface UploadedExperimentDataItem {
     study_type_name: string;
     study_type_code: string;
   };
+  // upload_date to be kept for future use if needed
   upload_date: string;
+  created_at: string;
   status: StatusType;
   reviewer: {
     id: number;
