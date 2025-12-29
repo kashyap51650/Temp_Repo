@@ -48,6 +48,7 @@ export const REACT_QUERY_CONFIG = {
     LONG: 5 * 60 * 1000, // 5 minutes - for stable data
   },
   CACHE_TIME: 1000 * 60 * 10, // 10 minutes in milliseconds
+  RETRY: 1, // Number of retry attempts for failed queries
 } as const;
 
 // File size constants
