@@ -432,10 +432,7 @@ export function getNotificationColumns(
         <div className="w-40 flex items-center gap-1">
           <Clock className="size-4 text-muted-foreground" />
           <div>
-            {row.original.date.split(" ")[0]}{" "}
-            <span className="text-sm text-muted-foreground">
-              {row.original.date.split(" ")[1]}
-            </span>
+            {row.original.date.split(" ")[0]} {row.original.date.split(" ")[1]}
           </div>
           {/* <div className="text-sm text-muted-foreground"></div> */}
         </div>
