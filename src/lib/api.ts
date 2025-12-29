@@ -1013,6 +1013,7 @@ export interface ExperimentDataItem {
   experiment: {
     id: number;
     experiment_name: string;
+    randomization_status?: string;
   };
   project: {
     id: number;

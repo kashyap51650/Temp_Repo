@@ -33,6 +33,11 @@ export function transformExperimentDataToValidationRows(
     measurementDate: item.measurement_date,
     treatmentDate: item.treatment_date,
     randomizationStatus: item.randomization_status,
+    experiment: {
+      id: item.experiment.id,
+      experiment_name: item.experiment.experiment_name,
+      randomization_status: item.experiment.randomization_status || "",
+    },
     reviewer: item.reviewer
       ? {
           id: item.reviewer.id,
