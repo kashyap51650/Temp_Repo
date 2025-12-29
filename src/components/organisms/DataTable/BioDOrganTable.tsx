@@ -1,4 +1,7 @@
+import { useExperimentsDrugsDropdown } from "@/hooks";
+
 import { Input } from "../../atoms";
+import { ExperimentDrugSelect } from "../../molecules/ExperimentDrugSelect";
 import {
   Table,
   TableBody,
@@ -18,6 +21,7 @@ interface BioDOrganTableProps {
     value: string,
     groupCode?: string
   ) => void;
+  onDrugChange?: (groupCode: string, drugId: string) => void;
   fixedTopRowsEditable?: boolean;
 }
 
@@ -25,11 +29,14 @@ export function BioDOrganTable({
   data,
   editable = false,
   onCellChange,
+  onDrugChange,
   fixedTopRowsEditable = false,
 }: BioDOrganTableProps) {
   const { mouse, rows } = data;
   const fixedRows = rows.slice(0, 4);
   const dataRows = rows.slice(4);
+
+  const { experimentDrugs } = useExperimentsDrugsDropdown();
 
   return (
     <div className="w-full overflow-x-auto">
@@ -62,18 +69,28 @@ export function BioDOrganTable({
                       colSpan={groupInfo.colspan}
                       className="border px-4 py-2 text-center font-semibold bg-accent min-w-[140px]"
                     >
-                      {(editable || fixedTopRowsEditable) && onCellChange ? (
+                      {row.id === "drugName" &&
+                      (editable || fixedTopRowsEditable) &&
+                      onDrugChange ? (
+                        <ExperimentDrugSelect
+                          value={String(
+                            experimentDrugs.find(
+                              (val) =>
+                                val.drug_name === groupInfo.value ||
+                                val.id.toString() === groupInfo.value
+                            )?.id || ""
+                          )}
+                          onValueChange={(drugId) =>
+                            onDrugChange(group, drugId)
+                          }
+                          placeholder="Select Drug"
+                          className="w-full"
+                        />
+                      ) : (editable || fixedTopRowsEditable) && onCellChange ? (
                         <Input
                           className="w-full text-center font-semibold"
                           value={groupInfo.value || ""}
-                          onChange={(e) => {
-                            onCellChange(
-                              row.id,
-                              groupInfo.startColumn,
-                              e.target.value,
-                              group
-                            );
-                          }}
+                          readOnly={true}
                         />
                       ) : (
                         groupInfo.value

@@ -105,6 +105,10 @@ export const API_CONFIG = {
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
     },
+    ORGAN_WEIGHTS: {
+      BULK_UPDATE: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/organ-weights/${experimentId}/bulk-update`,
+    },
   },
 } as const;
 

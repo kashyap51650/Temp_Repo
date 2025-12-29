@@ -9,11 +9,7 @@ import type {
   RandomizationPreviewResponse,
 } from "@/types/randomization";
 
-import { useExperimentsDrugsDropdown } from "./useExperimentDrugsDropdown";
-
 export const useRendomizationResult = () => {
-  const { experimentDrugs } = useExperimentsDrugsDropdown();
-
   // Drug Selection Dropdown State for each Group
   const [selectedGroupDrug, setSelectedGroupDrug] = useState<
     Record<string, string>
@@ -83,7 +79,6 @@ export const useRendomizationResult = () => {
   };
 
   return {
-    experimentDrugs,
     selectedGroupDrug,
     setSelectedGroupDrug,
     randomizationData,

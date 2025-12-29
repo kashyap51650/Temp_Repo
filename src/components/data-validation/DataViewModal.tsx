@@ -14,7 +14,6 @@ import {
   getDataViewItems,
   type ValidationRow,
 } from "../organisms/DataTable/tableData";
-import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { BioDOrganViewModal } from "./BioDOrganViewModal";
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
 import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
@@ -236,13 +235,6 @@ export function DataViewModal({
       <BioDOrganViewModal
         isOpen={viewModal.isOpen}
         onClose={viewModal.closeModal}
-        experimentName={experiment.experimentName}
-      />
-
-      <BioDOrganEditModal
-        isOpen={editModal.isOpen}
-        onClose={editModal.closeModal}
-        onSave={handleSaveEdit}
         experimentName={experiment.experimentName}
       />
 

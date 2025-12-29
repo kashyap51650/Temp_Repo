@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from "react";
 import { Label } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
-import { SearchableSelect } from "@/components/atoms/SearchableSelect/SearchableSelect";
+import { ExperimentDrugSelect } from "@/components/molecules/ExperimentDrugSelect";
 import {
   Table,
   TableBody,
@@ -36,7 +36,6 @@ const transformApiGroupsForUI = (apiGroups: Group[]) =>
 
 export default function RandomizationResults() {
   const {
-    experimentDrugs,
     selectedGroupDrug,
     setSelectedGroupDrug,
     isPending,
@@ -130,11 +129,7 @@ export default function RandomizationResults() {
                     className={`border border-gray-200 ${getGroupColorBody(idx)} p-3`}
                   >
                     <div className="flex justify-center">
-                      <SearchableSelect
-                        options={experimentDrugs.map((drug) => ({
-                          id: drug.id.toString(),
-                          name: drug.drug_name,
-                        }))}
+                      <ExperimentDrugSelect
                         value={selectedGroupDrug[g.key] ?? ""}
                         onValueChange={(v) => {
                           setSelectedGroupDrug((prev) => ({
@@ -143,9 +138,7 @@ export default function RandomizationResults() {
                           }));
                         }}
                         placeholder="Select Drug"
-                        searchPlaceholder="Search drugs..."
                         className="w-44 bg-white text-xs"
-                        showSearch={true}
                       />
                     </div>
                   </TableHead>
