@@ -282,6 +282,11 @@ export type ValidationRow = {
   measurementDate?: string;
   treatmentDate?: string;
   randomizationStatus: string;
+  experiment: {
+    id: number;
+    experiment_name: string;
+    randomization_status: string;
+  };
   reviewer?: {
     id: number;
     email: string;
