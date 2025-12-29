@@ -189,7 +189,7 @@ export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
     queryFn: () => fetchExperimentDataForWeightSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
-    retry: 3,
+    retry: REACT_QUERY_CONFIG.RETRY,
     retryDelay: DEFAULT_RETRY_DELAY,
   });
 }
@@ -202,7 +202,7 @@ export function useExperimentDataByIdForCalliperingSheet(
     queryFn: () => fetchExperimentDataForCalliperingSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
-    retry: 3,
+    retry: REACT_QUERY_CONFIG.RETRY,
     retryDelay: DEFAULT_RETRY_DELAY,
   });
 }
@@ -213,7 +213,7 @@ export function useExperimentDataByIdForOrganSheet(experimentDataId: string) {
     queryFn: () => fetchExperimentDataForBioDOrganSheet(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
-    retry: 3,
+    retry: REACT_QUERY_CONFIG.RETRY,
     retryDelay: DEFAULT_RETRY_DELAY,
   });
 }

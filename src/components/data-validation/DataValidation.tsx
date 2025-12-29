@@ -121,22 +121,30 @@ export default function DataValidation() {
 
     // Check if it's a callipering type sheet
     const isCalliperingSheet = dataTypeLower.includes("callipering");
+
+    // Check if it's a necropsy/organ sheet
+    const isOrganSheet =
+      dataTypeLower.includes("organ") && dataTypeLower.includes("sheet");
     // Check if it's a weight sheet
     const isWeightSheet =
       dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
-    // Check if it's a necropsy/organ sheet
-    const isOrganSheet =
-      dataTypeLower.includes("necropsy") || dataTypeLower.includes("organ");
 
     if (isCalliperingSheet) {
       calliperingViewModal.openModal();
-    } else if (isWeightSheet) {
-      weightSheetViewModal.openModal();
-    } else if (isOrganSheet) {
-      organViewModal.openModal();
-    } else {
-      dataViewModal.openModal();
+      return;
     }
+
+    if (isOrganSheet) {
+      organViewModal.openModal();
+      return;
+    }
+
+    if (isWeightSheet) {
+      weightSheetViewModal.openModal();
+      return;
+    }
+
+    dataViewModal.openModal();
   }, []);
 
   const handleRandomize = useCallback(
@@ -283,27 +291,33 @@ export default function DataValidation() {
             onClose={dataViewModal.closeModal}
             experiment={selectedExperiment}
           />
-          <CalliperingSheetViewModal
-            isOpen={calliperingViewModal.isOpen}
-            onClose={calliperingViewModal.closeModal}
-            experimentName={selectedExperiment.experimentName}
-            experimentDataId={selectedExperiment.id}
-            experimentStatus={selectedExperiment.status}
-          />
-          <BioDWeightSheetViewModal
-            isOpen={weightSheetViewModal.isOpen}
-            onClose={weightSheetViewModal.closeModal}
-            experimentName={selectedExperiment.experimentName}
-            experimentDataId={selectedExperiment.id}
-            experimentStatus={selectedExperiment.status}
-          />
-          <BioDOrganViewModal
-            isOpen={organViewModal.isOpen}
-            onClose={organViewModal.closeModal}
-            experimentName={selectedExperiment.experimentName}
-            experimentDataId={selectedExperiment.id}
-            experimentStatus={selectedExperiment.status}
-          />
+          {calliperingViewModal.isOpen && (
+            <CalliperingSheetViewModal
+              isOpen={calliperingViewModal.isOpen}
+              onClose={calliperingViewModal.closeModal}
+              experimentName={selectedExperiment.experimentName}
+              experimentDataId={selectedExperiment.id}
+              experimentStatus={selectedExperiment.status}
+            />
+          )}
+          {weightSheetViewModal.isOpen && (
+            <BioDWeightSheetViewModal
+              isOpen={weightSheetViewModal.isOpen}
+              onClose={weightSheetViewModal.closeModal}
+              experimentName={selectedExperiment.experimentName}
+              experimentDataId={selectedExperiment.id}
+              experimentStatus={selectedExperiment.status}
+            />
+          )}
+          {organViewModal.isOpen && (
+            <BioDOrganViewModal
+              isOpen={organViewModal.isOpen}
+              onClose={organViewModal.closeModal}
+              experimentName={selectedExperiment.experimentName}
+              experimentDataId={selectedExperiment.id}
+              experimentStatus={selectedExperiment.status}
+            />
+          )}
         </>
       )}
     </>
