@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { API_CONFIG, apiClient } from "@/lib/api";
@@ -55,6 +55,14 @@ export const useBioDOrganEditModal = ({
   const [changedGroupDrugs, setChangedGroupDrugs] = useState<
     Map<string, { groupId: number; drugId: number }>
   >(new Map());
+
+  // Keep a ref to the latest experimentData to avoid stale closure issues
+  const experimentDataRef = useRef(experimentData);
+
+  // Update ref when experimentData changes
+  useEffect(() => {
+    experimentDataRef.current = experimentData;
+  }, [experimentData]);
 
   // Reset editable data and changed cells when modal opens
   useEffect(() => {
@@ -153,6 +161,8 @@ export const useBioDOrganEditModal = ({
     value: string,
     groupCode?: string
   ) => {
+    const newChangedCells = new Map(changedCells);
+
     setEditableData((prev) => {
       const updatedRows = prev.rows.map((row) => {
         if (row.id !== rowId) return row;
@@ -163,30 +173,21 @@ export const useBioDOrganEditModal = ({
           const mouseCodes = getMouseCodesForGroup(groupCode);
 
           mouseCodes.forEach((m) => {
-            const originalValue = experimentData.rows.find(
+            const originalValue = experimentDataRef.current.rows.find(
               (r) => r.id === rowId
             )?.data[m];
             const cellKey = `${rowId}-${m}`;
 
             // Track changed cells
             if (originalValue !== value) {
-              setChangedCells((prevChanges) => {
-                const newChanges = new Map(prevChanges);
-                newChanges.set(cellKey, {
-                  rowId,
-                  mouseId: m,
-                  value,
-                  originalValue: originalValue ?? "",
-                });
-                return newChanges;
+              newChangedCells.set(cellKey, {
+                rowId,
+                mouseId: m,
+                value,
+                originalValue: originalValue ?? "",
               });
             } else {
-              // Remove from changed cells if reverted to original
-              setChangedCells((prevChanges) => {
-                const newChanges = new Map(prevChanges);
-                newChanges.delete(cellKey);
-                return newChanges;
-              });
+              newChangedCells.delete(cellKey);
             }
 
             updatedData[m] = value;
@@ -211,29 +212,22 @@ export const useBioDOrganEditModal = ({
         }
 
         // Handle individual cell update
-        const originalValue = experimentData.rows.find((r) => r.id === rowId)
-          ?.data[mouseId];
+        const originalValue = experimentDataRef.current.rows.find(
+          (r) => r.id === rowId
+        )?.data[mouseId];
         const cellKey = `${rowId}-${mouseId}`;
 
         // Track changed cells
         if (originalValue !== value) {
-          setChangedCells((prevChanges) => {
-            const newChanges = new Map(prevChanges);
-            newChanges.set(cellKey, {
-              rowId,
-              mouseId,
-              value,
-              originalValue: originalValue ?? "",
-            });
-            return newChanges;
+          newChangedCells.set(cellKey, {
+            rowId,
+            mouseId,
+            value,
+            originalValue: originalValue ?? "",
           });
         } else {
           // Remove from changed cells if reverted to original
-          setChangedCells((prevChanges) => {
-            const newChanges = new Map(prevChanges);
-            newChanges.delete(cellKey);
-            return newChanges;
-          });
+          newChangedCells.delete(cellKey);
         }
 
         return { ...row, data: { ...row.data, [mouseId]: value } };
@@ -244,6 +238,8 @@ export const useBioDOrganEditModal = ({
         rows: updatedRows,
       };
     });
+
+    setChangedCells(newChangedCells);
   };
 
   // Transform only changed cells to BulkUpdatePayload format
