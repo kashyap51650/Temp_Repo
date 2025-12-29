@@ -10,7 +10,7 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
-import type { Dispatch, SetStateAction } from "react";
+import type { Dispatch, FC, SetStateAction } from "react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
@@ -1297,7 +1297,7 @@ export type MousePairRow = {
   rightWeight?: number;
 };
 
-const WeightInput: React.FC<{
+const WeightInput: FC<{
   value: number;
   mouseId: string;
   onValueChange: (mouseId: string, value: number) => void;
