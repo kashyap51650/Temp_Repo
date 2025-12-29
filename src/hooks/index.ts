@@ -1,6 +1,7 @@
 export { default as useApproveExperimentData } from "./useApproveExperimentData";
 export * from "./useAssignUserRole";
 export * from "./useAuthState";
+export * from "./useBioDOrganEditModal";
 export { default as useBulkUpdateBodyWeights } from "./useBulkUpdateBodyWeights";
 export { default as useBulkUpdateCalliperMeasurements } from "./useBulkUpdateCalliperMeasurements";
 export * from "./useCreateExperiment";

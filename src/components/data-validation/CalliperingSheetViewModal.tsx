@@ -12,6 +12,7 @@ import {
 
 import { CalliperingSheetModal } from "./CalliperingSheetEditModal";
 import { CalliperingSheetView } from "./CalliperingSheetView";
+import GraphViewModal from "./GraphViewModal";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 
 interface CalliperingSheetViewModalProps {
@@ -36,6 +37,7 @@ export function CalliperingSheetViewModal({
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
+  const viewGraphModal = useModal();
 
   const handleEdit = () => {
     editModal.openModal();
@@ -110,8 +112,8 @@ export function CalliperingSheetViewModal({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={true}
                 className="flex items-center gap-2"
+                onClick={viewGraphModal.openModal}
               >
                 <ChartBar className="size-4" />
                 View Graph
@@ -185,6 +187,11 @@ export function CalliperingSheetViewModal({
           canApprove: true,
           canReject: true,
         }}
+      />
+
+      <GraphViewModal
+        isOpen={viewGraphModal.isOpen}
+        onClose={viewGraphModal.closeModal}
       />
     </>
   );

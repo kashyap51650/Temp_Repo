@@ -3,6 +3,7 @@ export * from "./Chart/Chart";
 export * from "./Dialog/Dialog";
 export * from "./Drawer/Drawer";
 export * from "./DropdownMenu/DropdownMenu";
+export * from "./ExperimentDrugSelect";
 export * from "./NavMain/NavMain";
 export * from "./NavUser/NavUser";
 export * from "./NotificationButton/NotificationButton";
