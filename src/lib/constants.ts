@@ -89,3 +89,8 @@ export const DEFAULT_RETRY_DELAY = (attemptIndex: number) =>
   Math.min(1000 * 2 ** attemptIndex, 30000);
 
 export const API_CUSTOM_TIMEOUT = 60000;
+
+export const ORGAN_KEYS = {
+  INJECTION_TIME: "Pb-212 Injection time",
+  NECROPSY_TIME: "Necropsy time",
+};

@@ -177,7 +177,7 @@ const fetchExperimentDataForCalliperingSheet = async (
 const fetchExperimentDataForBioDOrganSheet = async (
   experimentDataId: string
 ): Promise<ExperimentDataForBioDOrganSheetResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/necropsy-sheet`;
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/organ-weight-sheet`;
   const response =
     apiClient.get<ExperimentDataForBioDOrganSheetResponse>(endpoint);
   return response;

@@ -1,3 +1,5 @@
+import type { ApiResponse } from "@/lib/api";
+
 type ID = number;
 
 type DynamicMap<T> = Record<string, T>;
@@ -102,3 +104,41 @@ export interface BioDOrganData {
   mouse: string[];
   rows: BioDOrganRow[];
 }
+
+// ------------ Bulk Update Types ------------
+
+export type BulkUpdatePayload = {
+  groups: (Pick<
+    Group,
+    "id" | "group_name" | "group_code" | "short_group_name"
+  > & {
+    experiment_drug_id: number;
+    cell_line_id: number;
+  })[];
+  organ_weights: (Pick<OrganMeasurement, "id" | "key" | "value"> & {
+    mouse_id: number;
+  })[];
+};
+
+type UpdateResultItem = {
+  id: number;
+  success: boolean;
+  message: string;
+};
+
+type OrganWeightResultItem = UpdateResultItem & { key: string };
+
+type UpdateSummary<T> = {
+  total: number;
+  successful: number;
+  failed: number;
+  results: T[];
+};
+
+export type UpdateExperimentData = {
+  experiment_data_id: number;
+  experiment_id: number;
+  groups: UpdateSummary<UpdateResultItem>;
+  organ_weights: UpdateSummary<OrganWeightResultItem>;
+};
+export type BulkUpdateResponse = ApiResponse<UpdateExperimentData>;

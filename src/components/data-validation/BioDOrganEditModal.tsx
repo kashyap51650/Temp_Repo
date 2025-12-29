@@ -1,77 +1,50 @@
-import { useEffect, useState } from "react";
+import { useBioDOrganEditModal } from "@/hooks/useBioDOrganEditModal";
+import type {
+  BioDOrganData,
+  ExperimentDataForBioDOrganSheetResponse,
+} from "@/types/organ-sheet";
 
 import { Button, Dialog } from "../atoms";
 import { BioDOrganTable } from "../organisms/DataTable/BioDOrganTable";
-import type { BioDOrganData } from "../organisms/DataTable/tableData";
-import { bioDOrganData } from "../organisms/DataTable/tableData";
 
 interface BioDOrganEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: BioDOrganData) => void;
-  experimentName: string;
+  onSave?: (data: BioDOrganData) => void;
+  experimentData: BioDOrganData;
+  rawUploadedData: ExperimentDataForBioDOrganSheetResponse["uploaded_data"];
+  experimentId: number;
+  onSaveSuccess?: () => void;
 }
 
 export function BioDOrganEditModal({
   isOpen,
   onClose,
   onSave,
-  experimentName,
+  experimentData,
+  rawUploadedData,
+  experimentId,
+  onSaveSuccess,
 }: BioDOrganEditModalProps) {
-  const [editableData, setEditableData] =
-    useState<BioDOrganData>(bioDOrganData);
-
-  useEffect(() => {
-    if (isOpen) {
-      setEditableData(bioDOrganData);
-    }
-  }, [isOpen, experimentName]);
-
-  const getMouseCodesForGroup = (groupCode: string) =>
-    editableData.mouse.filter((m) => m.startsWith(groupCode));
-
-  // Enhanced handleCellChange to support group-wide updates for merged cells
-  const handleCellChange = (
-    rowId: string,
-    mouseId: string,
-    value: string,
-    groupCode?: string
-  ) => {
-    setEditableData((prev) => ({
-      ...prev,
-      rows: prev.rows.map((row) => {
-        if (row.id !== rowId) return row;
-        if (groupCode) {
-          const updatedData = { ...row.data };
-          getMouseCodesForGroup(groupCode).forEach((m) => {
-            updatedData[m] = value;
-          });
-          const updatedGroupedData = row.groupedData
-            ? { ...row.groupedData }
-            : undefined;
-          if (updatedGroupedData && updatedGroupedData[groupCode]) {
-            updatedGroupedData[groupCode] = {
-              ...updatedGroupedData[groupCode],
-              value: value,
-            };
-          }
-
-          return {
-            ...row,
-            data: updatedData,
-            groupedData: updatedGroupedData,
-          };
-        }
-
-        return { ...row, data: { ...row.data, [mouseId]: value } };
-      }),
-    }));
-  };
-
-  const handleSave = () => {
-    onSave(editableData);
-    onClose();
-  };
+  const {
+    editableData,
+    changedCells,
+    changedGroupDrugs,
+    isUpdating,
+    handleCellChange,
+    handleDrugChange,
+    handleSave,
+  } = useBioDOrganEditModal({
+    experimentData,
+    rawUploadedData,
+    experimentId,
+    isOpen,
+    onClose,
+    onSaveSuccess: () => {
+      onSave?.(editableData);
+      onSaveSuccess?.();
+    },
+  });
 
   return (
     <Dialog
@@ -83,6 +56,7 @@ export function BioDOrganEditModal({
       showClose={true}
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       trigger={null}
+      preventOutsideClose={isUpdating}
     >
       <div className="flex-1 overflow-auto py-2">
         <BioDOrganTable
@@ -91,15 +65,28 @@ export function BioDOrganEditModal({
           onCellChange={(rowId, mouseId, value, groupCode) =>
             handleCellChange(rowId, mouseId, value, groupCode)
           }
+          onDrugChange={handleDrugChange}
           fixedTopRowsEditable={true}
         />
       </div>
       <div className="flex justify-end gap-3 border-t pt-4">
-        <Button variant="outline" size={"lg"} onClick={onClose}>
+        <Button
+          variant="outline"
+          size={"lg"}
+          onClick={onClose}
+          disabled={isUpdating}
+        >
           Cancel
         </Button>
-        <Button size={"lg"} onClick={handleSave}>
-          Save Changes
+        <Button
+          size={"lg"}
+          onClick={handleSave}
+          disabled={
+            isUpdating ||
+            (changedCells.size === 0 && changedGroupDrugs.size === 0)
+          }
+        >
+          {isUpdating ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </Dialog>
