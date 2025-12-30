@@ -94,3 +94,5 @@ export const ORGAN_KEYS = {
   INJECTION_TIME: "Pb-212 Injection time",
   NECROPSY_TIME: "Necropsy time",
 };
+
+export const DEFAULT_PAGE_SIZE = 10;

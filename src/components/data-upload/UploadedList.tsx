@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useUploadedExperimentData } from "../../hooks/useUploadedExperimentData";
 import { Card } from "../atoms";
@@ -9,9 +9,9 @@ import { getUploadedDatasetColumns } from "../organisms/DataTable/tableColumns";
 import { CustomSelect } from "./CustomSelect";
 
 export default function UploadedList() {
-  const [statusFilter, setStatusFilter] = useState<string>("All Status");
-  const [isInitialized, setIsInitialized] = useState(false);
-  const { data, loading, error, loadData } = useUploadedExperimentData();
+  const [status, setStatus] = useState<string>("All Status");
+  const { data, loading, error, pagination, setFilters } =
+    useUploadedExperimentData();
 
   const statusOptions = [
     { label: "All Status", value: "All Status" },
@@ -19,16 +19,6 @@ export default function UploadedList() {
     { label: "Approved", value: "Approved" },
     { label: "Rejected", value: "Rejected" },
   ];
-
-  useEffect(() => {
-    if (isInitialized) {
-      loadData({ status: statusFilter });
-    }
-  }, [statusFilter]);
-
-  useEffect(() => {
-    setIsInitialized(true);
-  }, []);
 
   const columns = getUploadedDatasetColumns();
 
@@ -68,11 +58,14 @@ export default function UploadedList() {
           <CustomSelect
             options={statusOptions}
             placeholder="All Status"
-            value={statusFilter}
+            value={status}
             onValueChange={(value: string | string[]) => {
               const selectedValue =
                 typeof value === "string" ? value : value[0];
-              setStatusFilter(selectedValue);
+              setStatus(selectedValue);
+              setFilters({
+                status: selectedValue === "All Status" ? "" : selectedValue,
+              });
             }}
             className="w-full"
             disabled={loading}
@@ -100,7 +93,20 @@ export default function UploadedList() {
             ))}
           </div>
         ) : (
-          <DataTable columns={columns} data={data} />
+          <DataTable
+            columns={columns}
+            data={data}
+            paginationState={{
+              mode: "server",
+              currentPage: pagination?.page ?? 1,
+              totalPages: pagination?.pages ?? 1,
+              hasNextPage: pagination?.has_next ?? false,
+              hasPrevPage: pagination?.has_prev ?? false,
+              onPageChange: (page: number) => {
+                setFilters({ page: page });
+              },
+            }}
+          />
         )}
       </Card>
     </div>

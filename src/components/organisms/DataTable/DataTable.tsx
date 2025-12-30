@@ -1,12 +1,6 @@
 import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-} from "@tabler/icons-react";
-import {
   type ColumnDef,
   type ColumnFiltersState,
   flexRender,
@@ -22,7 +16,8 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 
-import { Button } from "../../atoms/Button/Button";
+import type { PaginationConfig, PaginationState } from "@/types/pagination";
+
 import {
   Table,
   TableBody,
@@ -31,12 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from "../Table/Table";
+import { PaginationControls } from "./PaginationControls";
 
 type DataTableProps<T extends { id: string | number }> = {
   columns: ColumnDef<T>[];
   data: T[];
-  pagination?: boolean;
   pageSize?: number;
+  paginationState?: PaginationConfig;
 };
 
 export function DataTable<T extends { id: string | number }>(
@@ -45,9 +41,13 @@ export function DataTable<T extends { id: string | number }>(
   const {
     columns,
     data,
-    pagination: enablePagination = true,
     pageSize = 10,
+    paginationState = { mode: "none" },
   } = props;
+
+  const isClientSidePagination = paginationState.mode === "client";
+  const isServerSidePagination = paginationState.mode === "server";
+
   const [tableData, setTableData] = React.useState<T[]>(data);
 
   // Sync internal state with data prop changes
@@ -74,7 +74,9 @@ export function DataTable<T extends { id: string | number }>(
       columnVisibility,
       rowSelection,
       columnFilters,
-      ...(enablePagination && { pagination }),
+      ...(isClientSidePagination && {
+        pagination,
+      }),
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
@@ -82,16 +84,45 @@ export function DataTable<T extends { id: string | number }>(
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    ...(enablePagination && { onPaginationChange: setPagination }),
+    ...(isClientSidePagination && { onPaginationChange: setPagination }),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: enablePagination
+    getPaginationRowModel: isClientSidePagination
       ? getPaginationRowModel()
       : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualPagination: isServerSidePagination,
   });
+
+  const paginationControls: PaginationState | null = isClientSidePagination
+    ? {
+        page: table.getState().pagination.pageIndex + 1,
+        totalPages: table.getPageCount(),
+        canNext: table.getCanNextPage(),
+        canPrev: table.getCanPreviousPage(),
+        onFirst: () => table.setPageIndex(0),
+        onPrev: () => table.previousPage(),
+        onNext: () => table.nextPage(),
+        onLast: () => table.setPageIndex(table.getPageCount() - 1),
+      }
+    : isServerSidePagination
+      ? {
+          page: paginationState.currentPage,
+          totalPages: paginationState.totalPages,
+          canNext: paginationState.hasNextPage,
+          canPrev: paginationState.hasPrevPage,
+          onFirst: () => paginationState.onPageChange(1),
+          onPrev: () =>
+            paginationState.onPageChange(paginationState.currentPage - 1),
+          onNext: () =>
+            paginationState.onPageChange(paginationState.currentPage + 1),
+          onLast: () =>
+            paginationState.onPageChange(paginationState.totalPages),
+        }
+      : null;
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
@@ -158,55 +189,9 @@ export function DataTable<T extends { id: string | number }>(
           </DndContext>
         </div>
         <div className="flex items-center justify-between px-4">
-          {enablePagination && table.getFilteredRowModel().rows.length > 10 ? (
-            <div className="flex w-full items-center gap-8 lg:w-fit">
-              <div className="flex w-fit items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="ml-auto flex items-center gap-2 lg:ml-0">
-                <Button
-                  variant="outline"
-                  className="hidden h-8 w-8 p-0 lg:flex"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to first page</span>
-                  <IconChevronsLeft />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8"
-                  size="icon"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to previous page</span>
-                  <IconChevronLeft />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="size-8"
-                  size="icon"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to next page</span>
-                  <IconChevronRight />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="hidden size-8 lg:flex"
-                  size="icon"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to last page</span>
-                  <IconChevronsRight />
-                </Button>
-              </div>
-            </div>
-          ) : null}
+          {paginationControls && (
+            <PaginationControls pagination={paginationControls} />
+          )}
         </div>
       </div>
     </div>

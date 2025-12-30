@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import * as React from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/atoms/Button/Button";
 import {
@@ -23,6 +23,7 @@ import { CreateRoleModal } from "@/components/organisms/Roles/CreateRoleModal";
 import { EditRoleModal } from "@/components/organisms/Roles/EditRoleModal";
 import { EditAssignmentModal } from "@/components/organisms/UserAssignments/EditAssignmentModal";
 import { roleApi } from "@/lib/api";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import {
   transformRoleToRow,
   transformUserAssignmentToRow,
@@ -30,11 +31,13 @@ import {
 } from "@/types/auth";
 
 export default function RBACRolesPage() {
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [selectedRole, setSelectedRole] = React.useState<RoleRow | null>(null);
-  const [page] = React.useState(1);
-  const [size] = React.useState(10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<RoleRow | null>(null);
+  const [rolesPage, setRolesPage] = useState(1);
+  const [rolesSize] = useState(DEFAULT_PAGE_SIZE);
+  const [assignmentsPage, setAssignmentsPage] = useState(1);
+  const [assignmentsSize] = useState(DEFAULT_PAGE_SIZE);
 
   const {
     data: rolesResponse,
@@ -43,8 +46,8 @@ export default function RBACRolesPage() {
     error: rolesError,
     refetch: refetchRoles,
   } = useQuery({
-    queryKey: ["roles", page, size],
-    queryFn: () => roleApi.getRoles(page, size),
+    queryKey: ["roles", rolesPage, rolesSize],
+    queryFn: () => roleApi.getRoles(rolesPage, rolesSize),
     retry: 2,
   });
 
@@ -55,30 +58,28 @@ export default function RBACRolesPage() {
     error: assignmentsError,
     refetch: refetchAssignments,
   } = useQuery({
-    queryKey: ["userAssignments", page, size],
-    queryFn: () => roleApi.getUsersWithRoles(page, size),
+    queryKey: ["userAssignments", assignmentsPage, assignmentsSize],
+    queryFn: () => roleApi.getUsersWithRoles(assignmentsPage, assignmentsSize),
     retry: 2,
   });
 
-  const roles: RoleRow[] = React.useMemo(() => {
+  const roles: RoleRow[] = useMemo(() => {
     if (!rolesResponse?.data?.items) return [];
     return rolesResponse.data.items.map(transformRoleToRow);
   }, [rolesResponse]);
 
-  const assignments: PermissionAssignment[] = React.useMemo(() => {
+  const assignments: PermissionAssignment[] = useMemo(() => {
     if (!userAssignmentsResponse?.data?.items) return [];
     return userAssignmentsResponse.data.items.map(transformUserAssignmentToRow);
   }, [userAssignmentsResponse]);
 
-  const [editAssignmentModalOpen, setEditAssignmentModalOpen] =
-    React.useState(false);
+  const [editAssignmentModalOpen, setEditAssignmentModalOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] =
-    React.useState<PermissionAssignment | null>(null);
+    useState<PermissionAssignment | null>(null);
   const [selectedUserAssignment, setSelectedUserAssignment] =
-    React.useState<UserAssignment | null>(null);
+    useState<UserAssignment | null>(null);
 
-  const [permissionsSelectedRole, setPermissionsSelectedRole] =
-    React.useState("1");
+  const [permissionsSelectedRole, setPermissionsSelectedRole] = useState("1");
 
   const handleCreateRole = async (roleData: {
     name: string;
@@ -212,6 +213,16 @@ export default function RBACRolesPage() {
               refreshingText="Refreshing roles..."
               columns={getRoleColumns(handleEditRole)}
               data={roles}
+              paginationState={{
+                mode: "server",
+                currentPage: rolesResponse?.data?.pagination.page || 1,
+                totalPages: rolesResponse?.data?.pagination.pages || 1,
+                hasNextPage: rolesResponse?.data?.pagination.has_next || false,
+                hasPrevPage: rolesResponse?.data?.pagination.has_prev || false,
+                onPageChange: (page: number) => {
+                  setRolesPage(page);
+                },
+              }}
             />
           </div>
 
@@ -262,6 +273,18 @@ export default function RBACRolesPage() {
             data={assignments}
             error={assignmentsError}
             errorText="Error loading user assignments. Please try again later."
+            paginationState={{
+              mode: "server",
+              currentPage: userAssignmentsResponse?.data?.pagination.page || 1,
+              totalPages: userAssignmentsResponse?.data?.pagination.pages || 1,
+              hasNextPage:
+                userAssignmentsResponse?.data?.pagination.has_next || false,
+              hasPrevPage:
+                userAssignmentsResponse?.data?.pagination.has_prev || false,
+              onPageChange: (page: number) => {
+                setAssignmentsPage(page);
+              },
+            }}
           />
 
           {/* {userAssignmentsResponse?.data?.pagination && (

@@ -179,12 +179,7 @@ export function BioDWeightSheet({
         const columns = getBioDWeightMousePairColumns(handleFormDataChange);
         return (
           <div className="bg-white h-96">
-            <DataTable
-              columns={columns}
-              data={mousePairRows}
-              pagination={false}
-              pageSize={50}
-            />
+            <DataTable columns={columns} data={mousePairRows} />
           </div>
         );
       })()}

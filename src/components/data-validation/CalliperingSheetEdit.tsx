@@ -235,12 +235,7 @@ export function CalliperingSheetEdit({
       </div>
       {form.mice && form.mice.length > 0 && (
         <div className="bg-white mt-4">
-          <DataTable
-            pagination={false}
-            pageSize={100}
-            columns={editableColumns}
-            data={form.mice}
-          />
+          <DataTable columns={editableColumns} data={form.mice} />
         </div>
       )}
       <div className="flex gap-2 justify-end mt-auto">

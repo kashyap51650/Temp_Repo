@@ -27,6 +27,7 @@ interface SearchableSelectProps {
   createNewLabel?: string;
   className?: string;
   showSearch?: boolean;
+  size?: "sm" | "default" | "lg";
   searchPlaceholder?: string;
   disabled?: boolean;
 }
@@ -40,6 +41,7 @@ export function SearchableSelect({
   createNewLabel = "Create New",
   className,
   showSearch,
+  size = "default",
   searchPlaceholder = "Search...",
   disabled = false,
 }: SearchableSelectProps) {
@@ -97,7 +99,7 @@ export function SearchableSelect({
       onOpenChange={setIsOpen}
     >
       <SelectTrigger
-        size="lg"
+        size={size}
         className={cn("w-full", className)}
         aria-label={placeholder}
       >

@@ -150,7 +150,6 @@ export function BioDWeightSheetView({
       {viewData.mice && viewData.mice.length > 0 && (
         <div className="bg-white mt-4">
           <DataTable
-            pagination={false}
             columns={getReadOnlyMousePairColumns()}
             data={Array.from({
               length: Math.ceil(viewData.mice.length / 2),

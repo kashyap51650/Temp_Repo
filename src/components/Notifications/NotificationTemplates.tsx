@@ -35,7 +35,6 @@ export function NotificationTemplates() {
   const [selected, setSelected] = useState<TemplateRow | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const hasFetchedTemplates = useRef(false);
 
   const transformTemplate = (template: NotificationTemplate): TemplateRow => {
@@ -64,7 +63,6 @@ export function NotificationTemplates() {
         setTemplates(transformedTemplates);
         setCurrentPage(response.data.pagination.page);
         setTotalPages(response.data.pagination.pages);
-        setTotalItems(response.data.pagination.total);
       }
     } catch (error) {
       const errorMessage = handleApiError(
@@ -167,36 +165,15 @@ export function NotificationTemplates() {
           <DataTable
             columns={getTemplateColumns(handleEditTemplate, handleViewTemplate)}
             data={templates}
+            paginationState={{
+              mode: "server",
+              currentPage: currentPage,
+              totalPages: totalPages,
+              hasNextPage: currentPage < totalPages,
+              hasPrevPage: currentPage > 1,
+              onPageChange: handlePageChange,
+            }}
           />
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-2">
-              <div className="text-sm text-muted-foreground">
-                Showing {templates.length} of {totalItems} templates
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </Button>
-                <span className="text-sm">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

@@ -35,7 +35,6 @@ export function NotificationHistory() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const hasFetchedNotifications = useRef(false);
   const hasFetchedRoles = useRef(false);
@@ -81,7 +80,6 @@ export function NotificationHistory() {
         setNotifications(transformedNotifications);
         setCurrentPage(response.data.pagination.page);
         setTotalPages(response.data.pagination.pages);
-        setTotalItems(response.data.pagination.total);
       }
     } catch (error) {
       const errorMessage = handleApiError(
@@ -204,35 +202,15 @@ export function NotificationHistory() {
           <DataTable
             columns={getNotificationColumns(handleView)}
             data={filteredData}
+            paginationState={{
+              mode: "server",
+              currentPage: currentPage,
+              totalPages: totalPages,
+              hasNextPage: currentPage < totalPages,
+              hasPrevPage: currentPage > 1,
+              onPageChange: handlePageChange,
+            }}
           />
-
-          {/* Simple pagination display */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-2">
-              <div className="text-sm text-muted-foreground">
-                Showing {filteredData.length} of {totalItems} notifications
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  Previous
-                </button>
-                <span className="text-sm">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
         </>
       )}
 

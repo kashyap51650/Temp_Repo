@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { toast } from "@/components/atoms/Sonner/toast";
 
@@ -10,10 +10,9 @@ import {
   type UploadedExperimentDataItem,
   type UploadedExperimentDataResponse,
 } from "../lib/api";
-import { REACT_QUERY_CONFIG } from "../lib/constants";
+import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseUploadedExperimentDataProps {
-  filters?: UploadedExperimentDataFilters;
   enabled?: boolean;
 }
 
@@ -22,23 +21,16 @@ interface UseUploadedExperimentDataResult {
   pagination: UploadedExperimentDataResponse["pagination"] | null;
   loading: boolean;
   error: string | null;
-  loadData: (filters?: UploadedExperimentDataFilters) => void;
   refetch: () => void;
-  clearData: () => void;
+  setFilters: (filters: UploadedExperimentDataFilters) => void;
 }
 
 export function useUploadedExperimentData(
   props?: UseUploadedExperimentDataProps
 ): UseUploadedExperimentDataResult {
-  const { filters, enabled = true } = props || {};
-  const [currentFilters, setCurrentFilters] = useState<
-    UploadedExperimentDataFilters | undefined
-  >(filters);
-
-  const activeFilters = useMemo(
-    () => filters || currentFilters,
-    [filters, currentFilters]
-  );
+  const [filters, setFilters] = useState<UploadedExperimentDataFilters>({
+    size: DEFAULT_PAGE_SIZE,
+  });
 
   const {
     data: queryData,
@@ -46,11 +38,11 @@ export function useUploadedExperimentData(
     error,
     refetch,
   } = useQuery({
-    queryKey: ["uploaded-experiment-data", activeFilters],
+    queryKey: ["uploaded-experiment-data", filters],
     queryFn: async () => {
       try {
         const response =
-          await uploadedExperimentDataApi.getMyExperimentData(activeFilters);
+          await uploadedExperimentDataApi.getMyExperimentData(filters);
         return response;
       } catch (err) {
         const errorMessage = handleApiError(
@@ -64,7 +56,7 @@ export function useUploadedExperimentData(
         throw err;
       }
     },
-    enabled,
+    enabled: props?.enabled ?? true,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.SHORT, // 2 minutes
     retry: 1,
   });
@@ -72,12 +64,12 @@ export function useUploadedExperimentData(
   const data = queryData?.items || [];
   const pagination = queryData?.pagination || null;
 
-  const loadData = (newFilters?: UploadedExperimentDataFilters) => {
-    setCurrentFilters(newFilters);
-  };
-
-  const clearData = () => {
-    setCurrentFilters(undefined);
+  const handleSetFilters = (newFilters: UploadedExperimentDataFilters) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+      page: newFilters.page ?? 1, // Reset to first page when filters change
+    }));
   };
 
   return {
@@ -85,8 +77,7 @@ export function useUploadedExperimentData(
     pagination,
     loading,
     error: error?.message || null,
-    loadData,
     refetch,
-    clearData,
+    setFilters: handleSetFilters,
   };
 }

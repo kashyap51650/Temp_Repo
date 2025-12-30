@@ -679,7 +679,11 @@ export const masterDataApi = {
   },
 
   getMasterData: async (
-    slug: string
+    slug: string,
+    filters: {
+      page: number;
+      size: number;
+    }
   ): Promise<{
     success: boolean;
     message: string;
@@ -713,7 +717,7 @@ export const masterDataApi = {
     };
   }> => {
     const response = (await apiClient.get(
-      API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug)
+      `${API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug)}?page=${filters.page}&size=${filters.size}`
     )) as {
       success: boolean;
       message: string;
