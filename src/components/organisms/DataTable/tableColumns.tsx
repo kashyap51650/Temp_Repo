@@ -888,7 +888,10 @@ export function getValidationColumns(
         const isCalliperingSsheet = rowData.dataType
           .toLowerCase()
           .includes("callipering");
-        const isRandomizationReady = rowData.randomizationStatus === "ready";
+        const isRandomizationDisabled =
+          (rowData?.treatmentDate &&
+            new Date(rowData.treatmentDate) >= new Date()) ||
+          rowData.experiment.randomization_status === "completed";
 
         return (
           <div className="flex gap-2">
@@ -904,9 +907,13 @@ export function getValidationColumns(
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!isRandomizationReady}
+                disabled={isRandomizationDisabled}
                 onClick={() => onRandomize?.(rowData)}
-                title={!isRandomizationReady ? "Randomization not ready" : ""}
+                title={
+                  isRandomizationDisabled
+                    ? "Randomization not allowed for this condition"
+                    : ""
+                }
               >
                 <Shuffle className="size-4" />
                 Randomize
