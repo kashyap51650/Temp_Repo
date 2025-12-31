@@ -825,8 +825,8 @@ export function getValidationColumns(
 
   if (hasCalliperingsheet) {
     columns.push({
-      accessorKey: "randomisationDate",
-      header: () => <span>Randomisation Date</span>,
+      accessorKey: "treatmentDate",
+      header: () => <span>Treatment Date</span>,
       cell: ({ row }) => {
         const isCalliperingsheet = row.original.dataType
           .toLowerCase()
@@ -835,10 +835,10 @@ export function getValidationColumns(
         if (isCalliperingsheet) {
           return (
             <RandomizeDateCell
-              value={row.original.randomisationDate}
+              value={row.original.treatmentDate}
               experimentDataId={row.original.id}
               onChange={(date) => {
-                row.original.randomisationDate = date;
+                row.original.treatmentDate = date;
               }}
             />
           );
