@@ -36,7 +36,12 @@ export function EditAssignmentModal({
 }: EditAssignmentModalProps): ReactElement | null {
   const [selectedRole, setSelectedRole] = useState("");
 
-  const assignUserRoleMutation = useAssignUserRole();
+  const {
+    mutate: assignUserRoleMutate,
+    reset: assignUserRoleMutateReset,
+    isPending: isAssignUserRolePending,
+    error: assignUserRoleError,
+  } = useAssignUserRole();
 
   const primaryRole = useMemo(() => {
     if (!userAssignment?.roles) return null;
@@ -87,7 +92,7 @@ export function EditAssignmentModal({
       throw new Error("Invalid role selected");
     }
 
-    assignUserRoleMutation.mutate(
+    assignUserRoleMutate(
       {
         role_id: roleId,
         user_id: userAssignment.user.id,
@@ -109,15 +114,15 @@ export function EditAssignmentModal({
     if (assignment && primaryRole) {
       setSelectedRole(primaryRole.name);
     }
-    assignUserRoleMutation.reset();
+    assignUserRoleMutateReset();
     onOpenChange(false);
   };
 
   if (!assignment || !userAssignment) return null;
 
-  const isLoading = assignUserRoleMutation.isPending;
-  const error = assignUserRoleMutation.error
-    ? handleApiError(assignUserRoleMutation.error, "Failed to update user role")
+  const isLoading = isAssignUserRolePending;
+  const error = assignUserRoleError
+    ? handleApiError(assignUserRoleError, "Failed to update user role")
     : null;
 
   return (
