@@ -303,6 +303,14 @@ export default function UserManagementPage() {
         refreshingText="Refreshing users..."
         columns={columns}
         data={transformedData}
+        paginationState={{
+          mode: "server",
+          currentPage: usersData?.data?.pagination.page || 1,
+          totalPages: usersData?.data?.pagination.pages || 1,
+          hasNextPage: usersData?.data?.pagination.has_next || false,
+          hasPrevPage: usersData?.data?.pagination.has_prev || false,
+          onPageChange: (page: number) => setCurrentPage(page),
+        }}
       />
     </div>
   );

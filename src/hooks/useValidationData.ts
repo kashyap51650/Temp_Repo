@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { REACT_QUERY_CONFIG } from "@/lib/constants";
+import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
 
 import {
   experimentDataApi,
@@ -21,7 +21,7 @@ export interface UseValidationDataResult {
 export function useValidationData(): UseValidationDataResult {
   const [filters, setFilters] = useState<ExperimentDataFilters>({
     page: 1,
-    size: 25,
+    size: DEFAULT_PAGE_SIZE,
   });
 
   const { data, isLoading, error, refetch } = useQuery({

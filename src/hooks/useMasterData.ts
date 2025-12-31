@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { masterDataApi } from "@/lib/api";
-import { REACT_QUERY_CONFIG } from "@/lib/constants";
+import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface MasterDataItem {
   id: number;
@@ -12,29 +13,61 @@ export interface MasterDataItem {
   [key: string]: any;
 }
 
+export interface MasterDataFilters {
+  page?: number;
+  size?: number;
+}
+
 export interface UseMasterDataResult {
-  data: MasterDataItem[];
+  data: {
+    data: MasterDataItem[];
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+  };
   loading: boolean;
   error: string | null;
   addItem: (item: Record<string, any>) => Promise<void>;
   updateItem: (id: number, item: Record<string, any>) => Promise<void>;
   deleteItem: (id: number) => Promise<void>;
   refetch: () => void;
+  setFilters: (filters: MasterDataFilters) => void;
+  filters: MasterDataFilters;
 }
 
 export function useMasterData(slug: string | null): UseMasterDataResult {
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useState<MasterDataFilters>({
+    page: 1,
+    size: DEFAULT_PAGE_SIZE,
+  });
 
   const {
-    data = [],
+    data = { data: [], page: 0, size: 0, total: 0, pages: 0 },
     isLoading: loading,
     error,
     refetch,
-  } = useQuery<MasterDataItem[]>({
-    queryKey: ["master-data", slug],
+  } = useQuery<{
+    data: MasterDataItem[];
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+  }>({
+    queryKey: ["master-data", slug, filters],
     queryFn: async () => {
-      const response = await masterDataApi.getMasterData(slug!);
-      return response.data.items;
+      const response = await masterDataApi.getMasterData(slug!, {
+        page: filters.page ?? 1,
+        size: filters.size ?? DEFAULT_PAGE_SIZE,
+      });
+      return {
+        data: response.data.items,
+        page: response?.data?.page ?? 0,
+        size: response?.data?.size ?? 0,
+        total: response?.data?.total ?? 0,
+        pages: response?.data?.pages ?? 0,
+      };
     },
     enabled: !!slug,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
@@ -89,6 +122,13 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
     await deleteMutation.mutateAsync({ slug, id });
   };
 
+  const handleSetFilters = (newFilters: MasterDataFilters) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...newFilters,
+    }));
+  };
+
   return {
     data,
     loading:
@@ -106,5 +146,7 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
     updateItem,
     deleteItem,
     refetch,
+    setFilters: handleSetFilters,
+    filters,
   };
 }

@@ -47,15 +47,29 @@ function MasterDataComponent() {
     error: sourcesError,
   } = useMasterDataSources();
 
-  const { data, loading, addItem, updateItem, deleteItem } = useMasterData(
-    selectedSource?.slug || null
-  );
+  const {
+    data,
+    loading,
+    addItem,
+    updateItem,
+    deleteItem,
+    filters,
+    setFilters,
+  } = useMasterData(selectedSource?.slug || null);
 
   const handleSourceChange = (value: string) => {
     const source = (masterDataSources as MasterDataSource[]).find(
       (s: MasterDataSource) => s.slug === value
     );
     setSelectedSource(source || null);
+    setFilters({ page: 1, size: 10 });
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters({
+      ...filters,
+      page,
+    });
   };
 
   const handleAddNew = () => {
@@ -165,7 +179,7 @@ function MasterDataComponent() {
     );
   }
 
-  const tableData = transformDataForTable(data);
+  const tableData = transformDataForTable(data?.data || []);
 
   return (
     <div className="px-6 py-6 space-y-6">
@@ -221,7 +235,7 @@ function MasterDataComponent() {
               <div className="flex items-center justify-center py-8">
                 <div className="text-sm text-muted-foreground">Loading...</div>
               </div>
-            ) : data.length === 0 ? (
+            ) : data?.data?.length === 0 ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-sm text-muted-foreground">
                   No records found.
@@ -235,6 +249,14 @@ function MasterDataComponent() {
                   handleDelete
                 )}
                 data={tableData}
+                paginationState={{
+                  mode: "server",
+                  currentPage: data?.page ?? 1,
+                  totalPages: data?.pages ?? 1,
+                  hasNextPage: data?.page < data?.pages,
+                  hasPrevPage: data?.page > 1,
+                  onPageChange: handlePageChange,
+                }}
               />
             )}
           </div>
@@ -249,7 +271,7 @@ function MasterDataComponent() {
           masterDataSource={selectedSource}
           initialData={selectedItem}
           mode={isAddModalOpen ? "add" : "edit"}
-          sampleData={data}
+          sampleData={data?.data}
         />
       )}
 
