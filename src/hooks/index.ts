@@ -7,6 +7,7 @@ export { default as useBulkUpdateCalliperMeasurements } from "./useBulkUpdateCal
 export * from "./useCreateExperiment";
 export * from "./useDataTypes";
 export * from "./useDebounce";
+export * from "./useDownloadSheet";
 export * from "./useExperimentData";
 export * from "./useExperimentDataById";
 export * from "./useExperimentDataImport";
@@ -20,7 +21,6 @@ export * from "./useModal";
 export * from "./useProfile";
 export * from "./useProjects";
 export { default as useRejectExperimentData } from "./useRejectExperimentData";
-export * from "./useSampleFileDownload";
 export * from "./useStudyTypes";
 export type { Theme } from "./useTheme";
 export * from "./useTheme";

@@ -11,12 +11,7 @@ import {
   strainOptions,
   studyTypeOptions,
 } from "@/data/experiments";
-import {
-  useDataTypes,
-  useProjects,
-  useSampleFileDownload,
-  useStudyTypes,
-} from "@/hooks";
+import { useDataTypes, useProjects, useStudyTypes } from "@/hooks";
 import type { ExperimentDropdownItem, Project } from "@/lib/api";
 
 import { Card } from "../atoms";
@@ -265,9 +260,6 @@ export default function DataUploadCommon() {
     enabled: isDataTypesEnabled,
   });
 
-  const { downloadSampleFile, loading: sampleFileLoading } =
-    useSampleFileDownload();
-
   const dynamicStudyTypeOptions = useMemo(() => {
     return apiStudyTypes.length > 0
       ? apiStudyTypes.map((studyType) => {
@@ -307,7 +299,6 @@ export default function DataUploadCommon() {
     projectsLoading,
     studyTypesLoading,
     dataTypesLoading,
-    sampleFileLoading,
   };
 
   const errorProps = {
@@ -322,7 +313,6 @@ export default function DataUploadCommon() {
     loadStudyTypes,
     clearStudyTypes,
     clearDataTypes,
-    downloadSampleFile,
   };
 
   return (
