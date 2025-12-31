@@ -102,6 +102,10 @@ export const API_CONFIG = {
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
         `api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
     },
+    EXCEL_EXPORT: {
+      EXPORT_CALIPER_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/caliper-sheet/export-caliper-sheet`,
+      EXPORT_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/weight-sheet/export-weight-sheet`,
+    },
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
     },
@@ -1474,6 +1478,32 @@ export const necropsyApi = {
       {
         experiment_id: payload.experimentId,
         group_ids: payload.groupIds,
+      },
+      {
+        responseType: "blob",
+      }
+    );
+  },
+};
+
+export const exportSheetApi = {
+  caliperSheet: async (payload: { experimentId: number }): Promise<Blob> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.EXCEL_EXPORT.EXPORT_CALIPER_SHEET,
+      {
+        experiment_id: payload.experimentId,
+      },
+      {
+        responseType: "blob",
+      }
+    );
+  },
+
+  weightSheet: async (payload: { experimentId: number }): Promise<Blob> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.EXCEL_EXPORT.EXPORT_WEIGHT_SHEET,
+      {
+        experiment_id: payload.experimentId,
       },
       {
         responseType: "blob",

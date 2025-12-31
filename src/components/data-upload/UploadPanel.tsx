@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 
-import { useExperimentDataImport } from "../../hooks";
+import { useDownloadSheet, useExperimentDataImport } from "../../hooks";
 import {
   type DataType,
   type ExperimentDropdownItem,
@@ -69,7 +69,6 @@ interface LoadingProps {
   projectsLoading: boolean;
   studyTypesLoading: boolean;
   dataTypesLoading: boolean;
-  sampleFileLoading: boolean;
 }
 
 interface ErrorProps {
@@ -84,10 +83,6 @@ interface ActionProps {
   loadStudyTypes: () => void;
   clearStudyTypes: () => void;
   clearDataTypes: () => void;
-  downloadSampleFile: (params: {
-    study_type_id: number;
-    data_type_id: number;
-  }) => Promise<void>;
 }
 
 interface UploadPanelProps {
@@ -128,12 +123,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       strainOptions,
       apiStudyTypes,
     },
-    loadingProps: {
-      projectsLoading,
-      studyTypesLoading,
-      dataTypesLoading,
-      sampleFileLoading,
-    },
+    loadingProps: { projectsLoading, studyTypesLoading, dataTypesLoading },
     errorProps: { studyTypesError, dataTypesError },
     actionProps: {
       onProjectChange,
@@ -142,7 +132,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       loadStudyTypes,
       clearStudyTypes,
       clearDataTypes,
-      downloadSampleFile,
     },
   } = props;
 
@@ -161,7 +150,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const isNecropsyData =
     formData.specialisation === "Preclinical" &&
     formData.studyType === "Biodistribution" &&
-    formData.dataType === "Necropsy Sheet";
+    formData.dataType === "Organ Weight Sheet";
 
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
 
@@ -190,34 +179,21 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     },
   });
 
-  const handleSampleFileDownload = async (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const { downloadSheet, isDownloading } = useDownloadSheet();
 
-    const studyTypeId = findStudyTypeId(apiStudyTypes, formData.studyType);
-
-    const dataTypeId = apiDataTypes?.find(
-      (dt: DataType) => dt.data_type_name === formData.dataType
-    )?.id;
-
-    if (studyTypeId && dataTypeId) {
-      await downloadSampleFile({
-        study_type_id: studyTypeId,
-        data_type_id: dataTypeId,
-      });
-    }
-  };
-
-  const downloadButtonClickHandler = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const downloadButtonClickHandler = () => {
     if (isNecropsyData) {
       setIsOpenDownloadOrganSheetModal(true);
       return;
     }
-    handleSampleFileDownload(event);
+
+    if (
+      formData.experiment?.id &&
+      (formData.dataType === "Weight Sheet" ||
+        formData.dataType === "Callipering Sheet")
+    ) {
+      downloadSheet(formData.experiment.id, formData.dataType);
+    }
   };
 
   const handleDataUpload = async () => {
@@ -271,7 +247,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return "Download Organ Sheet";
     }
 
-    if (sampleFileLoading) {
+    if (isDownloading) {
       return "Downloading...";
     }
     return "Download Sample File";
@@ -352,7 +328,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           size="lg"
           variant="outline"
           onClick={downloadButtonClickHandler}
-          disabled={!canShowDownloadButton || sampleFileLoading}
+          disabled={!canShowDownloadButton || isDownloading}
           type="button"
         >
           <Download className="mr-2 h-4 w-4" />
