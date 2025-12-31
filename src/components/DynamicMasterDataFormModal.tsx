@@ -6,6 +6,8 @@ import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
 import { Label } from "@/components/atoms/Label/Label";
 import { Textarea } from "@/components/atoms/Textarea/Textarea";
+import { CustomSelect } from "@/components/data-upload/CustomSelect";
+import { useExperimentData } from "@/hooks/useExperimentData";
 import type { MasterDataItem } from "@/hooks/useMasterData";
 import type { MasterDataSource } from "@/hooks/useMasterDataSources";
 import { formatFieldLabel } from "@/lib/utils";
@@ -32,6 +34,15 @@ export function DynamicMasterDataFormModal({
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Load mouse strains for cell lines
+  const {
+    mouseStrains,
+    loading: experimentDataLoading,
+    loadExperimentData,
+  } = useExperimentData();
+
+  const isCellLines = masterDataSource.slug === "cell-lines";
 
   const generateFormFields = () => {
     if (sampleData.length > 0 || initialData) {
@@ -130,6 +141,13 @@ export function DynamicMasterDataFormModal({
           required: true,
           placeholder: "Enter vendor name (e.g., ATCC)",
         },
+        {
+          key: "mouse_strain",
+          label: "Mouse Strain",
+          type: "text",
+          required: true,
+          placeholder: "Select mouse strain",
+        },
       ],
       analytes: [
         {
@@ -212,9 +230,22 @@ export function DynamicMasterDataFormModal({
 
   useEffect(() => {
     if (isOpen) {
+      // Load mouse strains if it's cell lines master data
+      if (isCellLines && mouseStrains.length === 0) {
+        loadExperimentData();
+      }
+
       if (mode === "edit" && initialData) {
         const editableData: Record<string, any> = {};
         formFields.forEach((field) => {
+          if (field.key === "mouse_strain" && isCellLines) {
+            editableData[field.key] =
+              mouseStrains.find(
+                (strain) => strain.mouse_strain_name === initialData[field.key]
+              )?.id || "";
+            return;
+          }
+
           editableData[field.key] = initialData[field.key] || "";
         });
         setFormData(editableData);
@@ -227,7 +258,15 @@ export function DynamicMasterDataFormModal({
       }
       setErrors({});
     }
-  }, [isOpen, mode, initialData, formFields.length]);
+  }, [
+    isOpen,
+    mode,
+    initialData,
+    formFields.length,
+    isCellLines,
+    mouseStrains.length,
+    loadExperimentData,
+  ]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -274,6 +313,11 @@ export function DynamicMasterDataFormModal({
           processedData[field.key] = Number(processedData[field.key]);
         }
       });
+      // Convert mouse_strain_id to number for cell lines
+      if (isCellLines && processedData.mouse_strain) {
+        processedData.mouse_strain_id = Number(processedData.mouse_strain);
+        delete processedData.mouse_strain;
+      }
 
       await onSave(processedData);
       onClose();
@@ -321,6 +365,22 @@ export function DynamicMasterDataFormModal({
                 placeholder={field.placeholder}
                 rows={3}
                 className={errors[field.key] ? "border-destructive" : ""}
+              />
+            ) : isCellLines && field.key === "mouse_strain" ? (
+              <CustomSelect
+                options={mouseStrains.map((strain) => ({
+                  value: String(strain.id),
+                  label: strain.mouse_strain_name,
+                }))}
+                placeholder={field.placeholder}
+                value={String(formData[field.key] ?? "")}
+                onValueChange={(value) =>
+                  handleInputChange(field.key, value as string)
+                }
+                disabled={experimentDataLoading.mouseStrains}
+                className={
+                  errors[field.key] ? "border-destructive w-full" : "w-full"
+                }
               />
             ) : (
               <Input

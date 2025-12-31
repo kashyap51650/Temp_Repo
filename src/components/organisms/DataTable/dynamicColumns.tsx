@@ -46,7 +46,7 @@ export const createDynamicMasterDataColumns = (
     enableSorting: true,
     cell: ({ row }) => {
       const value = row.getValue(key);
-      const strValue = String(value);
+      const strValue = value ? String(value) : "-";
       const extraClass =
         formatFieldLabel(key) === "Half Life Hours" ? "pl-5" : "";
       const isTruncated = strValue.length > 24;
