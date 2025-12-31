@@ -120,7 +120,6 @@ export function EditAssignmentModal({
 
   if (!assignment || !userAssignment) return null;
 
-  const isLoading = isAssignUserRolePending;
   const error = assignUserRoleError
     ? handleApiError(assignUserRoleError, "Failed to update user role")
     : null;
@@ -202,10 +201,14 @@ export function EditAssignmentModal({
         {error && <div className="text-sm text-red-500">{error}</div>}
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isAssignUserRolePending}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
+          <Button onClick={handleSave} disabled={isAssignUserRolePending}>
             Save Changes
           </Button>
         </div>
