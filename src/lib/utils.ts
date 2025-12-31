@@ -25,13 +25,12 @@ export function transformExperimentDataToValidationRows(
     studyType: item.study_type.study_type_name,
     uploadedDate: new Date(item.created_at).toLocaleDateString(),
     status: item.status as "pending" | "approved" | "rejected",
-    randomisationDate:
+    projectName: item.project.project_name,
+    measurementDate: item.measurement_date,
+    treatmentDate:
       item.treatment_date && isValidDate(item.treatment_date)
         ? new Date(item.treatment_date).toISOString()
         : undefined,
-    projectName: item.project.project_name,
-    measurementDate: item.measurement_date,
-    treatmentDate: item.treatment_date,
     randomizationStatus: item.randomization_status,
     experiment: {
       id: item.experiment.id,
