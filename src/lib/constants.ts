@@ -1,28 +1,3 @@
-// Demo login credentials for development and testing
-export const DEMO_CREDENTIALS = {
-  ADMIN: {
-    email: "admin@oranomed.com",
-    password: "admin@123",
-    role: "Admin",
-  },
-  DATA_UPLOADER: {
-    email: "jaiman@simformsolutions.com",
-    password: "Admin@123",
-    role: "Data Uploader",
-  },
-  SCIENTIST: {
-    email: "jay.sheth@simformsolutions.com",
-    password: "Admin@123",
-    role: "Scientist",
-  },
-} as const;
-
-export const DEMO_ACCOUNTS = [
-  DEMO_CREDENTIALS.ADMIN,
-  DEMO_CREDENTIALS.DATA_UPLOADER,
-  DEMO_CREDENTIALS.SCIENTIST,
-] as const;
-
 // Specialization types
 export const SPECIALIZATION = {
   HOTLAB: "hotlab",

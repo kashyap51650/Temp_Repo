@@ -48,6 +48,7 @@ export function SearchableSelect({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const ALLOW_BUBBLE = ["ArrowUp", "ArrowDown", "Enter", "Tab"];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -83,10 +84,13 @@ export function SearchableSelect({
   );
 
   useEffect(() => {
-    if (isOpen && shouldShowSearch && inputRef.current) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
+    if (isOpen && shouldShowSearch) {
+      const interval = setInterval(() => {
+        if (inputRef.current && document.activeElement !== inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+      return () => clearInterval(interval);
     }
   }, [isOpen, shouldShowSearch]);
 
@@ -119,6 +123,11 @@ export function SearchableSelect({
                 className="flex h-8 w-full border-0 ml-4 shadow-none rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-0 focus-visible:ring-0"
                 onKeyDown={(e) => {
                   e.stopPropagation();
+                }}
+                onKeyDownCapture={(e) => {
+                  if (!ALLOW_BUBBLE.includes(e.key)) {
+                    e.stopPropagation();
+                  }
                 }}
               />
             </div>
