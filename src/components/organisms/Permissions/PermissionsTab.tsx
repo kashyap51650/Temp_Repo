@@ -14,6 +14,7 @@ import {
 } from "@/components";
 import type { RoleRow } from "@/components/organisms/DataTable/tableData";
 import { roleApi } from "@/lib/api";
+import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { ApiModule, ApiPermission } from "@/types/auth";
 
 export interface Permission {
@@ -34,7 +35,6 @@ export interface PermissionGroup {
 interface PermissionsTabProps {
   selectedRole?: string;
   onRoleChange: (role: string) => void;
-  onSave: (permissions: PermissionGroup[]) => void;
   onCancel: () => void;
   roles: RoleRow[];
 }
@@ -42,7 +42,6 @@ interface PermissionsTabProps {
 export function PermissionsTab({
   selectedRole = "1",
   onRoleChange,
-  onSave,
   onCancel,
   roles,
 }: PermissionsTabProps) {
@@ -54,7 +53,7 @@ export function PermissionsTab({
   const [isSaving, setIsSaving] = React.useState(false);
 
   const queryClient = useQueryClient();
-  const selectedRoleId = selectedRole || "1";
+  const selectedRoleId = selectedRole;
 
   const {
     data: permissionsResponse,
@@ -64,7 +63,7 @@ export function PermissionsTab({
     queryKey: ["permissions", selectedRoleId],
     queryFn: () => roleApi.getPermissions(selectedRoleId),
     enabled: !!selectedRoleId,
-    retry: 2,
+    retry: REACT_QUERY_CONFIG.RETRY.TWO,
   });
 
   const updatePermissionsMutation = useMutation({
@@ -76,7 +75,6 @@ export function PermissionsTab({
       queryClient.invalidateQueries({
         queryKey: ["permissions", selectedRoleId],
       });
-      onSave(permissionGroups);
     },
     onError: (error) => {
       console.error("Failed to update permissions:", error);

@@ -25,6 +25,7 @@ import { EditAssignmentModal } from "@/components/organisms/UserAssignments/Edit
 import { roleApi } from "@/lib/api";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import {
+  type RoleDataType,
   transformRoleToRow,
   transformUserAssignmentToRow,
   type UserAssignment,
@@ -99,21 +100,19 @@ export default function RBACRolesPage() {
     setEditModalOpen(true);
   };
 
-  const handleSaveRole = async (updatedRole: {
-    id: string;
-    name: string;
-    description: string;
-  }) => {
-    try {
-      await roleApi.updateRole(updatedRole.id, {
-        name: updatedRole.name,
-        description: updatedRole.description,
-      });
-      setEditModalOpen(false);
-      setSelectedRole(null);
-      refetchRoles();
-    } catch (error) {
-      console.error("Error updating role:", error);
+  const handleSaveRole = async (updatedRole: RoleDataType) => {
+    if (updatedRole.id) {
+      try {
+        await roleApi.updateRole(updatedRole.id, {
+          name: updatedRole.name,
+          description: updatedRole.description,
+        });
+        setEditModalOpen(false);
+        setSelectedRole(null);
+        refetchRoles();
+      } catch (error) {
+        console.error("Error updating role:", error);
+      }
     }
   };
 
@@ -134,14 +133,6 @@ export default function RBACRolesPage() {
     // In a real implementation, you would call an API to update the assignment
     // and then refetch the data
     refetchAssignments();
-  };
-
-  const handlePermissionsSave = (permissions: any) => {
-    console.log(
-      "Saving permissions for role:",
-      permissionsSelectedRole,
-      permissions
-    );
   };
 
   const handlePermissionsCancel = () => {
@@ -251,7 +242,6 @@ export default function RBACRolesPage() {
           <PermissionsTab
             selectedRole={permissionsSelectedRole}
             onRoleChange={setPermissionsSelectedRole}
-            onSave={handlePermissionsSave}
             onCancel={handlePermissionsCancel}
             roles={roles}
           />
