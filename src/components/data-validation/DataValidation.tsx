@@ -39,7 +39,14 @@ export default function DataValidation() {
   const weightSheetViewModal = useModal();
   const organViewModal = useModal();
 
-  const { data, isLoading, error, setFilters } = useValidationData();
+  const { data, isLoading, error, setFilters, filters } = useValidationData();
+
+  const handlePageChange = (page: number) => {
+    setFilters({
+      ...filters,
+      page,
+    });
+  };
 
   const normalizeStatus = (value: string) =>
     value === "All Status" ? undefined : value.toLowerCase();
@@ -275,7 +282,18 @@ export default function DataValidation() {
               Loading experiment data...
             </div>
           ) : tableData.length > 0 ? (
-            <DataTable columns={columns} data={tableData} />
+            <DataTable
+              columns={columns}
+              data={tableData}
+              paginationState={{
+                mode: "server",
+                currentPage: data?.pagination.page ?? 1,
+                totalPages: data?.pagination.pages ?? 1,
+                hasNextPage: data?.pagination.has_next ?? false,
+                hasPrevPage: data?.pagination.has_prev ?? false,
+                onPageChange: handlePageChange,
+              }}
+            />
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               No data available for validation.

@@ -132,7 +132,6 @@ export function CalliperingSheetView({
       {viewData.mice && viewData.mice.length > 0 && (
         <div className="bg-white mt-4">
           <DataTable
-            pagination={false}
             columns={getReadOnlyCalliperingColumns()}
             data={viewData.mice}
           />

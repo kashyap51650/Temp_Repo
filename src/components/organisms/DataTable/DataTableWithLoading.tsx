@@ -1,5 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
+import type { PaginationConfig } from "@/types/pagination";
+
 import { DataTable } from "./DataTable";
 
 interface DataTableWithLoadingProps<T extends { id: string }> {
@@ -11,6 +13,7 @@ interface DataTableWithLoadingProps<T extends { id: string }> {
   data: T[];
   error?: Error | null;
   errorText?: string;
+  paginationState?: PaginationConfig;
 }
 
 export function DataTableWithLoading<T extends { id: string }>({
@@ -22,6 +25,7 @@ export function DataTableWithLoading<T extends { id: string }>({
   data,
   error,
   errorText = "Error loading data. Please try again later.",
+  paginationState,
 }: DataTableWithLoadingProps<T>) {
   if (isLoading) {
     return (
@@ -48,7 +52,11 @@ export function DataTableWithLoading<T extends { id: string }>({
           </div>
         </div>
       )}
-      <DataTable columns={columns} data={data} />
+      <DataTable
+        columns={columns}
+        data={data}
+        paginationState={paginationState}
+      />
     </div>
   );
 }
