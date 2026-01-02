@@ -249,3 +249,9 @@ export const transformUserAssignmentToRow = (
     permissions: displayPermissions,
   };
 };
+
+export interface RoleDataType {
+  id?: string;
+  name: string;
+  description: string;
+}

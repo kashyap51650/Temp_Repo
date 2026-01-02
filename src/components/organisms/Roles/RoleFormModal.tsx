@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/organisms/Form/Form";
+import type { RoleDataType } from "@/types/auth";
 
 interface Role {
   id: string;
@@ -25,7 +26,7 @@ interface RoleFormModalProps {
   onOpenChange: (open: boolean) => void;
   mode: "create" | "edit";
   role?: Role | null;
-  onSubmit: (roleData: any) => void; // More flexible type to accommodate both use cases
+  onSubmit: (roleData: RoleDataType) => void; // More flexible type to accommodate both use cases
 }
 
 const schema = z.object({
@@ -73,12 +74,12 @@ export function RoleFormModal({
     };
 
     if (isEdit && role) {
-      await onSubmit({
+      onSubmit({
         id: role.id,
         ...trimmedData,
       });
     } else {
-      await onSubmit(trimmedData);
+      onSubmit(trimmedData);
     }
 
     form.reset();

@@ -1,12 +1,14 @@
 import type { ReactElement } from "react";
 
+import type { RoleDataType } from "@/types/auth";
+
 import { RoleFormModal } from "./RoleFormModal";
 
-export interface EditRoleModalProps {
+interface EditRoleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   role: { id: string; name: string; description: string } | null;
-  onSave: (roleData: { id: string; name: string; description: string }) => void;
+  onSave: (roleData: RoleDataType) => void;
 }
 
 export function EditRoleModal({
