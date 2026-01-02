@@ -271,31 +271,22 @@ export function CreateExperimentModal({
         return;
       }
 
-      // Use biod-experiments API for Biodistribution study type
+      const basePayload = {
+        cell_line_ids: selectedCellLineIds,
+        experiment_name: formState.experimentName.trim(),
+        isotope_id: selectedIsotopeId,
+        project_id: projectId,
+        specialization: specialization.toUpperCase(),
+        study_type_id: studyTypeId,
+      };
+
       if (studyType === "Biodistribution") {
-        const biodPayload = {
-          cell_line_ids: selectedCellLineIds,
-          experiment_name: formState.experimentName.trim(),
-          isotope_id: selectedIsotopeId,
-          project_id: projectId,
-          specialization: specialization.toUpperCase(),
-          study_type_id: studyTypeId,
-        };
-
-        await createBiodExperiment(biodPayload);
+        await createBiodExperiment(basePayload);
       } else {
-        // Use regular experiments API for Toxicity and other types
-        const payload = {
-          cell_line_ids: selectedCellLineIds,
-          experiment_name: formState.experimentName.trim(),
-          isotope_id: selectedIsotopeId,
+        await createExperiment({
+          ...basePayload,
           mouse_strain_ids: selectedMouseStrainIds,
-          project_id: projectId,
-          specialization: specialization.toUpperCase(),
-          study_type_id: studyTypeId,
-        };
-
-        await createExperiment(payload);
+        });
       }
     } else {
       try {
