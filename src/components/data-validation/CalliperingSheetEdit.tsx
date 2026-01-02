@@ -8,6 +8,7 @@ import type {
 } from "@/components/organisms/DataTable/tableData";
 import useBulkUpdateCalliperMeasurements from "@/hooks/useBulkUpdateCalliperMeasurements";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
+import { calculateTumorVolume } from "@/lib/utils";
 
 import { Button, Input, Label } from "../atoms";
 
@@ -119,8 +120,7 @@ export function CalliperingSheetEdit({
                   ? Number.parseFloat(value)
                   : updatedMouse.width_mm;
 
-              // Formula: volume_mm3 = 0.5 * length_mm * width_mm * width_mm
-              updatedMouse.volume_mm3 = 0.5 * length * width * width;
+              updatedMouse.volume_mm3 = calculateTumorVolume(length, width);
             }
 
             return updatedMouse;
@@ -164,7 +164,7 @@ export function CalliperingSheetEdit({
             const length = measurement.length_mm ?? 0;
             const width = measurement.width_mm ?? 0;
             const volume =
-              measurement.volume_mm3 ?? 0.5 * length * width * width;
+              measurement.volume_mm3 ?? calculateTumorVolume(length, width);
 
             return {
               id: measurement.mouse?.mouse_delivery_id ?? "",

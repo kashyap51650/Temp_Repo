@@ -68,3 +68,10 @@ export const downloadBlobFile = (blob: Blob, fileName: string) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 };
+
+export const calculateTumorVolume = (
+  length_mm: number,
+  width_mm: number
+): number => {
+  return 0.5 * length_mm * width_mm * width_mm;
+};
