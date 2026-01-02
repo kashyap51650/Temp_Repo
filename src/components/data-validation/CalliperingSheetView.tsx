@@ -2,16 +2,13 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
-import type { CalliperingData } from "@/components/organisms/DataTable/tableData";
+import type {
+  CalliperingData,
+  CalliperingMouseRow,
+} from "@/components/organisms/DataTable/tableData";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
-
-interface CalliperingMouseRow {
-  id: string;
-  length_mm: number;
-  width_mm: number;
-}
 
 const getReadOnlyCalliperingColumns = (): ColumnDef<CalliperingMouseRow>[] => [
   {
@@ -23,13 +20,18 @@ const getReadOnlyCalliperingColumns = (): ColumnDef<CalliperingMouseRow>[] => [
   },
   {
     accessorKey: "length_mm",
-    header: () => <span className="block lg:w-96">Length (mm)</span>,
+    header: () => <span className="block lg:w-66">Length (mm)</span>,
     cell: ({ row }) => <span>{row.original.length_mm}</span>,
   },
   {
     accessorKey: "width_mm",
-    header: () => <span className="block lg:w-96">Width (mm)</span>,
+    header: () => <span className="block lg:w-66">Width (mm)</span>,
     cell: ({ row }) => <span>{row.original.width_mm}</span>,
+  },
+  {
+    accessorKey: "volume_mm3",
+    header: () => <span className="block lg:w-66">Volume (mm³)</span>,
+    cell: ({ row }) => <span>{row.original.volume_mm3}</span>,
   },
 ];
 
@@ -67,6 +69,7 @@ export function CalliperingSheetView({
             id: measurement.mouse?.mouse_delivery_id ?? "",
             length_mm: measurement.length_mm ?? 0,
             width_mm: measurement.width_mm ?? 0,
+            volume_mm3: measurement.volume_mm3 ?? 0,
           })) ?? [],
       };
       setViewData(transformedData);
