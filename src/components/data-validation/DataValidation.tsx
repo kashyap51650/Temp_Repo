@@ -4,17 +4,9 @@ import { useCallback, useMemo, useState } from "react";
 import { RANDOMIZATION_PREVIEW_TYPES, statusOptions } from "@/lib/constants";
 
 import { useModal, useValidationData } from "../../hooks";
-import type { ExperimentDataItem } from "../../lib/api";
 import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
-import { Label } from "../atoms/Label/Label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../atoms/Select/Select";
+import { DataTypeSelect, StatusSelect, StudyTypeSelect } from "../molecules";
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
@@ -28,10 +20,8 @@ type FilterType = "status" | "data_type" | "study_type";
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
-  const [studyTypeFilter, setStudyTypeFilter] =
-    useState<string>("All Study Types");
-  const [dataTypeFilter, setDataTypeFilter] =
-    useState<string>("All Data Types");
+  const [studyTypeFilter, setStudyTypeFilter] = useState<string>("all");
+  const [dataTypeFilter, setDataTypeFilter] = useState<string>("all");
   const [selectedExperiment, setSelectedExperiment] =
     useState<ValidationRow | null>(null);
   const dataViewModal = useModal();
@@ -52,10 +42,10 @@ export default function DataValidation() {
     value === "All Status" ? undefined : value.toLowerCase();
 
   const normalizeDataType = (value: string) =>
-    value === "All Data Types" ? undefined : value;
+    value === "all" ? undefined : value;
 
   const normalizeStudyType = (value: string) =>
-    value === "All Study Types" ? undefined : value;
+    value === "all" ? undefined : value;
 
   const handleFilterChange = (type: FilterType, value: string) => {
     const nextStatus = type === "status" ? value : statusFilter;
@@ -72,50 +62,6 @@ export default function DataValidation() {
       study_type: normalizeStudyType(nextStudyType),
     });
   };
-
-  const dataTypeOptions = useMemo(() => {
-    const baseOptions = [{ value: "All Data Types", label: "All Data Types" }];
-
-    if (data?.items) {
-      const uniqueDataTypes = Array.from(
-        new Set(
-          data.items.map(
-            (item: ExperimentDataItem) => item.data_type.data_type_name
-          )
-        )
-      ).map((dataType: string) => ({
-        value: dataType,
-        label: dataType,
-      }));
-
-      return [...baseOptions, ...uniqueDataTypes];
-    }
-
-    return baseOptions;
-  }, [data?.items]);
-
-  const studyTypeOptions = useMemo(() => {
-    const baseOptions = [
-      { value: "All Study Types", label: "All Study Types" },
-    ];
-
-    if (data?.items) {
-      const uniqueStudyTypes = Array.from(
-        new Set(
-          data.items.map(
-            (item: ExperimentDataItem) => item.study_type.study_type_name
-          )
-        )
-      ).map((studyType: string) => ({
-        value: studyType,
-        label: studyType,
-      }));
-
-      return [...baseOptions, ...uniqueStudyTypes];
-    }
-
-    return baseOptions;
-  }, [data?.items]);
 
   const tableData = useMemo(() => {
     if (!data?.items) return [];
@@ -214,65 +160,49 @@ export default function DataValidation() {
 
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-48">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Status
-            </Label>
-            <Select
+            <StatusSelect
               value={statusFilter}
               onValueChange={(value) => handleFilterChange("status", value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              options={statusOptions}
+              placeholder="All Status"
+              className="w-full"
+              label="Filter by Status"
+            />
           </div>
           <div className="w-full md:w-48">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Study Type
-            </Label>
-            <Select
+            <StudyTypeSelect
               value={studyTypeFilter}
-              onValueChange={(value) => handleFilterChange("study_type", value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Study Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {studyTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={(value) => {
+                handleFilterChange("study_type", value);
+                // Reset data type when study type changes
+                if (value !== studyTypeFilter) {
+                  setDataTypeFilter("all");
+                  setFilters({
+                    status: normalizeStatus(statusFilter),
+                    study_type: value === "all" ? undefined : value,
+                    data_type: undefined,
+                  });
+                }
+              }}
+              placeholder="All Study Types"
+              className="w-full"
+              label="Filter by Study Type"
+              showAllOption={true}
+            />
           </div>
 
           <div className="w-full md:w-52">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Data Type
-            </Label>
-            <Select
+            <DataTypeSelect
               value={dataTypeFilter}
               onValueChange={(value) => handleFilterChange("data_type", value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Data Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {dataTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              studyTypeId={
+                studyTypeFilter ? parseInt(studyTypeFilter) : undefined
+              }
+              placeholder="All Data Types"
+              className="w-full"
+              label="Filter by Data Type"
+              showAllOption={true}
+            />
           </div>
         </div>
 
