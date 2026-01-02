@@ -10,7 +10,11 @@ import {
   strainOptions,
   vehicleOptions,
 } from "@/data/experiments";
-import { useCreateExperiment, useExperimentData } from "@/hooks";
+import {
+  useCreateBiodExperiment,
+  useCreateExperiment,
+  useExperimentData,
+} from "@/hooks";
 
 import { Button, Input } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
@@ -115,6 +119,36 @@ export function CreateExperimentModal({
     },
   });
 
+  const { createBiodExperiment, isCreating: isCreatingBiod } =
+    useCreateBiodExperiment({
+      onSuccess: (data) => {
+        if (data) {
+          onCreateExperiment({
+            name: formState.experimentName.trim(),
+            isotope: formState.selectedIsotope,
+            cellLines: formState.selectedCellLines,
+          });
+
+          dispatch(
+            experimentCreated({
+              experimentId: data.id,
+              experimentName: data.experiment_name,
+            })
+          );
+
+          if (onExperimentCreated) {
+            onExperimentCreated({
+              id: data.id,
+              name: data.experiment_name,
+            });
+          }
+
+          handleReset();
+          onClose();
+        }
+      },
+    });
+
   const updateFormState = useCallback((updates: Partial<FormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -186,7 +220,8 @@ export function CreateExperimentModal({
       if (
         !formState.selectedIsotope ||
         formState.selectedCellLines.length === 0 ||
-        formState.selectedMouseStrains.length === 0
+        (studyType === "Toxicity" &&
+          formState.selectedMouseStrains.length === 0)
       ) {
         return;
       }
@@ -227,7 +262,7 @@ export function CreateExperimentModal({
       if (
         !selectedIsotopeId ||
         selectedCellLineIds.length === 0 ||
-        selectedMouseStrainIds.length === 0
+        (studyType === "Toxicity" && selectedMouseStrainIds.length === 0)
       ) {
         toast.error("Failed to create experiment", {
           description:
@@ -236,17 +271,23 @@ export function CreateExperimentModal({
         return;
       }
 
-      const payload = {
+      const basePayload = {
         cell_line_ids: selectedCellLineIds,
         experiment_name: formState.experimentName.trim(),
         isotope_id: selectedIsotopeId,
-        mouse_strain_ids: selectedMouseStrainIds,
         project_id: projectId,
         specialization: specialization.toUpperCase(),
         study_type_id: studyTypeId,
       };
 
-      await createExperiment(payload);
+      if (studyType === "Biodistribution") {
+        await createBiodExperiment(basePayload);
+      } else {
+        await createExperiment({
+          ...basePayload,
+          mouse_strain_ids: selectedMouseStrainIds,
+        });
+      }
     } else {
       try {
         await onCreateExperiment({
@@ -348,20 +389,22 @@ export function CreateExperimentModal({
                   }}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="mouse-strains">Mouse Strains</Label>
-                <CustomSelect
-                  options={dynamicMouseStrainOptions}
-                  placeholder="Select mouse strains..."
-                  multiple
-                  className="w-full"
-                  value={formState.selectedMouseStrains}
-                  onValueChange={(values: string | string[]) => {
-                    const strains = Array.isArray(values) ? values : [values];
-                    updateFormState({ selectedMouseStrains: strains });
-                  }}
-                />
-              </div>
+              {studyType === "Toxicity" && (
+                <div className="space-y-2">
+                  <Label htmlFor="mouse-strains">Mouse Strains</Label>
+                  <CustomSelect
+                    options={dynamicMouseStrainOptions}
+                    placeholder="Select mouse strains..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedMouseStrains}
+                    onValueChange={(values: string | string[]) => {
+                      const strains = Array.isArray(values) ? values : [values];
+                      updateFormState({ selectedMouseStrains: strains });
+                    }}
+                  />
+                </div>
+              )}
             </>
           )}
 
@@ -480,7 +523,7 @@ export function CreateExperimentModal({
             variant="outline"
             size={"lg"}
             onClick={handleCancel}
-            disabled={isCreating}
+            disabled={isCreating || isCreatingBiod}
           >
             Cancel
           </Button>
@@ -490,6 +533,7 @@ export function CreateExperimentModal({
             disabled={
               !formState.experimentName.trim() ||
               isCreating ||
+              isCreatingBiod ||
               ((studyType === "Biodistribution" || studyType === "Toxicity") &&
                 (!formState.selectedIsotope ||
                   formState.selectedCellLines.length === 0)) ||
@@ -500,7 +544,7 @@ export function CreateExperimentModal({
                   !formState.selectedStrain))
             }
           >
-            {isCreating ? "Saving..." : "Save"}
+            {isCreating || isCreatingBiod ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

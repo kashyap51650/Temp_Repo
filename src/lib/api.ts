@@ -75,6 +75,9 @@ export const API_CONFIG = {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/experiments/`,
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiments/dropdown`,
     },
+    BIOD_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/biod-experiments/`,
+    },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
     },
@@ -981,6 +984,55 @@ export interface CreateExperimentResponse {
   };
 }
 
+export interface CreateBiodExperimentPayload {
+  cell_line_ids: number[];
+  experiment_name: string;
+  isotope_id: number;
+  project_id: number;
+  specialization: string;
+  study_type_id: number;
+}
+
+export type BiodExperimentResponse = ApiResponse<{
+  cell_lines: Array<{
+    cell_line_name: string;
+    id: number;
+    vendor_name: string;
+  }>;
+  created_at: string;
+  created_by: number;
+  end_date: string;
+  experiment_name: string;
+  fda_tag: boolean;
+  id: number;
+  isotope: {
+    half_life_hours: number;
+    id: number;
+    isotope_name: string;
+  };
+  isotope_id: number;
+  mouse_strains: Array<{
+    mouse_strain_description: string;
+    mouse_strain_id: number;
+    mouse_strain_name: string;
+  }>;
+  project: {
+    id: number;
+    project_name: string;
+    project_status: string;
+  };
+  project_id: number;
+  protocol_number: string;
+  specialization: string;
+  start_date: string;
+  status: string;
+  study_type: {
+    id: number;
+    study_type_name: string;
+  };
+  study_type_id: number;
+}>;
+
 export interface ExperimentDropdownItem {
   id: number;
   experiment_name: string;
@@ -1180,6 +1232,15 @@ export const experimentApi = {
   ): Promise<CreateExperimentResponse> => {
     return apiClient.post<CreateExperimentResponse>(
       API_CONFIG.ENDPOINTS.EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+
+  createBiodExperiment: async (
+    payload: CreateBiodExperimentPayload
+  ): Promise<BiodExperimentResponse> => {
+    return apiClient.post<BiodExperimentResponse>(
+      API_CONFIG.ENDPOINTS.BIOD_EXPERIMENTS.CREATE,
       payload
     );
   },
