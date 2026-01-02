@@ -8,12 +8,9 @@ import type {
 } from "@/components/organisms/DataTable/tableData";
 import useBulkUpdateCalliperMeasurements from "@/hooks/useBulkUpdateCalliperMeasurements";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
+import { calculateTumorVolume } from "@/lib/utils";
 
 import { Button, Input, Label } from "../atoms";
-
-interface CalliperingMouseRowWithMeasurementId extends CalliperingMouseRow {
-  measurement_id: number;
-}
 
 interface CalliperingSheetProps {
   data?: CalliperingData;
@@ -60,6 +57,15 @@ const getEditableCalliperingColumns = (
       />
     ),
   },
+  {
+    accessorKey: "volume_mm3",
+    header: "Volume (mm³)",
+    cell: ({ row }) => (
+      <span className="text-center font-mono">
+        {row.original.volume_mm3?.toFixed(2) || "0.00"}
+      </span>
+    ),
+  },
 ];
 
 export function CalliperingSheetEdit({
@@ -69,7 +75,7 @@ export function CalliperingSheetEdit({
   experimentDataId,
 }: Readonly<CalliperingSheetProps>) {
   const [form, setForm] = useState<
-    CalliperingData & { mice: CalliperingMouseRowWithMeasurementId[] }
+    CalliperingData & { mice: CalliperingMouseRow[] }
   >({
     sex: "",
     strain: "",
@@ -96,14 +102,31 @@ export function CalliperingSheetEdit({
   const handleMouseChange = useCallback(
     (idx: number, key: keyof CalliperingMouseRow, value: string) => {
       setForm((prev) => {
-        const updatedMice = prev.mice.map((m, i) =>
-          i === idx
-            ? {
-                ...m,
-                [key]: key === "id" ? value : Number.parseFloat(value),
-              }
-            : m
-        ) as CalliperingMouseRowWithMeasurementId[];
+        const updatedMice: CalliperingMouseRow[] = prev.mice.map((m, i) => {
+          if (i === idx) {
+            const updatedMouse: CalliperingMouseRow = {
+              ...m,
+              [key]: key === "id" ? value : Number.parseFloat(value),
+            };
+
+            // Calculate volume automatically when length or width changes
+            if (key === "length_mm" || key === "width_mm") {
+              const length =
+                key === "length_mm"
+                  ? Number.parseFloat(value)
+                  : updatedMouse.length_mm;
+              const width =
+                key === "width_mm"
+                  ? Number.parseFloat(value)
+                  : updatedMouse.width_mm;
+
+              updatedMouse.volume_mm3 = calculateTumorVolume(length, width);
+            }
+
+            return updatedMouse;
+          }
+          return m;
+        });
 
         const measurementId = prev.mice[idx]?.measurement_id;
         if (measurementId) {
@@ -137,12 +160,20 @@ export function CalliperingSheetEdit({
         treatment_date: apiData?.uploaded_data.treatment_date ?? "",
         measurement_date: apiData?.uploaded_data.measurement_date ?? "",
         mice:
-          apiData?.uploaded_data.calliper_measurements?.map((measurement) => ({
-            id: measurement.mouse?.mouse_delivery_id ?? "",
-            measurement_id: measurement.id,
-            length_mm: measurement.length_mm ?? 0,
-            width_mm: measurement.width_mm ?? 0,
-          })) ?? [],
+          apiData?.uploaded_data.calliper_measurements?.map((measurement) => {
+            const length = measurement.length_mm ?? 0;
+            const width = measurement.width_mm ?? 0;
+            const volume =
+              measurement.volume_mm3 ?? calculateTumorVolume(length, width);
+
+            return {
+              id: measurement.mouse?.mouse_delivery_id ?? "",
+              measurement_id: measurement.id,
+              length_mm: length,
+              width_mm: width,
+              volume_mm3: volume,
+            };
+          }) ?? [],
       };
       setForm(transformedData);
     } else if (data) {
@@ -172,15 +203,17 @@ export function CalliperingSheetEdit({
     e.preventDefault();
 
     const measurements = form.mice
-      .filter((mouse) =>
-        editedMeasurementIds.has(
-          (mouse as CalliperingMouseRowWithMeasurementId).measurement_id
-        )
-      )
+      .filter((mouse) => {
+        const measurementId = mouse.measurement_id;
+        return (
+          measurementId !== undefined && editedMeasurementIds.has(measurementId)
+        );
+      })
       .map((mouse) => ({
-        id: (mouse as CalliperingMouseRowWithMeasurementId).measurement_id,
+        id: mouse.measurement_id!,
         length_mm: mouse.length_mm,
         width_mm: mouse.width_mm,
+        volume_mm3: mouse.volume_mm3,
       }));
 
     if (measurements.length === 0) {
