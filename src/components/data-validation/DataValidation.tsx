@@ -138,10 +138,10 @@ export default function DataValidation() {
     handleFilterChange("study_type", stringValue);
     // Reset data type when study type changes
     if (stringValue !== studyTypeFilter) {
-      setDataTypeFilter("all");
+      setDataTypeFilter(SELECT_ALL);
       setFilters({
         status: normalizeStatus(statusFilter),
-        study_type: stringValue === "all" ? undefined : stringValue,
+        study_type: stringValue === SELECT_ALL ? undefined : stringValue,
         data_type: undefined,
       });
     }
