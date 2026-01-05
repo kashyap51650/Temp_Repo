@@ -17,7 +17,7 @@ interface AsyncSelectProps<T> {
   disabled?: boolean;
   queryKey?: string[];
   optionWithAll?: boolean;
-  AllLabel?: string;
+  allLabel?: string;
   searchable?: boolean;
 }
 
@@ -26,7 +26,7 @@ export function AsyncSelect<T>({
   mapConfig,
   queryKey = ["dropdown"],
   optionWithAll = true,
-  AllLabel = "All ",
+  allLabel = "All ",
   value,
   onChange,
   placeholder = "Select...",
@@ -42,7 +42,7 @@ export function AsyncSelect<T>({
 
   // Add "All" option at the beginning
   const optionsWithAll = optionWithAll
-    ? [{ id: SELECT_ALL, label: AllLabel, value: SELECT_ALL }, ...options]
+    ? [{ id: SELECT_ALL, label: allLabel, value: SELECT_ALL }, ...options]
     : options;
 
   return (

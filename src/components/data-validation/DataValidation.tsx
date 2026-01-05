@@ -221,7 +221,7 @@ export default function DataValidation() {
                 valueKey: "id",
               }}
               queryKey={["study-types"]}
-              AllLabel="All Study Types"
+              allLabel="All Study Types"
               searchable={false}
             />
           </div>
@@ -252,7 +252,7 @@ export default function DataValidation() {
                 valueKey: "id",
               }}
               queryKey={["data-types", studyTypeFilter]}
-              AllLabel="All Data Types"
+              allLabel="All Data Types"
               disabled={!studyTypeFilter || studyTypeFilter === SELECT_ALL}
               searchable={false}
             />
