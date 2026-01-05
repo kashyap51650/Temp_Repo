@@ -30,8 +30,8 @@ export function ProjectSelect({
   disabled = false,
 }: ProjectSelectProps) {
   const selectOptions = projects.map((project) => ({
-    id: project.id,
-    name: project.name,
+    value: project.id,
+    label: project.name,
   }));
 
   return (
@@ -72,8 +72,8 @@ export function ExperimentSelect({
   showSearch = true,
 }: ExperimentSelectProps) {
   const selectOptions = experiments.map((experiment) => ({
-    id: experiment.id,
-    name: experiment.name,
+    value: experiment.id,
+    label: experiment.name,
     subtitle: `${experiment.isotope}  ${experiment.cellLines.join(", ")}`,
   }));
 

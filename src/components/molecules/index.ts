@@ -1,6 +1,6 @@
+export * from "./AsyncSelect";
 export * from "./Breadcrumb/Breadcrumb";
 export * from "./Chart/Chart";
-export * from "./DataTypeSelect";
 export * from "./Dialog/Dialog";
 export * from "./Drawer/Drawer";
 export * from "./DropdownMenu/DropdownMenu";
@@ -13,7 +13,5 @@ export * from "./PasswordRequirements";
 export { Popover, PopoverContent, PopoverTrigger } from "./Popover/Popover";
 export * from "./Sheet/Sheet";
 export { SortableHeader } from "./SortableHeader/SortableHeader";
-export * from "./StatusSelect";
-export * from "./StudyTypeSelect";
 export * from "./Tabs/Tabs";
 export * from "./Tooltip/Tooltip";

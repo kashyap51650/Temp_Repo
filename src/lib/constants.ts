@@ -76,3 +76,14 @@ export const ORGAN_KEYS = {
 };
 
 export const DEFAULT_PAGE_SIZE = 10;
+
+export const SELECT_ALL = "all";
+
+export const DataValidationFilter = {
+  Status: "status",
+  DataType: "data_type",
+  StudyType: "study_type",
+} as const;
+
+export type DataValidationFilter =
+  (typeof DataValidationFilter)[keyof typeof DataValidationFilter];
