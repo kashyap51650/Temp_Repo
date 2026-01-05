@@ -85,3 +85,9 @@ export const mapToOptions = <T>(
     disabled: config.disabledKey ? Boolean(item[config.disabledKey]) : false,
     meta: item,
   }));
+export const calculateTumorVolume = (
+  length_mm: number,
+  width_mm: number
+): number => {
+  return 0.5 * length_mm * width_mm * width_mm;
+};

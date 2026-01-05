@@ -2213,6 +2213,8 @@ export interface CalliperingMouseRow {
   id: string;
   length_mm: number;
   width_mm: number;
+  volume_mm3: number;
+  measurement_id?: number;
 }
 
 export interface CalliperingData {
@@ -2235,15 +2237,15 @@ export const calliperingData: CalliperingData = {
   treatment_date: "2024-01-20",
   measurement_date: "2024-01-25",
   mice: [
-    { id: "MUS01", length_mm: 12.1, width_mm: 8.2 },
-    { id: "MUS02", length_mm: 13.0, width_mm: 8.5 },
-    { id: "MUS03", length_mm: 11.8, width_mm: 7.9 },
-    { id: "MUS04", length_mm: 12.5, width_mm: 8.1 },
-    { id: "MUS05", length_mm: 13.2, width_mm: 8.7 },
-    { id: "MUS06", length_mm: 12.7, width_mm: 8.0 },
-    { id: "MUS07", length_mm: 12.9, width_mm: 8.3 },
-    { id: "MUS08", length_mm: 13.1, width_mm: 8.6 },
-    { id: "MUS09", length_mm: 12.3, width_mm: 8.0 },
-    { id: "MUS10", length_mm: 12.8, width_mm: 8.4 },
+    { id: "MUS01", length_mm: 12.1, width_mm: 8.2, volume_mm3: 820.5 },
+    { id: "MUS02", length_mm: 13.0, width_mm: 8.5, volume_mm3: 920.3 },
+    { id: "MUS03", length_mm: 11.8, width_mm: 7.9, volume_mm3: 735.8 },
+    { id: "MUS04", length_mm: 12.5, width_mm: 8.1, volume_mm3: 844.6 },
+    { id: "MUS05", length_mm: 13.2, width_mm: 8.7, volume_mm3: 957.2 },
+    { id: "MUS06", length_mm: 12.7, width_mm: 8.0, volume_mm3: 847.3 },
+    { id: "MUS07", length_mm: 12.9, width_mm: 8.3, volume_mm3: 892.1 },
+    { id: "MUS08", length_mm: 13.1, width_mm: 8.6, volume_mm3: 938.7 },
+    { id: "MUS09", length_mm: 12.3, width_mm: 8.0, volume_mm3: 820.0 },
+    { id: "MUS10", length_mm: 12.8, width_mm: 8.4, volume_mm3: 896.2 },
   ],
 };
