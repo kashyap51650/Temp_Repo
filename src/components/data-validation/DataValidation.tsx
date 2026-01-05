@@ -26,8 +26,8 @@ import { DataViewModal } from "./DataViewModal";
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
-  const [studyTypeFilter, setStudyTypeFilter] = useState<string>("all");
-  const [dataTypeFilter, setDataTypeFilter] = useState<string>("all");
+  const [studyTypeFilter, setStudyTypeFilter] = useState<string>(SELECT_ALL);
+  const [dataTypeFilter, setDataTypeFilter] = useState<string>(SELECT_ALL);
   const [selectedExperiment, setSelectedExperiment] =
     useState<ValidationRow | null>(null);
   const dataViewModal = useModal();
