@@ -1,20 +1,20 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
-import { RANDOMIZATION_PREVIEW_TYPES, statusOptions } from "@/lib/constants";
+import type { DataType, StudyType } from "@/lib/api";
+import { dataTypeApi, studyTypeApi } from "@/lib/api";
+import {
+  DataValidationFilter,
+  RANDOMIZATION_PREVIEW_TYPES,
+  SELECT_ALL,
+  statusOptions,
+} from "@/lib/constants";
 
 import { useModal, useValidationData } from "../../hooks";
-import type { ExperimentDataItem } from "../../lib/api";
 import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
-import { Label } from "../atoms/Label/Label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../atoms/Select/Select";
+import { AsyncSelect } from "../molecules";
+import { BaseSelect } from "../molecules/BaseSelect";
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
@@ -23,15 +23,11 @@ import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "./CalliperingSheetViewModal";
 import { DataViewModal } from "./DataViewModal";
 
-type FilterType = "status" | "data_type" | "study_type";
-
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
-  const [studyTypeFilter, setStudyTypeFilter] =
-    useState<string>("All Study Types");
-  const [dataTypeFilter, setDataTypeFilter] =
-    useState<string>("All Data Types");
+  const [studyTypeFilter, setStudyTypeFilter] = useState<string>(SELECT_ALL);
+  const [dataTypeFilter, setDataTypeFilter] = useState<string>(SELECT_ALL);
   const [selectedExperiment, setSelectedExperiment] =
     useState<ValidationRow | null>(null);
   const dataViewModal = useModal();
@@ -52,19 +48,22 @@ export default function DataValidation() {
     value === "All Status" ? undefined : value.toLowerCase();
 
   const normalizeDataType = (value: string) =>
-    value === "All Data Types" ? undefined : value;
+    value === SELECT_ALL ? undefined : value;
 
   const normalizeStudyType = (value: string) =>
-    value === "All Study Types" ? undefined : value;
+    value === SELECT_ALL ? undefined : value;
 
-  const handleFilterChange = (type: FilterType, value: string) => {
-    const nextStatus = type === "status" ? value : statusFilter;
-    const nextDataType = type === "data_type" ? value : dataTypeFilter;
-    const nextStudyType = type === "study_type" ? value : studyTypeFilter;
+  const handleFilterChange = (type: DataValidationFilter, value: string) => {
+    const nextStatus =
+      type === DataValidationFilter.Status ? value : statusFilter;
+    const nextDataType =
+      type === DataValidationFilter.DataType ? value : dataTypeFilter;
+    const nextStudyType =
+      type === DataValidationFilter.StudyType ? value : studyTypeFilter;
 
-    if (type === "status") setStatusFilter(value);
-    if (type === "data_type") setDataTypeFilter(value);
-    if (type === "study_type") setStudyTypeFilter(value);
+    if (type === DataValidationFilter.Status) setStatusFilter(value);
+    if (type === DataValidationFilter.DataType) setDataTypeFilter(value);
+    if (type === DataValidationFilter.StudyType) setStudyTypeFilter(value);
 
     setFilters({
       status: normalizeStatus(nextStatus),
@@ -73,86 +72,45 @@ export default function DataValidation() {
     });
   };
 
-  const dataTypeOptions = useMemo(() => {
-    const baseOptions = [{ value: "All Data Types", label: "All Data Types" }];
-
-    if (data?.items) {
-      const uniqueDataTypes = Array.from(
-        new Set(
-          data.items.map(
-            (item: ExperimentDataItem) => item.data_type.data_type_name
-          )
-        )
-      ).map((dataType: string) => ({
-        value: dataType,
-        label: dataType,
-      }));
-
-      return [...baseOptions, ...uniqueDataTypes];
-    }
-
-    return baseOptions;
-  }, [data?.items]);
-
-  const studyTypeOptions = useMemo(() => {
-    const baseOptions = [
-      { value: "All Study Types", label: "All Study Types" },
-    ];
-
-    if (data?.items) {
-      const uniqueStudyTypes = Array.from(
-        new Set(
-          data.items.map(
-            (item: ExperimentDataItem) => item.study_type.study_type_name
-          )
-        )
-      ).map((studyType: string) => ({
-        value: studyType,
-        label: studyType,
-      }));
-
-      return [...baseOptions, ...uniqueStudyTypes];
-    }
-
-    return baseOptions;
-  }, [data?.items]);
-
   const tableData = useMemo(() => {
     if (!data?.items) return [];
     return transformExperimentDataToValidationRows(data.items);
   }, [data?.items]);
 
-  const handleViewData = useCallback((experiment: ValidationRow) => {
-    setSelectedExperiment(experiment);
-    const dataTypeLower = experiment.dataType.toLowerCase();
+  const handleViewData = useCallback(
+    (experiment: ValidationRow) => {
+      setSelectedExperiment(experiment);
+      const dataTypeLower = experiment.dataType.toLowerCase();
 
-    // Check if it's a callipering type sheet
-    const isCalliperingSheet = dataTypeLower.includes("callipering");
+      // Check if it's a callipering type sheet
+      const isCalliperingSheet = dataTypeLower.includes("callipering");
 
-    // Check if it's a necropsy/organ sheet
-    const isOrganSheet =
-      dataTypeLower.includes("organ") && dataTypeLower.includes("sheet");
-    // Check if it's a weight sheet
-    const isWeightSheet =
-      dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
+      // Check if it's a necropsy/organ sheet
+      const isOrganSheet =
+        dataTypeLower.includes("organ") && dataTypeLower.includes("sheet");
+      // Check if it's a weight sheet
+      const isWeightSheet =
+        dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
 
-    if (isCalliperingSheet) {
-      calliperingViewModal.openModal();
-      return;
-    }
+      if (isCalliperingSheet) {
+        calliperingViewModal.openModal();
+        return;
+      }
 
-    if (isOrganSheet) {
-      organViewModal.openModal();
-      return;
-    }
+      if (isOrganSheet) {
+        organViewModal.openModal();
+        return;
+      }
 
-    if (isWeightSheet) {
-      weightSheetViewModal.openModal();
-      return;
-    }
+      if (isWeightSheet) {
+        weightSheetViewModal.openModal();
+        return;
+      }
 
-    dataViewModal.openModal();
-  }, []);
+      dataViewModal.openModal();
+    },
+    [calliperingViewModal, dataViewModal, organViewModal, weightSheetViewModal]
+  );
 
   const handleRandomize = useCallback(
     (row: ValidationRow) => {
@@ -172,8 +130,22 @@ export default function DataValidation() {
         },
       });
     },
-    [data?.items]
+    [data?.items, navigate]
   );
+
+  const handleStudyTypeChange = (value: string | string[]) => {
+    const stringValue = String(value);
+    handleFilterChange("study_type", stringValue);
+    // Reset data type when study type changes
+    if (stringValue !== studyTypeFilter) {
+      setDataTypeFilter(SELECT_ALL);
+      setFilters({
+        status: normalizeStatus(statusFilter),
+        study_type: stringValue === SELECT_ALL ? undefined : stringValue,
+        data_type: undefined,
+      });
+    }
+  };
 
   const columns = useMemo(
     () => getValidationColumns(handleViewData, handleRandomize, tableData),
@@ -214,65 +186,76 @@ export default function DataValidation() {
 
         <div className="flex flex-col md:flex-row gap-4">
           <div className="w-full md:w-48">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Status
-            </Label>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => handleFilterChange("status", value)}
+            <label
+              htmlFor="study-type-select"
+              className="text-sm font-medium text-foreground block mb-2"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              Filter by Status
+            </label>
+            <BaseSelect
+              value={statusFilter}
+              onChange={(value: string | string[]) =>
+                handleFilterChange("status", String(value))
+              }
+              options={statusOptions}
+              placeholder="All Status"
+              disabled={false}
+            />
           </div>
           <div className="w-full md:w-48">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Study Type
-            </Label>
-            <Select
-              value={studyTypeFilter}
-              onValueChange={(value) => handleFilterChange("study_type", value)}
+            <label
+              htmlFor="study-type-select"
+              className="text-sm font-medium text-foreground block mb-2"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Study Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {studyTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              Filter by Study Type
+            </label>
+            <AsyncSelect<StudyType>
+              value={studyTypeFilter}
+              onChange={handleStudyTypeChange}
+              query={async () => {
+                const response = await studyTypeApi.getStudyTypes();
+                return response.data;
+              }}
+              mapConfig={{
+                labelKey: "study_type_name",
+                valueKey: "id",
+              }}
+              queryKey={["study-types"]}
+              allLabel="All Study Types"
+              searchable={false}
+            />
           </div>
 
           <div className="w-full md:w-52">
-            <Label className="text-sm font-medium mb-2 inline-block">
-              Filter by Data Type
-            </Label>
-            <Select
-              value={dataTypeFilter}
-              onValueChange={(value) => handleFilterChange("data_type", value)}
+            <label
+              htmlFor="data-type-select"
+              className="text-sm font-medium text-foreground block mb-2"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Data Types" />
-              </SelectTrigger>
-              <SelectContent>
-                {dataTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              Filter by Data Type
+            </label>
+            <AsyncSelect<DataType>
+              value={dataTypeFilter}
+              onChange={(value: string | string[]) =>
+                handleFilterChange("data_type", String(value))
+              }
+              query={async () => {
+                if (studyTypeFilter && studyTypeFilter !== SELECT_ALL) {
+                  const response = await dataTypeApi.getDataTypes({
+                    study_type_id: parseInt(studyTypeFilter),
+                  });
+                  return response.data;
+                }
+                return [];
+              }}
+              mapConfig={{
+                labelKey: "data_type_name",
+                valueKey: "id",
+              }}
+              queryKey={["data-types", studyTypeFilter]}
+              allLabel="All Data Types"
+              disabled={!studyTypeFilter || studyTypeFilter === SELECT_ALL}
+              searchable={false}
+            />
           </div>
         </div>
 

@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import type { SelectOption } from "@/types/utils";
+
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
 import { type ExperimentDataItem } from "../lib/api";
 
@@ -69,6 +71,20 @@ export const downloadBlobFile = (blob: Blob, fileName: string) => {
   window.URL.revokeObjectURL(url);
 };
 
+export const mapToOptions = <T>(
+  data: T[],
+  config: {
+    labelKey: keyof T;
+    valueKey: keyof T;
+    disabledKey?: keyof T;
+  }
+): SelectOption[] =>
+  data.map((item) => ({
+    label: String(item[config.labelKey]),
+    value: String(item[config.valueKey]),
+    disabled: config.disabledKey ? Boolean(item[config.disabledKey]) : false,
+    meta: item,
+  }));
 export const calculateTumorVolume = (
   length_mm: number,
   width_mm: number

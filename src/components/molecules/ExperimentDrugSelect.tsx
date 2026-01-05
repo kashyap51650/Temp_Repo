@@ -36,8 +36,8 @@ export function ExperimentDrugSelect({
   // Transform experiment drugs to SearchableSelect option format
   const drugOptions = experimentDrugs.map(
     (drug: { id: number; drug_name: string }) => ({
-      id: drug.id.toString(),
-      name: drug.drug_name,
+      label: drug.drug_name,
+      value: drug.id.toString(),
     })
   );
 

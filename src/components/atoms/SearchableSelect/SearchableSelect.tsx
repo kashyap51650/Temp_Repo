@@ -2,6 +2,7 @@ import { Plus, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import type { SelectOption } from "@/types/utils";
 
 import { Input } from "../Input/Input";
 import {
@@ -11,12 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../Select/Select";
-
-interface SelectOption {
-  id: string;
-  name: string;
-  subtitle?: string;
-}
 
 interface SearchableSelectProps {
   options: SelectOption[];
@@ -55,7 +50,7 @@ export function SearchableSelect({
     if (!q) return options;
     return options.filter(
       (option) =>
-        option.name.toLowerCase().includes(q) ||
+        option.label.toLowerCase().includes(q) ||
         option.subtitle?.toLowerCase().includes(q)
     );
   }, [options, query]);
@@ -140,9 +135,9 @@ export function SearchableSelect({
         >
           {filtered.length > 0
             ? filtered.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
+                <SelectItem key={option.id} value={option.value}>
                   <div className="truncate">
-                    {option.name}
+                    {option.label}
                     {option.subtitle && (
                       <span className="ml-2 text-muted-foreground text-xs">
                         {option.subtitle}

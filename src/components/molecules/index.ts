@@ -1,3 +1,4 @@
+export * from "./AsyncSelect";
 export * from "./Breadcrumb/Breadcrumb";
 export * from "./Chart/Chart";
 export * from "./Dialog/Dialog";

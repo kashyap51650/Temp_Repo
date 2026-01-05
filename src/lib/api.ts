@@ -1422,7 +1422,8 @@ export const experimentDataApi = {
     const params = new URLSearchParams();
 
     if (filters?.status) params.append("status", filters.status);
-    if (filters?.data_type) params.append("data_type", filters.data_type);
+    if (filters?.data_type) params.append("data_type_id", filters.data_type);
+    if (filters?.study_type) params.append("study_type_id", filters.study_type);
     if (filters?.page) params.append("page", filters.page.toString());
     if (filters?.size) params.append("size", filters.size.toString());
 
