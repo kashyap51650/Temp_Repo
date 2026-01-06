@@ -131,6 +131,8 @@ export function DataViewModal({
     console.log("Saved data:", data);
   };
 
+  const isPending = experiment.status === "pending";
+
   return (
     <>
       <SuccessAlert
@@ -180,19 +182,18 @@ export function DataViewModal({
                   <Eye className="size-4" />
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleAction(item, "edit")}
-                  disabled={!item.canEdit}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Edit"
-                >
-                  <Edit className="size-4" />
-                </Button>
-
-                {experiment.status === "pending" && (
+                {isPending && (
                   <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleAction(item, "edit")}
+                      disabled={!item.canEdit}
+                      className="text-muted-foreground hover:text-foreground"
+                      title="Edit"
+                    >
+                      <Edit className="size-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

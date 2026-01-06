@@ -204,6 +204,31 @@ export function DynamicMasterDataFormModal({
           placeholder: "Enter drug description",
         },
       ],
+      vehicles: [
+        {
+          key: "vehicle_name",
+          label: "Vehicle Name",
+          type: "text",
+          required: true,
+          placeholder: "Enter vehicle name",
+        },
+        {
+          key: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+          placeholder: "Enter description",
+        },
+      ],
+      "cell-injection-counts": [
+        {
+          key: "value",
+          label: "Value",
+          type: "text",
+          required: true,
+          placeholder: "Enter cell count",
+        },
+      ],
     };
 
     return (
