@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { Button, Dialog, Label } from "@/components/atoms";
 import { ExperimentSelect } from "@/components/atoms/Selects";
@@ -48,10 +48,7 @@ export function SelectTargetExperimentModal({
     setIsCreateExperimentModalOpen(true);
   };
 
-  const handleExperimentCreated = (studyType: string) => {
-    console.log("Creating new experiment with study type:", studyType);
-    // Handle create experiment logic here - you would typically make an API call
-    // and then refresh the experiments list or add the new experiment to the list
+  const handleExperimentCreated = () => {
     setIsCreateExperimentModalOpen(false);
   };
 
@@ -61,13 +58,11 @@ export function SelectTargetExperimentModal({
       onOpenChange={(open: boolean) => {
         if (!open) handleClose();
       }}
-      title=""
       showClose={false}
       className="max-w-md"
       trigger={null}
     >
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col justify-between">
           <h2 className="text-xl font-semibold">
             Move Mice - Select Target Experiment

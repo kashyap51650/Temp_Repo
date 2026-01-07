@@ -41,14 +41,13 @@ export function CreateExperimentModal({
       onOpenChange={(open: boolean) => {
         if (!open) handleClose();
       }}
-      title=""
       showClose={false}
       className="max-w-lg"
       trigger={null}
     >
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex  justify-between flex-col">
+        <div className="flex justify-between flex-col">
           <h2 className="text-xl font-semibold">Create New Experiment</h2>
           <p className="text-sm text-muted-foreground mt-1">
             Select a study type to create a new experiment

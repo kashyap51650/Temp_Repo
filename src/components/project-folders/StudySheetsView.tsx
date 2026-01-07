@@ -32,14 +32,7 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
     setIsSelectTargetModalOpen(true);
   };
 
-  const handleMoveComplete = (targetExperimentId: string) => {
-    console.log(
-      "Moving mice:",
-      selectedMiceForMove,
-      "to experiment:",
-      targetExperimentId
-    );
-    // Handle the actual move logic here
+  const handleMoveComplete = () => {
     setIsSelectTargetModalOpen(false);
     setSelectedMiceForMove([]);
   };

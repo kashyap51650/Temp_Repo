@@ -38,14 +38,6 @@ export function ProjectFoldersContent() {
   const [experimentSearchQuery, setExperimentSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
 
-  // Debug logging
-  console.log("🏠 ProjectFoldersContent loaded:", {
-    projectsCount: projects.length,
-    projects: projects,
-    view: view,
-    currentProject: currentProject,
-  });
-
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isCloseExperimentOpen, setIsCloseExperimentOpen] = useState(false);
   const [experimentToClose, setExperimentToClose] =
@@ -230,7 +222,7 @@ export function ProjectFoldersContent() {
               <Button
                 onClick={() => handleProjectClick(project)}
                 variant={"ghost"}
-                className=" gap-3 flex-1 hover:bg-transparent text-left items-start justify-start h-auto"
+                className="gap-3 flex-1 hover:bg-transparent text-left items-start justify-start h-auto"
               >
                 <FolderOpen className="size-6 text-muted-foreground shrink-0" />
                 <div>

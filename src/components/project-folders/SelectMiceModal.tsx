@@ -57,7 +57,6 @@ export function SelectMiceModal({
       onOpenChange={(open: boolean) => {
         if (!open) handleClose();
       }}
-      title=""
       showClose={false}
       className="max-w-md"
       trigger={null}
