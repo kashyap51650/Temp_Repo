@@ -15,11 +15,13 @@ import {
 } from "../Select/Select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../Tooltip/Tooltip";
 
-interface SearchableSelectProps {
+type SearchableSelectProps<TMultiple extends boolean = false> = {
   options: SelectOption[];
-  value?: string | string[];
+  value?: TMultiple extends true ? string[] : string;
   placeholder?: string;
-  onValueChange: (value: string | string[]) => void;
+  onValueChange: TMultiple extends true
+    ? (value: string[]) => void
+    : (value: string) => void;
   onCreateNew?: () => void;
   createNewLabel?: string;
   className?: string;
@@ -27,10 +29,10 @@ interface SearchableSelectProps {
   size?: "sm" | "default" | "lg";
   searchPlaceholder?: string;
   disabled?: boolean;
-  multiple?: boolean;
-}
+  multiple?: TMultiple;
+};
 
-export function SearchableSelect({
+export function SearchableSelect<TMultiple extends boolean = false>({
   options,
   value,
   placeholder = "Select an option",
@@ -42,14 +44,15 @@ export function SearchableSelect({
   size = "lg",
   searchPlaceholder = "Search...",
   disabled = false,
-  multiple = false,
-}: SearchableSelectProps) {
+  multiple = false as TMultiple,
+}: SearchableSelectProps<TMultiple>) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const ALLOW_BUBBLE = ["ArrowUp", "ArrowDown", "Enter", "Tab"];
 
-  const selectedValues = multiple && Array.isArray(value) ? value : [];
+  const selectedValues: string[] =
+    multiple && Array.isArray(value) ? value : [];
   const singleValue = !multiple && typeof value === "string" ? value : "";
 
   const filtered = useMemo(() => {
@@ -80,17 +83,19 @@ export function SearchableSelect({
       }
 
       if (multiple) {
-        const currentValues = Array.isArray(value) ? value : [];
+        const currentValues: string[] = Array.isArray(value) ? value : [];
 
         if (currentValues.includes(v)) {
-          onValueChange(currentValues.filter((val) => val !== v));
+          (onValueChange as (value: string[]) => void)(
+            currentValues.filter((val) => val !== v)
+          );
         } else {
-          onValueChange([...currentValues, v]);
+          (onValueChange as (value: string[]) => void)([...currentValues, v]);
         }
 
         // Don't close the dropdown for multiple selection
       } else {
-        onValueChange(v);
+        (onValueChange as (value: string) => void)(v);
         setIsOpen(false);
       }
       setQuery("");
@@ -101,19 +106,22 @@ export function SearchableSelect({
   const handleRemoveValue = useCallback(
     (valueToRemove: string) => {
       if (multiple && Array.isArray(value)) {
-        onValueChange(value.filter((v) => v !== valueToRemove));
+        (onValueChange as (value: string[]) => void)(
+          value.filter((v) => v !== valueToRemove)
+        );
       }
     },
     [multiple, value, onValueChange]
   );
 
   useEffect(() => {
-    if (isOpen && shouldShowSearch && inputRef.current) {
-      // Focus only once when the dropdown opens
-      const timeoutId = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-      return () => clearTimeout(timeoutId);
+    if (isOpen && shouldShowSearch) {
+      const interval = setInterval(() => {
+        if (inputRef.current && document.activeElement !== inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+      return () => clearInterval(interval);
     }
   }, [isOpen, shouldShowSearch]);
 
