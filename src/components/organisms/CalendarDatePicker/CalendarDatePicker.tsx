@@ -35,11 +35,13 @@ export function CalendarDatePicker({
   placeholder = "June 01, 2025",
   value: initialValue,
   onChange,
+  disablePastDates = false,
 }: {
   id?: string;
   placeholder?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
+  disablePastDates?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(initialValue);
@@ -106,7 +108,9 @@ export function CalendarDatePicker({
                 setOpen(false);
                 onChange?.(d);
               }}
-              disabled={(date: Date) => date < new Date()}
+              disabled={
+                disablePastDates ? (date: Date) => date < new Date() : undefined
+              }
             />
           </PopoverContent>
         </Popover>

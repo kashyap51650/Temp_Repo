@@ -10,6 +10,7 @@ interface BaseSelectProps {
   isLoading?: boolean;
   isMulti?: boolean;
   disabled?: boolean;
+  searchable?: boolean;
 }
 export function BaseSelect({
   value,
@@ -18,6 +19,7 @@ export function BaseSelect({
   isLoading,
   placeholder = "Select...",
   disabled = false,
+  searchable = false,
 }: BaseSelectProps) {
   if (isLoading)
     return <div className="h-10 bg-muted rounded-md animate-pulse" />;
@@ -30,8 +32,9 @@ export function BaseSelect({
       onValueChange={onChange}
       className=""
       searchPlaceholder="Search..."
-      showSearch={true}
+      showSearch={searchable}
       disabled={disabled}
+      size="lg"
     />
   );
 }

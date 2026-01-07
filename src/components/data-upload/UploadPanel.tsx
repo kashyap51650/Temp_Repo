@@ -148,8 +148,9 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const isDataTypeSelected = !!formData.dataType;
 
   const isNecropsyData =
+    (formData.studyType === "Biodistribution" ||
+      formData.studyType === "Model Study") &&
     formData.specialisation === "Preclinical" &&
-    formData.studyType === "Biodistribution" &&
     formData.dataType === "Organ Weight Sheet";
 
   const [showImportDialog, setShowImportDialog] = useState<boolean>(false);

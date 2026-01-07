@@ -2,6 +2,10 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type {
+  CreateModelStudyPayload,
+  CreateModelStudyResponse,
+} from "@/types/modelStudy";
+import type {
   RandomizationPreviewData,
   RandomizationPreviewResponse,
 } from "@/types/randomization";
@@ -78,6 +82,9 @@ export const API_CONFIG = {
     BIOD_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/biod-experiments/`,
     },
+    MODEL_STUDY_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/`,
+    },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
     },
@@ -115,6 +122,12 @@ export const API_CONFIG = {
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/organ-weights/${experimentId}/bulk-update`,
+    },
+    CELL_INJECTION_COUNTS: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/cell-injection-counts/dropdown`,
+    },
+    VEHICLES: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/vehicles/dropdown`,
     },
   },
 } as const;
@@ -1574,6 +1587,35 @@ export const exportSheetApi = {
       {
         responseType: "blob",
       }
+    );
+  },
+};
+
+export const cellInjectionCountsApi = {
+  getCellInjectionCounts: async (): Promise<
+    ApiResponse<{ items: Array<{ id: number; value: string }> }>
+  > => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.CELL_INJECTION_COUNTS.LIST);
+  },
+};
+
+export const vehiclesDropdownApi = {
+  getVehiclesDropdown: async (): Promise<
+    ApiResponse<{
+      vehicles: Array<{ id: number; vehicle_name: string }>;
+    }>
+  > => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.VEHICLES.LIST);
+  },
+};
+
+export const modelStudyExperimentApi = {
+  createModelStudyExperiment: async (
+    payload: CreateModelStudyPayload
+  ): Promise<CreateModelStudyResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.MODEL_STUDY_EXPERIMENTS.CREATE,
+      payload
     );
   },
 };

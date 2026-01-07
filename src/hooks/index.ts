@@ -6,6 +6,7 @@ export { default as useBulkUpdateBodyWeights } from "./useBulkUpdateBodyWeights"
 export { default as useBulkUpdateCalliperMeasurements } from "./useBulkUpdateCalliperMeasurements";
 export * from "./useCreateBiodExperiment";
 export * from "./useCreateExperiment";
+export * from "./useCreateModelStudyExperiment";
 export * from "./useDataTypes";
 export * from "./useDebounce";
 export * from "./useDownloadSheet";

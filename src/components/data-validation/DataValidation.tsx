@@ -200,6 +200,7 @@ export default function DataValidation() {
               options={statusOptions}
               placeholder="All Status"
               disabled={false}
+              searchable={false}
             />
           </div>
           <div className="w-full md:w-48">

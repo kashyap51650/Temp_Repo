@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { SELECT_ALL } from "@/lib/constants";
+import { REACT_QUERY_CONFIG, SELECT_ALL } from "@/lib/constants";
 import { mapToOptions } from "@/lib/utils";
 
 import { SearchableSelect } from "../atoms/SearchableSelect/SearchableSelect";
@@ -11,7 +11,7 @@ interface AsyncSelectProps<T> {
     labelKey: keyof T;
     valueKey: keyof T;
   };
-  value?: string;
+  value?: string | string[];
   onChange: (value: string | string[]) => void;
   placeholder?: string;
   disabled?: boolean;
@@ -19,6 +19,7 @@ interface AsyncSelectProps<T> {
   optionWithAll?: boolean;
   allLabel?: string;
   searchable?: boolean;
+  multiple?: boolean;
 }
 
 export function AsyncSelect<T>({
@@ -26,16 +27,19 @@ export function AsyncSelect<T>({
   mapConfig,
   queryKey = ["dropdown"],
   optionWithAll = true,
-  allLabel = "All ",
+  allLabel = "All",
   value,
   onChange,
   placeholder = "Select...",
   disabled = false,
   searchable = true,
+  multiple = false,
 }: AsyncSelectProps<T>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
     queryFn: query,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
+    refetchOnMount: false,
   });
 
   const options = mapToOptions(data, mapConfig);
@@ -51,10 +55,11 @@ export function AsyncSelect<T>({
       value={value}
       placeholder={placeholder}
       onValueChange={onChange}
-      className=""
       searchPlaceholder="Search..."
       showSearch={searchable}
       disabled={disabled || isLoading}
+      size="lg"
+      multiple={multiple}
     />
   );
 }
