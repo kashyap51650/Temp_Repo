@@ -55,32 +55,9 @@ const ModelStudyExperimentForm = ({
   }, [fields.length, handleAddPair]);
 
   const [showOrderModal, setShowOrderModal] = useState(false);
-  const [orderItems, setOrderItems] = useState<
-    { id: string; cellLine: string; strain: string }[]
-  >([]);
-
-  const getOrderItems = () =>
-    fields.map((field, idx) => {
-      const cellLineId = form.getValues(
-        `cellLineStrainPairs.${idx}.cell_line_id`
-      );
-      const strainId = form.getValues(
-        `cellLineStrainPairs.${idx}.mouse_strain_id`
-      );
-      return {
-        id: field.id,
-        cellLine:
-          cellLineId === undefined || cellLineId === null
-            ? ""
-            : String(cellLineId),
-        strain:
-          strainId === undefined || strainId === null ? "" : String(strainId),
-      };
-    });
 
   const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setOrderItems(getOrderItems());
     setShowOrderModal(true);
   };
 
@@ -187,7 +164,6 @@ const ModelStudyExperimentForm = ({
       <CellLineStrainOrderModal
         open={showOrderModal}
         onClose={() => setShowOrderModal(false)}
-        items={orderItems}
         onSave={handleOrderSave}
       />
     </>
