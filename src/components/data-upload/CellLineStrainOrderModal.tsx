@@ -51,12 +51,17 @@ export const CellLineStrainOrderModal: React.FC<
                   <span className="text-xs text-muted-foreground font-medium mb-1">
                     Group Name
                   </span>
-                  <span className="text-sm font-semibold text-gray-bg-gray-900">
+                  <span className="text-sm font-semibold text-gray-900">
                     D367NFHYR
                   </span>
                 </div>
               </div>
-              <Button variant={"ghost"} size="icon" className="ml-auto p-2">
+              <Button
+                variant={"ghost"}
+                size="icon"
+                className="ml-auto p-2"
+                aria-label="Remove cell line/strain pair"
+              >
                 <Trash2 className="text-red-400" />
               </Button>
             </li>

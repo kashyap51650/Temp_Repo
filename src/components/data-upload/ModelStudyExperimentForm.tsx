@@ -60,15 +60,23 @@ const ModelStudyExperimentForm = ({
   >([]);
 
   const getOrderItems = () =>
-    fields.map((field, idx) => ({
-      id: field.id,
-      cellLine: String(
-        form.getValues(`cellLineStrainPairs.${idx}.cell_line_id`)
-      ),
-      strain: String(
-        form.getValues(`cellLineStrainPairs.${idx}.mouse_strain_id`)
-      ),
-    }));
+    fields.map((field, idx) => {
+      const cellLineId = form.getValues(
+        `cellLineStrainPairs.${idx}.cell_line_id`
+      );
+      const strainId = form.getValues(
+        `cellLineStrainPairs.${idx}.mouse_strain_id`
+      );
+      return {
+        id: field.id,
+        cellLine:
+          cellLineId === undefined || cellLineId === null
+            ? ""
+            : String(cellLineId),
+        strain:
+          strainId === undefined || strainId === null ? "" : String(strainId),
+      };
+    });
 
   const handleSaveClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
