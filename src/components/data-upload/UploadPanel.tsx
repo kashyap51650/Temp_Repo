@@ -10,7 +10,7 @@ import {
   type Project,
   type StudyType,
 } from "../../lib/api";
-import { SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
+import { DATA_TYPE, SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
 import { Button } from "../atoms";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
 import { ExperimentLinkDialog } from "./ExperimentLinkDialog";
@@ -233,8 +233,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         ? formData.studyType && formData.dataType
         : true);
 
+  const isAGCSelected =
+    isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;
+
   const handleAgcFileUpload = async (selectedCodes: string[]) => {
-    if (isNecropsyData && formData.uploadAGCFile && formData.experiment?.id) {
+    if (isAGCSelected && formData.uploadAGCFile && formData.experiment?.id) {
       handleUploadAGCSheet({
         experiment_id: formData.experiment?.id,
         group_ids: selectedCodes,
@@ -312,42 +315,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         clearDataTypes={clearDataTypes}
       />
 
-      <FileUploadArea
-        formData={formData}
-        setFormData={setFormData}
-        isProjectSelected={isProjectSelected}
-        isHotlabSelected={isHotlabSelected}
-        isPreclinicSelected={isPreclinicSelected}
-        isSpecialisationSelected={isSpecialisationSelected}
-        isDataTypeSelected={isDataTypeSelected}
-      />
-
-      <UploadedFilesList formData={formData} setFormData={setFormData} />
-
-      <div className="flex justify-between items-center pt-4">
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={downloadButtonClickHandler}
-          disabled={!canShowDownloadButton || isDownloading}
-          type="button"
-        >
-          <Download className="mr-2 h-4 w-4" />
-          {renderDownloadButtonText()}
-        </Button>
-
-        <Button
-          size="lg"
-          onClick={handleDataUpload}
-          disabled={!canUploadData || isUploading}
-        >
-          {isUploading ? "Uploading..." : "Upload Data"}
-        </Button>
-      </div>
-
-      {/* AGC Sheet Upload Area */}
-
-      {isNecropsyData && (
+      {formData.dataType !== DATA_TYPE.AGC_SHEET && (
         <>
           <FileUploadArea
             formData={formData}
@@ -357,7 +325,44 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             isPreclinicSelected={isPreclinicSelected}
             isSpecialisationSelected={isSpecialisationSelected}
             isDataTypeSelected={isDataTypeSelected}
-            isAgcUploadApplicable={isNecropsyData}
+          />
+          <UploadedFilesList formData={formData} setFormData={setFormData} />
+
+          <div className="flex justify-between items-center pt-4">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={downloadButtonClickHandler}
+              disabled={!canShowDownloadButton || isDownloading}
+              type="button"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {renderDownloadButtonText()}
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleDataUpload}
+              disabled={!canUploadData || isUploading}
+            >
+              {isUploading ? "Uploading..." : "Upload Data"}
+            </Button>
+          </div>
+        </>
+      )}
+
+      {/* AGC Sheet Upload Area */}
+
+      {isAGCSelected && (
+        <>
+          <FileUploadArea
+            formData={formData}
+            setFormData={setFormData}
+            isProjectSelected={isProjectSelected}
+            isHotlabSelected={isHotlabSelected}
+            isPreclinicSelected={isPreclinicSelected}
+            isSpecialisationSelected={isSpecialisationSelected}
+            isDataTypeSelected={isDataTypeSelected}
+            isAgcUploadApplicable={isAGCSelected}
           />
           <div className="flex justify-end items-center pt-4">
             <Button
@@ -379,7 +384,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         />
       )}
 
-      {isNecropsyData && isOpenGroupSelectionModalForAGC && (
+      {isAGCSelected && isOpenGroupSelectionModalForAGC && (
         <MouseGroupForAgcSelectionModal
           open={isOpenGroupSelectionModalForAGC}
           onOpenChange={setIsOpenGroupSelectionModalForAGC}

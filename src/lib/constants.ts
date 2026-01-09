@@ -12,6 +12,13 @@ export const STUDY_TYPE = {
   MODEL_STUDY: "Model Study",
 } as const;
 
+export const DATA_TYPE = {
+  WEIGHT_SHEET: "Weight Sheet",
+  CALLIPERING_SHEET: "Callipering Sheet",
+  ORGAN_WEIGHT_SHEET: "Organ Weight Sheet",
+  AGC_SHEET: "AGC Sheet",
+} as const;
+
 // Type definitions for the constants
 export type SpecializationType =
   (typeof SPECIALIZATION)[keyof typeof SPECIALIZATION];
