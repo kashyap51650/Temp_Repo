@@ -91,3 +91,11 @@ export const calculateTumorVolume = (
 ): number => {
   return 0.5 * length_mm * width_mm * width_mm;
 };
+
+export const parseSearchParams = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
+  }
+  const num = Number(value);
+  return Number.isNaN(num) ? undefined : num;
+};

@@ -24,6 +24,16 @@ export type SpecializationType =
   (typeof SPECIALIZATION)[keyof typeof SPECIALIZATION];
 export type StudyType = (typeof STUDY_TYPE)[keyof typeof STUDY_TYPE];
 
+export const EXPERIMENT_STATUS = {
+  PLANNED: "planned",
+  COMPLETED: "completed",
+  TERMINATED: "terminated",
+  CLOSED: "closed",
+} as const;
+
+export type ExperimentStatus =
+  (typeof EXPERIMENT_STATUS)[keyof typeof EXPERIMENT_STATUS];
+
 export const REACT_QUERY_CONFIG = {
   STALE_TIME_OPTIONS: {
     SHORT: 2 * 60 * 1000, // 2 minutes - for frequently changing data
@@ -78,6 +88,8 @@ export const DEFAULT_RETRY_DELAY = (attemptIndex: number) =>
 
 export const API_CUSTOM_TIMEOUT = 60000;
 
+export const DEFAULT_DEBOUNCE_DELAY = 500;
+
 export const ORGAN_KEYS = {
   INJECTION_TIME: "Pb-212 Injection time",
   NECROPSY_TIME: "Necropsy time",
@@ -95,3 +107,11 @@ export const DataValidationFilter = {
 
 export type DataValidationFilter =
   (typeof DataValidationFilter)[keyof typeof DataValidationFilter];
+
+export const STUDY_TYPE_COLORS = [
+  "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200",
+  "bg-green-100 text-green-700 border-green-200 hover:bg-green-200",
+  "bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200",
+  "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200",
+  "bg-pink-100 text-pink-700 border-pink-200 hover:bg-pink-200",
+] as const;

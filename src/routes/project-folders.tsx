@@ -9,9 +9,17 @@ import {
   TabsTrigger,
 } from "@/components/molecules";
 import { ProjectFoldersContent } from "@/components/project-folders/ProjectFoldersContent";
+import { parseSearchParams } from "@/lib/utils";
 
 export const Route = createFileRoute("/project-folders")({
   component: ProjectFoldersComponent,
+  validateSearch: (search) => {
+    return {
+      projectId: parseSearchParams(search.projectId),
+      experimentId: parseSearchParams(search.experimentId),
+      studyTypeId: parseSearchParams(search.studyTypeId),
+    };
+  },
 });
 
 function ProjectFoldersComponent() {

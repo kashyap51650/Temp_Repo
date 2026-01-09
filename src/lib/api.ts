@@ -2,6 +2,10 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type {
+  ExperimentListFilters,
+  ExperimentsListResponse,
+} from "@/types/experiment";
+import type {
   ConfirmExperimentMouseGroupsPayload,
   ConfirmExperimentMouseGroupsResponse,
   CreateModelStudyPayload,
@@ -15,6 +19,7 @@ import type {
 } from "@/types/randomization";
 
 import type { UserFilters, UsersResponse } from "../types/auth";
+import type { ProjectFilters, ProjectsListResponse } from "../types/project";
 import { API_CUSTOM_TIMEOUT, FILE_SIZE_LIMITS } from "./constants";
 
 export const API_CONFIG = {
@@ -63,9 +68,12 @@ export const API_CONFIG = {
       TEMPLATES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates/dropdown`,
     },
     PROJECTS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/projects`,
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
       SEARCH: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/projects/`,
+      STATUS_UPDATE: (projectId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/projects/${projectId}/status`,
     },
     STUDY_TYPES: {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/study-types/dropdown`,
@@ -82,6 +90,9 @@ export const API_CONFIG = {
     EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/experiments/`,
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiments/dropdown`,
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiments`,
+      STATUS_UPDATE: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiments/${experimentId}/status`,
     },
     BIOD_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/biod-experiments/`,
@@ -1183,7 +1194,35 @@ export interface UploadedExperimentDataFilters {
 
 export const projectApi = {
   getProjects: async (): Promise<ProjectsResponse> => {
-    return apiClient.get<ProjectsResponse>(API_CONFIG.ENDPOINTS.PROJECTS.LIST);
+    return apiClient.get<ProjectsResponse>(
+      API_CONFIG.ENDPOINTS.PROJECTS.DROPDOWN
+    );
+  },
+
+  getProjectsList: async (
+    filters?: ProjectFilters
+  ): Promise<ProjectsListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.page !== undefined) {
+      params.append("page", filters.page.toString());
+    }
+    if (filters?.size !== undefined) {
+      params.append("size", filters.size.toString());
+    }
+    if (filters?.search) {
+      params.append("search", filters.search);
+    }
+    if (filters?.project_status) {
+      params.append("project_status", filters.project_status);
+    }
+
+    const endpoint = params.toString()
+      ? `${API_CONFIG.ENDPOINTS.PROJECTS.LIST}?${params.toString()}`
+      : API_CONFIG.ENDPOINTS.PROJECTS.LIST;
+
+    const response = await apiClient.get<ProjectsListResponse>(endpoint);
+    return response;
   },
 
   searchProjects: async (searchTerm: string): Promise<ProjectsResponse> => {
@@ -1194,7 +1233,7 @@ export const projectApi = {
 
     const endpoint = searchTerm
       ? `${API_CONFIG.ENDPOINTS.PROJECTS.SEARCH}?${params.toString()}`
-      : API_CONFIG.ENDPOINTS.PROJECTS.LIST;
+      : API_CONFIG.ENDPOINTS.PROJECTS.DROPDOWN;
 
     return apiClient.get<ProjectsResponse>(endpoint);
   },
@@ -1212,6 +1251,16 @@ export const projectApi = {
       message: string;
       data: Project;
     }>(API_CONFIG.ENDPOINTS.PROJECTS.CREATE, projectData);
+  },
+
+  updateProjectStatus: async (
+    projectId: number,
+    status: string
+  ): Promise<ApiResponse> => {
+    return apiClient.patch<ApiResponse>(
+      API_CONFIG.ENDPOINTS.PROJECTS.STATUS_UPDATE(projectId),
+      { project_status: status }
+    );
   },
 };
 
@@ -1275,6 +1324,46 @@ export const experimentApi = {
 
     const endpoint = `${API_CONFIG.ENDPOINTS.EXPERIMENTS.DROPDOWN}?${params.toString()}`;
     return apiClient.get<ExperimentsDropdownResponse>(endpoint);
+  },
+
+  getExperimentsList: async (
+    filters?: ExperimentListFilters
+  ): Promise<ExperimentsListResponse> => {
+    const params = new URLSearchParams();
+
+    if (filters?.project_id !== undefined && filters.project_id !== null) {
+      params.append("project_id", filters.project_id.toString());
+    }
+    if (filters?.page !== undefined) {
+      params.append("page", filters.page.toString());
+    }
+    if (filters?.size !== undefined) {
+      params.append("size", filters.size.toString());
+    }
+    if (filters?.search) {
+      params.append("search", filters.search);
+    }
+
+    if (filters?.status) {
+      params.append("status", filters.status);
+    }
+
+    const endpoint = params.toString()
+      ? `${API_CONFIG.ENDPOINTS.EXPERIMENTS.LIST}?${params.toString()}`
+      : API_CONFIG.ENDPOINTS.EXPERIMENTS.LIST;
+
+    const response = await apiClient.get<ExperimentsListResponse>(endpoint);
+    return response;
+  },
+
+  updateExperimentStatus: async (
+    experimentId: number,
+    status: string
+  ): Promise<ApiResponse> => {
+    return apiClient.patch<ApiResponse>(
+      API_CONFIG.ENDPOINTS.EXPERIMENTS.STATUS_UPDATE(experimentId),
+      { status }
+    );
   },
 };
 
