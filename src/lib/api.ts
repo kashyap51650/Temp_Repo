@@ -2,8 +2,12 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type {
+  ConfirmExperimentMouseGroupsPayload,
+  ConfirmExperimentMouseGroupsResponse,
   CreateModelStudyPayload,
   CreateModelStudyResponse,
+  ModelStudyExperimentMouseGroupsPayload,
+  ModelStudyExperimentMouseGroupsResponse,
 } from "@/types/modelStudy";
 import type {
   RandomizationPreviewData,
@@ -84,6 +88,8 @@ export const API_CONFIG = {
     },
     MODEL_STUDY_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/`,
+      MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/preview`,
+      CONFIRM_MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/confirm`,
     },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
@@ -1615,6 +1621,24 @@ export const modelStudyExperimentApi = {
   ): Promise<CreateModelStudyResponse> => {
     return apiClient.post(
       API_CONFIG.ENDPOINTS.MODEL_STUDY_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+
+  experimentMouseGroups: async (
+    payload: ModelStudyExperimentMouseGroupsPayload
+  ): Promise<ModelStudyExperimentMouseGroupsResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.MODEL_STUDY_EXPERIMENTS.MOUSE_GROUPS,
+      payload
+    );
+  },
+
+  confirmMouseGroups: async (
+    payload: ConfirmExperimentMouseGroupsPayload
+  ): Promise<ConfirmExperimentMouseGroupsResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.MODEL_STUDY_EXPERIMENTS.CONFIRM_MOUSE_GROUPS,
       payload
     );
   },

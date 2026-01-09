@@ -9,6 +9,7 @@ export const STUDY_TYPE = {
   EFFICACY: "Efficacy",
   BIO_DISTRIBUTION: "Bio Distribution",
   BIODISTRIBUTION: "Biodistribution",
+  MODEL_STUDY: "Model Study",
 } as const;
 
 // Type definitions for the constants

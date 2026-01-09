@@ -36,3 +36,45 @@ export interface ModelStudyExperiment {
 }
 
 export type CreateModelStudyResponse = ApiResponse<ModelStudyExperiment>;
+
+export interface ModelStudyExperimentMouseGroupsPayload {
+  experiment_id: number | undefined;
+}
+export interface ExperimentMouseGroupsType {
+  group_id: number;
+  group_code: string | number;
+  group_name: string;
+  cell_line_id: number;
+  cell_line_name: string;
+  mouse_strain_id: number;
+  mouse_strain_name: string;
+  vehicle_id: number;
+  vehicle_name: string;
+  cell_injection_count_id: number;
+  cell_injection_count_value: string;
+}
+
+export interface ExperimentMouseGroupsWithDragIdType
+  extends ExperimentMouseGroupsType {
+  dragId: number;
+}
+
+export interface ModelStudyExperimentMouseGroups {
+  experiment_id: number;
+  total_groups: number;
+  groups: Array<ExperimentMouseGroupsType>;
+}
+
+export type ModelStudyExperimentMouseGroupsResponse =
+  ApiResponse<ModelStudyExperimentMouseGroups>;
+
+export interface ConfirmExperimentMouseGroupsPayload {
+  experiment_id: number;
+  group_ids: Array<number>;
+}
+
+export interface ConfirmExperimentMouseGroupsResponse {
+  experiment_id: number;
+  message: string;
+  total_groups_created: number;
+}

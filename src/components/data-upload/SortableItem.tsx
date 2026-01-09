@@ -5,10 +5,11 @@ import { GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/atoms/Button/Button";
 
 interface SortableItemProps {
-  id: string;
+  id: number;
   index: number;
   groupName: string;
-  onRemove: (id: string) => void;
+  onRemove: (id: number) => void;
+  disableDelete?: boolean;
 }
 
 export function SortableItem({
@@ -16,6 +17,7 @@ export function SortableItem({
   index,
   groupName,
   onRemove,
+  disableDelete,
 }: SortableItemProps) {
   const {
     attributes,
@@ -60,6 +62,7 @@ export function SortableItem({
         className="ml-auto p-2"
         aria-label="Remove group"
         onClick={() => onRemove(id)}
+        disabled={disableDelete}
       >
         <Trash2 className="text-red-400" />
       </Button>
