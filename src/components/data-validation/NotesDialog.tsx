@@ -40,15 +40,23 @@ export function NotesDialog({ open, onOpenChange }: NotesDialogProps) {
     >
       <div className="flex gap-2 mb-4">
         <Input placeholder="Add a new note..." size="lg" className="w-full" />
-        <Button size="lg" variant="default" className="px-4 py-2">
+        <Button
+          size="lg"
+          variant="default"
+          className="px-4 py-2"
+          aria-label="Add note"
+        >
           <Send className="size-4" />
         </Button>
       </div>
       <div className="h-80 pr-4 overflow-y-auto">
         <div className="space-y-4">
           {staticNotes.length > 0 ? (
-            staticNotes.map((note, idx) => (
-              <div key={idx} className="p-3 border rounded-lg bg-muted/30">
+            staticNotes.map((note) => (
+              <div
+                key={`${note.author}-${note.timestamp}`}
+                className="p-3 border rounded-lg bg-muted/30"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <span className="font-medium text-sm">{note.author}</span>
                   <span className="text-xs text-muted-foreground">

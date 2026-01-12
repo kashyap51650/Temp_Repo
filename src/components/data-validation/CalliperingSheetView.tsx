@@ -38,7 +38,7 @@ const getReadOnlyCalliperingColumns = (
     cell: ({ row }) => <span>{row.original.volume_mm3}</span>,
   },
   {
-    accessorKey: "Notes",
+    accessorKey: "notes",
     header: "Notes",
     cell: () => (
       <Button
