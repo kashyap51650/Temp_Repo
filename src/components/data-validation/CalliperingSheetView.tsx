@@ -1,4 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { MessageSquareMoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
@@ -8,30 +9,48 @@ import type {
 } from "@/components/organisms/DataTable/tableData";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
 
-import { Label } from "../atoms";
+import { Button, Label } from "../atoms";
+import { NotesDialog } from "./NotesDialog";
 
-const getReadOnlyCalliperingColumns = (): ColumnDef<CalliperingMouseRow>[] => [
+const getReadOnlyCalliperingColumns = (
+  onViewNotes: () => void
+): ColumnDef<CalliperingMouseRow>[] => [
   {
     accessorKey: "id",
-    header: () => <span className="block lg:w-96">Mouse Delivery ID</span>,
+    header: () => <span className="block lg:w-60">Mouse Delivery ID</span>,
     cell: ({ row }) => (
       <span className="font-medium text-center">{row.original.id}</span>
     ),
   },
   {
     accessorKey: "length_mm",
-    header: () => <span className="block lg:w-66">Length (mm)</span>,
+    header: () => <span className="block lg:w-40">Length (mm)</span>,
     cell: ({ row }) => <span>{row.original.length_mm}</span>,
   },
   {
     accessorKey: "width_mm",
-    header: () => <span className="block lg:w-66">Width (mm)</span>,
+    header: () => <span className="block lg:w-40">Width (mm)</span>,
     cell: ({ row }) => <span>{row.original.width_mm}</span>,
   },
   {
     accessorKey: "volume_mm3",
-    header: () => <span className="block lg:w-66">Volume (mm³)</span>,
+    header: () => <span className="block lg:w-40">Volume (mm³)</span>,
     cell: ({ row }) => <span>{row.original.volume_mm3}</span>,
+  },
+  {
+    accessorKey: "notes",
+    header: "Notes",
+    cell: () => (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onViewNotes}
+        aria-label="View notes"
+      >
+        <MessageSquareMoreIcon className="size-4 mr-1" />
+        View Notes
+      </Button>
+    ),
   },
 ];
 
@@ -47,6 +66,9 @@ export function CalliperingSheetView({
   const [viewData, setViewData] = useState<CalliperingData | null>(
     data || null
   );
+  const [showNotesDialog, setShowNotesDialog] = useState(false);
+
+  const handleViewNotes = () => setShowNotesDialog(true);
 
   const {
     data: apiData,
@@ -98,48 +120,51 @@ export function CalliperingSheetView({
 
   if (!viewData) return null;
   return (
-    <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="grid grid-cols-2 gap-10">
-          {[
-            [
-              { key: "sex", label: "Sex:" },
-              { key: "strain", label: "Strain:" },
-              { key: "dob", label: "DOB:" },
-              { key: "cell_injection_date", label: "Cell Injection Date:" },
-            ],
-            [
-              { key: "cell_line", label: "Cell Line:" },
-              { key: "treatment_date", label: "Treatment Date:" },
-              { key: "measurement_date", label: "Measurement Date:" },
-            ],
-          ].map((group) => (
-            <div className="space-y-3" key={group[0].key}>
-              {group.map(({ key, label }) => {
-                const value = viewData[key as keyof CalliperingData];
-                // Only render if value is a string (not the mice array)
-                if (typeof value !== "string") return null;
-                return (
-                  <div className="flex items-center gap-3" key={key}>
-                    <Label className="font-semibold text-sm w-56">
-                      {label}
-                    </Label>
-                    <span className="flex-1">{value}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ))}
+    <>
+      <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="grid grid-cols-2 gap-10">
+            {[
+              [
+                { key: "sex", label: "Sex:" },
+                { key: "strain", label: "Strain:" },
+                { key: "dob", label: "DOB:" },
+                { key: "cell_injection_date", label: "Cell Injection Date:" },
+              ],
+              [
+                { key: "cell_line", label: "Cell Line:" },
+                { key: "treatment_date", label: "Treatment Date:" },
+                { key: "measurement_date", label: "Measurement Date:" },
+              ],
+            ].map((group) => (
+              <div className="space-y-3" key={group[0].key}>
+                {group.map(({ key, label }) => {
+                  const value = viewData[key as keyof CalliperingData];
+                  // Only render if value is a string (not the mice array)
+                  if (typeof value !== "string") return null;
+                  return (
+                    <div className="flex items-center gap-3" key={key}>
+                      <Label className="font-semibold text-sm w-56">
+                        {label}
+                      </Label>
+                      <span className="flex-1">{value}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
+        {viewData.mice && viewData.mice.length > 0 && (
+          <div className="bg-white mt-4">
+            <DataTable
+              columns={getReadOnlyCalliperingColumns(handleViewNotes)}
+              data={viewData.mice}
+            />
+          </div>
+        )}
       </div>
-      {viewData.mice && viewData.mice.length > 0 && (
-        <div className="bg-white mt-4">
-          <DataTable
-            columns={getReadOnlyCalliperingColumns()}
-            data={viewData.mice}
-          />
-        </div>
-      )}
-    </div>
+      <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
+    </>
   );
 }
