@@ -4,7 +4,7 @@ import { SearchableSelect } from "../atoms/SearchableSelect/SearchableSelect";
 
 interface ExperimentDrugSelectProps {
   value: string;
-  onValueChange: (drugId: string) => void;
+  onValueChange?: (drugId: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -26,7 +26,7 @@ interface ExperimentDrugSelectProps {
  */
 export function ExperimentDrugSelect({
   value,
-  onValueChange,
+  onValueChange = () => {},
   placeholder = "Select Drug",
   className,
   disabled = false,

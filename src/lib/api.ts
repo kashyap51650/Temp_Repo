@@ -16,6 +16,7 @@ import type {
 import type {
   RandomizationPreviewData,
   RandomizationPreviewResponse,
+  ViewRandomizationGroupResponse,
 } from "@/types/randomization";
 
 import type { UserFilters, UsersResponse } from "../types/auth";
@@ -122,6 +123,8 @@ export const API_CONFIG = {
     RANDOMIZATION: {
       PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,
       CONFIRM: `/api/${import.meta.env.VITE_API_VERSION}/randomization/confirm`,
+      VIEW: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/randomization/view/${experimentId}`,
     },
     MOUSE_GROUPS: {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
@@ -171,10 +174,7 @@ export interface ApiResponse<T = unknown> {
   success?: boolean;
 }
 
-export interface ExperimentDropdownItem {
-  id: number;
-  experiment_name: string;
-}
+export type RandomizationStatus = "completed" | "pending";
 
 export interface ExperimentsDropdownResponse {
   success: boolean;
@@ -1011,6 +1011,7 @@ export interface CreateExperimentResponse {
     mouse_strain_ids: number[];
     created_at: string;
     updated_at: string;
+    randomization_status: RandomizationStatus;
   };
 }
 
@@ -1033,6 +1034,7 @@ export type BiodExperimentResponse = ApiResponse<{
   created_by: number;
   end_date: string;
   experiment_name: string;
+  randomization_status: RandomizationStatus;
   fda_tag: boolean;
   id: number;
   isotope: {
@@ -1066,6 +1068,7 @@ export type BiodExperimentResponse = ApiResponse<{
 export interface ExperimentDropdownItem {
   id: number;
   experiment_name: string;
+  randomization_status?: RandomizationStatus;
 }
 
 export interface ExperimentsDropdownResponse {
@@ -1607,8 +1610,13 @@ export const randomizationApi = {
       ...payload,
     });
   },
+  viewRandomizationDetails: async (experimentId: number) => {
+    return apiClient.get<ViewRandomizationGroupResponse>(
+      API_CONFIG.ENDPOINTS.RANDOMIZATION.VIEW(experimentId)
+    );
+  },
 };
-export interface RandomizationGroup {
+export interface MouseGroup {
   id: number;
   experiment_id: number;
   group_code: string;
@@ -1626,14 +1634,14 @@ export interface RandomizationGroup {
 export const mouseGroupApi = {
   getMouseGroupsByExperiment: async (
     experimentId: number
-  ): Promise<ApiResponse<RandomizationGroup[]>> => {
+  ): Promise<ApiResponse<MouseGroup[]>> => {
     return await apiClient.get(
       API_CONFIG.ENDPOINTS.MOUSE_GROUPS.MOUSE_GROUPS_BY_EXPERIMENT(experimentId)
     );
   },
   getMouseGroupWithOrganWeights: async (
     experimentId: number
-  ): Promise<ApiResponse<RandomizationGroup[]>> => {
+  ): Promise<ApiResponse<MouseGroup[]>> => {
     return await apiClient.get(
       API_CONFIG.ENDPOINTS.MOUSE_GROUPS.MOUSE_GROUPS_WITH_ORGAN_WEIGHTS(
         experimentId

@@ -13,7 +13,6 @@ import {
 import { DATA_TYPE, SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
 import { Button } from "../atoms";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
-import { ExperimentLinkDialog } from "./ExperimentLinkDialog";
 import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
@@ -57,7 +56,6 @@ interface FormProps {
 
 interface ApiDataProps {
   projects: Array<{ id: string; name: string }>;
-  experiments: ExperimentDropdownItem[];
   studyTypes: SelectOption[];
   dataTypes: DataType[];
   specialisationOptions: SelectOption[];
@@ -107,16 +105,9 @@ const findStudyTypeId = (
 
 export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const {
-    formProps: {
-      formData,
-      setFormData,
-      errors,
-      handleSubmit,
-      isCreatingNewProject,
-    },
+    formProps: { formData, setFormData, errors, isCreatingNewProject },
     apiDataProps: {
       projects: existingProjects,
-      experiments: existingExperiments,
       studyTypes: studyTypeOptions,
       dataTypes: apiDataTypes,
       specialisationOptions,
@@ -152,8 +143,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       formData.studyType === "Model Study") &&
     formData.specialisation === "Preclinical" &&
     formData.dataType === "Organ Weight Sheet";
-
-  const [showImportDialog, setShowImportDialog] = useState<boolean>(false);
 
   const [isOpenDownloadOrganSheetModal, setIsOpenDownloadOrganSheetModal] =
     useState(false);
@@ -301,7 +290,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         formData={formData}
         setFormData={setFormData}
         errors={errors}
-        existingExperiments={existingExperiments}
         onShowCreateExperimentModal={onShowCreateExperimentModal}
         isPreclinicSelected={isPreclinicSelected}
         isStudyTypeSelected={isStudyTypeSelected}
@@ -393,35 +381,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           isUploading={isAGCSheetUploading}
         />
       )}
-
-      <ExperimentLinkDialog
-        open={showImportDialog}
-        onOpenChange={setShowImportDialog}
-        existingExperiments={existingExperiments}
-        projectId={formData.project?.id.toString() || null}
-        onSubmit={(
-          linkToExisting: boolean,
-          experimentId?: string,
-          newExperimentName?: string
-        ) => {
-          if (linkToExisting && experimentId) {
-            const selectedExperiment = existingExperiments.find(
-              (e: ExperimentDropdownItem) => e.id.toString() === experimentId
-            );
-            setFormData((prev: FormData) => ({
-              ...prev,
-              experiment: selectedExperiment || null,
-            }));
-          } else if (!linkToExisting && newExperimentName?.trim()) {
-            setFormData((prev: FormData) => ({
-              ...prev,
-              newExperimentName: newExperimentName.trim(),
-            }));
-          }
-          setShowImportDialog(false);
-          handleSubmit();
-        }}
-      />
     </>
   );
 }

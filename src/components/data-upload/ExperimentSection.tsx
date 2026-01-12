@@ -5,8 +5,15 @@ import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import { Label } from "@/components/atoms/Label/Label";
 import { ExperimentSelect } from "@/components/atoms/Selects";
 import { useDataTypes, useExperimentsDropdown } from "@/hooks";
-import type { DataType, ExperimentDropdownItem, Project } from "@/lib/api";
+import type {
+  DataType,
+  ExperimentDropdownItem,
+  Project,
+  RandomizationStatus,
+} from "@/lib/api";
+import { DATA_TYPE } from "@/lib/constants";
 
+import { ViewRandomizationButton } from "../molecules/ViewRandomizationButton/ViewRandomizationButton";
 import { CustomSelect } from "./CustomSelect";
 
 interface SelectOption {
@@ -41,13 +48,14 @@ interface LocalExperiment {
   isotope: string;
   projectId: string;
   studyType: string;
+  randomization_status: RandomizationStatus;
 }
 
 interface ExperimentSectionProps {
   formData: FormData;
   setFormData: (updater: (prev: FormData) => FormData) => void;
   errors: ValidationErrors;
-  existingExperiments: ExperimentDropdownItem[];
+
   onShowCreateExperimentModal?: () => void;
   isPreclinicSelected: boolean;
   isStudyTypeSelected: boolean;
@@ -125,6 +133,7 @@ export function ExperimentSection({
       const formattedExperiment: ExperimentDropdownItem = {
         id: experimentId,
         experiment_name: experimentName,
+        randomization_status: lastCreatedExperiment.randomizationStatus,
       };
 
       setFormData((prev: FormData) => ({
@@ -158,6 +167,7 @@ export function ExperimentSection({
       isotope: "",
       projectId: projectId?.toString() || "",
       studyType: formData.studyType || "",
+      randomization_status: exp?.randomization_status ?? "pending",
     })
   );
 
@@ -200,6 +210,7 @@ export function ExperimentSection({
                 ? {
                     id: parseInt(experiment.id),
                     experiment_name: experiment.name,
+                    randomization_status: experiment.randomization_status,
                   }
                 : null;
 
@@ -258,6 +269,7 @@ export function ExperimentSection({
               : "w-full"
           }
         />
+
         {!isExperimentSelected && (
           <span className="text-xs text-muted-foreground">
             Please select experiment to continue
@@ -276,6 +288,13 @@ export function ExperimentSection({
         {errors.dataType && (
           <span className="text-sm text-red-500">{errors.dataType}</span>
         )}
+      </div>
+
+      <div className="md:mt-6">
+        {formData.experiment?.randomization_status === "completed" &&
+          formData.dataType === DATA_TYPE.ORGAN_WEIGHT_SHEET && (
+            <ViewRandomizationButton experimentId={formData.experiment?.id} />
+          )}
       </div>
     </div>
   );

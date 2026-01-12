@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import type { ExperimentDropdownItem } from "@/lib/api";
 import {
   formatDateToISO,
   type ModelStudyFormData,
@@ -16,7 +17,7 @@ interface UseModelStudyFormProps {
   projectId?: number;
   studyTypeId?: number;
   specialization?: string;
-  onSuccess?: (data: { id: number; experiment_name: string }) => void;
+  onSuccess?: (data: ExperimentDropdownItem) => void;
   onCancel?: () => void;
 }
 
@@ -33,7 +34,8 @@ export function useModelStudyForm({
         form.reset();
         onSuccess?.({
           id: data?.data.id,
-          experiment_name: data.data.experiment_name,
+          experiment_name: data?.data.experiment_name,
+          randomization_status: data?.data.radomization_status,
         });
       }
     },

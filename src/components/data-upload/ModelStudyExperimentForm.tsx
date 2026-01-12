@@ -2,6 +2,7 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { useModelStudyForm } from "@/hooks/useModelStudyForm";
+import type { ExperimentDropdownItem } from "@/lib/api";
 
 import { Button, Label } from "../atoms";
 import { Form } from "../organisms";
@@ -18,7 +19,7 @@ interface ModelStudyExperimentFormProps {
   projectId?: number;
   studyTypeId?: number;
   specialization?: string;
-  onSuccess?: (data: { id: number; experiment_name: string }) => void;
+  onSuccess?: (data: ExperimentDropdownItem) => void;
   onCancel?: () => void;
 }
 

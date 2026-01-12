@@ -1,8 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+import type { RandomizationStatus } from "@/lib/api";
+
 interface ExperimentCreatedPayload {
   experimentId: number;
   experimentName: string;
+  randomizationStatus: RandomizationStatus;
 }
 
 interface ProjectChangedPayload {

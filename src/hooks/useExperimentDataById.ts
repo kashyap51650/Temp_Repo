@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiClient } from "@/lib/api";
+import { apiClient, type RandomizationStatus } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 
@@ -63,7 +63,6 @@ interface Reviewer {
 }
 
 type ExperimentStatus = "approved" | "pending" | "rejected";
-type RandomizationStatus = "completed" | "pending";
 type TreatmentPhase = "Baseline" | "Treatment" | "Post-Treatment";
 export interface ExperimentDataResponse {
   id: number;

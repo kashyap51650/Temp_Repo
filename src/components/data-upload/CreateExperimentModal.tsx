@@ -16,6 +16,7 @@ import {
   useExperimentData,
   useModal,
 } from "@/hooks";
+import type { ExperimentDropdownItem } from "@/lib/api";
 import { STUDY_TYPE } from "@/lib/constants";
 
 import { Button, Input } from "../atoms";
@@ -105,6 +106,7 @@ export function CreateExperimentModal({
       handleSuccess({
         id: data?.id,
         experiment_name: data?.experiment_name,
+        randomization_status: data?.randomization_status,
       });
     },
   });
@@ -116,6 +118,7 @@ export function CreateExperimentModal({
           handleSuccess({
             id: data?.id,
             experiment_name: data?.experiment_name,
+            randomization_status: data?.randomization_status,
           });
         }
       },
@@ -125,7 +128,7 @@ export function CreateExperimentModal({
     setFormState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  const handleSuccess = (data: { id: number; experiment_name: string }) => {
+  const handleSuccess = (data: ExperimentDropdownItem) => {
     onCreateExperiment({
       name: formState.experimentName.trim(),
       isotope: formState.selectedIsotope,
@@ -136,6 +139,7 @@ export function CreateExperimentModal({
       experimentCreated({
         experimentId: data.id,
         experimentName: data.experiment_name,
+        randomizationStatus: data?.randomization_status ?? "pending",
       })
     );
 

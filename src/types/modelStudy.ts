@@ -3,7 +3,7 @@
  * Types for Model Study Experiment creation and management
  */
 
-import type { ApiResponse } from "@/lib/api";
+import type { ApiResponse, RandomizationStatus } from "@/lib/api";
 
 export interface CellLineStrainPair {
   cell_line_id: number;
@@ -33,6 +33,7 @@ export interface ModelStudyExperiment {
   cell_injection_date: string;
   created_at?: string;
   updated_at?: string;
+  radomization_status: RandomizationStatus;
 }
 
 export type CreateModelStudyResponse = ApiResponse<ModelStudyExperiment>;

@@ -83,13 +83,6 @@ export default function DataUploadCommon() {
 
   const [experiments, setExperiments] = useState<Experiment[]>(experimentData);
 
-  const existingExperiments: ExperimentDropdownItem[] = experiments.map(
-    (exp) => ({
-      id: parseInt(exp.id),
-      experiment_name: exp.name,
-    })
-  );
-
   const dispatch = useAppDispatch();
 
   const hasFormData = () => {
@@ -209,7 +202,7 @@ export default function DataUploadCommon() {
 
     setExperiments((prev) => [...prev, newExperiment]);
 
-    const formattedExperiment: ExperimentDropdownItem = {
+    const formattedExperiment = {
       id: newId,
       experiment_name: experimentData.name,
     };
@@ -219,7 +212,6 @@ export default function DataUploadCommon() {
       experiment: formattedExperiment,
     }));
 
-    console.log("Local experiment created:", formattedExperiment);
     setErrors((prev) => ({ ...prev, experiment: "" }));
   };
 
@@ -287,7 +279,6 @@ export default function DataUploadCommon() {
 
   const apiDataProps = {
     projects: existingProjectsForSelect,
-    experiments: existingExperiments,
     studyTypes: dynamicStudyTypeOptions,
     dataTypes: apiDataTypes,
     specialisationOptions,
