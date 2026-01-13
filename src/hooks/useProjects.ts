@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { toast } from "@/components/atoms/Sonner/toast";
+import { useIsAuthenticated } from "@/lib/auth";
 
 import { handleApiError, type Project, projectApi } from "../lib/api";
 import useDebounce from "./useDebounce";
@@ -22,6 +23,7 @@ export function useProjects(): UseProjectsResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const isAuthenticated = useIsAuthenticated();
 
   const isInitialized = useRef(false);
   const loadingRef = useRef(false);
@@ -29,7 +31,7 @@ export function useProjects(): UseProjectsResult {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const loadProjects = useCallback(async (search?: string) => {
-    if (loadingRef.current) {
+    if (loadingRef.current || !isAuthenticated) {
       return;
     }
 

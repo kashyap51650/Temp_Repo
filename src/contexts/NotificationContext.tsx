@@ -1,9 +1,11 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useReducer,
+  useRef,
 } from "react";
 
 import {
@@ -13,6 +15,7 @@ import {
   mockNotifications,
   transformApiNotification,
 } from "@/data/notifications";
+import { useAuthState } from "@/hooks";
 import { notificationApi } from "@/lib/api";
 import type { Notification } from "@/types/notification";
 
@@ -146,8 +149,13 @@ function notificationReducer(
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
+  const { isAuthenticated } = useAuthState();
+  const fetchCountIntervalRef = useRef<number | undefined>(undefined);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       dispatch({ type: "SET_ERROR", payload: null });
@@ -172,9 +180,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  };
+  }, [isAuthenticated]);
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      return;
+    }
     try {
       const response = await notificationApi.getUnreadCount();
       if (response.success && response.data) {
@@ -187,24 +198,36 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       console.error("Failed to fetch unread count:", error);
       dispatch({ type: "SET_API_UNREAD_COUNT", payload: state.unreadCount });
     }
-  };
+  }, [isAuthenticated, state.unreadCount]);
 
   const refreshNotifications = async () => {
     await Promise.all([fetchNotifications(), fetchUnreadCount()]);
   };
 
   useEffect(() => {
-    fetchNotifications();
-    fetchUnreadCount();
-  }, []);
+    if (isAuthenticated) {
+      fetchNotifications();
+      fetchUnreadCount();
+    }
+  }, [isAuthenticated, fetchNotifications, fetchUnreadCount]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000);
+    if (fetchCountIntervalRef.current) {
+      clearInterval(fetchCountIntervalRef.current);
+    }
 
-    return () => clearInterval(interval);
-  }, []);
+    if (isAuthenticated) {
+      fetchCountIntervalRef.current = setInterval(() => {
+        fetchUnreadCount();
+      }, 30000);
+    }
+
+    return () => {
+      if (fetchCountIntervalRef.current) {
+        clearInterval(fetchCountIntervalRef.current);
+      }
+    };
+  }, [isAuthenticated, fetchUnreadCount]);
 
   const markAsRead = async (id: string) => {
     try {

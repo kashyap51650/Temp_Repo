@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { API_CONFIG, apiClient } from "@/lib/api";
@@ -8,6 +9,8 @@ import type {
   LoginResponse,
   User,
 } from "@/types/auth";
+
+import { CUSTOM_EVENTS } from "./constants";
 
 // Query keys for TanStack Query
 export const AUTH_QUERY_KEYS = {
@@ -77,6 +80,7 @@ export const useLogin = () => {
       // Store tokens in sessionStorage
       sessionStorage.setItem("access_token", data.access_token);
       sessionStorage.setItem("refresh_token", data.refresh_token);
+      window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
 
       // Cache auth data in TanStack Query
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
@@ -175,10 +179,33 @@ export const useCurrentUser = () => {
   });
 };
 
+const checkAccessTokenValid = () => {
+  const token = tokenUtils.getAccessToken();
+  const isValid = !!token && !tokenUtils.isTokenExpired(token);
+  return isValid;
+};
+
 // Helper hook to check if user is authenticated
 export const useIsAuthenticated = () => {
-  const token = tokenUtils.getAccessToken();
-  return !!token && !tokenUtils.isTokenExpired(token);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const isValid = checkAccessTokenValid();
+    return isValid;
+  });
+
+  const checkAuth = useCallback(() => {
+    const isValid = checkAccessTokenValid();
+    setIsAuthenticated(isValid);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
+
+    return () => {
+      window.removeEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
+    };
+  }, [checkAuth]);
+
+  return isAuthenticated;
 };
 
 // Utility functions for token management
@@ -194,6 +221,7 @@ export const tokenUtils = {
   removeTokens: (): void => {
     sessionStorage.removeItem("access_token");
     sessionStorage.removeItem("refresh_token");
+    window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
   },
 
   isTokenExpired: (token: string): boolean => {

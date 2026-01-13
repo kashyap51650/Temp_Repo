@@ -115,3 +115,7 @@ export const STUDY_TYPE_COLORS = [
   "bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200",
   "bg-pink-100 text-pink-700 border-pink-200 hover:bg-pink-200",
 ] as const;
+
+export const CUSTOM_EVENTS = {
+  TOKEN_CHANGE: "tokenChange",
+};
