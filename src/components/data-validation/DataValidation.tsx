@@ -10,7 +10,7 @@ import {
   statusOptions,
 } from "@/lib/constants";
 
-import { useModal, useValidationData } from "../../hooks";
+import { useExperimentDataModals, useValidationData } from "../../hooks";
 import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
 import { AsyncSelect } from "../molecules";
@@ -18,22 +18,15 @@ import { BaseSelect } from "../molecules/BaseSelect";
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
-import { BioDOrganViewModal } from "./BioDOrganViewModal";
-import { BioDWeightSheetViewModal } from "./BioDWeightSheetViewModal";
-import { CalliperingSheetViewModal } from "./CalliperingSheetViewModal";
-import { DataViewModal } from "./DataViewModal";
+import { DataTableSkeleton } from "../skeletons/DataTableSkeleton";
 
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
   const [studyTypeFilter, setStudyTypeFilter] = useState<string>(SELECT_ALL);
   const [dataTypeFilter, setDataTypeFilter] = useState<string>(SELECT_ALL);
-  const [selectedExperiment, setSelectedExperiment] =
-    useState<ValidationRow | null>(null);
-  const dataViewModal = useModal();
-  const calliperingViewModal = useModal();
-  const weightSheetViewModal = useModal();
-  const organViewModal = useModal();
+
+  const { handleViewData, renderModals } = useExperimentDataModals();
 
   const { data, isLoading, error, setFilters, filters } = useValidationData();
 
@@ -76,41 +69,6 @@ export default function DataValidation() {
     if (!data?.items) return [];
     return transformExperimentDataToValidationRows(data.items);
   }, [data?.items]);
-
-  const handleViewData = useCallback(
-    (experiment: ValidationRow) => {
-      setSelectedExperiment(experiment);
-      const dataTypeLower = experiment.dataType.toLowerCase();
-
-      // Check if it's a callipering type sheet
-      const isCalliperingSheet = dataTypeLower.includes("callipering");
-
-      // Check if it's a necropsy/organ sheet
-      const isOrganSheet =
-        dataTypeLower.includes("organ") && dataTypeLower.includes("sheet");
-      // Check if it's a weight sheet
-      const isWeightSheet =
-        dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
-
-      if (isCalliperingSheet) {
-        calliperingViewModal.openModal();
-        return;
-      }
-
-      if (isOrganSheet) {
-        organViewModal.openModal();
-        return;
-      }
-
-      if (isWeightSheet) {
-        weightSheetViewModal.openModal();
-        return;
-      }
-
-      dataViewModal.openModal();
-    },
-    [calliperingViewModal, dataViewModal, organViewModal, weightSheetViewModal]
-  );
 
   const handleRandomize = useCallback(
     (row: ValidationRow) => {
@@ -262,9 +220,7 @@ export default function DataValidation() {
 
         <Card className="p-0 shadow-none border-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              Loading experiment data...
-            </div>
+            <DataTableSkeleton columns={columns.length} rows={10} />
           ) : tableData.length > 0 ? (
             <DataTable
               columns={columns}
@@ -286,42 +242,7 @@ export default function DataValidation() {
         </Card>
       </div>
 
-      {selectedExperiment && (
-        <>
-          <DataViewModal
-            isOpen={dataViewModal.isOpen}
-            onClose={dataViewModal.closeModal}
-            experiment={selectedExperiment}
-          />
-          {calliperingViewModal.isOpen && (
-            <CalliperingSheetViewModal
-              isOpen={calliperingViewModal.isOpen}
-              onClose={calliperingViewModal.closeModal}
-              experimentName={selectedExperiment.experimentName}
-              experimentDataId={selectedExperiment.id}
-              experimentStatus={selectedExperiment.status}
-            />
-          )}
-          {weightSheetViewModal.isOpen && (
-            <BioDWeightSheetViewModal
-              isOpen={weightSheetViewModal.isOpen}
-              onClose={weightSheetViewModal.closeModal}
-              experimentName={selectedExperiment.experimentName}
-              experimentDataId={selectedExperiment.id}
-              experimentStatus={selectedExperiment.status}
-            />
-          )}
-          {organViewModal.isOpen && (
-            <BioDOrganViewModal
-              isOpen={organViewModal.isOpen}
-              onClose={organViewModal.closeModal}
-              experimentName={selectedExperiment.experimentName}
-              experimentDataId={selectedExperiment.id}
-              experimentStatus={selectedExperiment.status}
-            />
-          )}
-        </>
-      )}
+      {renderModals()}
     </>
   );
 }

@@ -632,7 +632,9 @@ export function getTemplateColumns(
   ];
 }
 
-export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataItem>[] {
+export function getUploadedDatasetColumns(
+  onViewData?: (row: UploadedExperimentDataItem) => void
+): ColumnDef<UploadedExperimentDataItem>[] {
   const formatDateTime = (dateString: string): string => {
     try {
       const date = new Date(dateString);
@@ -756,6 +758,22 @@ export function getUploadedDatasetColumns(): ColumnDef<UploadedExperimentDataIte
             {row.original.rejection_reason || "-"}
           </TooltipContent>
         </Tooltip>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onViewData?.(row.original)}
+        >
+          <span className="flex items-center gap-2">
+            <Eye className="size-4" />
+            View Data
+          </span>
+        </Button>
       ),
     },
   ];

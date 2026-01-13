@@ -1,7 +1,5 @@
-import { Check, Edit, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import {
@@ -13,6 +11,7 @@ import {
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
 import { BioDWeightSheetView } from "./BioDWeightSheetView";
 import { RejectExperimentModal } from "./RejectExperimentModal";
+import { SheetActions } from "./SheetActions";
 
 interface BioDWeightSheetViewModalProps {
   isOpen: boolean;
@@ -21,6 +20,7 @@ interface BioDWeightSheetViewModalProps {
   experimentDataId?: string;
   data?: BioDWeightData;
   experimentStatus?: string;
+  hideActions?: boolean;
 }
 
 export function BioDWeightSheetViewModal({
@@ -30,6 +30,7 @@ export function BioDWeightSheetViewModal({
   experimentDataId,
   data,
   experimentStatus,
+  hideActions = false,
 }: Readonly<BioDWeightSheetViewModalProps>) {
   const editModal = useModal();
   const rejectModal = useModal();
@@ -101,42 +102,15 @@ export function BioDWeightSheetViewModal({
                 View weight sheet data for the experiment
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {isPending && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEdit}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit className="size-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleApprove}
-                    className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-                    disabled={approveMutation.isPending}
-                  >
-                    <Check className="size-4" />
-                    Approve
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => rejectModal.openModal()}
-                    className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    disabled={rejectMutation.isPending}
-                  >
-                    <XIcon className="size-4" />
-                    Reject
-                  </Button>
-                </>
-              )}
-            </div>
+            {!hideActions && isPending && (
+              <SheetActions
+                onEdit={handleEdit}
+                onApprove={handleApprove}
+                onReject={() => rejectModal.openModal()}
+                isApproveLoading={approveMutation.isPending}
+                isRejectLoading={rejectMutation.isPending}
+              />
+            )}
           </div>
         }
         trigger={null}

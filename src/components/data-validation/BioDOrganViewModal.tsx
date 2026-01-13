@@ -1,8 +1,6 @@
-import { Check, Edit, X as XIcon } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/atoms/Button/Button";
 import {
   useApproveExperimentData,
   useExperimentDataByIdForOrganSheet,
@@ -15,6 +13,7 @@ import { Dialog } from "../atoms/Dialog/Dialog";
 import { BioDOrganTable } from "../organisms/DataTable/BioDOrganTable";
 import { BioDOrganEditModal } from "./BioDOrganEditModal";
 import { RejectExperimentModal } from "./RejectExperimentModal";
+import { SheetActions } from "./SheetActions";
 
 interface BioDOrganViewModalProps {
   isOpen: boolean;
@@ -22,6 +21,7 @@ interface BioDOrganViewModalProps {
   experimentName: string;
   experimentDataId?: string;
   experimentStatus?: string;
+  hideActions?: boolean;
 }
 
 export function BioDOrganViewModal({
@@ -30,6 +30,7 @@ export function BioDOrganViewModal({
   experimentName,
   experimentDataId,
   experimentStatus,
+  hideActions = false,
 }: Readonly<BioDOrganViewModalProps>) {
   const editModal = useModal();
   const rejectModal = useModal();
@@ -116,43 +117,15 @@ export function BioDOrganViewModal({
                 View organ data for the experiment
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {isPending && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleEdit}
-                    className="flex items-center gap-2"
-                    disabled={isApiProcessing}
-                  >
-                    <Edit className="size-4" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleApprove}
-                    className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-                    disabled={isApiProcessing}
-                  >
-                    <Check className="size-4" />
-                    Approve
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => rejectModal.openModal()}
-                    className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    disabled={isApiProcessing}
-                  >
-                    <XIcon className="size-4" />
-                    Reject
-                  </Button>
-                </>
-              )}
-            </div>
+            {!hideActions && isPending && (
+              <SheetActions
+                onEdit={handleEdit}
+                onApprove={handleApprove}
+                onReject={() => rejectModal.openModal()}
+                isApproveLoading={isApiProcessing}
+                isRejectLoading={isApiProcessing}
+              />
+            )}
           </div>
         }
         showClose={true}

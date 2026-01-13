@@ -14,6 +14,7 @@ export * from "./useDownloadSheet";
 export * from "./useExperimentData";
 export * from "./useExperimentDataById";
 export * from "./useExperimentDataImport";
+export * from "./useExperimentDataModals";
 export * from "./useExperimentDrugsDropdown";
 export * from "./useExperimentMouseGroups";
 export * from "./useExperimentsDropdown";
