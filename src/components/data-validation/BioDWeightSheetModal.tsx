@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { toast } from "sonner";
 
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
-import { useBulkUpdateBodyWeights } from "@/hooks";
-import type { BodyWeightMeasurementUpdate } from "@/hooks/useBulkUpdateBodyWeights";
+import { useBioDWeightSheetSave } from "@/hooks";
 
 import { Button } from "../atoms";
 import { BioDWeightSheet } from "./BioDWeightSheet";
@@ -28,7 +26,7 @@ export function BioDWeightSheetModal({
 }: Readonly<BioDWeightSheetModalProps>) {
   const [currentData, setCurrentData] = useState<BioDWeightData | null>(null);
   const [originalData, setOriginalData] = useState<BioDWeightData | null>(null);
-  const bulkUpdateMutation = useBulkUpdateBodyWeights();
+  const { saveChanges, isPending } = useBioDWeightSheetSave();
 
   const handleDataChange = (weightData: BioDWeightData) => {
     setCurrentData(weightData);
@@ -38,62 +36,17 @@ export function BioDWeightSheetModal({
     }
   };
 
-  const handleSave = async () => {
-    if (!currentData || !originalData) {
-      toast.error("Invalid data", {
-        description: "Unable to save changes due to missing data",
-      });
-      return;
-    }
-
-    if (!currentData.mice.some((mouse) => mouse.measurementId)) {
-      toast.error("Invalid measurement data", {
-        description: "No valid measurements found to update",
-      });
-      return;
-    }
-
-    const changedMeasurements: BodyWeightMeasurementUpdate[] = [];
-
-    currentData.mice.forEach((currentMouse, index) => {
-      const originalMouse = originalData.mice[index];
-      if (originalMouse && currentMouse.measurementId) {
-        const weightChanged =
-          currentMouse.bodyWeight !== originalMouse.bodyWeight;
-
-        if (weightChanged) {
-          if (currentMouse.bodyWeight <= 0 || currentMouse.bodyWeight > 1000) {
-            toast.error("Invalid weight value", {
-              description: `Weight for mouse ${currentMouse.id} must be between 0 and 1000 grams`,
-            });
-            return;
-          }
-
-          changedMeasurements.push({
-            id: currentMouse.measurementId,
-            body_weight_grams: currentMouse.bodyWeight,
-          });
-        }
-      }
+  const handleSave = () => {
+    saveChanges({
+      currentData,
+      originalData,
+      experimentDataId,
+      onSuccess: () => {
+        onSave(currentData!);
+        onClose();
+      },
+      onClose,
     });
-
-    if (changedMeasurements.length === 0) {
-      toast.info("No changes detected", {
-        description: "No weight measurements were modified",
-      });
-      onClose();
-      return;
-    }
-
-    bulkUpdateMutation.mutate(
-      { measurements: changedMeasurements },
-      {
-        onSuccess: () => {
-          onSave(currentData);
-          onClose();
-        },
-      }
-    );
   };
 
   return (
@@ -120,9 +73,9 @@ export function BioDWeightSheetModal({
           variant={"default"}
           size={"lg"}
           onClick={handleSave}
-          disabled={bulkUpdateMutation.isPending}
+          disabled={isPending}
         >
-          {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"}
+          {isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </Dialog>

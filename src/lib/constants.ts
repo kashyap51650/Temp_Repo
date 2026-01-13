@@ -116,6 +116,7 @@ export const STUDY_TYPE_COLORS = [
   "bg-pink-100 text-pink-700 border-pink-200 hover:bg-pink-200",
 ] as const;
 
+export const MAX_BODY_WEIGHT_GRAMS = 1000;
 export const CUSTOM_EVENTS = {
   TOKEN_CHANGE: "tokenChange",
 };

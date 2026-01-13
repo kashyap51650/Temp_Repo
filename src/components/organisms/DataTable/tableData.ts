@@ -2170,6 +2170,16 @@ export interface BioDWeightData {
   treatmentDate: string;
   measurementDate: string;
   mice: BioDWeightMouse[];
+  mouse_strain?: {
+    id: number;
+    mouse_strain_name: string;
+    mouse_strain_description: string;
+  };
+  cell_line?: {
+    id: number;
+    cell_line_name: string;
+    vendor_name: string;
+  };
 }
 
 export const biodWeightSheetData: BioDWeightData = {

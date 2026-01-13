@@ -8,8 +8,16 @@ export interface BodyWeightMeasurementUpdate {
   body_weight_grams: number;
 }
 
-interface BulkUpdateBodyWeightsRequest {
-  measurements: BodyWeightMeasurementUpdate[];
+export interface BulkUpdateBodyWeightsRequest {
+  measurements?: BodyWeightMeasurementUpdate[];
+  sex?: string;
+  mouse_strain_id?: number;
+  date_of_birth?: string;
+  cell_injection_date?: string;
+  cell_line_id?: number;
+  treatment_date?: string;
+  measurement_date?: string;
+  experiment_data_id: string;
 }
 
 interface BulkUpdateBodyWeightsResponse {
@@ -22,18 +30,16 @@ interface BulkUpdateBodyWeightsResponse {
 const bulkUpdateBodyWeights = async (
   request: BulkUpdateBodyWeightsRequest
 ): Promise<ApiResponse<BulkUpdateBodyWeightsResponse>> => {
-  const endpoint = `/api/v1/body-weight-measurements/bulk-update`;
+  const endpoint = `/api/v1/body-weight-measurements/${request.experiment_data_id}/bulk-update`;
 
-  if (!request.measurements || request.measurements.length === 0) {
-    throw new Error("No measurements provided for update");
-  }
+  if (request.measurements && request.measurements.length > 0) {
+    const invalidMeasurements = request.measurements.filter(
+      (measurement) => !measurement.id || measurement.body_weight_grams <= 0
+    );
 
-  const invalidMeasurements = request.measurements.filter(
-    (measurement) => !measurement.id || measurement.body_weight_grams <= 0
-  );
-
-  if (invalidMeasurements.length > 0) {
-    throw new Error("Invalid measurement data provided");
+    if (invalidMeasurements.length > 0) {
+      throw new Error("Invalid measurement data provided");
+    }
   }
 
   return apiClient.patch<BulkUpdateBodyWeightsResponse>(endpoint, request);

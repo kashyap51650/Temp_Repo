@@ -156,6 +156,11 @@ export type ExperimentDataForWeightSheetResponse = {
     cell_inj_date: string | null;
     treatment_date: string | null;
     measurement_date: string;
+    mouse_strain: {
+      id: number;
+      mouse_strain_name: string;
+      mouse_strain_description: string;
+    };
   };
 };
 

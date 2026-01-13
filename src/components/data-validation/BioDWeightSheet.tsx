@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { DatePicker } from "@/components/atoms/Input/DatePicker";
 import { Input } from "@/components/atoms/Input/Input";
@@ -9,11 +9,18 @@ import type { BioDWeightData } from "@/components/organisms/DataTable/tableData"
 import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
 
 import { Label } from "../atoms";
+import { CellLineField, StrainField } from "../data-upload/FormFields";
 
 interface BioDWeightSheetProps {
   data?: BioDWeightData;
   onSave?: (data: BioDWeightData) => void;
   experimentDataId?: string;
+}
+
+interface HeaderField {
+  key: string;
+  label: string;
+  type: string;
 }
 
 export function BioDWeightSheet({
@@ -42,10 +49,10 @@ export function BioDWeightSheet({
     if (apiData && !data) {
       const transformedData: BioDWeightData = {
         sex: apiData.uploaded_data.sex ?? "",
-        strain: apiData.uploaded_data.strain ?? "",
+        strain: apiData.uploaded_data.mouse_strain?.id.toString() ?? "",
         dob: apiData.uploaded_data.date_of_birth ?? "",
         cellInjectionDate: apiData.uploaded_data.cell_inj_date ?? "",
-        cellLine: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
+        cellLine: apiData.uploaded_data.cell_line?.id.toString() ?? "",
         treatmentDate: apiData.uploaded_data.treatment_date ?? "",
         measurementDate: apiData.uploaded_data.measurement_date ?? "",
         mice:
@@ -64,15 +71,18 @@ export function BioDWeightSheet({
       setFormData(data);
       onSave?.(data);
     }
-  }, [apiData, data]);
+  }, [apiData, data, onSave]);
 
-  const handleHeaderChange = (field: keyof BioDWeightData, value: string) => {
-    const updatedData = { ...formData, [field]: value };
-    setFormData(updatedData);
-    if (onSave) {
-      onSave(updatedData);
-    }
-  };
+  const handleHeaderChange = useCallback(
+    (field: keyof BioDWeightData, value: string) => {
+      const updatedData = { ...formData, [field]: value };
+      setFormData(updatedData);
+      if (onSave) {
+        onSave(updatedData);
+      }
+    },
+    [onSave]
+  );
 
   const handleFormDataChange = (
     updater: (prevData: BioDWeightData) => BioDWeightData
@@ -86,6 +96,79 @@ export function BioDWeightSheet({
       return newData;
     });
   };
+
+  const renderHeaderField = useCallback(
+    (headerField: HeaderField) => {
+      const { key, label, type } = headerField;
+
+      const value = formData[key as keyof BioDWeightData];
+
+      const handleChange = (val: string) => {
+        handleHeaderChange(key as keyof BioDWeightData, val);
+      };
+
+      const renderField = () => {
+        switch (type) {
+          case "select":
+            if (key === "strain") {
+              return (
+                <div className="flex-1">
+                  <StrainField
+                    value={Number(formData.strain)}
+                    onChange={(value) => handleChange(String(value))}
+                    size="default"
+                    experimentId={experimentDataId}
+                    hideLabel
+                  />
+                </div>
+              );
+            }
+            if (key === "cellLine") {
+              return (
+                <div className="flex-1">
+                  <CellLineField
+                    value={Number(formData.cellLine)}
+                    onChange={(value) => handleChange(String(value))}
+                    size="default"
+                    experimentId={experimentDataId}
+                    hideLabel
+                  />
+                </div>
+              );
+            }
+            return null;
+
+          case "date":
+            return (
+              <DatePicker
+                value={value as string}
+                onChange={(date) => handleChange(date)}
+                className="flex-1"
+              />
+            );
+
+          case "input":
+          default:
+            return (
+              <Input
+                size="sm"
+                value={value as string}
+                onChange={(e) => handleChange(e.target.value)}
+                className="flex-1"
+              />
+            );
+        }
+      };
+
+      return (
+        <div className="flex items-center gap-3" key={key}>
+          <Label className="font-semibold text-sm w-56">{label}</Label>
+          {renderField()}
+        </div>
+      );
+    },
+    [experimentDataId]
+  );
 
   if (isLoading && experimentDataId) {
     return (
@@ -112,7 +195,7 @@ export function BioDWeightSheet({
           {[
             [
               { key: "sex", label: "Sex:", type: "input" },
-              { key: "strain", label: "Strain:", type: "input" },
+              { key: "strain", label: "Strain:", type: "select" },
               { key: "dob", label: "DOB:", type: "date" },
               {
                 key: "cellInjectionDate",
@@ -121,42 +204,19 @@ export function BioDWeightSheet({
               },
             ],
             [
-              { key: "cellLine", label: "Cell Line:", type: "input" },
+              { key: "cellLine", label: "Cell Line:", type: "select" },
               { key: "treatmentDate", label: "Treatment Date:", type: "date" },
               {
                 key: "measurementDate",
                 label: "Measurement Date:",
-                type: "input",
+                type: "date",
               },
             ],
           ].map((group) => (
             <div className="space-y-3" key={group[0].key}>
-              {group.map(({ key, label, type }) => (
-                <div className="flex items-center gap-3" key={key}>
-                  <Label className="font-semibold text-sm w-56">{label}</Label>
-                  {type === "input" ? (
-                    <Input
-                      size="sm"
-                      value={formData[key as keyof BioDWeightData] as string}
-                      onChange={(e) =>
-                        handleHeaderChange(
-                          key as keyof BioDWeightData,
-                          e.target.value
-                        )
-                      }
-                      className="flex-1"
-                    />
-                  ) : (
-                    <DatePicker
-                      value={formData[key as keyof BioDWeightData] as string}
-                      onChange={(date) =>
-                        handleHeaderChange(key as keyof BioDWeightData, date)
-                      }
-                      className="flex-1"
-                    />
-                  )}
-                </div>
-              ))}
+              {group.map(({ key, label, type }) =>
+                renderHeaderField({ key, label, type })
+              )}
             </div>
           ))}
         </div>

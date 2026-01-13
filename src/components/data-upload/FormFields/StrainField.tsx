@@ -22,6 +22,9 @@ interface StrainFieldPropsWithValue {
   name?: never;
   value: number | null;
   onChange: (value: number | null) => void;
+  hideLabel?: boolean;
+  size?: "sm" | "default" | "lg";
+  experimentId?: string;
 }
 
 type StrainFieldProps<T extends FieldValues = Record<string, never>> =
@@ -63,10 +66,11 @@ export function StrainField<T extends FieldValues = Record<string, never>>(
   }
 
   // Mode 2: With value/onChange props
-  const { value, onChange } = props as StrainFieldPropsWithValue;
+  const { value, onChange, hideLabel, size, experimentId } =
+    props as StrainFieldPropsWithValue;
   return (
     <div className="flex flex-col w-full">
-      <Label className="mb-1">Strain</Label>
+      {!hideLabel && <Label className="mb-1">Strain</Label>}
       <AsyncSelect
         value={value ? String(value) : undefined}
         onChange={(newValue) => {
@@ -77,12 +81,14 @@ export function StrainField<T extends FieldValues = Record<string, never>>(
           valueKey: "id" as const,
         }}
         query={async () => {
-          const response = await mouseStrainApi.getMouseStrains();
+          const response = await mouseStrainApi.getMouseStrains(experimentId);
           return response.data || [];
         }}
         searchable={false}
-        queryKey={["strains-dropdown"]}
+        queryKey={["strains-dropdown", experimentId ? experimentId : ""]}
         placeholder={"Select strain"}
+        optionWithAll={false}
+        size={size}
       />
     </div>
   );

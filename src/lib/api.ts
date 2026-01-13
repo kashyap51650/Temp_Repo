@@ -1282,17 +1282,25 @@ export const isotopeApi = {
 };
 
 export const cellLineApi = {
-  getCellLines: async (): Promise<CellLinesResponse> => {
+  getCellLines: async (experimentId?: string): Promise<CellLinesResponse> => {
     return apiClient.get<CellLinesResponse>(
-      API_CONFIG.ENDPOINTS.CELL_LINES.LIST
+      API_CONFIG.ENDPOINTS.CELL_LINES.LIST,
+      {
+        params: { experiment_id: experimentId },
+      }
     );
   },
 };
 
 export const mouseStrainApi = {
-  getMouseStrains: async (): Promise<MouseStrainsResponse> => {
+  getMouseStrains: async (
+    experimentId?: string
+  ): Promise<MouseStrainsResponse> => {
     return apiClient.get<MouseStrainsResponse>(
-      API_CONFIG.ENDPOINTS.MOUSE_STRAINS.LIST
+      API_CONFIG.ENDPOINTS.MOUSE_STRAINS.LIST,
+      {
+        params: { experiment_id: experimentId },
+      }
     );
   },
 };

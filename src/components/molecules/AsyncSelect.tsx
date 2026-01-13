@@ -20,6 +20,7 @@ interface AsyncSelectProps<T> {
   allLabel?: string;
   searchable?: boolean;
   multiple?: boolean;
+  size?: "sm" | "default" | "lg";
 }
 
 export function AsyncSelect<T>({
@@ -34,6 +35,7 @@ export function AsyncSelect<T>({
   disabled = false,
   searchable = true,
   multiple = false,
+  size = "lg",
 }: AsyncSelectProps<T>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
@@ -58,7 +60,7 @@ export function AsyncSelect<T>({
       searchPlaceholder="Search..."
       showSearch={searchable}
       disabled={disabled || isLoading}
-      size="lg"
+      size={size}
       multiple={multiple}
     />
   );

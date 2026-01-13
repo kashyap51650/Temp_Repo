@@ -22,6 +22,9 @@ interface CellLineFieldPropsWithValue {
   name?: never;
   value: number | null;
   onChange: (value: number | null) => void;
+  hideLabel?: boolean;
+  size?: "sm" | "default" | "lg";
+  experimentId?: string;
 }
 
 type CellLineFieldProps<T extends FieldValues = Record<string, never>> =
@@ -63,10 +66,11 @@ export function CellLineField<T extends FieldValues = Record<string, never>>(
   }
 
   // Mode 2: With value/onChange props
-  const { value, onChange } = props as CellLineFieldPropsWithValue;
+  const { value, onChange, hideLabel, size, experimentId } =
+    props as CellLineFieldPropsWithValue;
   return (
     <div className="flex flex-col w-full">
-      <Label className="mb-1">Cell Line</Label>
+      {!hideLabel && <Label className="mb-1">Cell Line</Label>}
       <AsyncSelect
         value={value ? String(value) : undefined}
         onChange={(newValue) => {
@@ -77,12 +81,14 @@ export function CellLineField<T extends FieldValues = Record<string, never>>(
           valueKey: "id" as const,
         }}
         query={async () => {
-          const response = await cellLineApi.getCellLines();
+          const response = await cellLineApi.getCellLines(experimentId);
           return response.data || [];
         }}
         searchable={false}
-        queryKey={["cell-lines-dropdown"]}
+        queryKey={["cell-lines-dropdown", experimentId ? experimentId : ""]}
         placeholder="Select cell line"
+        size={size}
+        optionWithAll={false}
       />
     </div>
   );
