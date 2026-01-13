@@ -129,7 +129,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
     return (
       <div className="space-y-1">
         <Select
-          value={undefined}
+          value={""}
           onValueChange={handleValueChange}
           disabled={disabled}
           open={isOpen}
