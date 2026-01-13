@@ -2,13 +2,12 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { exportSheetApi } from "@/lib/api";
+import { DATA_TYPE, type ExperimentDataType } from "@/lib/constants";
 import { downloadBlobFile } from "@/lib/utils";
-
-type SheetType = "Weight Sheet" | "Callipering Sheet";
 
 interface DownloadSheetParams {
   experimentId: number;
-  sheetType: SheetType;
+  sheetType: ExperimentDataType;
 }
 
 interface UseDownloadSheetProps {
@@ -19,10 +18,10 @@ interface UseDownloadSheetProps {
 export const useDownloadSheet = (props?: UseDownloadSheetProps) => {
   const downloadMutation = useMutation({
     mutationFn: async ({ experimentId, sheetType }: DownloadSheetParams) => {
-      if (sheetType === "Weight Sheet") {
+      if (sheetType === DATA_TYPE.WEIGHT_SHEET) {
         const data = await exportSheetApi.weightSheet({ experimentId });
         return { data, filename: "weight_sheet.xlsx" };
-      } else if (sheetType === "Callipering Sheet") {
+      } else if (sheetType === DATA_TYPE.CALLIPERING_SHEET) {
         const data = await exportSheetApi.caliperSheet({ experimentId });
         return { data, filename: "callipering_sheet.xlsx" };
       }
@@ -43,7 +42,10 @@ export const useDownloadSheet = (props?: UseDownloadSheetProps) => {
     },
   });
 
-  const downloadSheet = (experimentId: number, sheetType: SheetType) => {
+  const downloadSheet = (
+    experimentId: number,
+    sheetType: ExperimentDataType
+  ) => {
     downloadMutation.mutate({ experimentId, sheetType });
   };
 

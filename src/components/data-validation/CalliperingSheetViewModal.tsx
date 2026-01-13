@@ -24,6 +24,8 @@ interface CalliperingSheetViewModalProps {
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
+  experimentDataType?: string;
+  experimentStudyType?: string;
 }
 
 export function CalliperingSheetViewModal({
@@ -34,6 +36,8 @@ export function CalliperingSheetViewModal({
   experimentDataId,
   experimentStatus,
   hideActions = false,
+  experimentDataType,
+  experimentStudyType,
 }: Readonly<CalliperingSheetViewModalProps>) {
   const editModal = useModal();
   const rejectModal = useModal();
@@ -136,7 +140,12 @@ export function CalliperingSheetViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <CalliperingSheetView data={data} experimentDataId={experimentDataId} />
+        <CalliperingSheetView
+          data={data}
+          experimentDataId={experimentDataId}
+          experimentDataType={experimentDataType}
+          experimentStudyType={experimentStudyType}
+        />
       </Dialog>
 
       {editModal.isOpen && (

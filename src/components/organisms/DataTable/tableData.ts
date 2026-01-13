@@ -2225,6 +2225,7 @@ export interface CalliperingMouseRow {
   width_mm: number;
   volume_mm3: number;
   measurement_id?: number;
+  notes?: string | null;
 }
 
 export interface CalliperingData {

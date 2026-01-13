@@ -6,8 +6,12 @@ import type {
   ExperimentsListResponse,
 } from "@/types/experiment";
 import type {
+  CalliperingNotesListParams,
+  CalliperingNotesListResponse,
   ConfirmExperimentMouseGroupsPayload,
   ConfirmExperimentMouseGroupsResponse,
+  CreateCalliperingNotesCommentPayload,
+  CreateCalliperingNotesCommentResponse,
   CreateModelStudyPayload,
   CreateModelStudyResponse,
   ModelStudyExperimentMouseGroupsPayload,
@@ -148,6 +152,10 @@ export const API_CONFIG = {
     },
     VEHICLES: {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/vehicles/dropdown`,
+    },
+    CALLIPER_MEASUREMENT_COMMENTS: {
+      LIST: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
     },
   },
 } as const;
@@ -1744,6 +1752,39 @@ export const modelStudyExperimentApi = {
   ): Promise<ConfirmExperimentMouseGroupsResponse> => {
     return apiClient.post(
       API_CONFIG.ENDPOINTS.MODEL_STUDY_EXPERIMENTS.CONFIRM_MOUSE_GROUPS,
+      payload
+    );
+  },
+};
+
+export const calliperingNotesCommentsApi = {
+  getNotesComments: async ({
+    id,
+    params,
+  }: {
+    id: number;
+    params: CalliperingNotesListParams;
+  }): Promise<CalliperingNotesListResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params.desc !== undefined)
+      queryParams.append("desc", params.desc.toString());
+    if (params.page !== undefined)
+      queryParams.append("page", params.page.toString());
+    if (params.size !== undefined)
+      queryParams.append("size", params.size.toString());
+
+    const queryString = queryParams.toString();
+
+    return apiClient.get(
+      `${API_CONFIG.ENDPOINTS.CALLIPER_MEASUREMENT_COMMENTS.LIST}/${id}${queryString ? `?${queryString}` : ""}`
+    );
+  },
+
+  createNoteComment: async (
+    payload: CreateCalliperingNotesCommentPayload
+  ): Promise<CreateCalliperingNotesCommentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.CALLIPER_MEASUREMENT_COMMENTS.CREATE,
       payload
     );
   },

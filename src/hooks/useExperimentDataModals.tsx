@@ -19,6 +19,10 @@ interface ExperimentDataItem {
   data_type?: {
     data_type_name: string;
   };
+  studyType?: string;
+  study_type?: {
+    study_type_name: string;
+  };
 }
 
 interface UseExperimentDataModalsOptions {
@@ -103,6 +107,14 @@ export function useExperimentDataModals(
 
     // Get status
     const experimentStatus = selectedExperiment.status || "";
+    const experimentDataType =
+      selectedExperiment.dataType ||
+      selectedExperiment.data_type?.data_type_name ||
+      "";
+    const experimentStudyType =
+      selectedExperiment.studyType ||
+      selectedExperiment.study_type?.study_type_name ||
+      "";
 
     return (
       <>
@@ -114,6 +126,8 @@ export function useExperimentDataModals(
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
             hideActions={hideActions}
+            experimentDataType={experimentDataType}
+            experimentStudyType={experimentStudyType}
           />
         )}
         {weightSheetViewModal.isOpen && (

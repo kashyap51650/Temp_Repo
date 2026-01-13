@@ -179,8 +179,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
     if (
       formData.experiment?.id &&
-      (formData.dataType === "Weight Sheet" ||
-        formData.dataType === "Callipering Sheet")
+      (formData.dataType === DATA_TYPE.WEIGHT_SHEET ||
+        formData.dataType === DATA_TYPE.CALLIPERING_SHEET)
     ) {
       downloadSheet(formData.experiment.id, formData.dataType);
     }

@@ -1,5 +1,4 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { MessageSquareMoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
@@ -8,13 +7,29 @@ import type {
   CalliperingMouseRow,
 } from "@/components/organisms/DataTable/tableData";
 import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
+import { DATA_TYPE, STUDY_TYPE } from "@/lib/constants";
 
-import { Button, Label } from "../atoms";
+import {
+  Button,
+  Label,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../atoms";
 import { NotesDialog } from "./NotesDialog";
 
-const getReadOnlyCalliperingColumns = (
-  onViewNotes: () => void
-): ColumnDef<CalliperingMouseRow>[] => [
+export interface SelectedNoteType {
+  mouse_delivery_id: string;
+  id: number;
+}
+
+const getReadOnlyCalliperingColumns = ({
+  shouldShowNotesColumn = false,
+  onViewNotes,
+}: {
+  shouldShowNotesColumn?: boolean;
+  onViewNotes: (note: SelectedNoteType) => void;
+}): ColumnDef<CalliperingMouseRow>[] => [
   {
     accessorKey: "id",
     header: () => <span className="block lg:w-60">Mouse Delivery ID</span>,
@@ -37,38 +52,76 @@ const getReadOnlyCalliperingColumns = (
     header: () => <span className="block lg:w-40">Volume (mm³)</span>,
     cell: ({ row }) => <span>{row.original.volume_mm3}</span>,
   },
-  {
-    accessorKey: "notes",
-    header: "Notes",
-    cell: () => (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onViewNotes}
-        aria-label="View notes"
-      >
-        <MessageSquareMoreIcon className="size-4 mr-1" />
-        View Notes
-      </Button>
-    ),
-  },
+  ...(shouldShowNotesColumn
+    ? [
+        {
+          accessorKey: "notes",
+          header: () => <span className="block lg:w-64">Notes</span>,
+          cell: ({ row }: { row: { original: CalliperingMouseRow } }) => (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`m-auto text-left p-0 ${!row.original.notes ? "cursor-default" : ""}`}
+                  size="sm"
+                  onClick={() => {
+                    if (row.original.notes && row.original.measurement_id) {
+                      onViewNotes({
+                        mouse_delivery_id: row.original.id,
+                        id: row.original.measurement_id,
+                      });
+                    }
+                  }}
+                  disabled={!row.original.notes}
+                  aria-label="View notes"
+                >
+                  <span className="w-48 block truncate">
+                    {row.original.notes || "-"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              {row.original.notes && (
+                <TooltipContent align="start" className="max-w-xl">
+                  <div className="space-y-2">
+                    <p>{row.original.notes}</p>
+                    <p className="text-xs text-muted-foreground italic border-t pt-2">
+                      Click to view and add comments
+                    </p>
+                  </div>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          ),
+        },
+      ]
+    : []),
 ];
 
 interface CalliperingSheetViewProps {
-  readonly data?: CalliperingData;
-  readonly experimentDataId?: string;
+  data?: CalliperingData;
+  experimentDataId?: string;
+  experimentDataType?: string;
+  experimentStudyType?: string;
 }
 
 export function CalliperingSheetView({
   data,
   experimentDataId,
+  experimentDataType,
+  experimentStudyType,
 }: Readonly<CalliperingSheetViewProps>) {
   const [viewData, setViewData] = useState<CalliperingData | null>(
     data || null
   );
   const [showNotesDialog, setShowNotesDialog] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<SelectedNoteType | null>(
+    null
+  );
 
-  const handleViewNotes = () => setShowNotesDialog(true);
+  const handleViewNotes = (note: SelectedNoteType) => {
+    setSelectedNote(note);
+    setShowNotesDialog(true);
+  };
 
   const {
     data: apiData,
@@ -92,6 +145,8 @@ export function CalliperingSheetView({
             length_mm: measurement.length_mm ?? 0,
             width_mm: measurement.width_mm ?? 0,
             volume_mm3: measurement.volume_mm3 ?? 0,
+            notes: measurement?.notes,
+            measurement_id: measurement.id,
           })) ?? [],
       };
       setViewData(transformedData);
@@ -99,6 +154,10 @@ export function CalliperingSheetView({
       setViewData(data);
     }
   }, [apiData, data]);
+
+  const shouldShowNotesColumn =
+    experimentDataType === DATA_TYPE.CALLIPERING_SHEET &&
+    experimentStudyType === STUDY_TYPE.MODEL_STUDY;
 
   if (isLoading && experimentDataId) {
     return (
@@ -158,13 +217,20 @@ export function CalliperingSheetView({
         {viewData.mice && viewData.mice.length > 0 && (
           <div className="bg-white mt-4">
             <DataTable
-              columns={getReadOnlyCalliperingColumns(handleViewNotes)}
+              columns={getReadOnlyCalliperingColumns({
+                shouldShowNotesColumn,
+                onViewNotes: handleViewNotes,
+              })}
               data={viewData.mice}
             />
           </div>
         )}
       </div>
-      <NotesDialog open={showNotesDialog} onOpenChange={setShowNotesDialog} />
+      <NotesDialog
+        open={showNotesDialog}
+        onOpenChange={setShowNotesDialog}
+        noteData={selectedNote}
+      />
     </>
   );
 }

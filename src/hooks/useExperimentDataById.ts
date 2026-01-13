@@ -112,6 +112,7 @@ export type ExperimentDataForCaliperingResponse = {
       width_mm: number;
       volume_mm3: number;
       is_flagged: boolean;
+      notes?: string | null;
     }[];
     sex: "Male" | "Female";
     strain: string;

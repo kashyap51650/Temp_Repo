@@ -13,6 +13,7 @@ import {
 } from "@/data/experiments";
 import { useDataTypes, useProjects, useStudyTypes } from "@/hooks";
 import type { ExperimentDropdownItem, Project } from "@/lib/api";
+import { STUDY_TYPE } from "@/lib/constants";
 
 import { Card } from "../atoms";
 import {
@@ -233,8 +234,8 @@ export default function DataUploadCommon() {
     return apiStudyTypes.find(
       (st) =>
         st.study_type_name === formData.studyType ||
-        (st.study_type_name === "Bio Distribution" &&
-          formData.studyType === "Biodistribution")
+        (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
+          formData.studyType === STUDY_TYPE.BIODISTRIBUTION)
     )?.id;
   }, [apiStudyTypes, formData.studyType]);
 
@@ -256,8 +257,8 @@ export default function DataUploadCommon() {
     return apiStudyTypes.length > 0
       ? apiStudyTypes.map((studyType) => {
           let normalizedName = studyType.study_type_name;
-          if (normalizedName === "Bio Distribution") {
-            normalizedName = "Biodistribution";
+          if (normalizedName === STUDY_TYPE.BIO_DISTRIBUTION) {
+            normalizedName = STUDY_TYPE.BIODISTRIBUTION;
           }
 
           return {
@@ -350,8 +351,8 @@ export default function DataUploadCommon() {
           apiStudyTypes.find(
             (st) =>
               st.study_type_name === formData.studyType ||
-              (st.study_type_name === "Bio Distribution" &&
-                formData.studyType === "Biodistribution")
+              (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
+                formData.studyType === STUDY_TYPE.BIODISTRIBUTION)
           )?.id
         }
       />

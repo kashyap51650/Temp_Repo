@@ -23,6 +23,7 @@ export const DATA_TYPE = {
 export type SpecializationType =
   (typeof SPECIALIZATION)[keyof typeof SPECIALIZATION];
 export type StudyType = (typeof STUDY_TYPE)[keyof typeof STUDY_TYPE];
+export type ExperimentDataType = (typeof DATA_TYPE)[keyof typeof DATA_TYPE];
 
 export const EXPERIMENT_STATUS = {
   PLANNED: "planned",

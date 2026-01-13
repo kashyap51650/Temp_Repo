@@ -79,3 +79,41 @@ export interface ConfirmExperimentMouseGroupsResponse {
   message: string;
   total_groups_created: number;
 }
+
+export interface CalliperingNotesListParams {
+  desc?: boolean;
+  page?: number;
+  size?: number;
+}
+
+export interface CalliperNoteCommentItem {
+  id: number;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+  creator: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+}
+
+export type CalliperingNotesListResponse = ApiResponse<{
+  items: Array<CalliperNoteCommentItem>;
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+}>;
+
+export interface CreateCalliperingNotesCommentPayload {
+  caliper_measurement_id: number;
+  comment: string;
+}
+export type CreateCalliperingNotesCommentResponse =
+  ApiResponse<CalliperNoteCommentItem>;
