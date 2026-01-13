@@ -909,7 +909,8 @@ export function getValidationColumns(
         const isRandomizationDisabled =
           (rowData?.treatmentDate &&
             new Date(rowData.treatmentDate) >= new Date()) ||
-          rowData.experiment.randomization_status === "completed";
+          rowData.experiment.randomization_status === "completed" ||
+          rowData.status !== "approved";
 
         return (
           <div className="flex gap-2">

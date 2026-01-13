@@ -70,48 +70,56 @@ const ModelStudyExperimentForm = ({
             )}
 
             <div className="border border-gray-200 p-3 rounded-md max-h-56 overflow-y-auto">
-              {fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="flex items-end gap-3 w-full mb-2"
-                >
-                  <div className="flex-1">
-                    <CellLineField
-                      control={form.control}
-                      name={`cellLineStrainPairs.${index}.cell_line_id`}
-                    />
+              {fields.map((field, index) => {
+                const currentPair = form.watch(`cellLineStrainPairs.${index}`);
+                const isBothFieldsFilled =
+                  currentPair?.cell_line_id !== undefined &&
+                  currentPair?.mouse_strain_id !== undefined;
+
+                return (
+                  <div
+                    key={field.id}
+                    className="flex items-start gap-3 w-full mb-2"
+                  >
+                    <div className="flex-1">
+                      <CellLineField
+                        control={form.control}
+                        name={`cellLineStrainPairs.${index}.cell_line_id`}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <StrainField
+                        control={form.control}
+                        name={`cellLineStrainPairs.${index}.mouse_strain_id`}
+                      />
+                    </div>
+                    <div className="flex items-start pt-5.5">
+                      {index === fields.length - 1 ? (
+                        <Button
+                          variant="outline"
+                          type="button"
+                          size="sm"
+                          onClick={handleAddPair}
+                          className="h-10 px-3"
+                          disabled={!isBothFieldsFilled}
+                        >
+                          <PlusIcon className="size-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          type="button"
+                          size="sm"
+                          onClick={() => handleRemovePair(index)}
+                          className="h-10 px-3"
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <StrainField
-                      control={form.control}
-                      name={`cellLineStrainPairs.${index}.mouse_strain_id`}
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    {index === fields.length - 1 ? (
-                      <Button
-                        variant="outline"
-                        type="button"
-                        size="sm"
-                        onClick={handleAddPair}
-                        className="h-10 px-3"
-                      >
-                        <PlusIcon className="size-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        type="button"
-                        size="sm"
-                        onClick={() => handleRemovePair(index)}
-                        className="h-10 px-3"
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

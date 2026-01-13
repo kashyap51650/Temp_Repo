@@ -88,12 +88,18 @@ export function useModelStudyForm({
       return;
     }
 
+    const validCellLineStrainPairs = data.cellLineStrainPairs.filter(
+      (val): val is { cell_line_id: number; mouse_strain_id: number } =>
+        typeof val.cell_line_id === "number" &&
+        typeof val.mouse_strain_id === "number"
+    );
+
     createExperiment({
       experiment_name: data.experimentName.trim(),
       project_id: projectId,
       specialization: specialization.toUpperCase(),
       study_type_id: studyTypeId,
-      cell_line_strain_pairs: data.cellLineStrainPairs ?? [],
+      cell_line_strain_pairs: validCellLineStrainPairs,
       cell_injection_count_ids: data.cellInjectionCounts,
       vehicle_ids: data.vehicles,
       cell_injection_date: injectionDate,

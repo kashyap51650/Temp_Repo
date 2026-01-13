@@ -67,7 +67,7 @@ export function FormSelect<T>({
               optionWithAll={false}
               {...rest}
             />
-            {error && <p className="text-sm text-red-500">{error.message}</p>}
+            {error && <p className="text-xs text-red-500">{error.message}</p>}
           </>
         );
       }}

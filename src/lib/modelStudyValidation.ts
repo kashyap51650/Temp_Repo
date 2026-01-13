@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-// Zod schemas for validation
 export const CellLineStrainPairSchema = z.object({
-  cell_line_id: z.number().positive("Cell line must be selected"),
-  mouse_strain_id: z.number().positive("Mouse strain must be selected"),
+  cell_line_id: z.number().optional(),
+  mouse_strain_id: z.number().optional(),
 });
 
 // Schema for complete form data validation (with cellLineStrainPairs)
@@ -15,7 +14,47 @@ export const ModelStudyFormDataSchema = z.object({
     .max(255, "Experiment name must be at most 255 characters"),
   cellLineStrainPairs: z
     .array(CellLineStrainPairSchema)
-    .min(1, "At least one cell line-strain pair is required"),
+    .min(1, "At least one cell line-strain pair is required")
+    .superRefine((pairs, ctx) => {
+      const hasValidPair = pairs.some(
+        (pair) => pair.cell_line_id && pair.mouse_strain_id
+      );
+
+      pairs.forEach((pair, index) => {
+        const hasCellLine = !!pair.cell_line_id;
+        const hasMouseStrain = !!pair.mouse_strain_id;
+
+        if (!hasCellLine && !hasMouseStrain) {
+          if (!hasValidPair) {
+            ctx.addIssue({
+              code: "custom",
+              message: "Cell line must be selected",
+              path: [index, "cell_line_id"],
+            });
+            ctx.addIssue({
+              code: "custom",
+              message: "Mouse strain must be selected",
+              path: [index, "mouse_strain_id"],
+            });
+          }
+          return;
+        }
+
+        if (hasCellLine && !hasMouseStrain) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Mouse strain must be selected",
+            path: [index, "mouse_strain_id"],
+          });
+        } else if (hasMouseStrain && !hasCellLine) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Cell line must be selected",
+            path: [index, "cell_line_id"],
+          });
+        }
+      });
+    }),
   cellInjectionCounts: z
     .array(z.number().positive("Cell injection count must be valid"))
     .min(1, "At least one cell injection count is required"),
