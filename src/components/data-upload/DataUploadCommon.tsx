@@ -56,6 +56,8 @@ export default function DataUploadCommon() {
     uploadAGCFile: null,
   });
 
+  const [activeTab, setActiveTab] = useState<string>("upload-data");
+
   const isStudyTypesEnabled = useMemo(() => {
     return formData.specialisation?.toLowerCase() === "preclinical";
   }, [formData.specialisation]);
@@ -310,7 +312,7 @@ export default function DataUploadCommon() {
   return (
     <>
       <Card className="p-6 w-full mx-auto shadow-none">
-        <Tabs defaultValue="upload-data" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2">
             <TabsTrigger value="upload-data">Upload Data</TabsTrigger>
             <TabsTrigger value="uploaded-data">Uploaded Data</TabsTrigger>
@@ -355,6 +357,9 @@ export default function DataUploadCommon() {
                 formData.studyType === STUDY_TYPE.BIODISTRIBUTION)
           )?.id
         }
+        onMouseGroupingComplete={() => {
+          setActiveTab("upload-data");
+        }}
       />
 
       <ConfirmationDialog

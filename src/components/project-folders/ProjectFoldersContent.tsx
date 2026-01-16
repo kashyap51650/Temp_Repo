@@ -72,6 +72,10 @@ export function ProjectFoldersContent() {
         <StudySheetsView
           selectedStudyType={selectedStudyType}
           goBackToStudyTypes={goBackToStudyTypes}
+          sourceExperimentId={selectedExperiment.id}
+          projectId={currentProject.id}
+          studyTypeId={selectedExperiment.study_type_id}
+          specialization={selectedExperiment.specialization}
         />
       </div>
     );

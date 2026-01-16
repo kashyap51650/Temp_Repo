@@ -153,6 +153,14 @@ export const API_CONFIG = {
     VEHICLES: {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/vehicles/dropdown`,
     },
+    MOVE_MICE: {
+      GET_MICE: (sourceExperimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/mice`,
+      GET_TARGET_EXPERIMENTS: (sourceExperimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/experiments`,
+      MOVE_MICE: (sourceExperimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/move`,
+    },
     CALLIPER_MEASUREMENT_COMMENTS: {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
@@ -1757,6 +1765,31 @@ export const modelStudyExperimentApi = {
   },
 };
 
+export const moveMiceApi = {
+  getMiceFromExperiment: async (
+    sourceExperimentId: number
+  ): Promise<import("@/types/moveMice").MoveMiceResponse> => {
+    return apiClient.get<import("@/types/moveMice").MoveMiceResponse>(
+      API_CONFIG.ENDPOINTS.MOVE_MICE.GET_MICE(sourceExperimentId)
+    );
+  },
+
+  getTargetExperiments: async (
+    sourceExperimentId: number
+  ): Promise<import("@/types/moveMice").TargetExperimentsResponse> => {
+    return apiClient.get<import("@/types/moveMice").TargetExperimentsResponse>(
+      API_CONFIG.ENDPOINTS.MOVE_MICE.GET_TARGET_EXPERIMENTS(sourceExperimentId)
+    );
+  },
+
+  confirmMoveMice: async (
+    payload: import("@/types/moveMice").MoveMicePayload
+  ): Promise<import("@/types/moveMice").MoveMiceConfirmResponse> => {
+    return apiClient.post<import("@/types/moveMice").MoveMiceConfirmResponse>(
+      API_CONFIG.ENDPOINTS.MOVE_MICE.MOVE_MICE(payload.source_experiment_id)
+    );
+  },
+};
 export const calliperingNotesCommentsApi = {
   getNotesComments: async ({
     id,

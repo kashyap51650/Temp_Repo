@@ -72,6 +72,8 @@ interface CreateExperimentModalProps {
     id: number;
     name: string;
   }) => void;
+  keepOpenAfterCreate?: boolean;
+  onMouseGroupingComplete?: () => void;
 }
 
 export function CreateExperimentModal({
@@ -85,6 +87,8 @@ export function CreateExperimentModal({
   specialization,
   studyTypeId,
   onExperimentCreated,
+  keepOpenAfterCreate = false,
+  onMouseGroupingComplete,
 }: CreateExperimentModalProps) {
   const {
     isotopes: apiIsotopes,
@@ -156,8 +160,10 @@ export function CreateExperimentModal({
       mouseGroupModal.openModal();
     }
 
-    handleReset();
-    onClose();
+    if (!keepOpenAfterCreate) {
+      handleReset();
+      onClose();
+    }
   };
 
   const dynamicIsotopeOptions = useMemo(
@@ -591,7 +597,10 @@ export function CreateExperimentModal({
         experimentId={createdExperimentId}
         open={mouseGroupModal.isOpen}
         onClose={() => mouseGroupModal.closeModal()}
-        onSuccess={() => mouseGroupModal.closeModal()}
+        onSuccess={() => {
+          mouseGroupModal.closeModal();
+        }}
+        onGroupingSaved={onMouseGroupingComplete}
       />
     </>
   );

@@ -1,9 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button, Dialog, Label } from "@/components/atoms";
 import { ExperimentSelect } from "@/components/atoms/Selects";
-
-import { CreateExperimentModal } from "./CreateExperimentModal";
 
 type Experiment = {
   id: string;
@@ -18,20 +16,33 @@ interface SelectTargetExperimentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onMove: (targetExperimentId: string) => void;
+  onCreateNew: () => void;
   selectedMiceCount: number;
   experiments: Experiment[];
+  isLoading?: boolean;
+  preSelectedExperimentId?: string;
 }
 
 export function SelectTargetExperimentModal({
   isOpen,
   onClose,
   onMove,
+  onCreateNew,
   selectedMiceCount,
   experiments,
+  isLoading = false,
+  preSelectedExperimentId,
 }: SelectTargetExperimentModalProps) {
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
-  const [isCreateExperimentModalOpen, setIsCreateExperimentModalOpen] =
-    useState(false);
+
+  useEffect(() => {
+    if (
+      preSelectedExperimentId &&
+      experiments.some((exp) => exp.id === preSelectedExperimentId)
+    ) {
+      setSelectedExperimentId(preSelectedExperimentId);
+    }
+  }, [preSelectedExperimentId, experiments]);
 
   const handleMove = () => {
     if (selectedExperimentId) {
@@ -45,11 +56,7 @@ export function SelectTargetExperimentModal({
   };
 
   const handleCreateNewExperiment = () => {
-    setIsCreateExperimentModalOpen(true);
-  };
-
-  const handleExperimentCreated = () => {
-    setIsCreateExperimentModalOpen(false);
+    onCreateNew();
   };
 
   return (
@@ -78,38 +85,39 @@ export function SelectTargetExperimentModal({
             Target Experiment
           </Label>
 
-          <ExperimentSelect
-            experiments={experiments}
-            value={selectedExperimentId}
-            placeholder="Search or select experiment..."
-            onValueChange={setSelectedExperimentId}
-            onCreateNew={handleCreateNewExperiment}
-            className="w-full"
-            showSearch={true}
-          />
+          {/* ✅ Show loading state or dropdown */}
+          {isLoading ? (
+            <div className="text-center py-4 text-muted-foreground">
+              Loading experiments...
+            </div>
+          ) : (
+            <ExperimentSelect
+              experiments={experiments}
+              value={selectedExperimentId}
+              placeholder="Search or select experiment..."
+              onValueChange={setSelectedExperimentId}
+              onCreateNew={handleCreateNewExperiment}
+              className="w-full"
+              showSearch={true}
+              disabled={isLoading}
+            />
+          )}
         </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button
             onClick={handleMove}
-            disabled={!selectedExperimentId}
+            disabled={!selectedExperimentId || isLoading} // ✅ Disable while loading
             className="bg-gray-600 hover:bg-gray-700 text-white"
           >
             Move
           </Button>
         </div>
       </div>
-
-      {/* Create Experiment Modal */}
-      <CreateExperimentModal
-        isOpen={isCreateExperimentModalOpen}
-        onClose={() => setIsCreateExperimentModalOpen(false)}
-        onCreateExperiment={handleExperimentCreated}
-      />
     </Dialog>
   );
 }

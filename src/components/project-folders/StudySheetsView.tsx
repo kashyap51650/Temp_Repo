@@ -2,26 +2,27 @@ import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 
 import { Button } from "@/components/atoms";
-import { mockExperiments, mockMice } from "@/data/mockData";
-import { useDataTypes, useModal } from "@/hooks";
+import { MoveMiceWizard } from "@/components/project-folders/MoveMiceWizard";
+import { useDataTypes } from "@/hooks";
 import type { StudyType } from "@/lib/api";
-
-import { SelectMiceModal } from "./SelectMiceModal";
-import { SelectTargetExperimentModal } from "./SelectTargetExperimentModal";
 
 interface StudySheetsViewProps {
   selectedStudyType: StudyType;
   goBackToStudyTypes: () => void;
+  sourceExperimentId: number;
+  projectId: number;
+  studyTypeId?: number;
+  specialization?: string;
 }
 
 export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
   selectedStudyType,
   goBackToStudyTypes,
+  sourceExperimentId,
+  projectId,
+  specialization = "Preclinical",
 }) => {
-  const miceModal = useModal();
-  const targetModal = useModal();
-
-  const [selectedMiceForMove, setSelectedMiceForMove] = useState<string[]>([]);
+  const [isMoveMiceWizardOpen, setIsMoveMiceWizardOpen] = useState(false);
 
   const { dataTypes, loading, error } = useDataTypes({
     enabled: true,
@@ -29,24 +30,15 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
   });
 
   const handleMoveMiceClick = () => {
-    miceModal.openModal();
+    setIsMoveMiceWizardOpen(true);
   };
 
-  const handleMiceSelected = (selectedMice: string[]) => {
-    setSelectedMiceForMove(selectedMice);
-    miceModal.closeModal();
-    targetModal.openModal();
+  const handleWizardClose = () => {
+    setIsMoveMiceWizardOpen(false);
   };
 
   const handleMoveComplete = () => {
-    targetModal.closeModal();
-    setSelectedMiceForMove([]);
-  };
-
-  const handleCloseModals = () => {
-    miceModal.closeModal();
-    targetModal.closeModal();
-    setSelectedMiceForMove([]);
+    setIsMoveMiceWizardOpen(false);
   };
 
   return (
@@ -91,20 +83,16 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
         </div>
       )}
 
-      {/* Move Mice Modals */}
-      <SelectMiceModal
-        isOpen={miceModal.isOpen}
-        onClose={handleCloseModals}
-        onNext={handleMiceSelected}
-        mice={mockMice}
-      />
-
-      <SelectTargetExperimentModal
-        isOpen={targetModal.isOpen}
-        onClose={handleCloseModals}
-        onMove={handleMoveComplete}
-        selectedMiceCount={selectedMiceForMove.length}
-        experiments={mockExperiments}
+      {/* ✅ Move Mice Wizard */}
+      <MoveMiceWizard
+        isOpen={isMoveMiceWizardOpen}
+        onClose={handleWizardClose}
+        onComplete={handleMoveComplete}
+        sourceExperimentId={sourceExperimentId}
+        projectId={projectId}
+        // Might be used in future
+        // studyTypeId={studyTypeId}
+        specialization={specialization}
       />
     </div>
   );

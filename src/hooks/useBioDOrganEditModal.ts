@@ -153,7 +153,6 @@ export const useBioDOrganEditModal = ({
     }
 
     if (!organKey) {
-      console.warn(`No organ key found for rowId: ${rowId}`);
       return { measurementId: 0, mouseId: 0 };
     }
 

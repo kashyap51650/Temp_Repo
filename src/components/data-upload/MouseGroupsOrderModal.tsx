@@ -30,6 +30,7 @@ interface MouseGroupsOrderModalProps {
   onClose: () => void;
   onSave?: (groups: ExperimentMouseGroupsWithDragIdType[]) => void;
   onSuccess?: () => void;
+  onGroupingSaved?: () => void;
 }
 
 export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
@@ -38,12 +39,16 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
   experimentId,
   onSave,
   onSuccess,
+  onGroupingSaved,
 }) => {
   const [items, setItems] = useState<ExperimentMouseGroupsWithDragIdType[]>([]);
   const { mutationFn, mouseGroupData, isLoading, error } =
     useExperimentMouseGroups();
   const { createMouseGroups, isCreating } = useConfirmExperimentMouseGroups({
-    onSuccess,
+    onSuccess: () => {
+      onSuccess?.();
+      onGroupingSaved?.();
+    },
   });
 
   useEffect(() => {
