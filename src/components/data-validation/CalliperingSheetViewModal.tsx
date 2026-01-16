@@ -10,6 +10,8 @@ import {
   useRejectExperimentData,
 } from "@/hooks";
 
+import CaliperHistoryGroupModal from "./CaliperHistoryGroupedModal";
+import CaliperHistoryModal from "./CaliperHistoryModal";
 import { CalliperingSheetModal } from "./CalliperingSheetEditModal";
 import { CalliperingSheetView } from "./CalliperingSheetView";
 import GraphViewModal from "./GraphViewModal";
@@ -45,6 +47,8 @@ export function CalliperingSheetViewModal({
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
   const viewGraphModal = useModal();
+  const caliperHistoryModal = useModal();
+  const caliperHistoryGroupModal = useModal();
 
   const handleEdit = () => {
     editModal.openModal();
@@ -125,6 +129,23 @@ export function CalliperingSheetViewModal({
                 <ChartBar className="size-4" />
                 View Graph
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={caliperHistoryModal.openModal}
+              >
+                Caliper History
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={caliperHistoryGroupModal.openModal}
+              >
+                <ChartBar className="size-4" />
+                Caliper History Group
+              </Button>
             </div>
             {!hideActions && isPending && (
               <SheetActions
@@ -176,6 +197,14 @@ export function CalliperingSheetViewModal({
       <GraphViewModal
         isOpen={viewGraphModal.isOpen}
         onClose={viewGraphModal.closeModal}
+      />
+      <CaliperHistoryModal
+        isOpen={caliperHistoryModal.isOpen}
+        onClose={caliperHistoryModal.closeModal}
+      />
+      <CaliperHistoryGroupModal
+        isOpen={caliperHistoryGroupModal.isOpen}
+        onClose={caliperHistoryGroupModal.closeModal}
       />
     </>
   );

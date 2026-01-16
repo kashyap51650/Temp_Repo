@@ -5,3 +5,6 @@ export * from "./atoms";
 export * from "./DeleteConfirmModal";
 export { MoveMiceWizard } from "./project-folders/MoveMiceWizard";
 export * from "./theme-provider";
+
+// Re-export data-validation components
+export * from "./data-validation/CaliperHistoryTable";
