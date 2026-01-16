@@ -86,6 +86,7 @@ stages:
           sonar.qualitygate.wait=true
           sonar.qualitygate.timeout=300
           sonar.branch.name=$(Build.SourceBranchName)dddddd
+          sonar.exclusions=Dockerfile*,**/*.dockerignore
 
     - bash: |
         # Remove all PR-related parameters that aren't supported in Community Edition
