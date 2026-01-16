@@ -95,7 +95,7 @@ export function CaliperHistoryTable({ data }: CaliperHistoryTableProps) {
   }, [mouse_data_by_delivery_id]);
 
   return (
-    <div className="w-full overflow-x-auto overflow-y-auto max-h-[60vh] rounded-lg border">
+    <div className="w-full overflow-auto max-h-[60vh] rounded-lg border">
       <Table className="min-w-4xl border-collapse text-sm">
         <TableHeader className="sticky top-0 z-20 bg-muted">
           <TableRow className="border-b-2">
