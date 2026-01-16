@@ -20,7 +20,7 @@ export function BaseSelect({
   placeholder = "Select...",
   disabled = false,
   searchable = false,
-}: BaseSelectProps) {
+}: Readonly<BaseSelectProps>) {
   if (isLoading)
     return <div className="h-10 bg-muted rounded-md animate-pulse" />;
 

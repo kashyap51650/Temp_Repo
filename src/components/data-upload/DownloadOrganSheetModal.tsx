@@ -12,7 +12,7 @@ interface DownloadOrganSheetModalProps {
 }
 
 export const DownloadOrganSheetModal: React.FC<
-  DownloadOrganSheetModalProps
+  Readonly<DownloadOrganSheetModalProps>
 > = ({ open, onOpenChange, experimentId }) => {
   const { mouseGroups, isLoading } = useMouseGroupsByExperiment(experimentId);
 
@@ -37,7 +37,7 @@ export const DownloadOrganSheetModal: React.FC<
   const handleProceed = useCallback(() => {
     handleFileDownload({
       experimentId: experimentId!,
-      groupIds: selectedGroupCodes.map((code) => parseInt(code, 10)),
+      groupIds: selectedGroupCodes.map((code) => Number.parseInt(code, 10)),
     });
   }, [selectedGroupCodes, handleFileDownload, experimentId]);
 

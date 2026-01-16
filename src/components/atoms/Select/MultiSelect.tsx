@@ -30,7 +30,7 @@ export function MultiSelect({
   onChange,
   placeholder = "Select options",
   className = "",
-}: MultiSelectProps) {
+}: Readonly<MultiSelectProps>) {
   const [open, setOpen] = React.useState(false);
   const handleToggle = (id: string) => {
     if (value.includes(id)) {

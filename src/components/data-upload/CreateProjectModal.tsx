@@ -5,14 +5,14 @@ import { Button, Dialog, Input, Label, Textarea } from "../atoms";
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateProject: (projectName: string, description: string) => void;
+  onCreateProject: (projectName: string, description: string) => Promise<void>;
 }
 
 export function CreateProjectModal({
   isOpen,
   onClose,
   onCreateProject,
-}: CreateProjectModalProps) {
+}: Readonly<CreateProjectModalProps>) {
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);

@@ -54,7 +54,7 @@ export function transformExperimentDataToValidationRows(
 function isValidDate(dateString: string | null | undefined): boolean {
   if (!dateString) return false;
   const date = new Date(dateString);
-  return !isNaN(date.getTime());
+  return !Number.isNaN(date.getTime());
 }
 
 export const downloadBlobFile = (blob: Blob, fileName: string) => {

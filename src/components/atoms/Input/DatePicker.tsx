@@ -24,7 +24,7 @@ export function DatePicker({
   placeholder = "Pick a date",
   disabled,
   className,
-}: DatePickerProps) {
+}: Readonly<DatePickerProps>) {
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState<Date | undefined>(
     value ? new Date(value) : undefined

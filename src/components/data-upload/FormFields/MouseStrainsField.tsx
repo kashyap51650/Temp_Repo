@@ -16,7 +16,7 @@ interface MouseStrainsFieldProps<T extends FieldValues> {
 export function MouseStrainsField<T extends FieldValues>({
   control,
   name,
-}: MouseStrainsFieldProps<T>) {
+}: Readonly<MouseStrainsFieldProps<T>>) {
   return (
     <FormField
       control={control}

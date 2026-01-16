@@ -36,9 +36,9 @@ export function PasswordSettings() {
   const currentPassword = passwordForm.watch("current");
 
   const isFormValid = isPasswordFormValid(
-    currentPassword,
     newPassword,
     confirmPassword,
+    currentPassword,
     true
   );
 

@@ -12,7 +12,7 @@ export function NotificationViewModal({
   open,
   onOpenChange,
   notification,
-}: NotificationViewModalProps) {
+}: Readonly<NotificationViewModalProps>) {
   const notificationDetails = notification
     ? [
         {

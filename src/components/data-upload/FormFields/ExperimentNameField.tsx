@@ -21,7 +21,7 @@ export function ExperimentNameField<T extends FieldValues>({
   name,
   label = "Experiment Name",
   placeholder = "Enter experiment name",
-}: ExperimentNameFieldProps<T>) {
+}: Readonly<ExperimentNameFieldProps<T>>) {
   return (
     <FormField
       control={control}

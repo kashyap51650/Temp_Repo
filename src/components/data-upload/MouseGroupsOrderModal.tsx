@@ -98,6 +98,61 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
     onSave?.(items);
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex flex-col gap-4">
+          <div className="h-12 bg-muted animate-pulse rounded-md" />
+          <div className="h-12 bg-muted animate-pulse rounded-md" />
+          <div className="h-12 bg-muted animate-pulse rounded-md" />
+          <p className="text-sm text-muted-foreground text-center">
+            Loading groups...
+          </p>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <p className="text-destructive font-medium">Error loading groups</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
+      );
+    }
+
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={items.map((i) => i.dragId)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
+            {items.length === 0 && (
+              <li className="text-muted-foreground text-sm">
+                No groups to display.
+              </li>
+            )}
+            {items.map((item, idx) => (
+              <SortableItem
+                key={item.dragId}
+                id={item.dragId}
+                index={idx}
+                groupName={item.group_name}
+                onRemove={handleRemove}
+                disableDelete={items.length === 1}
+              />
+            ))}
+          </ul>
+        </SortableContext>
+      </DndContext>
+    );
+  };
+
   return (
     <Dialog
       open={open}
@@ -112,50 +167,7 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
       preventOutsideClose={isLoading}
     >
       <div className="flex flex-col gap-4 mt-4">
-        {isLoading ? (
-          <div className="flex flex-col gap-4">
-            <div className="h-12 bg-muted animate-pulse rounded-md" />
-            <div className="h-12 bg-muted animate-pulse rounded-md" />
-            <div className="h-12 bg-muted animate-pulse rounded-md" />
-            <p className="text-sm text-muted-foreground text-center">
-              Loading groups...
-            </p>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center gap-2 py-8">
-            <p className="text-destructive font-medium">Error loading groups</p>
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </div>
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={items.map((i) => i.dragId)}
-              strategy={verticalListSortingStrategy}
-            >
-              <ul className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
-                {items.length === 0 && (
-                  <li className="text-muted-foreground text-sm">
-                    No groups to display.
-                  </li>
-                )}
-                {items.map((item, idx) => (
-                  <SortableItem
-                    key={item.dragId}
-                    id={item.dragId}
-                    index={idx}
-                    groupName={item.group_name}
-                    onRemove={handleRemove}
-                    disableDelete={items.length === 1}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
-        )}
+        {renderContent()}
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isCreating}>
             Cancel

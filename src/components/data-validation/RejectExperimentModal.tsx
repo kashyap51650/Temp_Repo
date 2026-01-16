@@ -18,7 +18,7 @@ export function RejectExperimentModal({
   onClose,
   onReject,
   item,
-}: RejectExperimentModalProps) {
+}: Readonly<RejectExperimentModalProps>) {
   const [rejectionReason, setRejectionReason] = useState("");
 
   const handleReject = () => {

@@ -48,7 +48,7 @@ export const generateBioDOrganData = (
 ): BioDOrganData => {
   const { groups, organs, mice, organ_weights } = uploadedData;
 
-  const mouseList = Object.keys(mice).sort();
+  const mouseList = Object.keys(mice).sort((a, b) => a.localeCompare(b));
 
   /* ---------------------------- group data helper --------------------------- */
 
@@ -165,7 +165,7 @@ export const generateBioDOrganData = (
   /* ------------------------------ organ rows -------------------------------- */
 
   const organRows: BioDOrganRow[] = Object.values(organs).map((organ) => ({
-    id: organ.organ_name.toLowerCase().replace(/\s+/g, ""),
+    id: organ.organ_name.toLowerCase().replaceAll(/\s+/g, ""),
     label: organ.organ_name,
     data: buildMouseDataMap(
       mouseList,

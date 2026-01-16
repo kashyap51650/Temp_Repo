@@ -6,7 +6,12 @@ interface InputProps extends Omit<React.ComponentProps<"input">, "size"> {
   size?: "sm" | "default" | "lg";
 }
 
-function Input({ className, type, size = "default", ...props }: InputProps) {
+function Input({
+  className,
+  type,
+  size = "default",
+  ...props
+}: Readonly<InputProps>) {
   return (
     <input
       type={type}

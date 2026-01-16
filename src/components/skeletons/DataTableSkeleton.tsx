@@ -14,7 +14,7 @@ export function DataTableSkeleton({
   columns = 7,
   rows = 5,
   showHeader = true,
-}: DataTableSkeletonProps) {
+}: Readonly<DataTableSkeletonProps>) {
   return (
     <Card className="p-4 space-y-4 shadow-none">
       {/* Header */}
@@ -24,7 +24,7 @@ export function DataTableSkeleton({
           style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
         >
           {Array.from({ length: columns }).map((_, index) => (
-            <Skeleton key={index} className="h-5 w-full" />
+            <Skeleton key={`header-col-${index}`} className="h-5 w-full" />
           ))}
         </div>
       )}
@@ -33,12 +33,15 @@ export function DataTableSkeleton({
       <div className="space-y-8">
         {Array.from({ length: rows }).map((_, rowIndex) => (
           <div
-            key={rowIndex}
+            key={`skeleton-row-${rowIndex}`}
             className="grid gap-4"
             style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
           >
             {Array.from({ length: columns }).map((_, colIndex) => (
-              <Skeleton key={colIndex} className="h-4 w-full" />
+              <Skeleton
+                key={`skeleton-cell-${rowIndex}-${colIndex}`}
+                className="h-4 w-full"
+              />
             ))}
           </div>
         ))}

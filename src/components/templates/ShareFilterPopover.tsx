@@ -30,7 +30,7 @@ export function ShareFilterPopover({
   filter,
   trigger,
   onShare,
-}: ShareFilterPopoverProps) {
+}: Readonly<ShareFilterPopoverProps>) {
   const [shareBy, setShareBy] = useState<"email" | "role">("role");
   const [emailValue, setEmailValue] = useState("");
   const [roleValue, setRoleValue] = useState("");
@@ -65,7 +65,7 @@ export function ShareFilterPopover({
       isValid = false;
     } else if (
       shareBy === "email" &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailValue)
     ) {
       newErrors.value = "Please enter a valid email address";
       isValid = false;

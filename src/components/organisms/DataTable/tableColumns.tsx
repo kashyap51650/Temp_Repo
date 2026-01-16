@@ -377,44 +377,44 @@ export function getNotificationColumns(
           role.toLowerCase().includes(value.toLowerCase())
         );
       },
-      cell: ({ row }) =>
-        (() => {
-          const sentTo = row.original.sentTo;
-          const showCount = 3;
-          const visible = sentTo.slice(0, showCount);
-          const hidden = sentTo.slice(showCount);
-          return (
-            <div className="w-52 flex flex-wrap gap-1">
-              {visible.map((role, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  {role}
-                </Badge>
-              ))}
-              {hidden.length > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-xs cursor-pointer">
-                      +{hidden.length} more
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <div className="flex flex-wrap flex-col gap-0 max-w-xs">
-                      {hidden.map((role, index) => (
-                        <Badge
-                          key={"hidden-" + index}
-                          variant="default"
-                          className="text-xs text-white/90 mb-1 bg-gray-700/60"
-                        >
-                          {role}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          );
-        })(),
+      cell: ({ row }) => {
+        const sentTo = row.original.sentTo;
+        const showCount = 3;
+        const visible = sentTo.slice(0, showCount);
+        const hidden = sentTo.slice(showCount);
+
+        return (
+          <div className="w-52 flex flex-wrap gap-1">
+            {visible.map((role) => (
+              <Badge key={role} variant="outline" className="text-xs">
+                {role}
+              </Badge>
+            ))}
+            {hidden.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="text-xs cursor-pointer">
+                    +{hidden.length} more
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <div className="flex flex-wrap flex-col gap-0 max-w-xs">
+                    {hidden.map((role) => (
+                      <Badge
+                        key={`hidden-${role}`}
+                        variant="default"
+                        className="text-xs text-white/90 mb-1 bg-gray-700/60"
+                      >
+                        {role}
+                      </Badge>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "sentBy",
@@ -441,47 +441,44 @@ export function getNotificationColumns(
     {
       accessorKey: "type",
       header: () => <span className="w-32 block">Type</span>,
-      cell: ({ row }) =>
-        (() => {
-          const types = row.original.type;
-          const showCount = 3;
-          const visible = types.slice(0, showCount);
-          const hidden = types.slice(showCount);
-          return (
-            <div className="w-32 flex flex-wrap gap-1">
-              {visible.map((type, index) => (
-                <Badge key={index} variant={"secondary"} className="text-xs">
-                  {type}
-                </Badge>
-              ))}
-              {hidden.length > 0 && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge
-                      variant="secondary"
-                      className="text-xs cursor-pointer"
-                    >
-                      +{hidden.length} more
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {hidden.map((type, index) => (
-                        <Badge
-                          key={"hidden-" + index}
-                          variant={"secondary"}
-                          className="text-xs mb-1"
-                        >
-                          {type}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-          );
-        })(),
+      cell: ({ row }) => {
+        const types = row.original.type;
+        const showCount = 3;
+        const visible = types.slice(0, showCount);
+        const hidden = types.slice(showCount);
+
+        return (
+          <div className="w-32 flex flex-wrap gap-1">
+            {visible.map((type) => (
+              <Badge key={type} variant={"secondary"} className="text-xs">
+                {type}
+              </Badge>
+            ))}
+            {hidden.length > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="text-xs cursor-pointer">
+                    +{hidden.length} more
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <div className="flex flex-wrap gap-1 max-w-xs">
+                    {hidden.map((type) => (
+                      <Badge
+                        key={`hidden-${type}`}
+                        variant={"secondary"}
+                        className="text-xs mb-1"
+                      >
+                        {type}
+                      </Badge>
+                    ))}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "recipients",
@@ -539,25 +536,25 @@ export function getTemplateColumns(
     {
       accessorKey: "name",
       header: () => <span className="w-48 block">Template Name</span>,
-      cell: ({ row }) =>
-        (() => {
-          const name = row.original.name;
-          const isTruncated = name.length > 24;
-          return (
-            <span className="w-48 block font-medium truncate">
-              {isTruncated ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>{name}</span>
-                  </TooltipTrigger>
-                  <TooltipContent>{name}</TooltipContent>
-                </Tooltip>
-              ) : (
-                name
-              )}
-            </span>
-          );
-        })(),
+      cell: ({ row }) => {
+        const name = row.original.name;
+        const isTruncated = name.length > 24;
+
+        return (
+          <span className="w-48 block font-medium truncate">
+            {isTruncated ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>{name}</span>
+                </TooltipTrigger>
+                <TooltipContent>{name}</TooltipContent>
+              </Tooltip>
+            ) : (
+              name
+            )}
+          </span>
+        );
+      },
     },
     {
       accessorKey: "subject",
@@ -707,24 +704,26 @@ export function getUploadedDatasetColumns(
       cell: ({ row }) => {
         const status = row.original.status;
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+
+        const getBadgeVariant = () => {
+          if (status === "approved") return "default";
+          if (status === "rejected") return "destructive";
+          return "secondary";
+        };
+
+        const getBadgeClassName = () => {
+          if (status === "approved") {
+            return "bg-green-100 text-green-700 border-green-200";
+          }
+          if (status === "rejected") {
+            return "bg-red-100 text-red-700 border-red-200";
+          }
+          return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        };
+
         return (
           <div className="w-28">
-            <Badge
-              variant={
-                status === "approved"
-                  ? "default"
-                  : status === "rejected"
-                    ? "destructive"
-                    : "secondary"
-              }
-              className={
-                status === "approved"
-                  ? "bg-green-100 text-green-700 border-green-200"
-                  : status === "rejected"
-                    ? "bg-red-100 text-red-700 border-red-200"
-                    : "bg-yellow-100 text-yellow-700 border-yellow-200"
-              }
-            >
+            <Badge variant={getBadgeVariant()} className={getBadgeClassName()}>
               {displayStatus}
             </Badge>
           </div>
@@ -873,24 +872,26 @@ export function getValidationColumns(
       cell: ({ row }) => {
         const status = row.original.status;
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+
+        const getBadgeVariant = () => {
+          if (status === "approved") return "default";
+          if (status === "rejected") return "destructive";
+          return "secondary";
+        };
+
+        const getBadgeClassName = () => {
+          if (status === "approved") {
+            return "bg-green-100 text-green-700 border-green-200";
+          }
+          if (status === "rejected") {
+            return "bg-red-100 text-red-700 border-red-200";
+          }
+          return "bg-yellow-100 text-yellow-700 border-yellow-200";
+        };
+
         return (
           <div className="w-28">
-            <Badge
-              variant={
-                status === "approved"
-                  ? "default"
-                  : status === "rejected"
-                    ? "destructive"
-                    : "secondary"
-              }
-              className={
-                status === "approved"
-                  ? "bg-green-100 text-green-700 border-green-200"
-                  : status === "rejected"
-                    ? "bg-red-100 text-red-700 border-red-200"
-                    : "bg-yellow-100 text-yellow-700 border-yellow-200"
-              }
-            >
+            <Badge variant={getBadgeVariant()} className={getBadgeClassName()}>
               {displayStatus}
             </Badge>
           </div>
@@ -1333,8 +1334,8 @@ const WeightInput: FC<{
   };
 
   const handleBlur = () => {
-    const numValue = parseFloat(localValue);
-    const finalValue = isNaN(numValue) || numValue < 0 ? 0 : numValue;
+    const numValue = Number.parseFloat(localValue);
+    const finalValue = Number.isNaN(numValue) || numValue < 0 ? 0 : numValue;
 
     if (finalValue !== value) {
       onValueChange(mouseId, finalValue);
@@ -1344,7 +1345,7 @@ const WeightInput: FC<{
   };
 
   useEffect(() => {
-    const numericLocalValue = parseFloat(localValue);
+    const numericLocalValue = Number.parseFloat(localValue);
     if (
       value !== numericLocalValue &&
       !document.activeElement?.closest(`input[value="${localValue}"]`)

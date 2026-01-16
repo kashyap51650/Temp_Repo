@@ -149,7 +149,7 @@ export default function DataUploadCommon() {
     if (formData.studyType && formData.specialisation && pendingProjectChange) {
       dispatch(
         projectChanged({
-          newProjectId: parseInt(pendingProjectChange.id),
+          newProjectId: Number.parseInt(pendingProjectChange.id),
           specialization: formData.specialisation,
           studyType: formData.studyType,
         })

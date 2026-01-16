@@ -27,7 +27,7 @@ export function CreateFilterModal({
   onClose,
   onCreateFilter,
   existingFilters = [],
-}: CreateFilterModalProps) {
+}: Readonly<CreateFilterModalProps>) {
   const [filterTitle, setFilterTitle] = useState("");
   const [filterType, setFilterType] = useState("");
   const [optionValue, setOptionValue] = useState("");

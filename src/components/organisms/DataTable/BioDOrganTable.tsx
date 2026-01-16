@@ -31,7 +31,7 @@ export function BioDOrganTable({
   onCellChange,
   onDrugChange,
   fixedTopRowsEditable = false,
-}: BioDOrganTableProps) {
+}: Readonly<BioDOrganTableProps>) {
   const { mouse, rows } = data;
   const fixedRows = rows.slice(0, 4);
   const dataRows = rows.slice(4);

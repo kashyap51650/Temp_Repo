@@ -184,6 +184,22 @@ export function FileUploadArea({
 
     return "Upload Excel File (.xlsx)";
   };
+
+  const getDropZoneClasses = () => {
+    const baseClasses =
+      "border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors";
+
+    if (isUploadDisabled) {
+      return `${baseClasses} opacity-50 cursor-not-allowed border-gray-300`;
+    }
+
+    if (isDragging) {
+      return `${baseClasses} border-primary bg-primary/5`;
+    }
+
+    return `${baseClasses} border-primary/20 hover:border-primary/40`;
+  };
+
   return (
     <div className="space-y-2">
       <Label
@@ -196,13 +212,11 @@ export function FileUploadArea({
         {generateLabelText()}
       </Label>
       <div
-        className={`border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors ${
-          isUploadDisabled
-            ? "opacity-50 cursor-not-allowed border-gray-300"
-            : isDragging
-              ? "border-primary bg-primary/5"
-              : "border-primary/20 hover:border-primary/40"
-        }`}
+        role="button"
+        tabIndex={isUploadDisabled ? -1 : 0}
+        aria-label="File upload drop zone"
+        aria-disabled={isUploadDisabled}
+        className={getDropZoneClasses()}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}

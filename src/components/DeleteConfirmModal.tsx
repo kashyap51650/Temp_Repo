@@ -24,7 +24,7 @@ export function DeleteConfirmModal({
   onConfirm,
   item,
   itemLabel,
-}: DeleteConfirmModalProps) {
+}: Readonly<DeleteConfirmModalProps>) {
   const [loading, setLoading] = useState(false);
 
   const handleConfirm = async () => {

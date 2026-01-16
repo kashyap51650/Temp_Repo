@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
@@ -37,12 +38,17 @@ export function BioDWeightSheetModal({
   };
 
   const handleSave = () => {
+    if (!currentData) {
+      toast.error("No data to save.");
+      return;
+    }
+
     saveChanges({
       currentData,
       originalData,
       experimentDataId,
       onSuccess: () => {
-        onSave(currentData!);
+        onSave(currentData);
         onClose();
       },
       onClose,

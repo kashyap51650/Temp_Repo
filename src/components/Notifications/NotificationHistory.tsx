@@ -198,20 +198,18 @@ export function NotificationHistory() {
           Loading notifications...
         </div>
       ) : (
-        <>
-          <DataTable
-            columns={getNotificationColumns(handleView)}
-            data={filteredData}
-            paginationState={{
-              mode: "server",
-              currentPage: currentPage,
-              totalPages: totalPages,
-              hasNextPage: currentPage < totalPages,
-              hasPrevPage: currentPage > 1,
-              onPageChange: handlePageChange,
-            }}
-          />
-        </>
+        <DataTable
+          columns={getNotificationColumns(handleView)}
+          data={filteredData}
+          paginationState={{
+            mode: "server",
+            currentPage: currentPage,
+            totalPages: totalPages,
+            hasNextPage: currentPage < totalPages,
+            hasPrevPage: currentPage > 1,
+            onPageChange: handlePageChange,
+          }}
+        />
       )}
 
       <NotificationViewModal

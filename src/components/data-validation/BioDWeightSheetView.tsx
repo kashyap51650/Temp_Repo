@@ -58,7 +58,7 @@ interface BioDWeightSheetViewProps {
 export function BioDWeightSheetView({
   data,
   experimentDataId,
-}: BioDWeightSheetViewProps) {
+}: Readonly<BioDWeightSheetViewProps>) {
   const [viewData, setViewData] = useState<BioDWeightData | null>(data || null);
 
   const {

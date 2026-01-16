@@ -36,7 +36,7 @@ export function AsyncSelect<T>({
   searchable = true,
   multiple = false,
   size = "lg",
-}: AsyncSelectProps<T>) {
+}: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
     queryFn: query,

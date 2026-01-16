@@ -78,7 +78,7 @@ export const RandomizationTable = ({
 
         <TableBody>
           {Array.from({ length: micePerGroup }).map((_, i) => (
-            <TableRow key={i}>
+            <TableRow key={`row-${i}`}>
               {groups.map((g, idx) => (
                 <Fragment key={`${g.key}-row-${i}`}>
                   {TABLE_COLUMNS.map((col) => (

@@ -11,7 +11,7 @@ interface NotificationButtonProps {
 export function NotificationButton({
   unreadCount,
   onClick,
-}: NotificationButtonProps) {
+}: Readonly<NotificationButtonProps>) {
   return (
     <Button
       variant="ghost"

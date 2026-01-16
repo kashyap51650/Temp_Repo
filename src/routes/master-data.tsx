@@ -181,6 +181,43 @@ function MasterDataComponent() {
 
   const tableData = transformDataForTable(data?.data || []);
 
+  const renderDataTableContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">Loading...</div>
+        </div>
+      );
+    }
+
+    if (data?.data?.length === 0) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">No records found.</div>
+        </div>
+      );
+    }
+
+    return (
+      <DataTable
+        columns={createDynamicMasterDataColumns(
+          tableData,
+          handleEdit,
+          handleDelete
+        )}
+        data={tableData}
+        paginationState={{
+          mode: "server",
+          currentPage: data?.page ?? 1,
+          totalPages: data?.pages ?? 1,
+          hasNextPage: data?.page < data?.pages,
+          hasPrevPage: data?.page > 1,
+          onPageChange: handlePageChange,
+        }}
+      />
+    );
+  };
+
   return (
     <div className="px-6 py-6 space-y-6">
       <h1 className="text-2xl font-bold text-foreground">
@@ -230,36 +267,7 @@ function MasterDataComponent() {
             </Button>
           </div>
 
-          <div className="bg-card">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">Loading...</div>
-              </div>
-            ) : data?.data?.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">
-                  No records found.
-                </div>
-              </div>
-            ) : (
-              <DataTable
-                columns={createDynamicMasterDataColumns(
-                  tableData,
-                  handleEdit,
-                  handleDelete
-                )}
-                data={tableData}
-                paginationState={{
-                  mode: "server",
-                  currentPage: data?.page ?? 1,
-                  totalPages: data?.pages ?? 1,
-                  hasNextPage: data?.page < data?.pages,
-                  hasPrevPage: data?.page > 1,
-                  onPageChange: handlePageChange,
-                }}
-              />
-            )}
-          </div>
+          <div className="bg-card">{renderDataTableContent()}</div>
         </div>
       )}
 

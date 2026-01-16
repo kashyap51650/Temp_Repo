@@ -55,7 +55,7 @@ export function SpecializationSection({
   isSpecialisationSelected,
   studyTypesLoading = false,
   studyTypesError,
-}: SpecializationSectionProps) {
+}: Readonly<SpecializationSectionProps>) {
   const handleSpecialisationChange = (value: string | string[]) => {
     const selectedValue = typeof value === "string" ? value : value[0];
     setFormData((prev: FormData) => ({

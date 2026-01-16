@@ -11,13 +11,13 @@ import {
 
 export function NavMain({
   items,
-}: {
+}: Readonly<{
   items: {
     title: string;
     url: string;
     icon?: Icon;
   }[];
-}) {
+}>) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">

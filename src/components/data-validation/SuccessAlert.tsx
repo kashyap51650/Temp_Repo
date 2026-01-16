@@ -15,7 +15,7 @@ export function SuccessAlert({
   message,
   onClose,
   duration = 5000,
-}: SuccessAlertProps) {
+}: Readonly<SuccessAlertProps>) {
   useEffect(() => {
     if (isVisible && duration > 0) {
       const timer = setTimeout(() => {

@@ -23,7 +23,7 @@ Sentry.init({
   beforeSend(event) {
     //for fututre use
     // if (isGuardianBrowser) {
-    if (event?.exception?.values?.length ?? 0 > 0) {
+    if ((event?.exception?.values?.length ?? 0) > 0) {
       const { value: errorMessage, type: errorType } =
         event.exception?.values?.[0] || {};
 

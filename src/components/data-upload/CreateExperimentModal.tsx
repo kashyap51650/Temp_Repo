@@ -61,7 +61,7 @@ interface CreateExperimentModalProps {
     name: string;
     isotope: string;
     cellLines: string[];
-  }) => void;
+  }) => Promise<void>;
   isotopeOptions: Array<{ value: string; label: string }>;
   cellLineOptions: Array<{ value: string; label: string }>;
   studyType?: string;
@@ -89,7 +89,7 @@ export function CreateExperimentModal({
   onExperimentCreated,
   keepOpenAfterCreate = false,
   onMouseGroupingComplete,
-}: CreateExperimentModalProps) {
+}: Readonly<CreateExperimentModalProps>) {
   const {
     isotopes: apiIsotopes,
     cellLines: apiCellLines,

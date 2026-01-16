@@ -34,7 +34,7 @@ export function UserFilterBar({
   onReset,
   roles = [],
   rolesLoading = false,
-}: UserFilterBarProps) {
+}: Readonly<UserFilterBarProps>) {
   const roleOptions = [
     { id: "all", name: "All", value: "" },
     ...roles.map((r) => ({

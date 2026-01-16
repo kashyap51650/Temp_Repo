@@ -33,7 +33,7 @@ export function EditAssignmentModal({
   userAssignment,
   roles,
   onSave,
-}: EditAssignmentModalProps): ReactElement | null {
+}: Readonly<EditAssignmentModalProps>): ReactElement | null {
   const [selectedRole, setSelectedRole] = useState("");
 
   const {

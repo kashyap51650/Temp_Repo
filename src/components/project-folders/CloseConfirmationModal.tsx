@@ -15,7 +15,7 @@ export function CloseConfirmationModal({
   onClose,
   onConfirm,
   project,
-}: CloseConfirmationModalProps) {
+}: Readonly<CloseConfirmationModalProps>) {
   const message = `Are you sure you want to close ${project.project_name}? This action cannot be undone.`;
 
   const { mutate, isPending } = useUpdateProjectStatus();

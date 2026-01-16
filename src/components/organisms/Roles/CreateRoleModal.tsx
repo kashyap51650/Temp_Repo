@@ -12,7 +12,7 @@ export function CreateRoleModal({
   open,
   onOpenChange,
   onCreate,
-}: CreateRoleModalProps): ReactElement {
+}: Readonly<CreateRoleModalProps>): ReactElement {
   return (
     <RoleFormModal
       open={open}

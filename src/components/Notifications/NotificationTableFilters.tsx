@@ -34,7 +34,7 @@ export function NotificationTableFilters({
   sentToFilter,
   onClearFilters,
   roles,
-}: NotificationTableFiltersProps) {
+}: Readonly<NotificationTableFiltersProps>) {
   return (
     <div className="flex flex-col md:flex-row md:items-end gap-4 mb-4">
       <div className="flex flex-col gap-2">

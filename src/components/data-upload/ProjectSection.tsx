@@ -24,7 +24,7 @@ export function ProjectSection({
   onShowCreateProjectModal,
   onProjectChange,
   projectsLoading = false,
-}: ProjectSectionProps) {
+}: Readonly<ProjectSectionProps>) {
   const selectedProjectId = formData.project
     ? formData.project.id?.toString()
     : "";
@@ -42,7 +42,7 @@ export function ProjectSection({
                 const project = existingProjects.find((p: any) => p.id === val);
                 const apiProject = project
                   ? {
-                      id: parseInt(project.id),
+                      id: Number.parseInt(project.id),
                       project_name: project.name,
                     }
                   : null;

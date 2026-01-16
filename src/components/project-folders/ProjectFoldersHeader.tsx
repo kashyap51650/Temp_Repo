@@ -27,7 +27,7 @@ export function ProjectFoldersHeader({
   onClickHandlers = [],
   title = "Project Folders",
   subtitle = "Manage your projects, experiments, and study data",
-}: ProjectFoldersHeaderProps) {
+}: Readonly<ProjectFoldersHeaderProps>) {
   return (
     <div className="mb-6">
       <h1 className="text-3xl font-bold mb-2 text-black">{title}</h1>

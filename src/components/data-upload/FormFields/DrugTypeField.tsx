@@ -16,7 +16,7 @@ interface DrugTypeFieldProps<T extends FieldValues> {
 export function DrugTypeField<T extends FieldValues>({
   control,
   name,
-}: DrugTypeFieldProps<T>) {
+}: Readonly<DrugTypeFieldProps<T>>) {
   const drugTypeData = drugTypeOptions.map((option) => ({
     id: option.value,
     drug_type_name: option.label,

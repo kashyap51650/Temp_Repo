@@ -43,8 +43,8 @@ type NotificationAction =
   | { type: "SET_API_UNREAD_COUNT"; payload: number };
 
 interface NotificationContextType extends NotificationState {
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   openDrawer: () => void;
   closeDrawer: () => void;
   addNotification: (

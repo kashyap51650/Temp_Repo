@@ -44,7 +44,7 @@ export function BioDOrganViewModal({
 
   const bioDOrganData = useMemo(() => {
     if (!data) return null;
-    return generateBioDOrganData(data.uploaded_data!);
+    return generateBioDOrganData(data.uploaded_data);
   }, [data]);
 
   const handleEdit = () => {

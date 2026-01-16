@@ -30,7 +30,7 @@ export function ExperimentDrugSelect({
   placeholder = "Select Drug",
   className,
   disabled = false,
-}: ExperimentDrugSelectProps) {
+}: Readonly<ExperimentDrugSelectProps>) {
   const { experimentDrugs, loading } = useExperimentsDrugsDropdown();
 
   // Transform experiment drugs to SearchableSelect option format

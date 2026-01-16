@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const componentMappings = [
   // Atoms - Basic building blocks
@@ -9,13 +9,13 @@ const componentMappings = [
   { ui: "card", folder: "Card", level: "atoms" },
   { ui: "avatar", folder: "Avatar", level: "atoms" },
   { ui: "badge", folder: "Badge", level: "atoms" },
-  
+
   // Molecules - Simple groups of atoms
   { ui: "dialog", folder: "Dialog", level: "molecules" },
   { ui: "dropdown-menu", folder: "DropdownMenu", level: "molecules" },
   { ui: "popover", folder: "Popover", level: "molecules" },
   { ui: "tooltip", folder: "Tooltip", level: "molecules" },
-  
+
   // Organisms - Complex UI components
   { ui: "form", folder: "Form", level: "organisms" },
   { ui: "table", folder: "Table", level: "organisms" },
@@ -38,26 +38,32 @@ const moveComponent = (componentName, targetFolder, atomicLevel) => {
 
 const updateBarrelExports = () => {
   const levels = ["atoms", "molecules", "organisms", "templates"];
-  
-  levels.forEach(level => {
+
+  levels.forEach((level) => {
     const levelPath = `src/components/${level}`;
     if (!fs.existsSync(levelPath)) {
       fs.mkdirSync(levelPath, { recursive: true });
     }
 
-    const components = fs.readdirSync(levelPath)
-      .filter(item => fs.statSync(path.join(levelPath, item)).isDirectory());
+    const components = fs
+      .readdirSync(levelPath)
+      .filter((item) => fs.statSync(path.join(levelPath, item)).isDirectory());
 
     const exports = components
-      .map(component => `export { ${component} } from "./${component}/${component}";`)
+      .map(
+        (component) =>
+          `export { ${component} } from "./${component}/${component}";`
+      )
       .join("\n");
 
     fs.writeFileSync(`${levelPath}/index.ts`, exports);
-    console.log(`Updated barrel exports for ${level}: ${components.length} components`);
+    console.log(
+      `Updated barrel exports for ${level}: ${components.length} components`
+    );
   });
 
   // Create other barrel exports
-  ["pages", "hooks"].forEach(folder => {
+  ["pages", "hooks"].forEach((folder) => {
     const folderPath = `src/${folder}`;
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });

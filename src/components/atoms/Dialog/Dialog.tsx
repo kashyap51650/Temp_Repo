@@ -23,7 +23,7 @@ export function Dialog({
   className,
   preventOutsideClose = false,
   ...props
-}: DialogProps) {
+}: Readonly<DialogProps>) {
   return (
     <DialogPrimitive.Root {...props}>
       <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>

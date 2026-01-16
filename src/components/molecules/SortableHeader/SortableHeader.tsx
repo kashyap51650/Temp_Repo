@@ -13,7 +13,7 @@ export function SortableHeader<T>({
   column,
   title,
   className = "",
-}: SortableHeaderProps<T>) {
+}: Readonly<SortableHeaderProps<T>>) {
   if (!column.getCanSort()) {
     return <span className={className}>{title}</span>;
   }

@@ -16,7 +16,7 @@ interface DoseTypeFieldProps<T extends FieldValues> {
 export function DoseTypeField<T extends FieldValues>({
   control,
   name,
-}: DoseTypeFieldProps<T>) {
+}: Readonly<DoseTypeFieldProps<T>>) {
   const doseTypeData = doseTypeOptions.map((option) => ({
     id: option.value,
     dose_type_name: option.label,

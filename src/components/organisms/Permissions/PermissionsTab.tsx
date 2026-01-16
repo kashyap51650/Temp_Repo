@@ -44,7 +44,7 @@ export function PermissionsTab({
   onRoleChange,
   onCancel,
   roles,
-}: PermissionsTabProps) {
+}: Readonly<PermissionsTabProps>) {
   const [permissionGroups, setPermissionGroups] = React.useState<
     PermissionGroup[]
   >([]);
@@ -188,7 +188,7 @@ export function PermissionsTab({
     permissionGroups.forEach((group) => {
       group.permissions.forEach((permission) => {
         if (permission.checked) {
-          selectedPermissionIds.push(parseInt(permission.id));
+          selectedPermissionIds.push(Number.parseInt(permission.id, 10));
         }
       });
     });

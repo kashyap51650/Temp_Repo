@@ -12,7 +12,9 @@ type PaginationControlsProps = {
   pagination: PaginationState;
 };
 
-export function PaginationControls({ pagination }: PaginationControlsProps) {
+export function PaginationControls({
+  pagination,
+}: Readonly<PaginationControlsProps>) {
   const {
     page,
     totalPages,

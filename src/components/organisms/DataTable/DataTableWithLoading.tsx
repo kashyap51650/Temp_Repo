@@ -26,7 +26,7 @@ export function DataTableWithLoading<T extends { id: string }>({
   error,
   errorText = "Error loading data. Please try again later.",
   paginationState,
-}: DataTableWithLoadingProps<T>) {
+}: Readonly<DataTableWithLoadingProps<T>>) {
   if (isLoading) {
     return (
       <div className="text-center py-8">

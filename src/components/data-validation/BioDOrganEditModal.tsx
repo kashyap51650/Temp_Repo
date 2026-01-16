@@ -25,7 +25,7 @@ export function BioDOrganEditModal({
   rawUploadedData,
   experimentId,
   onSaveSuccess,
-}: BioDOrganEditModalProps) {
+}: Readonly<BioDOrganEditModalProps>) {
   const {
     editableData,
     changedCells,

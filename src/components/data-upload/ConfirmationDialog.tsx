@@ -22,7 +22,7 @@ export function ConfirmationDialog({
   confirmText = "Confirm",
   cancelText = "Cancel",
   variant = "warning",
-}: ConfirmationDialogProps) {
+}: Readonly<ConfirmationDialogProps>) {
   return (
     <Dialog
       open={isOpen}

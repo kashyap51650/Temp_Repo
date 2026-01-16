@@ -84,9 +84,9 @@ export const createPasswordSchema = (fieldName: string = "password") => {
 };
 
 export const isPasswordFormValid = (
-  currentPassword: string = "",
   newPassword: string,
   confirmPassword: string,
+  currentPassword: string = "",
   requireCurrentPassword: boolean = true
 ) => {
   const hasCurrentPassword = requireCurrentPassword

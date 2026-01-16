@@ -16,7 +16,7 @@ export function EditRoleModal({
   onOpenChange,
   role,
   onSave,
-}: EditRoleModalProps): ReactElement {
+}: Readonly<EditRoleModalProps>): ReactElement {
   return (
     <RoleFormModal
       open={open}

@@ -42,9 +42,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   const currentPassword = form.watch("current");
 
   const isFormValid = isPasswordFormValid(
-    currentPassword,
     newPassword,
     confirmPassword,
+    currentPassword,
     true
   );
 

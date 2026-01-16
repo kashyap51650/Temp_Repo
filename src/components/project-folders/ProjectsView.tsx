@@ -17,7 +17,7 @@ interface ProjectsViewProps {
 export function ProjectsView({
   onProjectClick,
   onCloseProject,
-}: ProjectsViewProps) {
+}: Readonly<ProjectsViewProps>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -122,7 +122,7 @@ function ProjectCard({
   project,
   onProjectClick,
   onCloseProject,
-}: ProjectCardProps) {
+}: Readonly<ProjectCardProps>) {
   return (
     <div className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/30 transition-colors">
       <Button

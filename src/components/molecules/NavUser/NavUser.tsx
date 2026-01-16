@@ -29,13 +29,13 @@ import { useLogout } from "@/lib/auth";
 
 export function NavUser({
   user,
-}: {
+}: Readonly<{
   user: {
     name: string;
     email: string;
     avatar: string;
   };
-}) {
+}>) {
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
   const logout = useLogout();

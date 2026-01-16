@@ -38,7 +38,7 @@ export function CustomSelect({
   multiple = false,
   disabled = false,
   className,
-}: CustomSelectProps) {
+}: Readonly<CustomSelectProps>) {
   if (multiple) {
     const selectedValues = Array.isArray(value) ? value : [];
 

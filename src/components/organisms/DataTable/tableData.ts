@@ -728,7 +728,7 @@ export const generateBioDOrganData = (
 ): BioDOrganData => {
   const { groups, organs, mice, organ_weights } = apiResponse;
 
-  const mouseList = Object.keys(mice).sort();
+  const mouseList = Object.keys(mice).sort((a, b) => a.localeCompare(b));
   const createGroupedData = (
     getValueForGroup: (groupCode: string) => string
   ) => {
@@ -872,7 +872,7 @@ export const generateBioDOrganData = (
   const organRows: BioDOrganRow[] = Object.keys(organs).map((organKey) => {
     const organ = organs[organKey];
     return {
-      id: organKey.toLowerCase().replace(/\s+/g, ""),
+      id: organKey.toLowerCase().replaceAll(/\s+/g, ""),
       label: organ.organ_name,
       data: mouseList.reduce(
         (acc, mouseCode) => {

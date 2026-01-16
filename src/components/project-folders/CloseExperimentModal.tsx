@@ -15,7 +15,7 @@ export function CloseExperimentModal({
   onClose,
   onConfirm,
   experiment,
-}: CloseExperimentModalProps) {
+}: Readonly<CloseExperimentModalProps>) {
   const title = "Close Experiment";
   const message = `Are you sure you want to close ${experiment.experiment_name}? This action cannot be undone.`;
 

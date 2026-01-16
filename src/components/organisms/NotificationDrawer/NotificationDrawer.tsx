@@ -28,7 +28,7 @@ export function NotificationDrawer({
   onMarkAllAsRead,
   unreadCount,
   widthClass,
-}: NotificationDrawerProps) {
+}: Readonly<NotificationDrawerProps>) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 

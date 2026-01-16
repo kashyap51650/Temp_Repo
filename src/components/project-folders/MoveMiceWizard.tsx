@@ -177,7 +177,7 @@ export function MoveMiceWizard({
       <CreateExperimentModal
         isOpen={isOpen && currentStep === MoveMiceStep.STUDY_TYPE_FORM}
         onClose={handleBackToStudyTypeSelection}
-        onCreateExperiment={() => {}}
+        onCreateExperiment={async () => {}}
         isotopeOptions={[]}
         cellLineOptions={[]}
         studyType={selectedStudyTypeName}

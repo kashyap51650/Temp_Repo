@@ -25,7 +25,7 @@ export function ExperimentLinkDialog({
   existingExperiments,
   projectId,
   onSubmit,
-}: ExperimentLinkDialogProps) {
+}: Readonly<ExperimentLinkDialogProps>) {
   const [linkChoice, setLinkChoice] = React.useState<string>("Yes");
   const [selectedExperimentId, setSelectedExperimentId] =
     React.useState<string>("");

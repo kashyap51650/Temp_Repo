@@ -18,7 +18,7 @@ export function SortableItem({
   groupName,
   onRemove,
   disableDelete,
-}: SortableItemProps) {
+}: Readonly<SortableItemProps>) {
   const {
     attributes,
     listeners,

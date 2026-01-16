@@ -32,7 +32,7 @@ export function DataViewModal({
   isOpen,
   onClose,
   experiment,
-}: DataViewModalProps) {
+}: Readonly<DataViewModalProps>) {
   const [dataItems, setDataItems] = useState<DataViewItem[]>([]);
 
   useEffect(() => {

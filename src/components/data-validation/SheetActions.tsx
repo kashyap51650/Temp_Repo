@@ -29,7 +29,7 @@ export function SheetActions({
   onReject,
   isApproveLoading = false,
   isRejectLoading = false,
-}: SheetActionsProps) {
+}: Readonly<SheetActionsProps>) {
   return (
     <div className="flex items-center gap-2">
       {showEdit && (

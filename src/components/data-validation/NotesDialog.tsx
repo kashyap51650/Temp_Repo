@@ -27,7 +27,7 @@ export function NotesDialog({
   open,
   onOpenChange,
   noteData,
-}: NotesDialogProps) {
+}: Readonly<NotesDialogProps>) {
   const [commentText, setCommentText] = useState("");
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +80,56 @@ export function NotesDialog({
     return null;
   }
 
+  const renderCommentsContent = () => {
+    if (isLoading) {
+      return (
+        <div className="text-center text-muted-foreground py-8">
+          Loading comments...
+        </div>
+      );
+    }
+
+    if (comments.length === 0) {
+      return (
+        <div className="text-center text-muted-foreground py-8">
+          No notes available for this entry.
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {comments.map((comment) => (
+          <div key={comment.id} className="p-3 border rounded-lg bg-muted/30">
+            <div className="flex justify-between items-start mb-2">
+              <span className="font-medium text-sm">
+                {comment.creator.first_name} {comment.creator.last_name}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {format(new Date(comment.created_at), "MMM dd, yyyy HH:mm")}
+              </span>
+            </div>
+            <p className="text-sm break-words">{comment.comment}</p>
+          </div>
+        ))}
+
+        {hasNextPage && (
+          <div ref={loadMoreRef} className="py-4 text-center">
+            {isFetchingNextPage ? (
+              <span className="text-sm text-muted-foreground">
+                Loading more comments...
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                Scroll for more
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Dialog
       open={open}
@@ -120,48 +170,7 @@ export function NotesDialog({
         </Button>
       </div>
       <div className="h-80 pr-2 overflow-y-auto mt-4">
-        {isLoading ? (
-          <div className="text-center text-muted-foreground py-8">
-            Loading comments...
-          </div>
-        ) : comments.length > 0 ? (
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="p-3 border rounded-lg bg-muted/30"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-medium text-sm">
-                    {comment.creator.first_name} {comment.creator.last_name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {format(new Date(comment.created_at), "MMM dd, yyyy HH:mm")}
-                  </span>
-                </div>
-                <p className="text-sm break-words">{comment.comment}</p>
-              </div>
-            ))}
-
-            {hasNextPage && (
-              <div ref={loadMoreRef} className="py-4 text-center">
-                {isFetchingNextPage ? (
-                  <span className="text-sm text-muted-foreground">
-                    Loading more comments...
-                  </span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    Scroll for more
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center text-muted-foreground py-8">
-            No notes available for this entry.
-          </div>
-        )}
+        {renderCommentsContent()}
       </div>
 
       <div className="flex justify-end pt-4">

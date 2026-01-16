@@ -18,7 +18,7 @@ export function CellsInjectedField<T extends FieldValues>({
   control,
   name,
   multiple = false,
-}: CellsInjectedFieldProps<T>) {
+}: Readonly<CellsInjectedFieldProps<T>>) {
   return (
     <FormField
       control={control}

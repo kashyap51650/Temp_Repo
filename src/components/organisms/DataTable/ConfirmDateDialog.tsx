@@ -21,7 +21,7 @@ export function ConfirmDateDialog({
   onConfirm,
   onCancel,
   experimentDataId,
-}: ConfirmDateDialogProps) {
+}: Readonly<ConfirmDateDialogProps>) {
   const queryClient = useQueryClient();
 
   const updateTreatmentDateMutation = useMutation({

@@ -63,7 +63,7 @@ export const ModelStudyFormDataSchema = z.object({
     .min(1, "At least one vehicle is required"),
   injectionDate: z.union([z.instanceof(Date), z.string()]).refine((date) => {
     const d = typeof date === "string" ? new Date(date) : date;
-    return !isNaN(d.getTime());
+    return !Number.isNaN(d.getTime());
   }, "Cell injection date is required"),
 });
 
@@ -79,7 +79,7 @@ export function formatDateToISO(
 
   const d = typeof date === "string" ? new Date(date) : date;
 
-  if (!(d instanceof Date) || isNaN(d.getTime())) return null;
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return null;
 
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");

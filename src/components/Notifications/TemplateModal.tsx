@@ -33,7 +33,7 @@ export default function TemplateModal({
   template,
   onOpenChange,
   onSave,
-}: TemplateModalProps) {
+}: Readonly<TemplateModalProps>) {
   const [formState, setFormState] = useState<TemplateRow | null>(null);
 
   useEffect(() => {
@@ -82,12 +82,12 @@ export default function TemplateModal({
 
   if (!formState) return null;
 
-  const title =
-    mode === "create"
-      ? "Create Template"
-      : mode === "edit"
-        ? "Edit Template"
-        : "View Template";
+  let title = "View Template";
+  if (mode === "create") {
+    title = "Create Template";
+  } else if (mode === "edit") {
+    title = "Edit Template";
+  }
 
   type Detail = { label: string; value: string | number };
   const templateDetails: Detail[] = [

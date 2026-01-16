@@ -194,7 +194,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
     let experimentId: number | null = null;
     if (formData.experiment?.id) {
-      experimentId = parseInt(formData.experiment.id.toString());
+      experimentId = Number.parseInt(formData.experiment.id.toString());
     }
 
     const dataTypeId =

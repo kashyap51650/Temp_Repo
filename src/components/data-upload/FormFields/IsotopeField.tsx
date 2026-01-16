@@ -16,7 +16,7 @@ interface IsotopeFieldProps<T extends FieldValues> {
 export function IsotopeField<T extends FieldValues>({
   control,
   name,
-}: IsotopeFieldProps<T>) {
+}: Readonly<IsotopeFieldProps<T>>) {
   return (
     <FormField
       control={control}

@@ -24,7 +24,7 @@ export function FormSelect<T>({
   searchable,
   valueAsNumber = false,
   ...rest
-}: FormSelectProps<T>) {
+}: Readonly<FormSelectProps<T>>) {
   return (
     <Controller
       name={name}

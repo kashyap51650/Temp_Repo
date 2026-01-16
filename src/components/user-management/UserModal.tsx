@@ -118,13 +118,13 @@ export const UserModal: React.FC<UserModalProps> = ({
   const description = isEdit
     ? "Update user account details."
     : "Create a new user account for the platform";
-  const submitText = isEdit
-    ? isLoading
-      ? "Updating..."
-      : "Update"
-    : isLoading
-      ? "Creating..."
-      : "Save";
+
+  const getSubmitText = () => {
+    if (isEdit) {
+      return isLoading ? "Updating..." : "Update";
+    }
+    return isLoading ? "Creating..." : "Save";
+  };
 
   return (
     <Dialog
@@ -252,7 +252,7 @@ export const UserModal: React.FC<UserModalProps> = ({
               type="submit"
               disabled={isLoading}
             >
-              {submitText}
+              {getSubmitText()}
             </Button>
           </div>
         </form>

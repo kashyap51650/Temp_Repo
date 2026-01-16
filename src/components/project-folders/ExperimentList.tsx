@@ -27,7 +27,7 @@ interface ExperimentListProps {
 export function ExperimentList({
   onExperimentClick,
   onCloseExperiment,
-}: ExperimentListProps) {
+}: Readonly<ExperimentListProps>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ExperimentStatus | "all">(

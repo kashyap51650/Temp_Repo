@@ -27,7 +27,7 @@ function isValidDate(date: Date | undefined) {
   if (!date) {
     return false;
   }
-  return !isNaN(date.getTime());
+  return !Number.isNaN(date.getTime());
 }
 
 export function CalendarDatePicker({
@@ -36,13 +36,13 @@ export function CalendarDatePicker({
   value: initialValue,
   onChange,
   disablePastDates = false,
-}: {
+}: Readonly<{
   id?: string;
   placeholder?: string;
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   disablePastDates?: boolean;
-}) {
+}>) {
   const [open, setOpen] = React.useState(false);
   const [date, setDate] = React.useState<Date | undefined>(initialValue);
   const [month, setMonth] = React.useState<Date | undefined>(initialValue);

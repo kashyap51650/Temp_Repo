@@ -33,7 +33,7 @@ const formatTimeAgo = (date: Date): string => {
 export function NotificationItem({
   notification,
   onMarkAsRead,
-}: NotificationItemProps) {
+}: Readonly<NotificationItemProps>) {
   const { id, title, message, type, isRead, createdAt } = notification;
 
   return (
@@ -58,12 +58,7 @@ export function NotificationItem({
               {type}
             </Badge>
           </div>
-          <p
-            className={cn(
-              "text-sm leading-relaxed",
-              isRead ? "text-muted-foreground" : "text-muted-foreground"
-            )}
-          >
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {message}
           </p>
           <div className="flex items-center justify-between mt-2">

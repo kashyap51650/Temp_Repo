@@ -42,7 +42,7 @@ export function RoleFormModal({
   mode,
   role,
   onSubmit,
-}: RoleFormModalProps): ReactElement {
+}: Readonly<RoleFormModalProps>): ReactElement {
   const isEdit = mode === "edit";
 
   const form = useForm<FormValues>({

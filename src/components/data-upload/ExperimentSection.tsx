@@ -86,7 +86,7 @@ export function ExperimentSection({
   dataTypesError,
   loadDataTypes,
   clearDataTypes,
-}: ExperimentSectionProps) {
+}: Readonly<ExperimentSectionProps>) {
   const {
     experiments: apiExperiments,
     loading: experimentsLoading,
@@ -208,7 +208,7 @@ export function ExperimentSection({
             const formattedExperiment: ExperimentDropdownItem | null =
               experiment
                 ? {
-                    id: parseInt(experiment.id),
+                    id: Number.parseInt(experiment.id, 10),
                     experiment_name: experiment.name,
                     randomization_status: experiment.randomization_status,
                   }

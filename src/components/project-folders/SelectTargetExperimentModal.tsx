@@ -32,7 +32,7 @@ export function SelectTargetExperimentModal({
   experiments,
   isLoading = false,
   preSelectedExperimentId,
-}: SelectTargetExperimentModalProps) {
+}: Readonly<SelectTargetExperimentModalProps>) {
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
 
   useEffect(() => {

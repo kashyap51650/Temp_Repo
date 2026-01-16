@@ -161,20 +161,18 @@ export function NotificationTemplates() {
           Loading notification templates...
         </div>
       ) : (
-        <>
-          <DataTable
-            columns={getTemplateColumns(handleEditTemplate, handleViewTemplate)}
-            data={templates}
-            paginationState={{
-              mode: "server",
-              currentPage: currentPage,
-              totalPages: totalPages,
-              hasNextPage: currentPage < totalPages,
-              hasPrevPage: currentPage > 1,
-              onPageChange: handlePageChange,
-            }}
-          />
-        </>
+        <DataTable
+          columns={getTemplateColumns(handleEditTemplate, handleViewTemplate)}
+          data={templates}
+          paginationState={{
+            mode: "server",
+            currentPage: currentPage,
+            totalPages: totalPages,
+            hasNextPage: currentPage < totalPages,
+            hasPrevPage: currentPage > 1,
+            onPageChange: handlePageChange,
+          }}
+        />
       )}
     </div>
   );

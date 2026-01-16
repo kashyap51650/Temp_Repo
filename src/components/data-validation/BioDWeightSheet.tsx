@@ -71,7 +71,7 @@ export function BioDWeightSheet({
       setFormData(data);
       onSave?.(data);
     }
-  }, [apiData, data, onSave]);
+  }, [apiData, data]);
 
   const handleHeaderChange = useCallback(
     (field: keyof BioDWeightData, value: string) => {

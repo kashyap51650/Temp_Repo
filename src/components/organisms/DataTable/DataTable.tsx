@@ -36,7 +36,7 @@ type DataTableProps<T extends { id: string | number }> = {
 };
 
 export function DataTable<T extends { id: string | number }>(
-  props: DataTableProps<T>
+  props: Readonly<DataTableProps<T>>
 ) {
   const {
     columns,

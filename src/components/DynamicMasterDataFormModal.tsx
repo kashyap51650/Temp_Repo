@@ -30,7 +30,7 @@ export function DynamicMasterDataFormModal({
   initialData,
   mode,
   sampleData = [],
-}: DynamicMasterDataFormModalProps): ReactElement {
+}: Readonly<DynamicMasterDataFormModalProps>): ReactElement {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,7 +47,7 @@ export function DynamicMasterDataFormModal({
   const generateFormFields = () => {
     if (sampleData.length > 0 || initialData) {
       const sampleItem = initialData || sampleData[0] || {};
-      const excludedKeys = [
+      const excludedKeys = new Set([
         "id",
         "created_by",
         "updated_by",
@@ -57,18 +57,19 @@ export function DynamicMasterDataFormModal({
         "updator", // Exclude updator object
         "createdBy", // Exclude extracted email
         "updatedBy", // Exclude extracted email
-      ];
+      ]);
 
       return Object.keys(sampleItem)
-        .filter((key) => !excludedKeys.includes(key))
+        .filter((key) => !excludedKeys.has(key))
         .map((key) => {
           const value = sampleItem[key];
-          const fieldType =
-            typeof value === "number"
-              ? "number"
-              : key.includes("description")
-                ? "textarea"
-                : "text";
+
+          let fieldType: "text" | "number" | "textarea" = "text";
+          if (typeof value === "number") {
+            fieldType = "number";
+          } else if (key.includes("description")) {
+            fieldType = "textarea";
+          }
 
           return {
             key,
@@ -277,7 +278,7 @@ export function DynamicMasterDataFormModal({
       } else {
         const emptyData: Record<string, any> = {};
         formFields.forEach((field) => {
-          emptyData[field.key] = field.type === "number" ? "" : "";
+          emptyData[field.key] = "";
         });
         setFormData(emptyData);
       }
@@ -306,7 +307,7 @@ export function DynamicMasterDataFormModal({
 
       if (field.type === "number" && formData[field.key] !== "") {
         const numValue = Number(formData[field.key]);
-        if (isNaN(numValue)) {
+        if (Number.isNaN(numValue)) {
           newErrors[field.key] = `${field.label} must be a valid number`;
         }
       }
@@ -360,6 +361,64 @@ export function DynamicMasterDataFormModal({
     onClose();
   };
 
+  const renderTextareaField = (field: (typeof formFields)[0]) => (
+    <Textarea
+      id={field.key}
+      value={String(formData[field.key] ?? "")}
+      onChange={(e) => handleInputChange(field.key, e.target.value)}
+      placeholder={field.placeholder}
+      rows={3}
+      className={errors[field.key] ? "border-destructive" : ""}
+    />
+  );
+
+  const renderMouseStrainSelect = (field: (typeof formFields)[0]) => (
+    <CustomSelect
+      options={mouseStrains.map((strain) => ({
+        value: String(strain.id),
+        label: strain.mouse_strain_name,
+      }))}
+      placeholder={field.placeholder}
+      value={String(formData[field.key] ?? "")}
+      onValueChange={(value) => handleInputChange(field.key, value as string)}
+      disabled={experimentDataLoading.mouseStrains}
+      className={errors[field.key] ? "border-destructive w-full" : "w-full"}
+    />
+  );
+
+  const renderInputField = (field: (typeof formFields)[0]) => (
+    <Input
+      id={field.key}
+      size="lg"
+      type={field.type === "number" ? "number" : "text"}
+      value={String(formData[field.key] ?? "")}
+      onChange={(e) => handleInputChange(field.key, e.target.value)}
+      placeholder={field.placeholder}
+      className={errors[field.key] ? "border-destructive" : ""}
+      min={field.type === "number" ? 0 : undefined}
+      step={field.type === "number" ? "any" : undefined}
+    />
+  );
+
+  const renderFieldInput = (field: (typeof formFields)[0]) => {
+    if (field.type === "textarea") {
+      return renderTextareaField(field);
+    }
+
+    if (isCellLines && field.key === "mouse_strain") {
+      return renderMouseStrainSelect(field);
+    }
+
+    return renderInputField(field);
+  };
+
+  const getSubmitButtonText = () => {
+    if (loading) {
+      return "Saving...";
+    }
+    return mode === "add" ? "Add" : "Save";
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -381,46 +440,7 @@ export function DynamicMasterDataFormModal({
         {formFields.map((field) => (
           <div key={field.key} className="space-y-2">
             <Label htmlFor={field.key}>{field.label}</Label>
-
-            {field.type === "textarea" ? (
-              <Textarea
-                id={field.key}
-                value={String(formData[field.key] ?? "")}
-                onChange={(e) => handleInputChange(field.key, e.target.value)}
-                placeholder={field.placeholder}
-                rows={3}
-                className={errors[field.key] ? "border-destructive" : ""}
-              />
-            ) : isCellLines && field.key === "mouse_strain" ? (
-              <CustomSelect
-                options={mouseStrains.map((strain) => ({
-                  value: String(strain.id),
-                  label: strain.mouse_strain_name,
-                }))}
-                placeholder={field.placeholder}
-                value={String(formData[field.key] ?? "")}
-                onValueChange={(value) =>
-                  handleInputChange(field.key, value as string)
-                }
-                disabled={experimentDataLoading.mouseStrains}
-                className={
-                  errors[field.key] ? "border-destructive w-full" : "w-full"
-                }
-              />
-            ) : (
-              <Input
-                id={field.key}
-                size="lg"
-                type={field.type === "number" ? "number" : "text"}
-                value={String(formData[field.key] ?? "")}
-                onChange={(e) => handleInputChange(field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className={errors[field.key] ? "border-destructive" : ""}
-                min={field.type === "number" ? 0 : undefined}
-                step={field.type === "number" ? "any" : undefined}
-              />
-            )}
-
+            {renderFieldInput(field)}
             {errors[field.key] && (
               <p className="text-sm text-destructive">{errors[field.key]}</p>
             )}
@@ -438,7 +458,7 @@ export function DynamicMasterDataFormModal({
             Cancel
           </Button>
           <Button size="lg" disabled={loading} type="submit">
-            {loading ? "Saving..." : mode === "add" ? "Add" : "Save"}
+            {getSubmitButtonText()}
           </Button>
         </div>
       </form>

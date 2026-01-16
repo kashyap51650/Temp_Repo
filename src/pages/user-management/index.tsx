@@ -93,7 +93,7 @@ export default function UserManagementPage() {
         email,
         first_name: firstName,
         last_name: lastName,
-        role_id: parseInt(roleId),
+        role_id: Number.parseInt(roleId),
         account_expiry_date: expiry ? expiry.split("T")[0] : null,
       });
 
@@ -129,7 +129,7 @@ export default function UserManagementPage() {
           email,
           first_name: firstName,
           last_name: lastName,
-          role_id: parseInt(roleId),
+          role_id: Number.parseInt(roleId),
           account_expiry_date: expiry ? expiry.split("T")[0] : null,
           status: editUser.status.toLowerCase(),
         },

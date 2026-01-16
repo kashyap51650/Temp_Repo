@@ -22,11 +22,11 @@ export function RandomizeDateCell({
   value,
   onChange,
   experimentDataId,
-}: {
+}: Readonly<{
   value?: string;
   onChange?: (date: string) => void;
   experimentDataId?: string;
-}) {
+}>) {
   const today = startOfDay(new Date());
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Date | null>(() => {

@@ -28,7 +28,7 @@ export function ProjectSelect({
   onCreateNew,
   className,
   disabled = false,
-}: ProjectSelectProps) {
+}: Readonly<ProjectSelectProps>) {
   const selectOptions = projects.map((project) => ({
     value: project.id,
     label: project.name,
@@ -70,7 +70,7 @@ export function ExperimentSelect({
   className,
   disabled = false,
   showSearch = true,
-}: ExperimentSelectProps) {
+}: Readonly<ExperimentSelectProps>) {
   const selectOptions = experiments.map((experiment) => ({
     value: experiment.id,
     label: experiment.name,

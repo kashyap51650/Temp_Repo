@@ -21,7 +21,7 @@ export function InjectionDateField<T extends FieldValues>({
   name,
   label = "Cell Injection Date",
   placeholder = "Pick a date",
-}: InjectionDateFieldProps<T>) {
+}: Readonly<InjectionDateFieldProps<T>>) {
   return (
     <FormField
       control={control}

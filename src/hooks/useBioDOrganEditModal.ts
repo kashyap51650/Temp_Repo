@@ -87,7 +87,7 @@ export const useBioDOrganEditModal = ({
 
     const newDrugId = Number(drugId);
 
-    if (isNaN(newDrugId)) {
+    if (Number.isNaN(newDrugId)) {
       console.error("Invalid drug ID:", drugId);
       return;
     }
@@ -144,10 +144,10 @@ export const useBioDOrganEditModal = ({
     } else if (rowId === "necropsy_time") {
       organKey = ORGAN_KEYS.NECROPSY_TIME;
     } else {
-      const normalizedRowId = rowId.toLowerCase().replace(/\s+/g, "");
+      const normalizedRowId = rowId.toLowerCase().replaceAll(/\s+/g, "");
       const organ = Object.values(organs).find(
         (o) =>
-          o.organ_name.toLowerCase().replace(/\s+/g, "") === normalizedRowId
+          o.organ_name.toLowerCase().replaceAll(/\s+/g, "") === normalizedRowId
       );
       organKey = organ?.organ_name;
     }
@@ -275,7 +275,7 @@ export const useBioDOrganEditModal = ({
           value:
             typeof change.value === "number"
               ? change.value
-              : parseFloat(String(change.value)) || 0,
+              : Number.parseFloat(String(change.value)) || 0,
           mouse_id: mouseId,
         });
       }

@@ -56,9 +56,9 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   }
 
   const isFormValid = isPasswordFormValid(
-    currentPassword,
     newPassword,
     confirmPassword,
+    currentPassword,
     mode === "change"
   );
 
@@ -104,6 +104,16 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }
   };
 
+  const getButtonText = () => {
+    if (form.formState.isSubmitting) {
+      return "Updating...";
+    }
+    if (mode === "change") {
+      return "Change Password";
+    }
+    return "Reset Password";
+  };
+
   return (
     <Dialog
       open={open}
@@ -133,11 +143,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               type="submit"
               disabled={!isFormValid || form.formState.isSubmitting}
             >
-              {form.formState.isSubmitting
-                ? "Updating..."
-                : mode === "change"
-                  ? "Change Password"
-                  : "Reset Password"}
+              {getButtonText()}
             </Button>
           </div>
         </form>

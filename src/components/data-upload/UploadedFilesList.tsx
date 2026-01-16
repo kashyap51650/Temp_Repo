@@ -11,7 +11,16 @@ interface UploadedFilesListProps {
 export function UploadedFilesList({
   formData,
   setFormData,
-}: UploadedFilesListProps) {
+}: Readonly<UploadedFilesListProps>) {
+  const handleRemoveFile = (indexToRemove: number) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      uploadedFiles: prev.uploadedFiles.filter(
+        (_: File, i: number) => i !== indexToRemove
+      ),
+    }));
+  };
+
   if (!formData.uploadedFiles || formData.uploadedFiles.length === 0) {
     return null;
   }
@@ -22,7 +31,7 @@ export function UploadedFilesList({
       <div className="space-y-2">
         {formData.uploadedFiles.map((file: File, index: number) => (
           <div
-            key={index}
+            key={`${file.name}-${file.size}-${file.lastModified}`}
             className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border"
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -37,14 +46,7 @@ export function UploadedFilesList({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setFormData((prev: any) => ({
-                  ...prev,
-                  uploadedFiles: prev.uploadedFiles.filter(
-                    (_: File, i: number) => i !== index
-                  ),
-                }));
-              }}
+              onClick={() => handleRemoveFile(index)}
               className="flex-shrink-0"
             >
               <X size={16} />

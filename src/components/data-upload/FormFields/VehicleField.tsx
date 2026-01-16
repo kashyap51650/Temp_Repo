@@ -22,7 +22,7 @@ export function VehicleField<T extends FieldValues>({
   label = "Vehicles",
   placeholder = "Select vehicle",
   multiple = true,
-}: VehicleFieldProps<T>) {
+}: Readonly<VehicleFieldProps<T>>) {
   return (
     <FormField
       control={control}

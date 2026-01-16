@@ -49,7 +49,6 @@ export function useProjectFoldersLogic() {
 
   // Navigation handlers
   const handleProjectClick = async (project: ProjectItem) => {
-    // setView("experiments");
     setCurrentProject(project);
     navigate({
       to: "/project-folders",
@@ -62,7 +61,6 @@ export function useProjectFoldersLogic() {
   };
 
   const handleExperimentClick = (experiment: Experiment) => {
-    // setView("study-types");
     setSelectedExperiment(experiment);
     navigate({
       to: "/project-folders",
@@ -75,7 +73,6 @@ export function useProjectFoldersLogic() {
   };
 
   const handleStudyTypeClick = (studyType: StudyType) => {
-    // setView("study-sheets");
     setSelectedStudyType(studyType);
     navigate({
       to: "/project-folders",
@@ -96,7 +93,6 @@ export function useProjectFoldersLogic() {
         studyTypeId: undefined,
       },
     });
-    // setView("projects");
     setCurrentProject(null);
     setSelectedExperiment(null);
     setSelectedStudyType(null);
@@ -111,7 +107,6 @@ export function useProjectFoldersLogic() {
         studyTypeId: undefined,
       },
     });
-    // setView("experiments");
     setSelectedExperiment(null);
     setSelectedStudyType(null);
   };
@@ -125,7 +120,6 @@ export function useProjectFoldersLogic() {
         studyTypeId: undefined,
       },
     });
-    // setView("study-types");
     setSelectedStudyType(null);
   };
 

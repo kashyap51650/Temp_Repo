@@ -14,7 +14,7 @@ export function ViewFilterModal({
   isOpen,
   onClose,
   filter,
-}: ViewFilterModalProps) {
+}: Readonly<ViewFilterModalProps>) {
   if (!filter) return null;
 
   return (

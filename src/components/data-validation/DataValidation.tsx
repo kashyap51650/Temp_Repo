@@ -200,7 +200,7 @@ export default function DataValidation() {
               query={async () => {
                 if (studyTypeFilter && studyTypeFilter !== SELECT_ALL) {
                   const response = await dataTypeApi.getDataTypes({
-                    study_type_id: parseInt(studyTypeFilter),
+                    study_type_id: Number.parseInt(studyTypeFilter, 10),
                   });
                   return response.data;
                 }

@@ -45,11 +45,11 @@ export function SearchableSelect<TMultiple extends boolean = false>({
   searchPlaceholder = "Search...",
   disabled = false,
   multiple = false as TMultiple,
-}: SearchableSelectProps<TMultiple>) {
+}: Readonly<SearchableSelectProps<TMultiple>>) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const ALLOW_BUBBLE = ["ArrowUp", "ArrowDown", "Enter", "Tab"];
+  const ALLOW_BUBBLE = new Set(["ArrowUp", "ArrowDown", "Enter", "Tab"]);
 
   const selectedValues: string[] =
     multiple && Array.isArray(value) ? value : [];
@@ -162,7 +162,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
                       e.stopPropagation();
                     }}
                     onKeyDownCapture={(e) => {
-                      if (!ALLOW_BUBBLE.includes(e.key)) {
+                      if (!ALLOW_BUBBLE.has(e.key)) {
                         e.stopPropagation();
                       }
                     }}
@@ -304,7 +304,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
                   e.stopPropagation();
                 }}
                 onKeyDownCapture={(e) => {
-                  if (!ALLOW_BUBBLE.includes(e.key)) {
+                  if (!ALLOW_BUBBLE.has(e.key)) {
                     e.stopPropagation();
                   }
                 }}
