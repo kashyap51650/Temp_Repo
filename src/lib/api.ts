@@ -25,7 +25,11 @@ import type {
 
 import type { UserFilters, UsersResponse } from "../types/auth";
 import type { ProjectFilters, ProjectsListResponse } from "../types/project";
-import { API_CUSTOM_TIMEOUT, FILE_SIZE_LIMITS } from "./constants";
+import {
+  API_CUSTOM_TIMEOUT,
+  FILE_SIZE_LIMITS,
+  type StudyTypeCode,
+} from "./constants";
 
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
@@ -960,7 +964,7 @@ export interface ProjectsResponse {
 export interface StudyType {
   id: number;
   study_type_name: string;
-  study_type_code: string;
+  study_type_code: StudyTypeCode;
 }
 
 export interface StudyTypesResponse {

@@ -9,11 +9,12 @@ import {
   SelectValue,
 } from "@/components/atoms/Select/Select";
 import { useStudyTypes } from "@/hooks/useStudyTypes";
+import type { StudyType } from "@/lib/api";
 
 interface CreateExperimentModalForMoveMiceProps {
   isOpen: boolean;
   onClose: () => void;
-  onStudyTypeSelected: (studyTypeId: string, studyTypeName: string) => void;
+  onStudyTypeSelected: (studyTypeData: StudyType) => void;
 }
 
 export function CreateExperimentModalForMoveMice({
@@ -41,7 +42,7 @@ export function CreateExperimentModalForMoveMice({
     );
 
     if (selectedStudyTypeData) {
-      onStudyTypeSelected(value, selectedStudyTypeData.study_type_name);
+      onStudyTypeSelected(selectedStudyTypeData);
     }
   };
 

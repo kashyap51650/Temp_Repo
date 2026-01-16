@@ -17,7 +17,7 @@ import {
   useModal,
 } from "@/hooks";
 import type { ExperimentDropdownItem } from "@/lib/api";
-import { STUDY_TYPE } from "@/lib/constants";
+import { STUDY_TYPE_CODE } from "@/lib/constants";
 
 import { Button, Input } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
@@ -57,7 +57,7 @@ const initialFormState: FormState = {
 interface CreateExperimentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateExperiment: (experimentData: {
+  onCreateExperiment?: (experimentData: {
     name: string;
     isotope: string;
     cellLines: string[];
@@ -79,10 +79,10 @@ interface CreateExperimentModalProps {
 export function CreateExperimentModal({
   isOpen,
   onClose,
-  onCreateExperiment,
+  onCreateExperiment = () => {},
   isotopeOptions,
   cellLineOptions,
-  studyType = "Biodistribution",
+  studyType = STUDY_TYPE_CODE.BIO_DISTRIBUTION,
   projectId,
   specialization,
   studyTypeId,
@@ -156,7 +156,7 @@ export function CreateExperimentModal({
 
     setCreatedExperimentId(data.id);
 
-    if (studyType === STUDY_TYPE.MODEL_STUDY) {
+    if (studyType === STUDY_TYPE_CODE.MODEL_STUDY) {
       mouseGroupModal.openModal();
     }
 
@@ -212,9 +212,8 @@ export function CreateExperimentModal({
 
       if (pb212Option) {
         updateFormState({ selectedIsotope: pb212Option.value });
+        setIsIsotopeAutoSet(true);
       }
-
-      setIsIsotopeAutoSet(true);
     }
   }, [
     isOpen,
@@ -229,23 +228,27 @@ export function CreateExperimentModal({
       return;
     }
 
-    if (studyType === "Biodistribution" || studyType === "Toxicity") {
+    if (
+      studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+      studyType === STUDY_TYPE_CODE.TOXICITY
+    ) {
       if (
         !formState.selectedIsotope ||
         formState.selectedCellLines.length === 0 ||
-        (studyType === "Toxicity" &&
+        (studyType === STUDY_TYPE_CODE.TOXICITY &&
           formState.selectedMouseStrains.length === 0)
       ) {
         return;
       }
-    } else if (studyType === "Dose Range Finding") {
+    } else if (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING) {
       if (formState.selectedDoseTypes.length === 0) {
         return;
       }
     }
 
     if (
-      (studyType === "Biodistribution" || studyType === "Toxicity") &&
+      (studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+        studyType === STUDY_TYPE_CODE.TOXICITY) &&
       projectId &&
       specialization &&
       studyTypeId
@@ -275,7 +278,8 @@ export function CreateExperimentModal({
       if (
         !selectedIsotopeId ||
         selectedCellLineIds.length === 0 ||
-        (studyType === "Toxicity" && selectedMouseStrainIds.length === 0)
+        (studyType === STUDY_TYPE_CODE.TOXICITY &&
+          selectedMouseStrainIds.length === 0)
       ) {
         toast.error("Failed to create experiment", {
           description:
@@ -293,7 +297,7 @@ export function CreateExperimentModal({
         study_type_id: studyTypeId,
       };
 
-      if (studyType === "Biodistribution") {
+      if (studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION) {
         await createBiodExperiment(basePayload);
       } else {
         await createExperiment({
@@ -335,9 +339,16 @@ export function CreateExperimentModal({
   };
 
   useEffect(() => {
+    if (!isOpen) {
+      setIsIsotopeAutoSet(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (
       isOpen &&
-      (studyType === "Biodistribution" || studyType === "Toxicity")
+      (studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+        studyType === STUDY_TYPE_CODE.TOXICITY)
     ) {
       loadExperimentData();
     }
@@ -356,7 +367,8 @@ export function CreateExperimentModal({
         className="max-w-lg"
         trigger={null}
       >
-        {specialization === "Preclinical" && studyType === "Model Study" ? (
+        {specialization === "Preclinical" &&
+        studyType === STUDY_TYPE_CODE.MODEL_STUDY ? (
           <ModelStudyExperimentForm
             projectId={projectId}
             studyTypeId={studyTypeId}
@@ -383,8 +395,8 @@ export function CreateExperimentModal({
                   />
                 </div>
 
-                {(studyType === "Biodistribution" ||
-                  studyType === "Toxicity") && (
+                {(studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+                  studyType === STUDY_TYPE_CODE.TOXICITY) && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="isotope">Isotope</Label>
@@ -416,7 +428,7 @@ export function CreateExperimentModal({
                         }}
                       />
                     </div>
-                    {studyType === "Toxicity" && (
+                    {studyType === STUDY_TYPE_CODE.TOXICITY && (
                       <div className="space-y-2">
                         <Label htmlFor="mouse-strains">Mouse Strains</Label>
                         <CustomSelect
@@ -437,7 +449,7 @@ export function CreateExperimentModal({
                   </>
                 )}
 
-                {studyType === "Dose Range Finding" && (
+                {studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="dose-type">Type of Dose</Label>
@@ -474,13 +486,13 @@ export function CreateExperimentModal({
                   </>
                 )}
 
-                {studyType === "Efficacy" && (
+                {studyType === STUDY_TYPE_CODE.EFFICACY && (
                   <div className="text-sm text-muted-foreground p-3 bg-blue-50 rounded-md">
                     For Efficacy studies, only the experiment name is required.
                   </div>
                 )}
 
-                {studyType === "Model Study" && (
+                {studyType === STUDY_TYPE_CODE.MODEL_STUDY && (
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="cell-line">Cell Line</Label>
@@ -575,13 +587,13 @@ export function CreateExperimentModal({
                     !formState.experimentName.trim() ||
                     isCreating ||
                     isCreatingBiod ||
-                    ((studyType === "Biodistribution" ||
-                      studyType === "Toxicity") &&
+                    ((studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+                      studyType === STUDY_TYPE_CODE.TOXICITY) &&
                       (!formState.selectedIsotope ||
                         formState.selectedCellLines.length === 0)) ||
-                    (studyType === "Dose Range Finding" &&
+                    (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING &&
                       formState.selectedDoseTypes.length === 0) ||
-                    (studyType === "Model Study" &&
+                    (studyType === STUDY_TYPE_CODE.MODEL_STUDY &&
                       (formState.selectedCellLines.length === 0 ||
                         !formState.selectedStrain))
                   }

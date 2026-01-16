@@ -12,6 +12,17 @@ export const STUDY_TYPE = {
   MODEL_STUDY: "Model Study",
 } as const;
 
+export const STUDY_TYPE_CODE = {
+  BIO_DISTRIBUTION: "BIO_DISTRIBUTION",
+  DOSE_RANGE_FINDING: "DOSE_RANGE_FINDING",
+  EFFICACY: "EFFICACY",
+  MODEL_STUDY: "MODEL_STUDY",
+  TOXICITY: "TOXICITY",
+} as const;
+
+export type StudyTypeCode =
+  (typeof STUDY_TYPE_CODE)[keyof typeof STUDY_TYPE_CODE];
+
 export const DATA_TYPE = {
   WEIGHT_SHEET: "Weight Sheet",
   CALLIPERING_SHEET: "Callipering Sheet",

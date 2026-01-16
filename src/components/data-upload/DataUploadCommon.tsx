@@ -200,7 +200,7 @@ export default function DataUploadCommon() {
       cellLines: experimentData.cellLines,
       isotope: experimentData.isotope,
       projectId: formData.project.id.toString(),
-      studyType: formData.studyType || "Biodistribution",
+      studyType: formData.studyType ?? STUDY_TYPE.BIO_DISTRIBUTION,
     };
 
     setExperiments((prev) => [...prev, newExperiment]);
@@ -233,12 +233,8 @@ export default function DataUploadCommon() {
   }, [apiProjects]);
 
   const currentStudyTypeId = useMemo(() => {
-    return apiStudyTypes.find(
-      (st) =>
-        st.study_type_name === formData.studyType ||
-        (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
-          formData.studyType === STUDY_TYPE.BIODISTRIBUTION)
-    )?.id;
+    return apiStudyTypes.find((st) => st.study_type_name === formData.studyType)
+      ?.id;
   }, [apiStudyTypes, formData.studyType]);
 
   const isDataTypesEnabled = useMemo(() => {
@@ -258,13 +254,8 @@ export default function DataUploadCommon() {
   const dynamicStudyTypeOptions = useMemo(() => {
     return apiStudyTypes.length > 0
       ? apiStudyTypes.map((studyType) => {
-          let normalizedName = studyType.study_type_name;
-          if (normalizedName === STUDY_TYPE.BIO_DISTRIBUTION) {
-            normalizedName = STUDY_TYPE.BIODISTRIBUTION;
-          }
-
           return {
-            value: normalizedName,
+            value: studyType.study_type_name,
             label: studyType.study_type_name,
             code: studyType.study_type_code,
           };
@@ -340,27 +331,30 @@ export default function DataUploadCommon() {
         onCreateProject={handleCreateProject}
       />
 
-      <CreateExperimentModal
-        isOpen={showCreateExperimentModal}
-        onClose={() => setShowCreateExperimentModal(false)}
-        onCreateExperiment={handleCreateExperiment}
-        isotopeOptions={isotopeOptions}
-        cellLineOptions={cellLineOptions}
-        studyType={formData.studyType}
-        projectId={formData.project?.id}
-        specialization={formData.specialisation}
-        studyTypeId={
-          apiStudyTypes.find(
-            (st) =>
-              st.study_type_name === formData.studyType ||
-              (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
-                formData.studyType === STUDY_TYPE.BIODISTRIBUTION)
-          )?.id
-        }
-        onMouseGroupingComplete={() => {
-          setActiveTab("upload-data");
-        }}
-      />
+      {showCreateExperimentModal && (
+        <CreateExperimentModal
+          isOpen={showCreateExperimentModal}
+          onClose={() => setShowCreateExperimentModal(false)}
+          onCreateExperiment={handleCreateExperiment}
+          isotopeOptions={isotopeOptions}
+          cellLineOptions={cellLineOptions}
+          studyType={
+            apiStudyTypes.find(
+              (studyType) => studyType.study_type_name === formData.studyType
+            )?.study_type_code || ""
+          }
+          projectId={formData.project?.id}
+          specialization={formData.specialisation}
+          studyTypeId={
+            apiStudyTypes.find(
+              (st) => st.study_type_name === formData.studyType
+            )?.id
+          }
+          onMouseGroupingComplete={() => {
+            setActiveTab("upload-data");
+          }}
+        />
+      )}
 
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}

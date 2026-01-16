@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { CreateExperimentModal } from "@/components/data-upload/CreateExperimentModal";
 import { CreateExperimentModalForMoveMice } from "@/components/project-folders/CreateExperimentModalForMoveMice";
 import { SelectMiceModal } from "@/components/project-folders/SelectMiceModal";
 import { SelectTargetExperimentModal } from "@/components/project-folders/SelectTargetExperimentModal";
 import { useGetTargetExperiments, useMoveMice } from "@/hooks/useMoveMice";
+import type { StudyType } from "@/lib/api";
+import { STUDY_TYPE, type StudyTypeCode } from "@/lib/constants";
 import { MoveMiceStep, type MoveMiceStepType } from "@/types/moveMice";
 
 interface MoveMiceWizardProps {
@@ -32,6 +35,9 @@ export function MoveMiceWizard({
   const [selectedMiceIds, setSelectedMiceIds] = useState<string[]>([]);
   const [selectedStudyTypeId, setSelectedStudyTypeId] = useState<
     number | undefined
+  >();
+  const [selectedStudyTypeCode, setSelectedStudyTypeCode] = useState<
+    StudyTypeCode | undefined
   >();
   const [selectedStudyTypeName, setSelectedStudyTypeName] =
     useState<string>("");
@@ -78,18 +84,15 @@ export function MoveMiceWizard({
   };
 
   // Step 3: Handle study type selection - immediately open CreateExperimentModal
-  const handleStudyTypeSelected = (
-    studyTypeId: string,
-    studyTypeName: string
-  ) => {
-    setSelectedStudyTypeId(parseInt(studyTypeId, 10));
-
-    let normalizedName = studyTypeName;
-    if (normalizedName === "Bio Distribution") {
-      normalizedName = "Biodistribution";
-    }
-
-    setSelectedStudyTypeName(normalizedName);
+  const handleStudyTypeSelected = (studyTypeData: StudyType) => {
+    const {
+      id: studyTypeId,
+      study_type_name: studyTypeName,
+      study_type_code: studyTypeCode,
+    } = studyTypeData;
+    setSelectedStudyTypeId(studyTypeId);
+    setSelectedStudyTypeName(studyTypeName);
+    setSelectedStudyTypeCode(studyTypeCode as StudyTypeCode);
     setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
 
@@ -100,8 +103,14 @@ export function MoveMiceWizard({
   }) => {
     setNewlyCreatedExperimentId(createdExperiment.id);
 
-    if (selectedStudyTypeName !== "Model Study") {
-      await refetchExperiments();
+    if (selectedStudyTypeName !== STUDY_TYPE.MODEL_STUDY) {
+      try {
+        await refetchExperiments();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to fetch experiments"
+        );
+      }
       setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
     }
   };
@@ -177,10 +186,9 @@ export function MoveMiceWizard({
       <CreateExperimentModal
         isOpen={isOpen && currentStep === MoveMiceStep.STUDY_TYPE_FORM}
         onClose={handleBackToStudyTypeSelection}
-        onCreateExperiment={async () => {}}
         isotopeOptions={[]}
         cellLineOptions={[]}
-        studyType={selectedStudyTypeName}
+        studyType={selectedStudyTypeCode}
         projectId={projectId}
         studyTypeId={selectedStudyTypeId}
         specialization={specialization}
