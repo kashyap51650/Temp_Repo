@@ -105,7 +105,7 @@ export function CaliperDataTable({ data }: CaliperDataTableProps) {
         <TableHeader className="sticky top-0 z-10 bg-muted">
           <TableRow className="border-b-2">
             <TableHead className="text-left font-medium bg-muted border h-9!">
-              Datessss
+              Date
             </TableHead>
             {caliper_measurements_dates.map((date) => (
               <TableHead
