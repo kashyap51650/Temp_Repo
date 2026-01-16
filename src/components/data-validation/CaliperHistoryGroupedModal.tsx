@@ -154,7 +154,7 @@ const CaliperHistoryGroupModal: React.FC<{
             value={activeTab.toString()}
             onValueChange={(value) => setActiveTab(parseInt(value))}
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList>
               {apiData.tabs.map((tab, index) => (
                 <TabsTrigger
                   key={tab.tab_id}
