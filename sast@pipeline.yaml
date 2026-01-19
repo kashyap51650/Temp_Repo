@@ -86,7 +86,7 @@ stages:
           sonar.qualitygate.wait=true
           sonar.qualitygate.timeout=300
           sonar.branch.name=$(Build.SourceBranchName)dddddd
-          sonar.exclusions=Dockerfile*,**/*.dockerignore
+          sonar.exclusions=Dockerfile*,**/*.dockerignore,src/routeTree.gen.ts,src/index.css
 
     - bash: |
         # Remove all PR-related parameters that aren't supported in Community Edition
