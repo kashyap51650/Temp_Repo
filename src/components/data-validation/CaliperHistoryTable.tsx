@@ -39,7 +39,9 @@ export interface CaliperHistoryTableProps {
   data: CaliperHistoryData;
 }
 
-export function CaliperHistoryTable({ data }: CaliperHistoryTableProps) {
+export function CaliperHistoryTable({
+  data,
+}: Readonly<CaliperHistoryTableProps>) {
   const {
     caliper_measurements_dates,
     mouse_data_by_delivery_id,
@@ -62,7 +64,7 @@ export function CaliperHistoryTable({ data }: CaliperHistoryTableProps) {
       "Nov",
       "Dec",
     ];
-    return `${day}-${months[parseInt(month) - 1]}-${year}`;
+    return `${day}-${months[Number.parseInt(month) - 1]}-${year}`;
   };
 
   const daysDifference = useMemo(() => {
@@ -117,7 +119,7 @@ export function CaliperHistoryTable({ data }: CaliperHistoryTableProps) {
             </TableHead>
             {daysDifference.map((days, idx) => (
               <TableHead
-                key={idx}
+                key={`${days}-${idx}`}
                 className="text-center font-bold bg-blue-50 text-blue-700 border"
               >
                 {days}

@@ -14,7 +14,13 @@ import type { Dispatch, FC, SetStateAction } from "react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import { formatDateTime } from "@/lib/date-utils";
+
 import { type UploadedExperimentDataItem } from "../../../lib/api";
+import {
+  getStatusBadgeClassName,
+  getStatusBadgeVariant,
+} from "../../../utils/tableUtils";
 import {
   Badge,
   Button,
@@ -632,22 +638,6 @@ export function getTemplateColumns(
 export function getUploadedDatasetColumns(
   onViewData?: (row: UploadedExperimentDataItem) => void
 ): ColumnDef<UploadedExperimentDataItem>[] {
-  const formatDateTime = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
   return [
     {
       accessorKey: "project.project_name",
@@ -705,25 +695,12 @@ export function getUploadedDatasetColumns(
         const status = row.original.status;
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
-        const getBadgeVariant = () => {
-          if (status === "approved") return "default";
-          if (status === "rejected") return "destructive";
-          return "secondary";
-        };
-
-        const getBadgeClassName = () => {
-          if (status === "approved") {
-            return "bg-green-100 text-green-700 border-green-200";
-          }
-          if (status === "rejected") {
-            return "bg-red-100 text-red-700 border-red-200";
-          }
-          return "bg-yellow-100 text-yellow-700 border-yellow-200";
-        };
-
         return (
           <div className="w-28">
-            <Badge variant={getBadgeVariant()} className={getBadgeClassName()}>
+            <Badge
+              variant={getStatusBadgeVariant(status)}
+              className={getStatusBadgeClassName(status)}
+            >
               {displayStatus}
             </Badge>
           </div>
@@ -873,25 +850,12 @@ export function getValidationColumns(
         const status = row.original.status;
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
 
-        const getBadgeVariant = () => {
-          if (status === "approved") return "default";
-          if (status === "rejected") return "destructive";
-          return "secondary";
-        };
-
-        const getBadgeClassName = () => {
-          if (status === "approved") {
-            return "bg-green-100 text-green-700 border-green-200";
-          }
-          if (status === "rejected") {
-            return "bg-red-100 text-red-700 border-red-200";
-          }
-          return "bg-yellow-100 text-yellow-700 border-yellow-200";
-        };
-
         return (
           <div className="w-28">
-            <Badge variant={getBadgeVariant()} className={getBadgeClassName()}>
+            <Badge
+              variant={getStatusBadgeVariant(status)}
+              className={getStatusBadgeClassName(status)}
+            >
               {displayStatus}
             </Badge>
           </div>
@@ -1045,22 +1009,6 @@ export function getMasterDataColumns(
   onEdit?: (item: any) => void,
   onDelete?: (item: any) => void
 ): ColumnDef<any>[] {
-  const formatDateTime = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    } catch {
-      return dateString;
-    }
-  };
-
   const baseColumns: ColumnDef<any>[] = [];
 
   // Add specific columns based on data type

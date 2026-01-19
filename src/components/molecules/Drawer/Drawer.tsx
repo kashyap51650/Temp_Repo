@@ -18,10 +18,13 @@ function Drawer({
   className?: string;
   contentStyle?: React.CSSProperties;
 }) {
+  const contextValue = React.useMemo(
+    () => ({ className, style: contentStyle }),
+    [className, contentStyle]
+  );
+
   return (
-    <DrawerContentClassContext.Provider
-      value={{ className, style: contentStyle }}
-    >
+    <DrawerContentClassContext.Provider value={contextValue}>
       <DrawerPrimitive.Root data-slot="drawer" {...props} />
     </DrawerContentClassContext.Provider>
   );

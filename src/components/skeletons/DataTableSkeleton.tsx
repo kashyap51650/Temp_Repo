@@ -15,6 +15,9 @@ export function DataTableSkeleton({
   rows = 5,
   showHeader = true,
 }: Readonly<DataTableSkeletonProps>) {
+  const columnIds = Array.from({ length: columns }, (_, i) => `col-${i}`);
+  const rowIds = Array.from({ length: rows }, (_, i) => `row-${i}`);
+
   return (
     <Card className="p-4 space-y-4 shadow-none">
       {/* Header */}
@@ -23,23 +26,23 @@ export function DataTableSkeleton({
           className="grid gap-8 items-center border-b pb-6"
           style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
         >
-          {Array.from({ length: columns }).map((_, index) => (
-            <Skeleton key={`header-col-${index}`} className="h-5 w-full" />
+          {columnIds.map((colId) => (
+            <Skeleton key={`header-${colId}`} className="h-5 w-full" />
           ))}
         </div>
       )}
 
       {/* Rows */}
       <div className="space-y-8">
-        {Array.from({ length: rows }).map((_, rowIndex) => (
+        {rowIds.map((rowId) => (
           <div
-            key={`skeleton-row-${rowIndex}`}
+            key={`skeleton-${rowId}`}
             className="grid gap-4"
             style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
           >
-            {Array.from({ length: columns }).map((_, colIndex) => (
+            {columnIds.map((colId) => (
               <Skeleton
-                key={`skeleton-cell-${rowIndex}-${colIndex}`}
+                key={`skeleton-${rowId}-${colId}`}
                 className="h-4 w-full"
               />
             ))}

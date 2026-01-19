@@ -27,7 +27,7 @@ interface ExperimentHeaderProps {
   measurementDate?: string;
 }
 
-function ExperimentHeader(header: ExperimentHeaderProps) {
+function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
       {[
@@ -39,7 +39,10 @@ function ExperimentHeader(header: ExperimentHeaderProps) {
           { key: "cellLine", label: "Cell Line:" },
         ],
       ].map((group, groupIdx) => (
-        <div className="space-y-3 grid grid-cols-2 w-10/12" key={groupIdx}>
+        <div
+          className="space-y-3 grid grid-cols-2 w-10/12"
+          key={`${group.map((field) => field.key).join("-")}-${groupIdx}`}
+        >
           {group.map(({ key, label }) => {
             const value = header[key as keyof ExperimentHeaderProps];
             if (typeof value !== "string" && typeof value !== "undefined")
@@ -59,10 +62,12 @@ function ExperimentHeader(header: ExperimentHeaderProps) {
   );
 }
 
-const CaliperHistoryGroupModal: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-}> = ({ isOpen, onClose }) => {
+const CaliperHistoryGroupModal: React.FC<
+  Readonly<{
+    isOpen: boolean;
+    onClose: () => void;
+  }>
+> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
   const apiData = sampleCaliperApiResponse.data;
 
@@ -74,6 +79,26 @@ const CaliperHistoryGroupModal: React.FC<{
       Record<string, Record<string, GroupedMeasurement>>
     > = {};
 
+    const processMouseData = (
+      groupName: string,
+      deliveryId: string,
+      mouseData: Record<string, any>
+    ) => {
+      convertedMeasurements[groupName][deliveryId] = {};
+      Object.entries(mouseData).forEach(
+        ([date, measurements]: [string, any]) => {
+          const measurement: GroupedMeasurement = {
+            id: 0,
+            value: measurements.volume_mm3,
+            type: "float",
+            key: "volume_mm3",
+            mouse_id: 0,
+          };
+          convertedMeasurements[groupName][deliveryId][date] = measurement;
+        }
+      );
+    };
+
     Object.entries(tabData.caliper_measurements).forEach(
       ([groupId, groupData]) => {
         const groupInfo = (
@@ -84,19 +109,10 @@ const CaliperHistoryGroupModal: React.FC<{
         convertedMeasurements[groupName] = {};
 
         Object.entries(groupData).forEach(([deliveryId, mouseData]) => {
-          convertedMeasurements[groupName][deliveryId] = {};
-
-          Object.entries(mouseData as Record<string, any>).forEach(
-            ([date, measurements]: [string, any]) => {
-              const measurement: GroupedMeasurement = {
-                id: 0,
-                value: measurements.volume_mm3,
-                type: "float",
-                key: "volume_mm3",
-                mouse_id: 0,
-              };
-              convertedMeasurements[groupName][deliveryId][date] = measurement;
-            }
+          processMouseData(
+            groupName,
+            deliveryId,
+            mouseData as Record<string, any>
           );
         });
       }
@@ -152,7 +168,7 @@ const CaliperHistoryGroupModal: React.FC<{
         <div className="mb-6">
           <Tabs
             value={activeTab.toString()}
-            onValueChange={(value) => setActiveTab(parseInt(value))}
+            onValueChange={(value) => setActiveTab(Number.parseInt(value))}
           >
             <TabsList>
               {apiData.tabs.map((tab, index) => (

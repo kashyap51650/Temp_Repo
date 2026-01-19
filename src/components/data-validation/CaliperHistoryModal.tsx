@@ -25,7 +25,7 @@ interface ExperimentHeaderProps {
   measurementDate?: string;
 }
 
-function ExperimentHeader(header: ExperimentHeaderProps) {
+function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-3">
       {[
@@ -37,7 +37,10 @@ function ExperimentHeader(header: ExperimentHeaderProps) {
           { key: "cellLine", label: "Cell Line:" },
         ],
       ].map((group, groupIdx) => (
-        <div className="space-y-3 grid grid-cols-2 w-10/12" key={groupIdx}>
+        <div
+          className="space-y-3 grid grid-cols-2 w-10/12"
+          key={`${group.map((field) => field.key).join("-")}-${groupIdx}`}
+        >
           {group.map(({ key, label }) => {
             const value = header[key as keyof ExperimentHeaderProps];
             if (typeof value !== "string" && typeof value !== "undefined")
@@ -63,7 +66,7 @@ interface CaliperHistoryModalProps {
 export default function CaliperHistoryModal({
   isOpen,
   onClose,
-}: CaliperHistoryModalProps) {
+}: Readonly<CaliperHistoryModalProps>) {
   const [activeTab, setActiveTab] = useState(0);
   const apiData = sampleCaliperHistoryResponse.data;
 
@@ -136,7 +139,7 @@ export default function CaliperHistoryModal({
         <div className="mb-6">
           <Tabs
             value={activeTab.toString()}
-            onValueChange={(value) => setActiveTab(parseInt(value))}
+            onValueChange={(value) => setActiveTab(Number.parseInt(value))}
           >
             <TabsList>
               {apiData.tabs.map((tab, index) => (

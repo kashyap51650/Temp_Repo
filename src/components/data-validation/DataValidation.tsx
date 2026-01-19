@@ -219,26 +219,34 @@ export default function DataValidation() {
         </div>
 
         <Card className="p-0 shadow-none border-0">
-          {isLoading ? (
-            <DataTableSkeleton columns={columns.length} rows={10} />
-          ) : tableData.length > 0 ? (
-            <DataTable
-              columns={columns}
-              data={tableData}
-              paginationState={{
-                mode: "server",
-                currentPage: data?.pagination.page ?? 1,
-                totalPages: data?.pagination.pages ?? 1,
-                hasNextPage: data?.pagination.has_next ?? false,
-                hasPrevPage: data?.pagination.has_prev ?? false,
-                onPageChange: handlePageChange,
-              }}
-            />
-          ) : (
-            <div className="p-8 text-center text-muted-foreground">
-              No data available for validation.
-            </div>
-          )}
+          {(() => {
+            if (isLoading) {
+              return <DataTableSkeleton columns={columns.length} rows={10} />;
+            }
+
+            if (tableData.length > 0) {
+              return (
+                <DataTable
+                  columns={columns}
+                  data={tableData}
+                  paginationState={{
+                    mode: "server",
+                    currentPage: data?.pagination.page ?? 1,
+                    totalPages: data?.pagination.pages ?? 1,
+                    hasNextPage: data?.pagination.has_next ?? false,
+                    hasPrevPage: data?.pagination.has_prev ?? false,
+                    onPageChange: handlePageChange,
+                  }}
+                />
+              );
+            }
+
+            return (
+              <div className="p-8 text-center text-muted-foreground">
+                No data available for validation.
+              </div>
+            );
+          })()}
         </Card>
       </div>
 

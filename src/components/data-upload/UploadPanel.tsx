@@ -212,15 +212,23 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const canShowDownloadButton =
     isPreclinicSelected && isStudyTypeSelected && isDataTypeSelected;
 
+  const hasRequiredFieldsForUpload = () => {
+    if (isHotlabSelected) {
+      return true;
+    }
+
+    if (isPreclinicSelected) {
+      return !!(formData.studyType && formData.dataType);
+    }
+
+    return true;
+  };
+
   const canUploadData =
     formData.project &&
     formData.specialisation &&
     formData.uploadedFile &&
-    (isHotlabSelected
-      ? true
-      : isPreclinicSelected
-        ? formData.studyType && formData.dataType
-        : true);
+    hasRequiredFieldsForUpload();
 
   const isAGCSelected =
     isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;

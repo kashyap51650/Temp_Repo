@@ -96,8 +96,9 @@ export function DataTable<T extends { id: string | number }>(
     manualPagination: isServerSidePagination,
   });
 
-  const paginationControls: PaginationState | null = isClientSidePagination
-    ? {
+  const getPaginationControls = (): PaginationState | null => {
+    if (isClientSidePagination) {
+      return {
         page: table.getState().pagination.pageIndex + 1,
         totalPages: table.getPageCount(),
         canNext: table.getCanNextPage(),
@@ -106,22 +107,28 @@ export function DataTable<T extends { id: string | number }>(
         onPrev: () => table.previousPage(),
         onNext: () => table.nextPage(),
         onLast: () => table.setPageIndex(table.getPageCount() - 1),
-      }
-    : isServerSidePagination
-      ? {
-          page: paginationState.currentPage,
-          totalPages: paginationState.totalPages,
-          canNext: paginationState.hasNextPage,
-          canPrev: paginationState.hasPrevPage,
-          onFirst: () => paginationState.onPageChange(1),
-          onPrev: () =>
-            paginationState.onPageChange(paginationState.currentPage - 1),
-          onNext: () =>
-            paginationState.onPageChange(paginationState.currentPage + 1),
-          onLast: () =>
-            paginationState.onPageChange(paginationState.totalPages),
-        }
-      : null;
+      };
+    }
+
+    if (isServerSidePagination) {
+      return {
+        page: paginationState.currentPage,
+        totalPages: paginationState.totalPages,
+        canNext: paginationState.hasNextPage,
+        canPrev: paginationState.hasPrevPage,
+        onFirst: () => paginationState.onPageChange(1),
+        onPrev: () =>
+          paginationState.onPageChange(paginationState.currentPage - 1),
+        onNext: () =>
+          paginationState.onPageChange(paginationState.currentPage + 1),
+        onLast: () => paginationState.onPageChange(paginationState.totalPages),
+      };
+    }
+
+    return null;
+  };
+
+  const paginationControls = getPaginationControls();
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;

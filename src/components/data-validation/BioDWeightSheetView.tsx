@@ -117,20 +117,26 @@ export function BioDWeightSheetView({
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-10">
           {[
-            [
-              { key: "sex", label: "Sex:" },
-              { key: "strain", label: "Strain:" },
-              { key: "dob", label: "DOB:" },
-              { key: "cellInjectionDate", label: "Cell Injection Date:" },
-            ],
-            [
-              { key: "cellLine", label: "Cell Line:" },
-              { key: "treatmentDate", label: "Treatment Date:" },
-              { key: "measurementDate", label: "Measurement Date:" },
-            ],
-          ].map((group, groupIdx) => (
-            <div className="space-y-3" key={groupIdx}>
-              {group.map(({ key, label }) => {
+            {
+              id: "left-column",
+              fields: [
+                { key: "sex", label: "Sex:" },
+                { key: "strain", label: "Strain:" },
+                { key: "dob", label: "DOB:" },
+                { key: "cellInjectionDate", label: "Cell Injection Date:" },
+              ],
+            },
+            {
+              id: "right-column",
+              fields: [
+                { key: "cellLine", label: "Cell Line:" },
+                { key: "treatmentDate", label: "Treatment Date:" },
+                { key: "measurementDate", label: "Measurement Date:" },
+              ],
+            },
+          ].map((group) => (
+            <div className="space-y-3" key={group.id}>
+              {group.fields.map(({ key, label }) => {
                 const value = viewData[key as keyof BioDWeightData];
                 if (typeof value !== "string") return null;
                 return (

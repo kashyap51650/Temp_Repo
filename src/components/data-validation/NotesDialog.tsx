@@ -155,15 +155,18 @@ export function NotesDialog({
           variant="default"
           className="px-4 py-2"
           aria-label="Add note"
+          aria-busy={isCreating}
           onClick={handleAddComment}
           disabled={!commentText.trim() || isCreating}
         >
           {isCreating ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"
-            />
+            <>
+              <span
+                aria-hidden="true"
+                className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+              />
+              <span className="sr-only">Submitting...</span>
+            </>
           ) : (
             <Send className="size-4" />
           )}

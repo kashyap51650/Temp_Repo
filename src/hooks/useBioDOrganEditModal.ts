@@ -162,6 +162,73 @@ export const useBioDOrganEditModal = ({
     return { measurementId, mouseId };
   };
 
+  const trackCellChange = (
+    rowId: string,
+    mouseCode: string,
+    value: string,
+    newChangedCells: Map<string, ChangedCell>
+  ) => {
+    const originalValue = experimentDataRef.current.rows.find(
+      (r) => r.id === rowId
+    )?.data[mouseCode];
+    const cellKey = `${rowId}-${mouseCode}`;
+
+    if (originalValue !== value) {
+      newChangedCells.set(cellKey, {
+        rowId,
+        mouseId: mouseCode,
+        value,
+        originalValue: originalValue ?? "",
+      });
+    } else {
+      newChangedCells.delete(cellKey);
+    }
+  };
+
+  const updateRowForGroup = (
+    row: BioDOrganData["rows"][0],
+    rowId: string,
+    groupCode: string,
+    value: string,
+    newChangedCells: Map<string, ChangedCell>
+  ): BioDOrganData["rows"][0] => {
+    const updatedData = { ...row.data };
+    const mouseCodes = getMouseCodesForGroup(groupCode);
+
+    mouseCodes.forEach((m) => {
+      trackCellChange(rowId, m, value, newChangedCells);
+      updatedData[m] = value;
+    });
+
+    const updatedGroupedData = row.groupedData
+      ? { ...row.groupedData }
+      : undefined;
+
+    if (updatedGroupedData?.[groupCode]) {
+      updatedGroupedData[groupCode] = {
+        ...updatedGroupedData[groupCode],
+        value: value,
+      };
+    }
+
+    return {
+      ...row,
+      data: updatedData,
+      groupedData: updatedGroupedData,
+    };
+  };
+
+  const updateRowForIndividualCell = (
+    row: BioDOrganData["rows"][0],
+    rowId: string,
+    mouseId: string,
+    value: string,
+    newChangedCells: Map<string, ChangedCell>
+  ): BioDOrganData["rows"][0] => {
+    trackCellChange(rowId, mouseId, value, newChangedCells);
+    return { ...row, data: { ...row.data, [mouseId]: value } };
+  };
+
   // Handle cell changes with support for group-wide updates for merged cells
   const handleCellChange = (
     rowId: string,
@@ -175,70 +242,23 @@ export const useBioDOrganEditModal = ({
       const updatedRows = prev.rows.map((row) => {
         if (row.id !== rowId) return row;
 
-        // Handle group-wide update for merged cells
         if (groupCode) {
-          const updatedData = { ...row.data };
-          const mouseCodes = getMouseCodesForGroup(groupCode);
-
-          mouseCodes.forEach((m) => {
-            const originalValue = experimentDataRef.current.rows.find(
-              (r) => r.id === rowId
-            )?.data[m];
-            const cellKey = `${rowId}-${m}`;
-
-            // Track changed cells
-            if (originalValue !== value) {
-              newChangedCells.set(cellKey, {
-                rowId,
-                mouseId: m,
-                value,
-                originalValue: originalValue ?? "",
-              });
-            } else {
-              newChangedCells.delete(cellKey);
-            }
-
-            updatedData[m] = value;
-          });
-
-          const updatedGroupedData = row.groupedData
-            ? { ...row.groupedData }
-            : undefined;
-
-          if (updatedGroupedData && updatedGroupedData[groupCode]) {
-            updatedGroupedData[groupCode] = {
-              ...updatedGroupedData[groupCode],
-              value: value,
-            };
-          }
-
-          return {
-            ...row,
-            data: updatedData,
-            groupedData: updatedGroupedData,
-          };
-        }
-
-        // Handle individual cell update
-        const originalValue = experimentDataRef.current.rows.find(
-          (r) => r.id === rowId
-        )?.data[mouseId];
-        const cellKey = `${rowId}-${mouseId}`;
-
-        // Track changed cells
-        if (originalValue !== value) {
-          newChangedCells.set(cellKey, {
+          return updateRowForGroup(
+            row,
             rowId,
-            mouseId,
+            groupCode,
             value,
-            originalValue: originalValue ?? "",
-          });
-        } else {
-          // Remove from changed cells if reverted to original
-          newChangedCells.delete(cellKey);
+            newChangedCells
+          );
         }
 
-        return { ...row, data: { ...row.data, [mouseId]: value } };
+        return updateRowForIndividualCell(
+          row,
+          rowId,
+          mouseId,
+          value,
+          newChangedCells
+        );
       });
 
       return {

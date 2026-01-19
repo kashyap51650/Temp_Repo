@@ -4,6 +4,7 @@ import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { toast } from "@/components/atoms/Sonner/toast";
 import { experimentDataApi, handleApiError } from "@/lib/api";
+import { formatDate } from "@/lib/date-utils";
 
 interface ConfirmDateDialogProps {
   open: boolean;
@@ -84,14 +85,6 @@ export function ConfirmDateDialog({
       treatmentDate,
     });
   };
-
-  function formatDate(date: Date) {
-    return date.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
 
   return (
     <Dialog

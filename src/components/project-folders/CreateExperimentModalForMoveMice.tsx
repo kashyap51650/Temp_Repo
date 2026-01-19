@@ -74,34 +74,43 @@ export function CreateExperimentModalForMoveMice({
         <div className="space-y-3">
           <Label className="text-sm font-medium">Select Study Type</Label>
 
-          {/* ✅ Show loading state while fetching */}
-          {loading ? (
-            <div className="text-center py-4 text-muted-foreground">
-              Loading study types...
-            </div>
-          ) : error ? (
-            <div className="text-center py-4 text-destructive">{error}</div>
-          ) : (
-            <Select
-              value={selectedStudyType}
-              onValueChange={handleStudyTypeChange}
-              disabled={!!error}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select study type" />
-              </SelectTrigger>
-              <SelectContent>
-                {studyTypes.map((studyType) => (
-                  <SelectItem
-                    key={studyType.id}
-                    value={studyType.id.toString()}
-                  >
-                    {studyType.study_type_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          {(() => {
+            if (loading) {
+              return (
+                <div className="text-center py-4 text-muted-foreground">
+                  Loading study types...
+                </div>
+              );
+            }
+
+            if (error) {
+              return (
+                <div className="text-center py-4 text-destructive">{error}</div>
+              );
+            }
+
+            return (
+              <Select
+                value={selectedStudyType}
+                onValueChange={handleStudyTypeChange}
+                disabled={!!error}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select study type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {studyTypes.map((studyType) => (
+                    <SelectItem
+                      key={studyType.id}
+                      value={studyType.id.toString()}
+                    >
+                      {studyType.study_type_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          })()}
         </div>
 
         {/* Actions - Only Cancel button */}

@@ -66,12 +66,14 @@ export function MoveMiceWizard({
 
   // Step 2: Handle target experiment selection (move mice)
   const handleTargetExperimentSelected = (targetExperimentId: string) => {
-    const mouseIdsAsNumbers = selectedMiceIds.map((id) => parseInt(id, 10));
+    const mouseIdsAsNumbers = selectedMiceIds.map((id) =>
+      Number.parseInt(id, 10)
+    );
 
     moveMiceMutation.mutate(
       {
         source_experiment_id: sourceExperimentId,
-        target_experiment_id: parseInt(targetExperimentId, 10),
+        target_experiment_id: Number.parseInt(targetExperimentId, 10),
         mouse_ids: mouseIdsAsNumbers,
       },
       {

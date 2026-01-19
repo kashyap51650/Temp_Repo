@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
 } from "react";
@@ -200,9 +201,50 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, state.unreadCount]);
 
-  const refreshNotifications = async () => {
+  const markAsRead = useCallback(
+    async (id: string) => {
+      try {
+        const response = await notificationApi.markNotificationAsRead(id);
+
+        if (response.success) {
+          dispatch({ type: "MARK_AS_READ", payload: id });
+
+          await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+        }
+      } catch (error) {
+        console.error("Failed to mark notification as read:", error);
+        dispatch({ type: "MARK_AS_READ", payload: id });
+      }
+    },
+    [fetchNotifications, fetchUnreadCount]
+  );
+
+  const markAllAsRead = useCallback(async () => {
+    try {
+      const response = await notificationApi.markAllNotificationsAsRead();
+
+      if (response.success) {
+        dispatch({ type: "MARK_ALL_AS_READ" });
+
+        await Promise.all([fetchNotifications(), fetchUnreadCount()]);
+      }
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+      dispatch({ type: "MARK_ALL_AS_READ" });
+    }
+  }, [fetchNotifications, fetchUnreadCount]);
+
+  const openDrawer = useCallback(() => {
+    dispatch({ type: "OPEN_DRAWER" });
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    dispatch({ type: "CLOSE_DRAWER" });
+  }, []);
+
+  const refreshNotifications = useCallback(async () => {
     await Promise.all([fetchNotifications(), fetchUnreadCount()]);
-  };
+  }, [fetchNotifications, fetchUnreadCount]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -229,59 +271,33 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, fetchUnreadCount]);
 
-  const markAsRead = async (id: string) => {
-    try {
-      const response = await notificationApi.markNotificationAsRead(id);
+  const addNotification = useCallback(
+    (notification: Omit<Notification, "id" | "createdAt">) => {
+      dispatch({ type: "ADD_NOTIFICATION", payload: notification });
+    },
+    []
+  );
 
-      if (response.success) {
-        dispatch({ type: "MARK_AS_READ", payload: id });
-
-        await Promise.all([fetchNotifications(), fetchUnreadCount()]);
-      }
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-      dispatch({ type: "MARK_AS_READ", payload: id });
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      const response = await notificationApi.markAllNotificationsAsRead();
-
-      if (response.success) {
-        dispatch({ type: "MARK_ALL_AS_READ" });
-
-        await Promise.all([fetchNotifications(), fetchUnreadCount()]);
-      }
-    } catch (error) {
-      console.error("Failed to mark all notifications as read:", error);
-      dispatch({ type: "MARK_ALL_AS_READ" });
-    }
-  };
-
-  const openDrawer = () => {
-    dispatch({ type: "OPEN_DRAWER" });
-  };
-
-  const closeDrawer = () => {
-    dispatch({ type: "CLOSE_DRAWER" });
-  };
-
-  const addNotification = (
-    notification: Omit<Notification, "id" | "createdAt">
-  ) => {
-    dispatch({ type: "ADD_NOTIFICATION", payload: notification });
-  };
-
-  const value: NotificationContextType = {
-    ...state,
-    markAsRead,
-    markAllAsRead,
-    openDrawer,
-    closeDrawer,
-    addNotification,
-    refreshNotifications,
-  };
+  const value: NotificationContextType = useMemo(
+    () => ({
+      ...state,
+      markAsRead,
+      markAllAsRead,
+      openDrawer,
+      closeDrawer,
+      addNotification,
+      refreshNotifications,
+    }),
+    [
+      state,
+      markAsRead,
+      markAllAsRead,
+      openDrawer,
+      closeDrawer,
+      addNotification,
+      refreshNotifications,
+    ]
+  );
 
   return (
     <NotificationContext.Provider value={value}>

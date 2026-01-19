@@ -132,50 +132,55 @@ export function PermissionsTab({
     );
   };
 
+  const updateGroupCheckState = (group: PermissionGroup): PermissionGroup => {
+    const newChecked = !group.checked;
+    return {
+      ...group,
+      checked: newChecked,
+      indeterminate: false,
+      permissions: group.permissions.map((permission) => ({
+        ...permission,
+        checked: newChecked,
+      })),
+    };
+  };
+
   const toggleGroupCheckbox = (groupId: string) => {
     setPermissionGroups((prev) =>
-      prev.map((group) => {
-        if (group.id === groupId) {
-          const newChecked = !group.checked;
-          return {
-            ...group,
-            checked: newChecked,
-            indeterminate: false,
-            permissions: group.permissions.map((permission) => ({
-              ...permission,
-              checked: newChecked,
-            })),
-          };
-        }
-        return group;
-      })
+      prev.map((group) =>
+        group.id === groupId ? updateGroupCheckState(group) : group
+      )
     );
+  };
+
+  const updatePermissionInGroup = (
+    group: PermissionGroup,
+    permissionId: string
+  ): PermissionGroup => {
+    const updatedPermissions = group.permissions.map((permission) =>
+      permission.id === permissionId
+        ? { ...permission, checked: !permission.checked }
+        : permission
+    );
+
+    const checkedCount = updatedPermissions.filter((p) => p.checked).length;
+    const totalCount = updatedPermissions.length;
+
+    return {
+      ...group,
+      permissions: updatedPermissions,
+      checked: checkedCount === totalCount,
+      indeterminate: checkedCount > 0 && checkedCount < totalCount,
+    };
   };
 
   const togglePermission = (groupId: string, permissionId: string) => {
     setPermissionGroups((prev) =>
-      prev.map((group) => {
-        if (group.id === groupId) {
-          const updatedPermissions = group.permissions.map((permission) =>
-            permission.id === permissionId
-              ? { ...permission, checked: !permission.checked }
-              : permission
-          );
-
-          const checkedCount = updatedPermissions.filter(
-            (p) => p.checked
-          ).length;
-          const totalCount = updatedPermissions.length;
-
-          return {
-            ...group,
-            permissions: updatedPermissions,
-            checked: checkedCount === totalCount,
-            indeterminate: checkedCount > 0 && checkedCount < totalCount,
-          };
-        }
-        return group;
-      })
+      prev.map((group) =>
+        group.id === groupId
+          ? updatePermissionInGroup(group, permissionId)
+          : group
+      )
     );
   };
 

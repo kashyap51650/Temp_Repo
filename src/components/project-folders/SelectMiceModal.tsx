@@ -30,16 +30,22 @@ export function SelectMiceModal({
     }
   }, [isOpen]);
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked && mice) {
+  const handleSelectAll = ({ isChecked }: { isChecked: boolean }) => {
+    if (isChecked && mice) {
       setSelectedMice(mice.map((mouse) => mouse.id));
     } else {
       setSelectedMice([]);
     }
   };
 
-  const handleMouseSelect = (mouseId: string, checked: boolean) => {
-    if (checked) {
+  const handleMouseSelect = ({
+    mouseId,
+    isChecked,
+  }: {
+    mouseId: string;
+    isChecked: boolean;
+  }) => {
+    if (isChecked) {
       setSelectedMice((prev) => [...prev, mouseId]);
     } else {
       setSelectedMice((prev) => prev.filter((id) => id !== mouseId));
@@ -104,7 +110,9 @@ export function SelectMiceModal({
               <Checkbox
                 id="select-all"
                 checked={isAllSelected}
-                onCheckedChange={handleSelectAll}
+                onCheckedChange={(checked: boolean) =>
+                  handleSelectAll({ isChecked: checked })
+                }
                 disabled={mice.length === 0}
               />
               <Label htmlFor="select-all">Select All</Label>
@@ -123,8 +131,11 @@ export function SelectMiceModal({
                 <Checkbox
                   id={mouse.id}
                   checked={selectedMice.includes(mouse.id)}
-                  onCheckedChange={(checked) =>
-                    handleMouseSelect(mouse.id, checked as boolean)
+                  onCheckedChange={(checked: boolean) =>
+                    handleMouseSelect({
+                      mouseId: mouse.id,
+                      isChecked: checked,
+                    })
                   }
                 />
                 <Label htmlFor={mouse.id}>{mouse.label}</Label>

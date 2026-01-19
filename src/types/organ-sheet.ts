@@ -1,22 +1,20 @@
 import type { ApiResponse } from "@/lib/api";
 
-type ID = number;
-
 type DynamicMap<T> = Record<string, T>;
 interface CellLine {
-  id: ID;
+  id: number;
   cell_line_name: string;
   vendor_name: string;
 }
 
 interface ExperimentDrug {
-  id: ID;
+  id: number;
   drug_name: string;
   om_number: string;
 }
 
 interface Group {
-  id: ID;
+  id: number;
   group_code: string;
   group_name: string;
   short_group_name: string;
@@ -32,7 +30,7 @@ interface Group {
 type GroupsMap = DynamicMap<Group>;
 
 interface Organ {
-  id: ID;
+  id: number;
   organ_name: string;
   description: string | null;
 }
@@ -43,10 +41,10 @@ interface Organ {
 type OrgansMap = DynamicMap<Organ>;
 
 interface Mouse {
-  id: ID;
+  id: number;
   mouse_delivery_id: string;
   mouse_code: string;
-  experiment_id: ID;
+  experiment_id: number;
 }
 
 /**
@@ -57,7 +55,7 @@ type MiceMap = DynamicMap<Mouse>;
 type OrganValueType = "float" | "datetime";
 
 interface OrganMeasurement {
-  id: ID;
+  id: number;
   value: number | string;
   type: OrganValueType;
   key: string;

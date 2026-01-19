@@ -22,7 +22,7 @@ export const createDynamicMasterDataColumns = (
 ): ColumnDef<TableDataItem>[] => {
   if (data.length === 0) return [];
 
-  const excludedKeys = [
+  const excludedKeys = new Set([
     "id",
     "created_by",
     "updated_by",
@@ -32,10 +32,10 @@ export const createDynamicMasterDataColumns = (
     "updator",
     "createdBy",
     "updatedBy",
-  ];
+  ]);
   const sampleItem = data[0];
   const dynamicKeys = Object.keys(sampleItem).filter(
-    (key) => !excludedKeys.includes(key)
+    (key) => !excludedKeys.has(key)
   );
 
   const dynamicColumns: ColumnDef<TableDataItem>[] = dynamicKeys.map((key) => ({

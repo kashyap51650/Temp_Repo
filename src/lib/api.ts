@@ -229,11 +229,15 @@ export function handleApiError(
   error: unknown,
   fallbackMessage: string
 ): string {
-  return error instanceof Error && "details" in error
-    ? extractValidationErrors(error as ApiError)
-    : error instanceof Error
-      ? error.message
-      : fallbackMessage;
+  if (error instanceof Error && "details" in error) {
+    return extractValidationErrors(error as ApiError);
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallbackMessage;
 }
 
 function createApiError(status: number, data: any): ApiError {
@@ -248,11 +252,11 @@ function createApiError(status: number, data: any): ApiError {
 }
 
 export class ApiClient {
-  private axiosInstance: AxiosInstance;
+  private readonly axiosInstance: AxiosInstance;
 
-  constructor(baseUrl: string = API_CONFIG.BASE_URL) {
+  constructor(baseURL: string = API_CONFIG.BASE_URL) {
     this.axiosInstance = axios.create({
-      baseURL: baseUrl,
+      baseURL,
       headers: {
         "Content-Type": "application/json",
       },
@@ -787,7 +791,7 @@ export const masterDataApi = {
       };
     };
 
-    if (response.success && response.data && response.data.items) {
+    if (response.success && response.data?.items) {
       response.data.items = response.data.items.map((item: any) => ({
         ...item,
         createdBy: item.creator?.email || "",
@@ -1812,9 +1816,12 @@ export const calliperingNotesCommentsApi = {
 
     const queryString = queryParams.toString();
 
-    return apiClient.get(
-      `${API_CONFIG.ENDPOINTS.CALLIPER_MEASUREMENT_COMMENTS.LIST}/${id}${queryString ? `?${queryString}` : ""}`
-    );
+    const baseEndpoint = `${API_CONFIG.ENDPOINTS.CALLIPER_MEASUREMENT_COMMENTS.LIST}/${id}`;
+    const endpoint = queryString
+      ? `${baseEndpoint}?${queryString}`
+      : baseEndpoint;
+
+    return apiClient.get(endpoint);
   },
 
   createNoteComment: async (

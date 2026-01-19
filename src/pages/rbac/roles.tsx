@@ -217,14 +217,6 @@ export default function RBACRolesPage() {
             />
           </div>
 
-          {/* {rolesResponse?.data?.pagination && (
-            <div className="mt-4 text-sm text-gray-600">
-              Showing {rolesResponse.data.pagination.page} of{" "}
-              {rolesResponse.data.pagination.pages} pages (
-              {rolesResponse.data.pagination.total} total roles)
-            </div>
-          )} */}
-
           <CreateRoleModal
             open={modalOpen}
             onOpenChange={setModalOpen}
@@ -276,14 +268,6 @@ export default function RBACRolesPage() {
               },
             }}
           />
-
-          {/* {userAssignmentsResponse?.data?.pagination && (
-            <div className="mt-4 text-sm text-gray-600">
-              Showing {userAssignmentsResponse.data.pagination.page} of{" "}
-              {userAssignmentsResponse.data.pagination.pages} pages (
-              {userAssignmentsResponse.data.pagination.total} total assignments)
-            </div>
-          )} */}
 
           <EditAssignmentModal
             open={editAssignmentModalOpen}

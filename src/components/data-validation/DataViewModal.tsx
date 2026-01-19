@@ -239,8 +239,7 @@ export function DataViewModal({
         experimentName={experiment.experimentName}
       />
 
-      {selectedItem &&
-        selectedItem.name === "BioD Weight Sheet" &&
+      {selectedItem?.name === "BioD Weight Sheet" &&
         weightSheetModal.isOpen &&
         (bioDWeightSheetMode === "edit" ? (
           <BioDWeightSheetModal

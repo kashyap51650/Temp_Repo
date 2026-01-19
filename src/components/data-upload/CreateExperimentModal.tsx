@@ -79,7 +79,7 @@ interface CreateExperimentModalProps {
 export function CreateExperimentModal({
   isOpen,
   onClose,
-  onCreateExperiment = () => {},
+  onCreateExperiment = async () => {},
   isotopeOptions,
   cellLineOptions,
   studyType = STUDY_TYPE_CODE.BIO_DISTRIBUTION,
@@ -223,9 +223,9 @@ export function CreateExperimentModal({
     updateFormState,
   ]);
 
-  const handleSave = async () => {
+  const validateBasicFields = (): boolean => {
     if (!formState.experimentName.trim()) {
-      return;
+      return false;
     }
 
     if (
@@ -238,12 +238,46 @@ export function CreateExperimentModal({
         (studyType === STUDY_TYPE_CODE.TOXICITY &&
           formState.selectedMouseStrains.length === 0)
       ) {
-        return;
+        return false;
       }
     } else if (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING) {
       if (formState.selectedDoseTypes.length === 0) {
-        return;
+        return false;
       }
+    }
+
+    return true;
+  };
+
+  const getExperimentPayloadIds = () => {
+    const selectedIsotopeId = apiIsotopes.find(
+      (isotope) => isotope.isotope_name === formState.selectedIsotope
+    )?.id;
+
+    const selectedCellLineIds = formState.selectedCellLines
+      .map(
+        (cellLineName) =>
+          apiCellLines.find(
+            (cellLine) => cellLine.cell_line_name === cellLineName
+          )?.id
+      )
+      .filter((id) => id !== undefined) as number[];
+
+    const selectedMouseStrainIds = formState.selectedMouseStrains
+      .map(
+        (strainName) =>
+          apiMouseStrains.find(
+            (strain) => strain.mouse_strain_name === strainName
+          )?.id
+      )
+      .filter((id) => id !== undefined) as number[];
+
+    return { selectedIsotopeId, selectedCellLineIds, selectedMouseStrainIds };
+  };
+
+  const handleSave = async () => {
+    if (!validateBasicFields()) {
+      return;
     }
 
     if (
@@ -253,27 +287,8 @@ export function CreateExperimentModal({
       specialization &&
       studyTypeId
     ) {
-      const selectedIsotopeId = apiIsotopes.find(
-        (isotope) => isotope.isotope_name === formState.selectedIsotope
-      )?.id;
-
-      const selectedCellLineIds = formState.selectedCellLines
-        .map(
-          (cellLineName) =>
-            apiCellLines.find(
-              (cellLine) => cellLine.cell_line_name === cellLineName
-            )?.id
-        )
-        .filter((id) => id !== undefined) as number[];
-
-      const selectedMouseStrainIds = formState.selectedMouseStrains
-        .map(
-          (strainName) =>
-            apiMouseStrains.find(
-              (strain) => strain.mouse_strain_name === strainName
-            )?.id
-        )
-        .filter((id) => id !== undefined) as number[];
+      const { selectedIsotopeId, selectedCellLineIds, selectedMouseStrainIds } =
+        getExperimentPayloadIds();
 
       if (
         !selectedIsotopeId ||

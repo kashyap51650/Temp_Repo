@@ -60,7 +60,7 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
   }, [open, experimentId]);
 
   useEffect(() => {
-    if (open && mouseGroupData && mouseGroupData.length > 0) {
+    if (open && mouseGroupData?.length) {
       setItems(mouseGroupData);
     }
   }, [open, mouseGroupData]);

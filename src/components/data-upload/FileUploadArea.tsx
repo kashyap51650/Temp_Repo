@@ -187,7 +187,7 @@ export function FileUploadArea({
 
   const getDropZoneClasses = () => {
     const baseClasses =
-      "border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors";
+      "border-dashed border-2 rounded-xl p-0 flex flex-col items-center justify-center min-h-56 transition-colors w-full";
 
     if (isUploadDisabled) {
       return `${baseClasses} opacity-50 cursor-not-allowed border-gray-300`;
@@ -211,11 +211,9 @@ export function FileUploadArea({
       >
         {generateLabelText()}
       </Label>
-      <div
-        role="button"
-        tabIndex={isUploadDisabled ? -1 : 0}
+      <div // NOSONAR - Using semantic <div> with ARIA attributes instead of role="button" because actual button element exists inside for keyboard interaction
         aria-label="File upload drop zone"
-        aria-disabled={isUploadDisabled}
+        aria-describedby="upload-instruction"
         className={getDropZoneClasses()}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -264,7 +262,10 @@ export function FileUploadArea({
               </div>
             </div>
           )}
-          <span className="text-sm text-muted-foreground mt-3">
+          <span
+            id="upload-instruction"
+            className="text-sm text-muted-foreground mt-3"
+          >
             {isDragging
               ? "Drop your Excel file here"
               : "Click or drag & drop your Excel file (.xlsx) here"}

@@ -77,24 +77,31 @@ export const RandomizationTable = ({
         </TableHeader>
 
         <TableBody>
-          {Array.from({ length: micePerGroup }).map((_, i) => (
-            <TableRow key={`row-${i}`}>
-              {groups.map((g, idx) => (
-                <Fragment key={`${g.key}-row-${i}`}>
-                  {TABLE_COLUMNS.map((col) => (
-                    <TableCell
-                      key={`${g.key}-${col.key}-${i}`}
-                      className={`${getGroupColorBody(idx)} border border-gray-200 p-3 text-left`}
-                    >
-                      {(g.data[i] as Record<string, string | number>)?.[
-                        col.key
-                      ] ?? ""}
-                    </TableCell>
-                  ))}
-                </Fragment>
-              ))}
-            </TableRow>
-          ))}
+          {Array.from({ length: micePerGroup }).map((_, rowIndex) => {
+            const rowKey = `${groups
+              .map((g) => g.data[rowIndex]?.mouse)
+              .filter(Boolean)
+              .join("-")}-row-${rowIndex}`;
+
+            return (
+              <TableRow key={rowKey}>
+                {groups.map((g, groupIndex) => (
+                  <Fragment key={`${g.key}-${rowKey}`}>
+                    {TABLE_COLUMNS.map((col) => (
+                      <TableCell
+                        key={`${g.key}-${col.key}-${g.data[rowIndex]?.mouse || rowIndex}`}
+                        className={`${getGroupColorBody(groupIndex)} border border-gray-200 p-3 text-left`}
+                      >
+                        {(
+                          g.data[rowIndex] as Record<string, string | number>
+                        )?.[col.key] ?? ""}
+                      </TableCell>
+                    ))}
+                  </Fragment>
+                ))}
+              </TableRow>
+            );
+          })}
 
           <TableRow>
             {groups.map((g, idx) => (
