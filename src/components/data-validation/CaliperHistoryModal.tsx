@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import {
@@ -7,7 +8,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/molecules/Tabs/Tabs";
-import { sampleCaliperHistoryResponse } from "@/data/caliperSampleData";
+import { useCaliperHistoryByMouse } from "@/hooks/useCaliperHistoryByMouse";
 
 import { Label } from "../atoms";
 import type { CaliperData, Measurement } from "./CaliperDataTable";
@@ -43,12 +44,14 @@ function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
         >
           {group.map(({ key, label }) => {
             const value = header[key as keyof ExperimentHeaderProps];
-            if (typeof value !== "string" && typeof value !== "undefined")
-              return null;
             return (
               <div className="flex items-center gap-3" key={key}>
                 <Label className="font-semibold text-sm w-56">{label}</Label>
-                <span className="flex-1">{value || "—"}</span>
+                <span className="flex-1">
+                  {value === null || value === undefined || value === ""
+                    ? "—"
+                    : value}
+                </span>
               </div>
             );
           })}
@@ -61,66 +64,85 @@ function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
 interface CaliperHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  experimentId: number;
 }
 
 export default function CaliperHistoryModal({
   isOpen,
   onClose,
+  experimentId,
 }: Readonly<CaliperHistoryModalProps>) {
   const [activeTab, setActiveTab] = useState(0);
-  const apiData = sampleCaliperHistoryResponse.data;
+
+  const {
+    data: apiResponse,
+    isLoading,
+    error,
+  } = useCaliperHistoryByMouse(experimentId, isOpen);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to load calliper history", {
+        description:
+          error.message || "Unable to fetch calliper measurement data",
+      });
+    }
+  }, [error]);
 
   const convertToLegacyFormat = (
-    tabData: (typeof apiData.tabs)[0]
+    tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0]
   ): CaliperData => {
+    const deliveryIds = Object.keys(tabData.mouse_data_by_delivery_id).sort(
+      (a, b) => {
+        const numA = parseInt(a.split("-").pop() || "0", 10);
+        const numB = parseInt(b.split("-").pop() || "0", 10);
+        return numA - numB;
+      }
+    );
+
     const convertedMeasurements: Record<
       string,
       Record<string, Record<string, Measurement>>
     > = {};
 
-    Object.entries(tabData.caliper_measurements).forEach(
-      ([deliveryId, measurements]) => {
-        const mouseInfo = (
-          tabData.mouse_data_by_delivery_id as Record<string, any>
-        )[deliveryId];
-        const groupKey = mouseInfo?.mouse_code || deliveryId;
+    deliveryIds.forEach((deliveryId) => {
+      const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
+      const groupKey = mouseInfo?.mouse_code || deliveryId;
 
-        if (!convertedMeasurements[groupKey]) {
-          convertedMeasurements[groupKey] = {};
-        }
-
-        convertedMeasurements[groupKey][deliveryId] = {};
-
-        Object.entries(measurements as Record<string, any>).forEach(
-          ([date, measurementData]: [string, any]) => {
-            const measurement: Measurement = {
-              width_mm: measurementData.width_mm,
-              length_mm: measurementData.length_mm,
-              volume_mm3: measurementData.volume_mm3,
-            };
-            convertedMeasurements[groupKey][deliveryId][date] = measurement;
-          }
-        );
+      if (!convertedMeasurements[groupKey]) {
+        convertedMeasurements[groupKey] = {};
       }
-    );
+
+      convertedMeasurements[groupKey][deliveryId] = {};
+
+      const measurements = tabData.caliper_measurements[deliveryId];
+      if (measurements) {
+        Object.keys(measurements).forEach((date) => {
+          const measurementData = measurements[date];
+          convertedMeasurements[groupKey][deliveryId][date] = {
+            width_mm: measurementData.width_mm,
+            length_mm: measurementData.length_mm,
+            volume_mm3: measurementData.volume_mm3,
+          };
+        });
+      }
+    });
 
     const updatedMouseData: Record<string, any> = {};
-    Object.entries(tabData.mouse_data_by_delivery_id).forEach(
-      ([deliveryId, mouseInfo]: [string, any]) => {
-        updatedMouseData[deliveryId] = {
-          mouse_id: mouseInfo.id,
-          group: mouseInfo.mouse_code,
-          mouse_code: mouseInfo.mouse_code,
-        };
-      }
-    );
+    deliveryIds.forEach((deliveryId) => {
+      const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
+      updatedMouseData[deliveryId] = {
+        mouse_id: mouseInfo.id,
+        group: mouseInfo.mouse_code,
+        mouse_code: mouseInfo.mouse_code,
+      };
+    });
 
-    const caliperData: CaliperData = {
-      caliper_measurements_dates: tabData.caliper_measurements_dates,
+    return {
+      caliper_measurements_dates: [...tabData.caliper_measurements_dates],
       mouse_data_by_delivery_id: updatedMouseData,
       caliper_measurements: convertedMeasurements,
     };
-    return caliperData;
   };
 
   return (
@@ -129,50 +151,76 @@ export default function CaliperHistoryModal({
       onOpenChange={(open: boolean) => {
         if (!open) onClose();
       }}
-      title="Caliper History"
-      description="View the history of individual mouse caliper measurements across different experimental conditions."
+      title="Calliper History"
+      description="View the history of individual mouse calliper measurements across different experimental conditions."
       className="h-dvh max-w-dvw flex flex-col overflow-y-auto rounded-none"
       showClose={true}
       trigger={null}
     >
       <div className="py-4 flex-1 overflow-auto">
-        <div className="mb-6">
-          <Tabs
-            value={activeTab.toString()}
-            onValueChange={(value) => setActiveTab(Number.parseInt(value))}
-          >
-            <TabsList>
-              {apiData.tabs.map((tab, index) => (
-                <TabsTrigger
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">
+              Loading calliper history...
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-destructive">
+              Unable to load calliper history. Please try again later.
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !error && !apiResponse?.data?.tabs?.length && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">
+              No calliper history data available for this experiment.
+            </div>
+          </div>
+        )}
+
+        {apiResponse?.data?.tabs && apiResponse.data.tabs.length > 0 && (
+          <div className="mb-6">
+            <Tabs
+              value={activeTab.toString()}
+              onValueChange={(value) => setActiveTab(Number.parseInt(value))}
+            >
+              <TabsList>
+                {apiResponse.data.tabs.map((tab, index) => (
+                  <TabsTrigger
+                    key={tab.tab_id}
+                    value={index.toString()}
+                    className="text-sm"
+                  >
+                    {tab.tab_label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {apiResponse.data.tabs.map((tab, index) => (
+                <TabsContent
                   key={tab.tab_id}
                   value={index.toString()}
-                  className="text-sm"
+                  className="mt-4"
                 >
-                  {tab.tab_label}
-                </TabsTrigger>
+                  <ExperimentHeader
+                    title="Prot458_Ma"
+                    sex={tab.metadata.sex}
+                    strain={tab.metadata.strain}
+                    dob={tab.metadata.date_of_birth}
+                    cellInjDate={tab.metadata.cell_injection_date}
+                    cellLine={tab.metadata.cell_line}
+                  />
+
+                  <CaliperDataTable data={convertToLegacyFormat(tab)} />
+                </TabsContent>
               ))}
-            </TabsList>
-
-            {apiData.tabs.map((tab, index) => (
-              <TabsContent
-                key={tab.tab_id}
-                value={index.toString()}
-                className="mt-4"
-              >
-                <ExperimentHeader
-                  title="Prot458_Ma"
-                  sex={tab.metadata.sex}
-                  strain={tab.metadata.strain}
-                  dob={tab.metadata.date_of_birth}
-                  cellInjDate={tab.metadata.cell_injection_date}
-                  cellLine={tab.metadata.cell_line}
-                />
-
-                <CaliperDataTable data={convertToLegacyFormat(tab)} />
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+            </Tabs>
+          </div>
+        )}
       </div>
     </Dialog>
   );

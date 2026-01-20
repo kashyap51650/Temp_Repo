@@ -82,7 +82,7 @@ export function CaliperGroupedTable({
       const diffTime =
         measurementDate.getTime() - firstMeasurementDate.getTime();
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
+      return diffDays + 1;
     });
   }, [caliper_measurements_dates]);
 

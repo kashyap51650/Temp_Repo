@@ -28,6 +28,7 @@ interface CalliperingSheetViewModalProps {
   hideActions?: boolean;
   experimentDataType?: string;
   experimentStudyType?: string;
+  experimentId: number;
 }
 
 export function CalliperingSheetViewModal({
@@ -40,6 +41,7 @@ export function CalliperingSheetViewModal({
   hideActions = false,
   experimentDataType,
   experimentStudyType,
+  experimentId,
 }: Readonly<CalliperingSheetViewModalProps>) {
   const editModal = useModal();
   const rejectModal = useModal();
@@ -135,7 +137,7 @@ export function CalliperingSheetViewModal({
                 className="flex items-center gap-2"
                 onClick={caliperHistoryModal.openModal}
               >
-                Caliper History
+                Calliper History
               </Button>
               <Button
                 variant="outline"
@@ -144,7 +146,7 @@ export function CalliperingSheetViewModal({
                 onClick={caliperHistoryGroupModal.openModal}
               >
                 <ChartBar className="size-4" />
-                Caliper History Group
+                Calliper History Group
               </Button>
             </div>
             {!hideActions && isPending && (
@@ -201,10 +203,12 @@ export function CalliperingSheetViewModal({
       <CaliperHistoryModal
         isOpen={caliperHistoryModal.isOpen}
         onClose={caliperHistoryModal.closeModal}
+        experimentId={experimentId}
       />
       <CaliperHistoryGroupModal
         isOpen={caliperHistoryGroupModal.isOpen}
         onClose={caliperHistoryGroupModal.closeModal}
+        experimentId={experimentId}
       />
     </>
   );

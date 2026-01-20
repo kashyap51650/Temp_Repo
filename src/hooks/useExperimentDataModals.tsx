@@ -14,6 +14,7 @@ interface ExperimentDataItem {
   status?: string;
   dataType?: string;
   experiment?: {
+    id: number;
     experiment_name: string;
   };
   data_type?: {
@@ -105,6 +106,8 @@ export function useExperimentDataModals(
     // Convert ID to string
     const experimentDataId = String(selectedExperiment.id);
 
+    const experimentId = selectedExperiment.experiment?.id || 0;
+
     // Get status
     const experimentStatus = selectedExperiment.status || "";
     const experimentDataType =
@@ -128,6 +131,7 @@ export function useExperimentDataModals(
             hideActions={hideActions}
             experimentDataType={experimentDataType}
             experimentStudyType={experimentStudyType}
+            experimentId={experimentId}
           />
         )}
         {weightSheetViewModal.isOpen && (
