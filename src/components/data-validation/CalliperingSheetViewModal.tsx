@@ -137,7 +137,7 @@ export function CalliperingSheetViewModal({
                 className="flex items-center gap-2"
                 onClick={caliperHistoryModal.openModal}
               >
-                Calliper History
+                Caliper History
               </Button>
               <Button
                 variant="outline"
@@ -146,7 +146,7 @@ export function CalliperingSheetViewModal({
                 onClick={caliperHistoryGroupModal.openModal}
               >
                 <ChartBar className="size-4" />
-                Calliper History Group
+                Caliper History Group
               </Button>
             </div>
             {!hideActions && isPending && (

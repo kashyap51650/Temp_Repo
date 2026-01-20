@@ -82,9 +82,9 @@ export default function CaliperHistoryModal({
 
   useEffect(() => {
     if (error) {
-      toast.error("Failed to load calliper history", {
+      toast.error("Failed to load caliper history", {
         description:
-          error.message || "Unable to fetch calliper measurement data",
+          error.message || "Unable to fetch caliper measurement data",
       });
     }
   }, [error]);
@@ -151,8 +151,8 @@ export default function CaliperHistoryModal({
       onOpenChange={(open: boolean) => {
         if (!open) onClose();
       }}
-      title="Calliper History"
-      description="View the history of individual mouse calliper measurements across different experimental conditions."
+      title="Caliper History"
+      description="View the history of individual mouse caliper measurements across different experimental conditions."
       className="h-dvh max-w-dvw flex flex-col overflow-y-auto rounded-none"
       showClose={true}
       trigger={null}
@@ -161,7 +161,7 @@ export default function CaliperHistoryModal({
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="text-muted-foreground">
-              Loading calliper history...
+              Loading caliper history...
             </div>
           </div>
         )}
@@ -169,7 +169,7 @@ export default function CaliperHistoryModal({
         {error && (
           <div className="flex items-center justify-center py-8">
             <div className="text-destructive">
-              Unable to load calliper history. Please try again later.
+              Unable to load caliper history. Please try again later.
             </div>
           </div>
         )}
@@ -177,7 +177,7 @@ export default function CaliperHistoryModal({
         {!isLoading && !error && !apiResponse?.data?.tabs?.length && (
           <div className="flex items-center justify-center py-8">
             <div className="text-muted-foreground">
-              No calliper history data available for this experiment.
+              No caliper history data available for this experiment.
             </div>
           </div>
         )}
