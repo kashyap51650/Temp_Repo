@@ -17,13 +17,14 @@ import {
   useModal,
 } from "@/hooks";
 import type { ExperimentDropdownItem } from "@/lib/api";
-import { STUDY_TYPE_CODE } from "@/lib/constants";
+import { SPECIALIZATION, STUDY_TYPE_CODE } from "@/lib/constants";
 
 import { Button, Input } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
 import { Label } from "../atoms/Label/Label";
 import { CalendarDatePicker } from "../organisms";
 import { CustomSelect } from "./CustomSelect";
+import DoseRangeExperimentForm from "./DoseRangeExperimentForm";
 import ModelStudyExperimentForm from "./ModelStudyExperimentForm";
 import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
 
@@ -369,6 +370,263 @@ export function CreateExperimentModal({
     }
   }, [isOpen, studyType, loadExperimentData]);
 
+  const renderExperimentForm = () => {
+    if (
+      specialization?.toLowerCase() === SPECIALIZATION.PRECLINICAL.toLowerCase()
+    ) {
+      if (studyType === STUDY_TYPE_CODE.MODEL_STUDY) {
+        return (
+          <ModelStudyExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING) {
+        return (
+          <DoseRangeExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      return (
+        <div className="space-y-4">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="experiment-name">Experiment Name</Label>
+              <Input
+                id="experiment-name"
+                type="text"
+                value={formState.experimentName}
+                onChange={(e) =>
+                  updateFormState({ experimentName: e.target.value })
+                }
+                placeholder="Enter experiment name"
+                className="w-full"
+                size="lg"
+              />
+            </div>
+
+            {(studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+              studyType === STUDY_TYPE_CODE.TOXICITY) && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="isotope">Isotope</Label>
+                  <CustomSelect
+                    options={dynamicIsotopeOptions}
+                    placeholder="Select isotope"
+                    value={formState.selectedIsotope}
+                    className="w-full"
+                    onValueChange={(value: string | string[]) => {
+                      const selectedValue =
+                        typeof value === "string" ? value : value[0];
+                      updateFormState({ selectedIsotope: selectedValue });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cell-line">Cell Line</Label>
+                  <CustomSelect
+                    options={dynamicCellLineOptions}
+                    placeholder="Select cell lines..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedCellLines}
+                    onValueChange={(values: string | string[]) => {
+                      const cellLines = Array.isArray(values)
+                        ? values
+                        : [values];
+                      updateFormState({ selectedCellLines: cellLines });
+                    }}
+                  />
+                </div>
+                {studyType === STUDY_TYPE_CODE.TOXICITY && (
+                  <div className="space-y-2">
+                    <Label htmlFor="mouse-strains">Mouse Strains</Label>
+                    <CustomSelect
+                      options={dynamicMouseStrainOptions}
+                      placeholder="Select mouse strains..."
+                      multiple
+                      className="w-full"
+                      value={formState.selectedMouseStrains}
+                      onValueChange={(values: string | string[]) => {
+                        const strains = Array.isArray(values)
+                          ? values
+                          : [values];
+                        updateFormState({ selectedMouseStrains: strains });
+                      }}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="dose-type">Type of Dose</Label>
+                  <CustomSelect
+                    options={doseTypeOptions}
+                    placeholder="Select dose types..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedDoseTypes}
+                    onValueChange={(values: string | string[]) => {
+                      const types = Array.isArray(values) ? values : [values];
+                      updateFormState({ selectedDoseTypes: types });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="drug-type">Type of Drug</Label>
+                  <CustomSelect
+                    options={drugTypeOptions}
+                    placeholder="Select drug types..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedDrugTypes}
+                    onValueChange={(values: string | string[]) => {
+                      const types = Array.isArray(values) ? values : [values];
+                      updateFormState({ selectedDrugTypes: types });
+                    }}
+                  />
+                </div>
+              </>
+            )}
+
+            {studyType === STUDY_TYPE_CODE.EFFICACY && (
+              <div className="text-sm text-muted-foreground p-3 bg-blue-50 rounded-md">
+                For Efficacy studies, only the experiment name is required.
+              </div>
+            )}
+
+            {studyType === STUDY_TYPE_CODE.MODEL_STUDY && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="cell-line">Cell Line</Label>
+                  <CustomSelect
+                    options={cellLineOptions}
+                    placeholder="Select cell line"
+                    value={formState.selectedCellLines}
+                    className="w-full"
+                    onValueChange={(value: string | string[]) => {
+                      const cellLine =
+                        typeof value === "string" ? value : value[0];
+                      updateFormState({ selectedCellLines: [cellLine] });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="strain">Strain</Label>
+                  <CustomSelect
+                    options={strainOptions}
+                    placeholder="Select strain"
+                    value={formState.selectedStrain}
+                    className="w-full"
+                    onValueChange={(value: string | string[]) => {
+                      const strain =
+                        typeof value === "string" ? value : value[0];
+                      updateFormState({ selectedStrain: strain });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cells-injected">Cells Injected</Label>
+                  <CustomSelect
+                    options={cellsInjectedOptions}
+                    placeholder="Select cells injected..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedCellsInjected}
+                    onValueChange={(values: string | string[]) => {
+                      const cells = Array.isArray(values) ? values : [values];
+                      updateFormState({ selectedCellsInjected: cells });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vehicle">Vehicle</Label>
+                  <CustomSelect
+                    options={vehicleOptions}
+                    placeholder="Select vehicles..."
+                    multiple
+                    className="w-full"
+                    value={formState.selectedVehicles}
+                    onValueChange={(values: string | string[]) => {
+                      const vehicles = Array.isArray(values)
+                        ? values
+                        : [values];
+                      updateFormState({ selectedVehicles: vehicles });
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="injection-date">Cell Injection Date</Label>
+                  <CalendarDatePicker
+                    id="injection-date"
+                    value={formState.cellInjectionDate}
+                    onChange={(date) =>
+                      updateFormState({ cellInjectionDate: date })
+                    }
+                    placeholder="Pick a date"
+                    disablePastDates={false}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              size={"lg"}
+              onClick={handleCancel}
+              disabled={isCreating || isCreatingBiod}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              size={"lg"}
+              disabled={
+                !formState.experimentName.trim() ||
+                isCreating ||
+                isCreatingBiod ||
+                ((studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
+                  studyType === STUDY_TYPE_CODE.TOXICITY) &&
+                  (!formState.selectedIsotope ||
+                    formState.selectedCellLines.length === 0)) ||
+                (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING &&
+                  formState.selectedDoseTypes.length === 0) ||
+                (studyType === STUDY_TYPE_CODE.MODEL_STUDY &&
+                  (formState.selectedCellLines.length === 0 ||
+                    !formState.selectedStrain))
+              }
+            >
+              {isCreating || isCreatingBiod ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Experiment creation is not available for the selected specialization.
+        </p>
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog
@@ -382,243 +640,7 @@ export function CreateExperimentModal({
         className="max-w-lg"
         trigger={null}
       >
-        {specialization === "Preclinical" &&
-        studyType === STUDY_TYPE_CODE.MODEL_STUDY ? (
-          <ModelStudyExperimentForm
-            projectId={projectId}
-            studyTypeId={studyTypeId}
-            specialization={specialization}
-            onCancel={handleCancel}
-            onSuccess={handleSuccess}
-          />
-        ) : (
-          <>
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="experiment-name">Experiment Name</Label>
-                  <Input
-                    id="experiment-name"
-                    type="text"
-                    value={formState.experimentName}
-                    onChange={(e) =>
-                      updateFormState({ experimentName: e.target.value })
-                    }
-                    placeholder="Enter experiment name"
-                    className="w-full"
-                    size="lg"
-                  />
-                </div>
-
-                {(studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
-                  studyType === STUDY_TYPE_CODE.TOXICITY) && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="isotope">Isotope</Label>
-                      <CustomSelect
-                        options={dynamicIsotopeOptions}
-                        placeholder="Select isotope"
-                        value={formState.selectedIsotope}
-                        className="w-full"
-                        onValueChange={(value: string | string[]) => {
-                          const selectedValue =
-                            typeof value === "string" ? value : value[0];
-                          updateFormState({ selectedIsotope: selectedValue });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cell-line">Cell Line</Label>
-                      <CustomSelect
-                        options={dynamicCellLineOptions}
-                        placeholder="Select cell lines..."
-                        multiple
-                        className="w-full"
-                        value={formState.selectedCellLines}
-                        onValueChange={(values: string | string[]) => {
-                          const cellLines = Array.isArray(values)
-                            ? values
-                            : [values];
-                          updateFormState({ selectedCellLines: cellLines });
-                        }}
-                      />
-                    </div>
-                    {studyType === STUDY_TYPE_CODE.TOXICITY && (
-                      <div className="space-y-2">
-                        <Label htmlFor="mouse-strains">Mouse Strains</Label>
-                        <CustomSelect
-                          options={dynamicMouseStrainOptions}
-                          placeholder="Select mouse strains..."
-                          multiple
-                          className="w-full"
-                          value={formState.selectedMouseStrains}
-                          onValueChange={(values: string | string[]) => {
-                            const strains = Array.isArray(values)
-                              ? values
-                              : [values];
-                            updateFormState({ selectedMouseStrains: strains });
-                          }}
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="dose-type">Type of Dose</Label>
-                      <CustomSelect
-                        options={doseTypeOptions}
-                        placeholder="Select dose types..."
-                        multiple
-                        className="w-full"
-                        value={formState.selectedDoseTypes}
-                        onValueChange={(values: string | string[]) => {
-                          const types = Array.isArray(values)
-                            ? values
-                            : [values];
-                          updateFormState({ selectedDoseTypes: types });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="drug-type">Type of Drug</Label>
-                      <CustomSelect
-                        options={drugTypeOptions}
-                        placeholder="Select drug types..."
-                        multiple
-                        className="w-full"
-                        value={formState.selectedDrugTypes}
-                        onValueChange={(values: string | string[]) => {
-                          const types = Array.isArray(values)
-                            ? values
-                            : [values];
-                          updateFormState({ selectedDrugTypes: types });
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {studyType === STUDY_TYPE_CODE.EFFICACY && (
-                  <div className="text-sm text-muted-foreground p-3 bg-blue-50 rounded-md">
-                    For Efficacy studies, only the experiment name is required.
-                  </div>
-                )}
-
-                {studyType === STUDY_TYPE_CODE.MODEL_STUDY && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="cell-line">Cell Line</Label>
-                      <CustomSelect
-                        options={cellLineOptions}
-                        placeholder="Select cell line"
-                        value={formState.selectedCellLines}
-                        className="w-full"
-                        onValueChange={(value: string | string[]) => {
-                          const cellLine =
-                            typeof value === "string" ? value : value[0];
-                          updateFormState({ selectedCellLines: [cellLine] });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="strain">Strain</Label>
-                      <CustomSelect
-                        options={strainOptions}
-                        placeholder="Select strain"
-                        value={formState.selectedStrain}
-                        className="w-full"
-                        onValueChange={(value: string | string[]) => {
-                          const strain =
-                            typeof value === "string" ? value : value[0];
-                          updateFormState({ selectedStrain: strain });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cells-injected">Cells Injected</Label>
-                      <CustomSelect
-                        options={cellsInjectedOptions}
-                        placeholder="Select cells injected..."
-                        multiple
-                        className="w-full"
-                        value={formState.selectedCellsInjected}
-                        onValueChange={(values: string | string[]) => {
-                          const cells = Array.isArray(values)
-                            ? values
-                            : [values];
-                          updateFormState({ selectedCellsInjected: cells });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="vehicle">Vehicle</Label>
-                      <CustomSelect
-                        options={vehicleOptions}
-                        placeholder="Select vehicles..."
-                        multiple
-                        className="w-full"
-                        value={formState.selectedVehicles}
-                        onValueChange={(values: string | string[]) => {
-                          const vehicles = Array.isArray(values)
-                            ? values
-                            : [values];
-                          updateFormState({ selectedVehicles: vehicles });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="injection-date">
-                        Cell Injection Date
-                      </Label>
-                      <CalendarDatePicker
-                        id="injection-date"
-                        value={formState.cellInjectionDate}
-                        onChange={(date) =>
-                          updateFormState({ cellInjectionDate: date })
-                        }
-                        placeholder="Pick a date"
-                        disablePastDates={false}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  size={"lg"}
-                  onClick={handleCancel}
-                  disabled={isCreating || isCreatingBiod}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  size={"lg"}
-                  disabled={
-                    !formState.experimentName.trim() ||
-                    isCreating ||
-                    isCreatingBiod ||
-                    ((studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION ||
-                      studyType === STUDY_TYPE_CODE.TOXICITY) &&
-                      (!formState.selectedIsotope ||
-                        formState.selectedCellLines.length === 0)) ||
-                    (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING &&
-                      formState.selectedDoseTypes.length === 0) ||
-                    (studyType === STUDY_TYPE_CODE.MODEL_STUDY &&
-                      (formState.selectedCellLines.length === 0 ||
-                        !formState.selectedStrain))
-                  }
-                >
-                  {isCreating || isCreatingBiod ? "Saving..." : "Save"}
-                </Button>
-              </div>
-            </div>
-          </>
-        )}
+        {renderExperimentForm()}
       </Dialog>
       <MouseGroupsOrderModal
         experimentId={createdExperimentId}

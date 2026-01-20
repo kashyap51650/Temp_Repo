@@ -6,22 +6,19 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/organisms/Form/Form";
-import { drugTypeOptions } from "@/data/experiments";
+import { experimentDrugApi } from "@/lib/api";
 
 interface DrugTypeFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
+  multiple?: boolean;
 }
 
 export function DrugTypeField<T extends FieldValues>({
   control,
   name,
+  multiple = false,
 }: Readonly<DrugTypeFieldProps<T>>) {
-  const drugTypeData = drugTypeOptions.map((option) => ({
-    id: option.value,
-    drug_type_name: option.label,
-  }));
-
   return (
     <FormField
       control={control}
@@ -33,13 +30,20 @@ export function DrugTypeField<T extends FieldValues>({
             control={control}
             name={name}
             mapConfig={{
-              labelKey: "drug_type_name" as const,
+              labelKey: "drug_name" as const,
               valueKey: "id" as const,
             }}
-            query={async () => drugTypeData}
+            query={async () => {
+              const response =
+                await experimentDrugApi.getExperimentDrugsDropdown();
+
+              return response?.data ?? [];
+            }}
             searchable={false}
-            queryKey={["drug-types-dropdown"]}
+            multiple={multiple}
+            queryKey={["experiments-drugs-dropdown"]}
             placeholder="Select drug types"
+            valueAsNumber={true}
           />
         </FormItem>
       )}

@@ -2,6 +2,10 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type {
+  CreateDoseRangeFindingPayload,
+  CreateDoseRangeFindingResponse,
+} from "@/types/doseRangeFinding";
+import type {
   ExperimentListFilters,
   ExperimentsListResponse,
 } from "@/types/experiment";
@@ -111,6 +115,9 @@ export const API_CONFIG = {
       MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/preview`,
       CONFIRM_MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/confirm`,
     },
+    DOSE_RANGE_FINDING_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/drf-experiments/`,
+    },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
     },
@@ -127,6 +134,9 @@ export const API_CONFIG = {
     },
     EXPERIMENT_DRUGS: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
+    },
+    DOSES: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/doses/dropdown`,
     },
     RANDOMIZATION: {
       PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,
@@ -1831,5 +1841,29 @@ export const calliperingNotesCommentsApi = {
       API_CONFIG.ENDPOINTS.CALLIPER_MEASUREMENT_COMMENTS.CREATE,
       payload
     );
+  },
+};
+
+export const doseRangeFindingExperimentApi = {
+  createDoseRangeExperiment: async (
+    payload: CreateDoseRangeFindingPayload
+  ): Promise<CreateDoseRangeFindingResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.DOSE_RANGE_FINDING_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const dosesApi = {
+  getDosesDropdown: async (): Promise<
+    ApiResponse<
+      Array<{
+        id: number;
+        name: string;
+      }>
+    >
+  > => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.DOSES.DROPDOWN);
   },
 };

@@ -230,6 +230,54 @@ export function DynamicMasterDataFormModal({
           placeholder: "Enter cell count",
         },
       ],
+      "dose-values": [
+        {
+          key: "dose",
+          label: "Dose",
+          type: "number",
+          required: true,
+          placeholder: "Enter dose",
+        },
+        {
+          key: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+          placeholder: "Enter description",
+        },
+      ],
+      "dose-units": [
+        {
+          key: "unit_name",
+          label: "Unit Name",
+          type: "text",
+          required: true,
+          placeholder: "Enter unit name",
+        },
+        {
+          key: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+          placeholder: "Enter description",
+        },
+      ],
+      "dose-frequencies": [
+        {
+          key: "frequency_code",
+          label: "Frequency Code",
+          type: "text",
+          required: true,
+          placeholder: "Enter frequency code",
+        },
+        {
+          key: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+          placeholder: "Enter description",
+        },
+      ],
     };
 
     return (
