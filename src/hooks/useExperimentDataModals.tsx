@@ -106,7 +106,12 @@ export function useExperimentDataModals(
     // Convert ID to string
     const experimentDataId = String(selectedExperiment.id);
 
-    const experimentId = selectedExperiment.experiment?.id || 0;
+    // Validate experiment ID - warn developers if missing
+    const experimentId = selectedExperiment.experiment?.id;
+
+    if (!experimentId || experimentId === 0) {
+      toast.error("something went wrong: experiment ID is missing or invalid.");
+    }
 
     // Get status
     const experimentStatus = selectedExperiment.status || "";
@@ -131,7 +136,7 @@ export function useExperimentDataModals(
             hideActions={hideActions}
             experimentDataType={experimentDataType}
             experimentStudyType={experimentStudyType}
-            experimentId={experimentId}
+            experimentId={experimentId || 0}
           />
         )}
         {weightSheetViewModal.isOpen && (
