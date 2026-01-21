@@ -5,8 +5,10 @@ import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModa
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
 import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
+import { PERMISSIONS } from "@/lib/permissions";
 
 import { useModal } from "./useModal";
+import { usePermissions } from "./usePermissions";
 
 interface ExperimentDataItem {
   id: string | number;
@@ -33,6 +35,14 @@ export function useExperimentDataModals(
   options: UseExperimentDataModalsOptions = {}
 ) {
   const { hideActions = false } = options;
+  const { hasAnyPermission } = usePermissions();
+
+  const canEditOrApprove =
+    !hideActions &&
+    hasAnyPermission([
+      PERMISSIONS.DATA_VALIDATE.EDIT_DATA,
+      PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA,
+    ]);
 
   const [selectedExperiment, setSelectedExperiment] =
     useState<ExperimentDataItem | null>(null);
@@ -125,7 +135,7 @@ export function useExperimentDataModals(
             experimentName={experimentName}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
-            hideActions={hideActions}
+            hideActions={hideActions || !canEditOrApprove}
             experimentDataType={experimentDataType}
             experimentStudyType={experimentStudyType}
           />
@@ -137,7 +147,7 @@ export function useExperimentDataModals(
             experimentName={experimentName}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
-            hideActions={hideActions}
+            hideActions={hideActions || !canEditOrApprove}
           />
         )}
         {organViewModal.isOpen && (
@@ -147,7 +157,7 @@ export function useExperimentDataModals(
             experimentName={experimentName}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
-            hideActions={hideActions}
+            hideActions={hideActions || !canEditOrApprove}
           />
         )}
         {agcViewModal.isOpen && (

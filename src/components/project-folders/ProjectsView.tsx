@@ -5,9 +5,11 @@ import { Button, Input } from "@/components/atoms";
 import { useProjectsList } from "@/hooks";
 import useDebounce from "@/hooks/useDebounce";
 import { DEFAULT_DEBOUNCE_DELAY, DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { PERMISSIONS } from "@/lib/permissions";
 import type { ProjectItem } from "@/types/project";
 
 import { PaginationControls } from "../organisms/DataTable/PaginationControls";
+import { ProtectedComponent } from "../organisms/ProtectedRoute";
 
 interface ProjectsViewProps {
   onProjectClick: (project: ProjectItem) => void;
@@ -144,16 +146,21 @@ function ProjectCard({
         </div>
       </Button>
 
-      {project.project_status !== "closed" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onCloseProject(project)}
-        >
-          <XCircle className="size-4 mr-1 text-destructive" />
-          Close Project
-        </Button>
-      )}
+      <ProtectedComponent
+        permissions={PERMISSIONS.PROJECTS.CLOSE}
+        redirectTo={false}
+      >
+        {project.project_status !== "closed" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onCloseProject(project)}
+          >
+            <XCircle className="size-4 mr-1 text-destructive" />
+            Close Project
+          </Button>
+        )}
+      </ProtectedComponent>
     </div>
   );
 }

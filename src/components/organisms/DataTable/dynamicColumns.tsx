@@ -11,14 +11,18 @@ import {
 } from "@/components/molecules/DropdownMenu/DropdownMenu";
 import { SortableHeader } from "@/components/molecules/SortableHeader/SortableHeader";
 import type { MasterDataItem } from "@/hooks/useMasterData";
+import { PERMISSIONS } from "@/lib/permissions";
 import { formatFieldLabel } from "@/lib/utils";
+
+import { ProtectedComponent } from "../ProtectedRoute";
 
 export type TableDataItem = Omit<MasterDataItem, "id"> & { id: string };
 
 export const createDynamicMasterDataColumns = (
   data: TableDataItem[],
   onEdit: (item: TableDataItem) => void,
-  onDelete: (item: TableDataItem) => void
+  onDelete: (item: TableDataItem) => void,
+  canShowActionColumn: boolean = false
 ): ColumnDef<TableDataItem>[] => {
   if (data.length === 0) return [];
 
@@ -114,7 +118,10 @@ export const createDynamicMasterDataColumns = (
         return <div>{date.toLocaleDateString()}</div>;
       },
     },
-    {
+  ];
+
+  if (canShowActionColumn) {
+    commonColumns.push({
       id: "actions",
       header: "Actions",
       enableHiding: false,
@@ -131,20 +138,30 @@ export const createDynamicMasterDataColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(item)}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(item)}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              <ProtectedComponent
+                permissions={PERMISSIONS.MASTER_DATA.UPDATE}
+                redirectTo={false}
+              >
+                <DropdownMenuItem onClick={() => onEdit(item)}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+              </ProtectedComponent>
+              <ProtectedComponent
+                permissions={PERMISSIONS.MASTER_DATA.DELETE}
+                redirectTo={false}
+              >
+                <DropdownMenuItem onClick={() => onDelete(item)}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </ProtectedComponent>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
 
   return [...dynamicColumns, ...commonColumns];
 };

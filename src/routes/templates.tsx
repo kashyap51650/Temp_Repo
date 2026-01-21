@@ -9,15 +9,28 @@ import {
   visualFilterData,
   type VisualFilterRow,
 } from "@/components/organisms/DataTable/tableData";
+import {
+  ProtectedComponent,
+  ProtectedRoute,
+} from "@/components/organisms/ProtectedRoute";
 import { CreateFilterModal } from "@/components/templates/CreateFilterModal";
 import { ShareFilterPopover } from "@/components/templates/ShareFilterPopover";
 import { ViewFilterModal } from "@/components/templates/ViewFilterModal";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export const Route = createFileRoute("/templates")({
-  component: TemplatesComponent,
+  component: () => (
+    <ProtectedRoute permissions={PERMISSIONS.TEMPLATES.VIEW}>
+      <TemplatesComponent />
+    </ProtectedRoute>
+  ),
 });
 
 function TemplatesComponent() {
+  const { hasPermission } = usePermissions();
+  const canShareFilter = hasPermission(PERMISSIONS.TEMPLATES.SHARE);
+
   const [filters, setFilters] = useState<VisualFilterRow[]>(visualFilterData);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -61,17 +74,19 @@ function TemplatesComponent() {
 
   const existingFilterNames = filters.map((f) => f.filterName);
 
-  const renderShareAction = (filter: VisualFilterRow) => (
-    <ShareFilterPopover
-      filter={filter}
-      onShare={handleShare}
-      trigger={
-        <Button variant="ghost" size="icon" aria-label="Share filter">
-          <Share2 className="h-5 w-5" />
-        </Button>
-      }
-    />
-  );
+  const renderShareAction = canShareFilter
+    ? (filter: VisualFilterRow) => (
+        <ShareFilterPopover
+          filter={filter}
+          onShare={handleShare}
+          trigger={
+            <Button variant="ghost" size="icon" aria-label="Share filter">
+              <Share2 className="h-5 w-5" />
+            </Button>
+          }
+        />
+      )
+    : undefined;
 
   const columns = getVisualFilterColumns(handleViewFilter, renderShareAction);
 
@@ -87,14 +102,19 @@ function TemplatesComponent() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Visual Data Filters</h2>
-          <Button
-            size="lg"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="gap-2"
+          <ProtectedComponent
+            permissions={PERMISSIONS.TEMPLATES.CREATE}
+            redirectTo={false}
           >
-            <Plus className="size-4" />
-            Create Filter
-          </Button>
+            <Button
+              size="lg"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="size-4" />
+              Create Filter
+            </Button>
+          </ProtectedComponent>
         </div>
 
         {filters.length > 0 ? (

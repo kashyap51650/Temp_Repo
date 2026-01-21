@@ -21,6 +21,7 @@ import type {
   ModelStudyExperimentMouseGroupsPayload,
   ModelStudyExperimentMouseGroupsResponse,
 } from "@/types/modelStudy";
+import type { MyPermissionResponse } from "@/types/permissions";
 import type {
   RandomizationPreviewData,
   RandomizationPreviewResponse,
@@ -61,6 +62,7 @@ export const API_CONFIG = {
       ROLES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/rbac/roles/dropdown`,
       USER_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/user-roles`,
       USERS_WITH_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/users-with-roles`,
+      MY_PERMISSIONS: `/api/${import.meta.env.VITE_API_VERSION}/rbac/my-permissions`,
     },
     MASTER_DATA: {
       SOURCES: `/api/${import.meta.env.VITE_API_VERSION}/master-data/`,
@@ -554,6 +556,15 @@ export const roleApi = {
       `${API_CONFIG.ENDPOINTS.RBAC.ROLES}/${roleId}/permissions`,
       payload
     );
+  },
+};
+
+export const permissionsApi = {
+  getMyPermissions: async () => {
+    const response = await apiClient.get<MyPermissionResponse>(
+      API_CONFIG.ENDPOINTS.RBAC.MY_PERMISSIONS
+    );
+    return response.data;
   },
 };
 

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ProtectedComponent } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
 import {
   Tabs,
@@ -22,8 +23,10 @@ import { PermissionsTab } from "@/components/organisms/Permissions/PermissionsTa
 import { CreateRoleModal } from "@/components/organisms/Roles/CreateRoleModal";
 import { EditRoleModal } from "@/components/organisms/Roles/EditRoleModal";
 import { EditAssignmentModal } from "@/components/organisms/UserAssignments/EditAssignmentModal";
+import { usePermissions } from "@/hooks/usePermissions";
 import { roleApi } from "@/lib/api";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { PERMISSIONS } from "@/lib/permissions";
 import {
   type RoleDataType,
   transformRoleToRow,
@@ -32,6 +35,20 @@ import {
 } from "@/types/auth";
 
 export default function RBACRolesPage() {
+  const { hasPermission } = usePermissions();
+
+  const canViewRoles = hasPermission(PERMISSIONS.RBAC.VIEW_ROLES);
+  const canViewPermissions = hasPermission(
+    PERMISSIONS.RBAC.VIEW_ROLE_PERMISSIONS
+  );
+  const canViewAssignments = hasPermission(
+    PERMISSIONS.RBAC.VIEW_USER_ASSIGNED_ROLES
+  );
+  const canEditRole = hasPermission(PERMISSIONS.RBAC.UPDATE_ROLE);
+  const showUserAssignmentActions = hasPermission(
+    PERMISSIONS.RBAC.ASSIGN_ROLES
+  );
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleRow | null>(null);
@@ -50,6 +67,7 @@ export default function RBACRolesPage() {
     queryKey: ["roles", rolesPage, rolesSize],
     queryFn: () => roleApi.getRoles(rolesPage, rolesSize),
     retry: 2,
+    enabled: canViewRoles,
   });
 
   const {
@@ -62,6 +80,7 @@ export default function RBACRolesPage() {
     queryKey: ["userAssignments", assignmentsPage, assignmentsSize],
     queryFn: () => roleApi.getUsersWithRoles(assignmentsPage, assignmentsSize),
     retry: 2,
+    enabled: canViewAssignments,
   });
 
   const roles: RoleRow[] = useMemo(() => {
@@ -169,115 +188,144 @@ export default function RBACRolesPage() {
     );
   }
 
+  const getDefaultTab = () => {
+    if (canViewRoles) return "roles";
+    if (canViewPermissions) return "permissions";
+    if (canViewAssignments) return "assignments";
+    return "roles";
+  };
+
+  const defaultTab = getDefaultTab();
+
   return (
     <div className="px-6 py-6">
       <h1 className="text-3xl font-bold mb-2 text-black">RBAC Management</h1>
       <p className="text-gray-600 mb-0">
         Manage roles, permissions, and user assignments
       </p>
-      <Tabs defaultValue="roles" className="mt-8">
+      <Tabs defaultValue={defaultTab} className="mt-8">
         <div className="flex items-center mb-4">
           <TabsList>
-            <TabsTrigger value="roles">Roles</TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-            <TabsTrigger value="assignments">User Assignments</TabsTrigger>
+            {canViewRoles && <TabsTrigger value="roles">Roles</TabsTrigger>}
+            {canViewPermissions && (
+              <TabsTrigger value="permissions">Permissions</TabsTrigger>
+            )}
+            {canViewAssignments && (
+              <TabsTrigger value="assignments">User Assignments</TabsTrigger>
+            )}
           </TabsList>
           <div className="flex-1" />
         </div>
-        <TabsContent value="roles">
-          <div className="flex items-center mb-6">
-            <h2 className="text-2xl font-bold text-black flex-1">Roles</h2>
-            <Button
-              className="ml-4"
-              size="lg"
-              onClick={() => setModalOpen(true)}
-            >
-              <Plus /> Create Role
-            </Button>
-          </div>
+        {canViewRoles && (
+          <TabsContent value="roles">
+            <div className="flex items-center mb-6">
+              <h2 className="text-2xl font-bold text-black flex-1">Roles</h2>
+              <ProtectedComponent
+                permissions={PERMISSIONS.RBAC.CREATE_ROLE}
+                redirectTo={false}
+              >
+                <Button
+                  className="ml-4"
+                  size="lg"
+                  onClick={() => setModalOpen(true)}
+                >
+                  <Plus /> Create Role
+                </Button>
+              </ProtectedComponent>
+            </div>
 
-          <div className="relative">
+            <div className="relative">
+              <DataTableWithLoading
+                isLoading={rolesLoading}
+                isFetching={rolesFetching}
+                loadingText="Loading roles..."
+                refreshingText="Refreshing roles..."
+                columns={getRoleColumns(handleEditRole, canEditRole)}
+                data={roles}
+                paginationState={{
+                  mode: "server",
+                  currentPage: rolesResponse?.data?.pagination.page || 1,
+                  totalPages: rolesResponse?.data?.pagination.pages || 1,
+                  hasNextPage:
+                    rolesResponse?.data?.pagination.has_next || false,
+                  hasPrevPage:
+                    rolesResponse?.data?.pagination.has_prev || false,
+                  onPageChange: (page: number) => {
+                    setRolesPage(page);
+                  },
+                }}
+              />
+            </div>
+
+            <CreateRoleModal
+              open={modalOpen}
+              onOpenChange={setModalOpen}
+              onCreate={handleCreateRole}
+            />
+            <EditRoleModal
+              open={editModalOpen}
+              onOpenChange={setEditModalOpen}
+              role={selectedRole}
+              onSave={handleSaveRole}
+            />
+          </TabsContent>
+        )}
+
+        {canViewPermissions && (
+          <TabsContent value="permissions">
+            <PermissionsTab
+              selectedRole={permissionsSelectedRole}
+              onRoleChange={setPermissionsSelectedRole}
+              onCancel={handlePermissionsCancel}
+            />
+          </TabsContent>
+        )}
+
+        {canViewAssignments && (
+          <TabsContent value="assignments">
+            <div className="flex items-center mb-6">
+              <h2 className="text-2xl font-bold text-black flex-1">
+                User Assignments
+              </h2>
+            </div>
+
             <DataTableWithLoading
-              isLoading={rolesLoading}
-              isFetching={rolesFetching}
-              loadingText="Loading roles..."
-              refreshingText="Refreshing roles..."
-              columns={getRoleColumns(handleEditRole)}
-              data={roles}
+              isLoading={assignmentsLoading}
+              isFetching={assignmentsFetching}
+              loadingText="Loading user assignments..."
+              refreshingText="Refreshing assignments..."
+              columns={getPermissionColumns(
+                handleEditAssignment,
+                showUserAssignmentActions
+              )}
+              data={assignments}
+              error={assignmentsError}
+              errorText="Error loading user assignments. Please try again later."
               paginationState={{
                 mode: "server",
-                currentPage: rolesResponse?.data?.pagination.page || 1,
-                totalPages: rolesResponse?.data?.pagination.pages || 1,
-                hasNextPage: rolesResponse?.data?.pagination.has_next || false,
-                hasPrevPage: rolesResponse?.data?.pagination.has_prev || false,
+                currentPage:
+                  userAssignmentsResponse?.data?.pagination.page || 1,
+                totalPages:
+                  userAssignmentsResponse?.data?.pagination.pages || 1,
+                hasNextPage:
+                  userAssignmentsResponse?.data?.pagination.has_next || false,
+                hasPrevPage:
+                  userAssignmentsResponse?.data?.pagination.has_prev || false,
                 onPageChange: (page: number) => {
-                  setRolesPage(page);
+                  setAssignmentsPage(page);
                 },
               }}
             />
-          </div>
 
-          <CreateRoleModal
-            open={modalOpen}
-            onOpenChange={setModalOpen}
-            onCreate={handleCreateRole}
-          />
-          <EditRoleModal
-            open={editModalOpen}
-            onOpenChange={setEditModalOpen}
-            role={selectedRole}
-            onSave={handleSaveRole}
-          />
-        </TabsContent>
-
-        <TabsContent value="permissions">
-          <PermissionsTab
-            selectedRole={permissionsSelectedRole}
-            onRoleChange={setPermissionsSelectedRole}
-            onCancel={handlePermissionsCancel}
-            roles={roles}
-          />
-        </TabsContent>
-
-        <TabsContent value="assignments">
-          <div className="flex items-center mb-6">
-            <h2 className="text-2xl font-bold text-black flex-1">
-              User Assignments
-            </h2>
-          </div>
-
-          <DataTableWithLoading
-            isLoading={assignmentsLoading}
-            isFetching={assignmentsFetching}
-            loadingText="Loading user assignments..."
-            refreshingText="Refreshing assignments..."
-            columns={getPermissionColumns(handleEditAssignment)}
-            data={assignments}
-            error={assignmentsError}
-            errorText="Error loading user assignments. Please try again later."
-            paginationState={{
-              mode: "server",
-              currentPage: userAssignmentsResponse?.data?.pagination.page || 1,
-              totalPages: userAssignmentsResponse?.data?.pagination.pages || 1,
-              hasNextPage:
-                userAssignmentsResponse?.data?.pagination.has_next || false,
-              hasPrevPage:
-                userAssignmentsResponse?.data?.pagination.has_prev || false,
-              onPageChange: (page: number) => {
-                setAssignmentsPage(page);
-              },
-            }}
-          />
-
-          <EditAssignmentModal
-            open={editAssignmentModalOpen}
-            onOpenChange={setEditAssignmentModalOpen}
-            assignment={selectedAssignment}
-            userAssignment={selectedUserAssignment}
-            roles={rolesResponse?.data?.items || []}
-            onSave={handleUpdateAssignment}
-          />
-        </TabsContent>
+            <EditAssignmentModal
+              open={editAssignmentModalOpen}
+              onOpenChange={setEditAssignmentModalOpen}
+              assignment={selectedAssignment}
+              userAssignment={selectedUserAssignment}
+              onSave={handleUpdateAssignment}
+            />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { ProtectedComponent } from "@/components";
 import { Button } from "@/components/atoms";
 import { DataTableWithLoading } from "@/components/organisms/DataTable/DataTableWithLoading";
 import {
@@ -19,7 +20,9 @@ import {
   useUpdateUserStatus,
   useUsers,
 } from "@/hooks/useFetch";
+import { usePermissions } from "@/hooks/usePermissions";
 import { handleApiError } from "@/lib/api";
+import { PERMISSIONS } from "@/lib/permissions";
 import { type Role, transformUserToRow, type UserFilters } from "@/types/auth";
 
 export default function UserManagementPage() {
@@ -58,6 +61,12 @@ export default function UserManagementPage() {
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const updateUserStatusMutation = useUpdateUserStatus();
+  const { hasAnyPermission } = usePermissions();
+  const canShowActionsColumn = hasAnyPermission([
+    PERMISSIONS.USER_MANAGEMENT.UPDATE_USER,
+    PERMISSIONS.USER_MANAGEMENT.RESET_PASSWORD,
+    PERMISSIONS.USER_MANAGEMENT.CHANGE_STATUS,
+  ]);
 
   const transformedData = useMemo(() => {
     if (!usersData?.data?.items) return [];
@@ -193,11 +202,14 @@ export default function UserManagementPage() {
     }
   };
 
-  const columns = getUserColumns({
-    onEdit: (user) => setEditUser(user),
-    onResetPassword: (user) => setResetUser(user),
-    onDisable: (user) => setDisableUser(user),
-  });
+  const columns = getUserColumns(
+    {
+      onEdit: (user) => setEditUser(user),
+      onResetPassword: (user) => setResetUser(user),
+      onDisable: (user) => setDisableUser(user),
+    },
+    canShowActionsColumn
+  );
 
   if (error) {
     return (
@@ -275,13 +287,18 @@ export default function UserManagementPage() {
             Manage users and their access to the platform
           </p>
         </div>
-        <Button
-          variant={"default"}
-          size={"lg"}
-          onClick={() => setModalOpen(true)}
+        <ProtectedComponent
+          permissions={PERMISSIONS.USER_MANAGEMENT.ADD_USER}
+          redirectTo={false}
         >
-          <Plus /> Add User
-        </Button>
+          <Button
+            variant={"default"}
+            size={"lg"}
+            onClick={() => setModalOpen(true)}
+          >
+            <Plus /> Add User
+          </Button>
+        </ProtectedComponent>
       </div>
 
       <UserFilterBar

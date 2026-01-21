@@ -1,9 +1,14 @@
+import { toast } from "sonner";
+
 import { CloseConfirmationModal } from "@/components/project-folders/CloseConfirmationModal";
 import { CloseExperimentModal } from "@/components/project-folders/CloseExperimentModal";
 import { ProjectFoldersHeader } from "@/components/project-folders/ProjectFoldersHeader";
 import { ProjectsView } from "@/components/project-folders/ProjectsView";
 import { sheetOptionsMap } from "@/components/project-folders/SheetOptionsMap";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useProjectFoldersLogic } from "@/hooks/useProjectFolders";
+import { PERMISSIONS } from "@/lib/permissions";
+import type { ProjectItem } from "@/types/project";
 
 import { ExperimentList } from "./ExperimentList";
 import { StudySheetsView } from "./StudySheetsView";
@@ -32,6 +37,19 @@ export function ProjectFoldersContent() {
     goBackToExperiments,
     goBackToStudyTypes,
   } = useProjectFoldersLogic();
+
+  const { hasPermission } = usePermissions();
+  const canViewExperiments = hasPermission(PERMISSIONS.EXPERIMENT.VIEW);
+
+  const handleProjectClickWithPermission = (project: ProjectItem) => {
+    if (!canViewExperiments) {
+      toast.error("Permission denied", {
+        description: "You don't have permission to view experiments",
+      });
+      return;
+    }
+    handleProjectClick(project);
+  };
 
   // Study Sheets View
   if (
@@ -141,7 +159,7 @@ export function ProjectFoldersContent() {
         breadcrumbs={[{ label: "Projects", clickable: false }]}
       />
       <ProjectsView
-        onProjectClick={handleProjectClick}
+        onProjectClick={handleProjectClickWithPermission}
         onCloseProject={handleCloseProject}
       />
       {selectedProject && isCloseModalOpen && (

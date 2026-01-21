@@ -9,6 +9,8 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
 
 import CaliperHistoryGroupModal from "./CaliperHistoryGroupedModal";
 import CaliperHistoryModal from "./CaliperHistoryModal";
@@ -41,6 +43,7 @@ export function CalliperingSheetViewModal({
   experimentDataType,
   experimentStudyType,
 }: Readonly<CalliperingSheetViewModalProps>) {
+  const { hasPermission } = usePermissions();
   const editModal = useModal();
   const rejectModal = useModal();
 
@@ -49,6 +52,11 @@ export function CalliperingSheetViewModal({
   const viewGraphModal = useModal();
   const caliperHistoryModal = useModal();
   const caliperHistoryGroupModal = useModal();
+
+  const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
+  const canApproveReject = hasPermission(
+    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
+  );
 
   const handleEdit = () => {
     editModal.openModal();
@@ -149,6 +157,8 @@ export function CalliperingSheetViewModal({
             </div>
             {!hideActions && isPending && (
               <SheetActions
+                showEdit={canEdit}
+                showApproveReject={canApproveReject}
                 onEdit={handleEdit}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}

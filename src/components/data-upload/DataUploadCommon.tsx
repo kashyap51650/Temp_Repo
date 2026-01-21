@@ -12,8 +12,10 @@ import {
   studyTypeOptions,
 } from "@/data/experiments";
 import { useDataTypes, useProjects, useStudyTypes } from "@/hooks";
+import { usePermissions } from "@/hooks/usePermissions";
 import type { ExperimentDropdownItem, Project } from "@/lib/api";
 import { STUDY_TYPE } from "@/lib/constants";
+import { PERMISSIONS } from "@/lib/permissions";
 
 import { Card } from "../atoms";
 import {
@@ -40,6 +42,11 @@ interface DataUploadFormData {
 }
 
 export default function DataUploadCommon() {
+  const { hasPermission } = usePermissions();
+
+  const canUploadData = hasPermission(PERMISSIONS.DATA_UPLOAD.UPLOAD);
+  const canViewUploadedData = hasPermission(PERMISSIONS.DATA_UPLOAD.VIEW);
+
   const {
     projects: apiProjects,
     loading: projectsLoading,
@@ -56,7 +63,13 @@ export default function DataUploadCommon() {
     uploadAGCFile: null,
   });
 
-  const [activeTab, setActiveTab] = useState<string>("upload-data");
+  const getDefaultTab = () => {
+    if (canUploadData) return "upload-data";
+    if (canViewUploadedData) return "uploaded-data";
+    return "upload-data";
+  };
+
+  const [activeTab, setActiveTab] = useState<string>(getDefaultTab());
 
   const isStudyTypesEnabled = useMemo(() => {
     return formData.specialisation?.toLowerCase() === "preclinical";
@@ -300,28 +313,44 @@ export default function DataUploadCommon() {
     clearDataTypes,
   };
 
+  // Note: visibleTabsCount will never be 0 because ProtectedRoute will only render this component if have at least one Permission
+  const visibleTabsCount = [canUploadData, canViewUploadedData].filter(
+    Boolean
+  ).length;
+
   return (
     <>
       <Card className="p-6 w-full mx-auto shadow-none">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2">
-            <TabsTrigger value="upload-data">Upload Data</TabsTrigger>
-            <TabsTrigger value="uploaded-data">Uploaded Data</TabsTrigger>
+          <TabsList
+            className="grid"
+            style={{ gridTemplateColumns: `repeat(${visibleTabsCount}, 1fr)` }}
+          >
+            {canUploadData && (
+              <TabsTrigger value="upload-data">Upload Data</TabsTrigger>
+            )}
+            {canViewUploadedData && (
+              <TabsTrigger value="uploaded-data">Uploaded Data</TabsTrigger>
+            )}
           </TabsList>
 
-          <TabsContent value="upload-data" className="space-y-6 mt-6">
-            <UploadPanel
-              formProps={formProps}
-              apiDataProps={apiDataProps}
-              loadingProps={loadingProps}
-              errorProps={errorProps}
-              actionProps={actionProps}
-            />
-          </TabsContent>
+          {canUploadData && (
+            <TabsContent value="upload-data" className="space-y-6 mt-6">
+              <UploadPanel
+                formProps={formProps}
+                apiDataProps={apiDataProps}
+                loadingProps={loadingProps}
+                errorProps={errorProps}
+                actionProps={actionProps}
+              />
+            </TabsContent>
+          )}
 
-          <TabsContent value="uploaded-data" className="space-y-6">
-            <UploadedList />
-          </TabsContent>
+          {canViewUploadedData && (
+            <TabsContent value="uploaded-data" className="space-y-6">
+              <UploadedList />
+            </TabsContent>
+          )}
         </Tabs>
       </Card>
 

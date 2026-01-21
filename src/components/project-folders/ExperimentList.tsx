@@ -14,10 +14,12 @@ import {
   type ExperimentStatus,
   SELECT_ALL,
 } from "@/lib/constants";
+import { PERMISSIONS } from "@/lib/permissions";
 import type { Experiment } from "@/types/experiment";
 
 import { BaseSelect } from "../molecules/BaseSelect";
 import { PaginationControls } from "../organisms/DataTable/PaginationControls";
+import { ProtectedComponent } from "../organisms/ProtectedRoute";
 
 interface ExperimentListProps {
   onExperimentClick?: (exp: Experiment) => void;
@@ -163,16 +165,21 @@ export function ExperimentList({
                           (opt) => opt.value === experiment.status
                         )?.label || experiment.status}
                       </Badge>
-                      {experiment.status !== EXPERIMENT_STATUS.CLOSED && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onCloseExperiment?.(experiment)}
-                        >
-                          <CircleX className="size-4 text-destructive" />
-                          Close Experiment
-                        </Button>
-                      )}
+                      <ProtectedComponent
+                        permissions={PERMISSIONS.EXPERIMENT.CLOSE}
+                        redirectTo={false}
+                      >
+                        {experiment.status !== EXPERIMENT_STATUS.CLOSED && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onCloseExperiment?.(experiment)}
+                          >
+                            <CircleX className="size-4 text-destructive" />
+                            Close Experiment
+                          </Button>
+                        )}
+                      </ProtectedComponent>
                     </div>
                   </div>
                 ))

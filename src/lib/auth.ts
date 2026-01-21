@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { API_CONFIG, apiClient } from "@/lib/api";
+import { API_CONFIG, apiClient, permissionsApi } from "@/lib/api";
 import type {
   LoginApiResponse,
   LoginCredentials,
@@ -76,7 +76,7 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data: LoginResponse) => {
+    onSuccess: async (data: LoginResponse) => {
       // Store tokens in sessionStorage
       sessionStorage.setItem("access_token", data.access_token);
       sessionStorage.setItem("refresh_token", data.refresh_token);
@@ -86,10 +86,36 @@ export const useLogin = () => {
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
       queryClient.setQueryData(AUTH_QUERY_KEYS.user, data.user);
 
-      // Show success toast
-      toast.success("Login successful!", {
-        description: `Welcome back, ${data.user.full_name || data.user.username}!`,
-      });
+      // Prefetch permissions immediately after login to prevent flicker
+      try {
+        await queryClient.prefetchQuery({
+          queryKey: ["my-permissions"],
+          queryFn: () => permissionsApi.getMyPermissions(),
+        });
+
+        toast.success("Login successful!", {
+          description: `Welcome back, ${data.user.full_name || data.user.username}!`,
+        });
+      } catch (error) {
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("refresh_token");
+        window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+        queryClient.removeQueries({
+          queryKey: AUTH_QUERY_KEYS.auth,
+          exact: true,
+        });
+        queryClient.removeQueries({
+          queryKey: AUTH_QUERY_KEYS.user,
+          exact: true,
+        });
+
+        const errorMessage =
+          (error as Error).message ||
+          "Failed to load permissions. Please try again.";
+
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
+      }
     },
     onError: (error: Error) => {
       // Show error toast

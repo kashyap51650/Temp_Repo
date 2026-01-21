@@ -18,14 +18,24 @@ import {
   createDynamicMasterDataColumns,
   type TableDataItem,
 } from "@/components/organisms/DataTable/dynamicColumns";
+import {
+  ProtectedComponent,
+  ProtectedRoute,
+} from "@/components/organisms/ProtectedRoute";
 import { type MasterDataItem, useMasterData } from "@/hooks/useMasterData";
 import {
   type MasterDataSource,
   useMasterDataSources,
 } from "@/hooks/useMasterDataSources";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export const Route = createFileRoute("/master-data")({
-  component: MasterDataComponent,
+  component: () => (
+    <ProtectedRoute permissions={PERMISSIONS.MASTER_DATA.VIEW}>
+      <MasterDataComponent />
+    </ProtectedRoute>
+  ),
 });
 
 function transformDataForTable(data: MasterDataItem[]): TableDataItem[] {
@@ -56,6 +66,12 @@ function MasterDataComponent() {
     filters,
     setFilters,
   } = useMasterData(selectedSource?.slug || null);
+
+  const { hasAnyPermission } = usePermissions();
+  const canShowActionColumn = hasAnyPermission([
+    PERMISSIONS.MASTER_DATA.UPDATE,
+    PERMISSIONS.MASTER_DATA.DELETE,
+  ]);
 
   const handleSourceChange = (value: string) => {
     const source = (masterDataSources as MasterDataSource[]).find(
@@ -203,7 +219,8 @@ function MasterDataComponent() {
         columns={createDynamicMasterDataColumns(
           tableData,
           handleEdit,
-          handleDelete
+          handleDelete,
+          canShowActionColumn
         )}
         data={tableData}
         paginationState={{
@@ -261,10 +278,15 @@ function MasterDataComponent() {
             <h2 className="text-xl font-semibold">
               {selectedSource.title} Management
             </h2>
-            <Button onClick={handleAddNew}>
-              <Plus className="mr-2 size-4" />
-              Add New
-            </Button>
+            <ProtectedComponent
+              permissions={PERMISSIONS.MASTER_DATA.CREATE}
+              redirectTo={false}
+            >
+              <Button onClick={handleAddNew}>
+                <Plus className="mr-2 size-4" />
+                Add New
+              </Button>
+            </ProtectedComponent>
           </div>
 
           <div className="bg-card">{renderDataTableContent()}</div>

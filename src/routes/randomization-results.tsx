@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { ProtectedRoute } from "@/components/organisms/ProtectedRoute";
+import { PERMISSIONS } from "@/lib/permissions";
 import RandomizationResults from "@/pages/randomization-results";
 
 export const Route = createFileRoute("/randomization-results")({
-  component: () => <RandomizationResults />,
+  component: () => (
+    <ProtectedRoute permissions={PERMISSIONS.MOUSE.RANDOMIZATION}>
+      <RandomizationResults />
+    </ProtectedRoute>
+  ),
   validateSearch: (search) => {
     return {
       experiment_id: Number(search.experiment_id),

@@ -5,7 +5,6 @@ import {
   Eye,
   KeyIcon,
   MoreHorizontal,
-  Share2,
   Shuffle,
   UserCheck,
   UserX,
@@ -15,6 +14,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 import { formatDateTime } from "@/lib/date-utils";
+import { PERMISSIONS } from "@/lib/permissions";
 
 import { type UploadedExperimentDataItem } from "../../../lib/api";
 import {
@@ -37,6 +37,7 @@ import {
   DropdownMenuTrigger,
   SortableHeader,
 } from "../../molecules";
+import { ProtectedComponent } from "../ProtectedRoute";
 import { RandomizeDateCell } from "./RandomizeDateCell";
 import type {
   NotificationRow,
@@ -48,9 +49,10 @@ import type {
 } from "./tableData";
 
 export function getRoleColumns(
-  onEdit?: (role: RoleRow) => void
+  onEdit?: (role: RoleRow) => void,
+  canEditRole: boolean = true
 ): ColumnDef<RoleRow>[] {
-  return [
+  const columns: ColumnDef<RoleRow>[] = [
     {
       accessorKey: "name",
       header: () => <span className="w-56 block">Role Name</span>,
@@ -78,7 +80,10 @@ export function getRoleColumns(
         </TruncateWithTooltip>
       ),
     },
-    {
+  ];
+
+  if (canEditRole) {
+    columns.push({
       id: "actions",
       header: () => <span className="w-32 block">Actions</span>,
       cell: ({ row }) => (
@@ -91,12 +96,15 @@ export function getRoleColumns(
           Edit
         </Button>
       ),
-    },
-  ];
+    });
+  }
+
+  return columns;
 }
 
 export function getPermissionColumns(
-  onEdit?: (row: PermissionAssignment) => void
+  onEdit?: (row: PermissionAssignment) => void,
+  showActionColumn: boolean = false
 ) {
   return [
     {
@@ -161,20 +169,24 @@ export function getPermissionColumns(
         );
       },
     },
-    {
-      id: "actions",
-      header: () => <span className="w-32 block">Actions</span>,
-      cell: ({ row }: { row: { original: PermissionAssignment } }) => (
-        <Button
-          variant="outline"
-          size="default"
-          className="w-24"
-          onClick={onEdit ? () => onEdit(row.original) : undefined}
-        >
-          Edit
-        </Button>
-      ),
-    },
+    ...(showActionColumn
+      ? [
+          {
+            id: "actions",
+            header: () => <span className="w-32 block">Actions</span>,
+            cell: ({ row }: { row: { original: PermissionAssignment } }) => (
+              <Button
+                variant="outline"
+                size="default"
+                className="w-24"
+                onClick={onEdit ? () => onEdit(row.original) : undefined}
+              >
+                Edit
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 }
 
@@ -194,9 +206,10 @@ export type UserActionHandlers = {
 };
 
 export function getUserColumns(
-  handlers: UserActionHandlers
+  handlers: UserActionHandlers,
+  canShowActionsColumn: boolean = false
 ): ColumnDef<UserRow>[] {
-  return [
+  const columns: ColumnDef<UserRow>[] = [
     {
       id: "name",
       accessorKey: "name",
@@ -266,7 +279,10 @@ export function getUserColumns(
         </Badge>
       ),
     },
-    {
+  ];
+
+  if (canShowActionsColumn) {
+    columns.push({
       id: "actions",
       header: "Actions",
       enableSorting: false,
@@ -302,49 +318,66 @@ export function getUserColumns(
               side="bottom"
               sideOffset={4}
             >
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlers.onEdit(user);
-                }}
+              <ProtectedComponent
+                permissions={PERMISSIONS.USER_MANAGEMENT.UPDATE_USER}
+                redirectTo={false}
               >
-                <Edit className="mr-2 size-4" />
-                Edit Details
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlers.onResetPassword(user);
-                }}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlers.onEdit(user);
+                  }}
+                >
+                  <Edit className="mr-2 size-4" />
+                  Edit Details
+                </DropdownMenuItem>
+              </ProtectedComponent>
+              <ProtectedComponent
+                permissions={PERMISSIONS.USER_MANAGEMENT.RESET_PASSWORD}
+                redirectTo={false}
               >
-                <KeyIcon className="mr-2 size-4" />
-                Reset Password
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlers.onDisable(user);
-                }}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlers.onResetPassword(user);
+                  }}
+                >
+                  <KeyIcon className="mr-2 size-4" />
+                  Reset Password
+                </DropdownMenuItem>
+              </ProtectedComponent>
+              <ProtectedComponent
+                permissions={PERMISSIONS.USER_MANAGEMENT.CHANGE_STATUS}
+                redirectTo={false}
               >
-                {user.status === "Active" ? (
-                  <>
-                    <UserX className="mr-2 size-4" />
-                    Disable Account
-                  </>
-                ) : (
-                  <>
-                    <UserCheck className="mr-2 size-4" />
-                    Enable Account
-                  </>
-                )}
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlers.onDisable(user);
+                  }}
+                >
+                  {user.status === "Active" ? (
+                    <>
+                      <UserX className="mr-2 size-4" />
+                      Disable Account
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="mr-2 size-4" />
+                      Enable Account
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </ProtectedComponent>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
+
+  return columns;
 }
 
 // Notification Columns
@@ -620,15 +653,20 @@ export function getTemplateColumns(
           >
             <Eye className="size-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground"
-            onClick={() => onEdit?.(row.original)}
-            aria-label="edit-template"
+          <ProtectedComponent
+            permissions={PERMISSIONS.NOTIFICATIONS.EDIT_TEMPLATES}
+            redirectTo={false}
           >
-            <Edit className="size-4" />
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground"
+              onClick={() => onEdit?.(row.original)}
+              aria-label="edit-template"
+            >
+              <Edit className="size-4" />
+            </Button>
+          </ProtectedComponent>
         </div>
       ),
     },
@@ -887,22 +925,27 @@ export function getValidationColumns(
               <Eye className="size-4" />
               View Data
             </Button>
-            {isCalliperingSsheet && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isRandomizationDisabled}
-                onClick={() => onRandomize?.(rowData)}
-                title={
-                  isRandomizationDisabled
-                    ? "Randomization not allowed for this condition"
-                    : ""
-                }
-              >
-                <Shuffle className="size-4" />
-                Randomize
-              </Button>
-            )}
+            <ProtectedComponent
+              permissions={PERMISSIONS.MOUSE.RANDOMIZATION}
+              redirectTo={false}
+            >
+              {isCalliperingSsheet && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isRandomizationDisabled}
+                  onClick={() => onRandomize?.(rowData)}
+                  title={
+                    isRandomizationDisabled
+                      ? "Randomization not allowed for this condition"
+                      : ""
+                  }
+                >
+                  <Shuffle className="size-4" />
+                  Randomize
+                </Button>
+              )}
+            </ProtectedComponent>
           </div>
         );
       },
@@ -990,13 +1033,7 @@ export function getVisualFilterColumns(
           >
             <Eye className="size-5" />
           </Button>
-          {renderShareAction ? (
-            renderShareAction(row.original)
-          ) : (
-            <Button variant="ghost" size="icon" aria-label="Share filter">
-              <Share2 className="size-5" />
-            </Button>
-          )}
+          {renderShareAction?.(row.original)}
         </div>
       ),
     },

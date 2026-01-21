@@ -5,6 +5,9 @@ import { Button } from "@/components/atoms";
 import { MoveMiceWizard } from "@/components/project-folders/MoveMiceWizard";
 import { useDataTypes } from "@/hooks";
 import type { StudyType } from "@/lib/api";
+import { PERMISSIONS } from "@/lib/permissions";
+
+import { ProtectedComponent } from "../organisms/ProtectedRoute";
 
 interface StudySheetsViewProps {
   selectedStudyType: StudyType;
@@ -48,9 +51,14 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
           {selectedStudyType.study_type_name}
         </h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleMoveMiceClick}>
-            Move Mice
-          </Button>
+          <ProtectedComponent
+            permissions={PERMISSIONS.MOUSE.MOVE_MICE}
+            redirectTo={false}
+          >
+            <Button variant="outline" onClick={handleMoveMiceClick}>
+              Move Mice
+            </Button>
+          </ProtectedComponent>
           <Button variant="outline" onClick={goBackToStudyTypes}>
             <ArrowLeft /> Back to Study Types
           </Button>

@@ -8,3 +8,6 @@ export * from "./theme-provider";
 
 // Re-export data-validation components
 export * from "./data-validation/CaliperHistoryTable";
+
+// Re-export RBAC protection components
+export { ProtectedComponent, ProtectedRoute } from "./organisms/ProtectedRoute";

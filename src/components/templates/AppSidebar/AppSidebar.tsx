@@ -20,6 +20,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/organisms";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useProfile } from "@/hooks/useProfile";
 
 import { sidebarData } from "./data";
@@ -38,6 +39,9 @@ const iconMap = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { profile } = useProfile();
+  const navItems = sidebarData.navMain;
+
+  const { hasAnyPermission } = usePermissions();
 
   const userData = React.useMemo(() => {
     if (profile) {
@@ -53,6 +57,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return sidebarData.user;
   }, [profile]);
 
+  const authorizedNavItems = navItems.filter(
+    (item) => !item.permissions || hasAnyPermission(item.permissions)
+  );
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader className="gap-1">
@@ -61,8 +69,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain
-          items={sidebarData.navMain.map((item) => ({
-            ...item,
+          items={authorizedNavItems.map((item) => ({
+            title: item.title,
+            url: item.url,
             icon: iconMap[item.icon as keyof typeof iconMap],
           }))}
         />

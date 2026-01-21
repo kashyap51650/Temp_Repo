@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,15 +15,14 @@ import {
 } from "@/components";
 import type { PermissionAssignment } from "@/components/organisms/DataTable/tableData";
 import { useAssignUserRole } from "@/hooks";
-import { handleApiError } from "@/lib/api";
-import type { Role, UserAssignment } from "@/types/auth";
+import { handleApiError, roleApi } from "@/lib/api";
+import type { UserAssignment } from "@/types/auth";
 
 interface EditAssignmentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   assignment?: PermissionAssignment | null;
   userAssignment?: UserAssignment | null;
-  roles?: Role[];
   onSave: (updatedAssignment: PermissionAssignment) => void;
 }
 
@@ -31,10 +31,15 @@ export function EditAssignmentModal({
   onOpenChange,
   assignment,
   userAssignment,
-  roles,
   onSave,
 }: Readonly<EditAssignmentModalProps>): ReactElement | null {
   const [selectedRole, setSelectedRole] = useState("");
+
+  const { data: roles } = useQuery({
+    queryKey: ["roles-dropdown"],
+    queryFn: () => roleApi.getRolesDropdown(),
+  });
+  const rolesDropdownData = roles?.data || [];
 
   const {
     mutate: assignUserRoleMutate,
@@ -61,20 +66,20 @@ export function EditAssignmentModal({
   }, [primaryRole]);
 
   const roleNameToIdMap = useMemo(() => {
-    if (!roles || roles.length === 0) return {};
+    if (!rolesDropdownData || rolesDropdownData.length === 0) return {};
 
-    return roles.reduce(
+    return rolesDropdownData.reduce(
       (map, role) => {
         map[role.name] = role.id;
         return map;
       },
       {} as Record<string, number>
     );
-  }, [roles]);
+  }, [rolesDropdownData]);
 
   const availableRoles = useMemo(() => {
-    return roles ? roles.map((role) => role.name) : [];
-  }, [roles]);
+    return rolesDropdownData ? rolesDropdownData.map((role) => role.name) : [];
+  }, [rolesDropdownData]);
 
   useEffect(() => {
     if (assignment && primaryRole) {

@@ -5,10 +5,8 @@ import { Button } from "../atoms";
 interface SheetActionsProps {
   /** Show / hide edit button */
   showEdit?: boolean;
-  /** Show / hide approve button */
-  showApprove?: boolean;
-  /** Show / hide reject button */
-  showReject?: boolean;
+  /** Show / hide approve reject button */
+  showApproveReject?: boolean;
 
   /** Action handlers */
   onEdit?: () => void;
@@ -22,8 +20,7 @@ interface SheetActionsProps {
 
 export function SheetActions({
   showEdit = true,
-  showApprove = true,
-  showReject = true,
+  showApproveReject = true,
   onEdit,
   onApprove,
   onReject,
@@ -44,30 +41,29 @@ export function SheetActions({
         </Button>
       )}
 
-      {showApprove && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onApprove}
-          className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-          disabled={isApproveLoading}
-        >
-          <Check className="size-4" />
-          Approve
-        </Button>
-      )}
-
-      {showReject && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onReject}
-          className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-          disabled={isRejectLoading}
-        >
-          <XIcon className="size-4" />
-          Reject
-        </Button>
+      {showApproveReject && (
+        <>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onApprove}
+            className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
+            disabled={isApproveLoading}
+          >
+            <Check className="size-4" />
+            Approve
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onReject}
+            className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+            disabled={isRejectLoading}
+          >
+            <XIcon className="size-4" />
+            Reject
+          </Button>
+        </>
       )}
     </div>
   );

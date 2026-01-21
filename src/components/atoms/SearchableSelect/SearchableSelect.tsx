@@ -30,6 +30,7 @@ type SearchableSelectProps<TMultiple extends boolean = false> = {
   searchPlaceholder?: string;
   disabled?: boolean;
   multiple?: TMultiple;
+  shouldShowCreateNew?: boolean;
 };
 
 export function SearchableSelect<TMultiple extends boolean = false>({
@@ -45,6 +46,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
   searchPlaceholder = "Search...",
   disabled = false,
   multiple = false as TMultiple,
+  shouldShowCreateNew = true,
 }: Readonly<SearchableSelectProps<TMultiple>>) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -195,7 +197,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
                     </div>
                   )}
             </div>
-            {onCreateNew && (
+            {shouldShowCreateNew && onCreateNew && (
               <div className="sticky bottom-0 z-10 bg-background border-t pt-1">
                 <SelectItem
                   value="__CREATE_NEW__"
@@ -336,7 +338,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
                 </div>
               )}
         </div>
-        {onCreateNew && (
+        {shouldShowCreateNew && onCreateNew && (
           <div className="sticky bottom-0 z-10 bg-background border-t pt-1">
             <SelectItem
               value="__CREATE_NEW__"

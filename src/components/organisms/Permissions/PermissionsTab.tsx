@@ -12,9 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components";
-import type { RoleRow } from "@/components/organisms/DataTable/tableData";
+import { usePermissions } from "@/hooks/usePermissions";
 import { roleApi } from "@/lib/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
+import { PERMISSIONS } from "@/lib/permissions";
 import type { ApiModule, ApiPermission } from "@/types/auth";
 
 export interface Permission {
@@ -36,14 +37,12 @@ interface PermissionsTabProps {
   selectedRole?: string;
   onRoleChange: (role: string) => void;
   onCancel: () => void;
-  roles: RoleRow[];
 }
 
 export function PermissionsTab({
   selectedRole = "1",
   onRoleChange,
   onCancel,
-  roles,
 }: Readonly<PermissionsTabProps>) {
   const [permissionGroups, setPermissionGroups] = React.useState<
     PermissionGroup[]
@@ -51,6 +50,23 @@ export function PermissionsTab({
   const [originalPermissionGroups, setOriginalPermissionGroups] =
     React.useState<PermissionGroup[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
+
+  const { role, hasPermission } = usePermissions();
+  const canEditPermission = hasPermission(
+    PERMISSIONS.RBAC.ASSIGN_ROLE_PERMISSIONS
+  );
+
+  const { data: roles } = useQuery({
+    queryKey: ["roles-dropdown"],
+    queryFn: () => roleApi.getRolesDropdown(),
+  });
+  const rolesDropdownData =
+    roles?.data?.map((val) => {
+      return {
+        ...val,
+        id: val.id?.toString(),
+      };
+    }) || [];
 
   const queryClient = useQueryClient();
   const selectedRoleId = selectedRole;
@@ -75,6 +91,11 @@ export function PermissionsTab({
       queryClient.invalidateQueries({
         queryKey: ["permissions", selectedRoleId],
       });
+      if (selectedRoleId === role?.id?.toString()) {
+        queryClient.invalidateQueries({
+          queryKey: ["my-permissions"],
+        });
+      }
     },
     onError: (error) => {
       console.error("Failed to update permissions:", error);
@@ -212,7 +233,8 @@ export function PermissionsTab({
   };
 
   const selectedRoleName =
-    roles.find((role) => role.id === selectedRoleId)?.name || "Unknown Role";
+    rolesDropdownData.find((role) => role.id === selectedRoleId)?.name ||
+    "Unknown Role";
 
   if (permissionsLoading) {
     return (
@@ -270,7 +292,7 @@ export function PermissionsTab({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {roles.map((role) => (
+              {rolesDropdownData.map((role) => (
                 <SelectItem key={role.id} value={role.id}>
                   {role.name}
                 </SelectItem>
@@ -314,6 +336,7 @@ export function PermissionsTab({
                   }}
                   onCheckedChange={() => toggleGroupCheckbox(group.id)}
                   className="mr-2"
+                  disabled={!canEditPermission}
                 />
 
                 <span className="font-medium text-foreground">
@@ -337,6 +360,7 @@ export function PermissionsTab({
                         onCheckedChange={() =>
                           togglePermission(group.id, permission.id)
                         }
+                        disabled={!canEditPermission}
                       />
                       <span className="text-sm text-foreground flex-1">
                         {permission.name}
@@ -350,14 +374,16 @@ export function PermissionsTab({
         )}
       </div>
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-border">
-        <Button variant="outline" size="lg" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button size="lg" onClick={handleSave} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save Permissions"}
-        </Button>
-      </div>
+      {canEditPermission && (
+        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <Button variant="outline" size="lg" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button size="lg" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Permissions"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

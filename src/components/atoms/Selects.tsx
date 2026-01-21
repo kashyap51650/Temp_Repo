@@ -1,3 +1,6 @@
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
+
 import { SearchableSelect } from "./SearchableSelect/SearchableSelect";
 
 type Project = { id: string; name: string };
@@ -29,6 +32,8 @@ export function ProjectSelect({
   className,
   disabled = false,
 }: Readonly<ProjectSelectProps>) {
+  const { hasPermission } = usePermissions();
+  const canCreateNew = hasPermission(PERMISSIONS.PROJECTS.CREATE);
   const selectOptions = projects.map((project) => ({
     value: project.id,
     label: project.name,
@@ -46,6 +51,7 @@ export function ProjectSelect({
       searchPlaceholder="Search project..."
       showSearch={true}
       disabled={disabled}
+      shouldShowCreateNew={canCreateNew}
     />
   );
 }
@@ -71,6 +77,8 @@ export function ExperimentSelect({
   disabled = false,
   showSearch = true,
 }: Readonly<ExperimentSelectProps>) {
+  const { hasPermission } = usePermissions();
+  const canCreateNew = hasPermission(PERMISSIONS.EXPERIMENT.CREATE);
   const selectOptions = experiments.map((experiment) => ({
     value: experiment.id,
     label: experiment.name,
@@ -89,6 +97,7 @@ export function ExperimentSelect({
       searchPlaceholder="Search experiment..."
       showSearch={showSearch}
       disabled={disabled}
+      shouldShowCreateNew={canCreateNew}
     />
   );
 }

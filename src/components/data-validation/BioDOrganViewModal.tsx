@@ -7,6 +7,8 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
 import { generateBioDOrganData } from "@/utils/bioDOrganUtils";
 
 import { Dialog } from "../atoms/Dialog/Dialog";
@@ -32,6 +34,7 @@ export function BioDOrganViewModal({
   experimentStatus,
   hideActions = false,
 }: Readonly<BioDOrganViewModalProps>) {
+  const { hasPermission } = usePermissions();
   const editModal = useModal();
   const rejectModal = useModal();
 
@@ -46,6 +49,11 @@ export function BioDOrganViewModal({
     if (!data) return null;
     return generateBioDOrganData(data.uploaded_data);
   }, [data]);
+
+  const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
+  const canApproveReject = hasPermission(
+    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
+  );
 
   const handleEdit = () => {
     editModal.openModal();
@@ -119,6 +127,8 @@ export function BioDOrganViewModal({
             </div>
             {!hideActions && isPending && (
               <SheetActions
+                showEdit={canEdit}
+                showApproveReject={canApproveReject}
                 onEdit={handleEdit}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}

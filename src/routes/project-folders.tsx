@@ -8,11 +8,17 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/molecules";
+import { ProtectedRoute } from "@/components/organisms/ProtectedRoute";
 import { ProjectFoldersContent } from "@/components/project-folders/ProjectFoldersContent";
+import { PERMISSIONS } from "@/lib/permissions";
 import { parseSearchParams } from "@/lib/utils";
 
 export const Route = createFileRoute("/project-folders")({
-  component: ProjectFoldersComponent,
+  component: () => (
+    <ProtectedRoute permissions={PERMISSIONS.PROJECTS.VIEW}>
+      <ProjectFoldersComponent />
+    </ProtectedRoute>
+  ),
   validateSearch: (search) => {
     return {
       projectId: parseSearchParams(search.projectId),

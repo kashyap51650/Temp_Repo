@@ -7,7 +7,9 @@ import { DataTable } from "@/components/organisms";
 import { getTemplateColumns } from "@/components/organisms/DataTable/tableColumns";
 import { type TemplateRow } from "@/components/organisms/DataTable/tableData";
 import { handleApiError, notificationApi } from "@/lib/api";
+import { PERMISSIONS } from "@/lib/permissions";
 
+import { ProtectedComponent } from "../organisms/ProtectedRoute";
 import TemplateModal from "./TemplateModal";
 
 interface NotificationTemplate {
@@ -150,10 +152,15 @@ export function NotificationTemplates() {
             Manage reusable notification templates
           </p>
         </div>
-        <Button onClick={handleCreateTemplate} size={"lg"}>
-          <Plus className="w-4 h-4 " />
-          Create Template
-        </Button>
+        <ProtectedComponent
+          permissions={PERMISSIONS.NOTIFICATIONS.CREATE_TEMPLATE}
+          redirectTo={false}
+        >
+          <Button onClick={handleCreateTemplate} size={"lg"}>
+            <Plus className="w-4 h-4 " />
+            Create Template
+          </Button>
+        </ProtectedComponent>
       </div>
 
       {isLoading ? (
