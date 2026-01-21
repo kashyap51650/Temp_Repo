@@ -65,12 +65,14 @@ interface CaliperHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentId: number;
+  experimentName: string;
 }
 
 export default function CaliperHistoryModal({
   isOpen,
   onClose,
   experimentId,
+  experimentName,
 }: Readonly<CaliperHistoryModalProps>) {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -207,7 +209,7 @@ export default function CaliperHistoryModal({
                   className="mt-4"
                 >
                   <ExperimentHeader
-                    title="Prot458_Ma"
+                    title={experimentName}
                     sex={tab.metadata.sex}
                     strain={tab.metadata.strain}
                     dob={tab.metadata.date_of_birth}

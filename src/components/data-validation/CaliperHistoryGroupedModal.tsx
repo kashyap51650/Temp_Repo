@@ -67,11 +67,12 @@ interface CaliperHistoryGroupModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentId: number;
+  experimentName: string;
 }
 
 const CaliperHistoryGroupModal: React.FC<
   Readonly<CaliperHistoryGroupModalProps>
-> = ({ isOpen, onClose, experimentId }) => {
+> = ({ isOpen, onClose, experimentId, experimentName }) => {
   const [activeTab, setActiveTab] = useState(0);
   const {
     data: apiResponse,
@@ -229,7 +230,7 @@ const CaliperHistoryGroupModal: React.FC<
                   className="mt-4"
                 >
                   <ExperimentHeader
-                    title="Prot458_Ma"
+                    title={experimentName}
                     sex={tab.metadata.sex}
                     strain={tab.metadata.strain}
                     dob={tab.metadata.date_of_birth}

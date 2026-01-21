@@ -29,5 +29,6 @@ export function useCaliperHistoryByMouse(
     queryFn: () => caliperMeasurementsApi.getHistoryByMouse(experimentId),
     enabled: enabled && !!experimentId && experimentId > 0,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: 2,
   });
 }

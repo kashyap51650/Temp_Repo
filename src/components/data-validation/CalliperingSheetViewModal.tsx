@@ -204,11 +204,13 @@ export function CalliperingSheetViewModal({
         isOpen={caliperHistoryModal.isOpen}
         onClose={caliperHistoryModal.closeModal}
         experimentId={experimentId}
+        experimentName={experimentName}
       />
       <CaliperHistoryGroupModal
         isOpen={caliperHistoryGroupModal.isOpen}
         onClose={caliperHistoryGroupModal.closeModal}
         experimentId={experimentId}
+        experimentName={experimentName}
       />
     </>
   );

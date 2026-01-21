@@ -27,7 +27,7 @@ export function useCaliperHistoryByGroup(
   return useQuery<CaliperHistoryByGroupResponse>({
     queryKey: ["caliperHistory", "byGroup", experimentId],
     queryFn: () => caliperMeasurementsApi.getHistoryByGroup(experimentId),
-    enabled: enabled && !!experimentId && experimentId > 0,
+    enabled: enabled && experimentId > 0,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: 2,
   });
