@@ -289,6 +289,7 @@ export function DataViewModal({
             }}
             experimentName={experiment.experimentName}
             experimentDataId={experiment.id}
+            experimentId={experiment.experiment?.id}
           />
         ))}
 

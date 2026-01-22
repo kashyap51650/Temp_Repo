@@ -29,6 +29,7 @@ interface CalliperingSheetViewModalProps {
   hideActions?: boolean;
   experimentDataType?: string;
   experimentStudyType?: string;
+  experimentId: number;
 }
 
 export function CalliperingSheetViewModal({
@@ -40,6 +41,7 @@ export function CalliperingSheetViewModal({
   hideActions = false,
   experimentDataType,
   experimentStudyType,
+  experimentId,
 }: Readonly<CalliperingSheetViewModalProps>) {
   const { hasPermission } = usePermissions();
   const editModal = useModal();
@@ -219,10 +221,14 @@ export function CalliperingSheetViewModal({
       <CaliperHistoryModal
         isOpen={caliperHistoryModal.isOpen}
         onClose={caliperHistoryModal.closeModal}
+        experimentId={experimentId}
+        experimentName={experimentName}
       />
       <CaliperHistoryGroupModal
         isOpen={caliperHistoryGroupModal.isOpen}
         onClose={caliperHistoryGroupModal.closeModal}
+        experimentId={experimentId}
+        experimentName={experimentName}
       />
     </>
   );

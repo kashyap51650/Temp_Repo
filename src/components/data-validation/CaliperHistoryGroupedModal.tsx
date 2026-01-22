@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   Tabs,
@@ -6,7 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/molecules/Tabs/Tabs";
-import { sampleCaliperApiResponse } from "@/data/caliperSampleData";
+import { useCaliperHistoryByGroup } from "@/hooks/useCaliperHistoryByGroup";
 
 import { Dialog, Label } from "../atoms";
 import type {
@@ -62,94 +63,109 @@ function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
   );
 }
 
+interface CaliperHistoryGroupModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  experimentId: number;
+  experimentName: string;
+}
+
 const CaliperHistoryGroupModal: React.FC<
-  Readonly<{
-    isOpen: boolean;
-    onClose: () => void;
-  }>
-> = ({ isOpen, onClose }) => {
+  Readonly<CaliperHistoryGroupModalProps>
+> = ({ isOpen, onClose, experimentId, experimentName }) => {
   const [activeTab, setActiveTab] = useState(0);
-  const apiData = sampleCaliperApiResponse.data;
+  const {
+    data: apiResponse,
+    isLoading,
+    error,
+  } = useCaliperHistoryByGroup(experimentId, isOpen);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Failed to load caliper history by group", {
+        description:
+          error.message || "Unable to fetch grouped caliper measurement data",
+      });
+    }
+  }, [error]);
 
   const convertToLegacyFormat = (
-    tabData: (typeof apiData.tabs)[0]
+    tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0]
   ): GroupedCaliperData => {
     const convertedMeasurements: Record<
       string,
       Record<string, Record<string, GroupedMeasurement>>
     > = {};
 
-    const processMouseData = (
-      groupName: string,
-      deliveryId: string,
-      mouseData: Record<string, any>
-    ) => {
-      convertedMeasurements[groupName][deliveryId] = {};
-      Object.entries(mouseData).forEach(
-        ([date, measurements]: [string, any]) => {
-          const measurement: GroupedMeasurement = {
-            id: 0,
-            value: measurements.volume_mm3,
-            type: "float",
-            key: "volume_mm3",
-            mouse_id: 0,
-          };
-          convertedMeasurements[groupName][deliveryId][date] = measurement;
-        }
-      );
-    };
+    const groupIds = Object.keys(tabData.group_data_by_group_id).sort(
+      (a, b) => parseInt(a, 10) - parseInt(b, 10)
+    );
 
-    Object.entries(tabData.caliper_measurements).forEach(
-      ([groupId, groupData]) => {
-        const groupInfo = (
-          tabData.group_data_by_group_id as Record<string, any>
-        )[groupId];
-        const groupName = groupInfo?.group_name || `Group ${groupId}`;
+    groupIds.forEach((groupId) => {
+      const groupInfo = tabData.group_data_by_group_id[groupId];
+      const groupName = groupInfo?.group_name || `Group ${groupId}`;
 
-        convertedMeasurements[groupName] = {};
+      convertedMeasurements[groupName] = {};
 
-        Object.entries(groupData).forEach(([deliveryId, mouseData]) => {
-          processMouseData(
-            groupName,
-            deliveryId,
-            mouseData as Record<string, any>
-          );
+      const groupMeasurements = tabData.caliper_measurements[groupId];
+      if (groupMeasurements) {
+        const deliveryIds = Object.keys(groupMeasurements).sort((a, b) => {
+          const numA = parseInt(a.split("-").pop() || "0", 10);
+          const numB = parseInt(b.split("-").pop() || "0", 10);
+          return numA - numB;
+        });
+
+        deliveryIds.forEach((deliveryId) => {
+          const mouseData = groupMeasurements[deliveryId];
+          convertedMeasurements[groupName][deliveryId] = {};
+
+          Object.entries(mouseData).forEach(([date, measurements]) => {
+            const measurement: GroupedMeasurement = {
+              id: 0,
+              value: measurements.volume_mm3,
+              type: "float",
+              key: "volume_mm3",
+              mouse_id: tabData.mouse_data_by_delivery_id[deliveryId]?.id || 0,
+            };
+            convertedMeasurements[groupName][deliveryId][date] = measurement;
+          });
         });
       }
-    );
+    });
 
-    // Update mouse_data_by_delivery_id to include group names
+    // Update mouse_data_by_delivery_id to include group names in chronological order
     const updatedMouseData: Record<string, any> = {};
-    Object.entries(tabData.mouse_data_by_delivery_id).forEach(
-      ([deliveryId, mouseInfo]: [string, any]) => {
-        // Find which group this mouse belongs to by looking at the measurements
-        let groupName = "Unknown";
-        for (const [groupId, groupData] of Object.entries(
-          tabData.caliper_measurements
-        )) {
-          if ((groupData as Record<string, any>)[deliveryId]) {
-            const groupInfo = (
-              tabData.group_data_by_group_id as Record<string, any>
-            )[groupId];
-            groupName = groupInfo?.group_name || `Group ${groupId}`;
-            break;
+
+    groupIds.forEach((groupId) => {
+      const groupInfo = tabData.group_data_by_group_id[groupId];
+      const groupName = groupInfo?.group_name || `Group ${groupId}`;
+      const groupMeasurements = tabData.caliper_measurements[groupId];
+
+      if (groupMeasurements) {
+        const deliveryIds = Object.keys(groupMeasurements).sort((a, b) => {
+          const numA = parseInt(a.split("-").pop() || "0", 10);
+          const numB = parseInt(b.split("-").pop() || "0", 10);
+          return numA - numB;
+        });
+
+        deliveryIds.forEach((deliveryId) => {
+          const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
+          if (mouseInfo) {
+            updatedMouseData[deliveryId] = {
+              mouse_id: mouseInfo.id,
+              group: groupName,
+              mouse_code: mouseInfo.mouse_code,
+            };
           }
-        }
-
-        updatedMouseData[deliveryId] = {
-          mouse_id: mouseInfo.id,
-          group: groupName,
-          mouse_code: mouseInfo.mouse_code,
-        };
+        });
       }
-    );
+    });
 
-    const caliperData: GroupedCaliperData = {
-      caliper_measurements_dates: tabData.caliper_measurements_dates,
+    return {
+      caliper_measurements_dates: [...tabData.caliper_measurements_dates],
       mouse_data_by_delivery_id: updatedMouseData,
       caliper_measurements: convertedMeasurements,
     };
-    return caliperData;
   };
 
   return (
@@ -165,43 +181,69 @@ const CaliperHistoryGroupModal: React.FC<
       trigger={null}
     >
       <div className="py-4 flex-1 overflow-auto">
-        <div className="mb-6">
-          <Tabs
-            value={activeTab.toString()}
-            onValueChange={(value) => setActiveTab(Number.parseInt(value))}
-          >
-            <TabsList>
-              {apiData.tabs.map((tab, index) => (
-                <TabsTrigger
+        {isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">
+              Loading caliper history...
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-destructive">
+              Unable to load caliper history. Please try again later.
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !error && !apiResponse?.data?.tabs?.length && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">
+              No caliper history data available for this experiment.
+            </div>
+          </div>
+        )}
+
+        {apiResponse?.data?.tabs && apiResponse.data.tabs.length > 0 && (
+          <div className="mb-6">
+            <Tabs
+              value={activeTab.toString()}
+              onValueChange={(value) => setActiveTab(Number.parseInt(value))}
+            >
+              <TabsList>
+                {apiResponse.data.tabs.map((tab, index) => (
+                  <TabsTrigger
+                    key={tab.tab_id}
+                    value={index.toString()}
+                    className="text-sm"
+                  >
+                    {tab.tab_label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {apiResponse.data.tabs.map((tab, index) => (
+                <TabsContent
                   key={tab.tab_id}
                   value={index.toString()}
-                  className="text-sm"
+                  className="mt-4"
                 >
-                  {tab.tab_label}
-                </TabsTrigger>
+                  <ExperimentHeader
+                    title={experimentName}
+                    sex={tab.metadata.sex}
+                    strain={tab.metadata.strain}
+                    dob={tab.metadata.date_of_birth}
+                    cellInjDate={tab.metadata.cell_injection_date}
+                    cellLine={tab.metadata.cell_line}
+                  />
+
+                  <CaliperGroupedTable data={convertToLegacyFormat(tab)} />
+                </TabsContent>
               ))}
-            </TabsList>
-
-            {apiData.tabs.map((tab, index) => (
-              <TabsContent
-                key={tab.tab_id}
-                value={index.toString()}
-                className="mt-4"
-              >
-                <ExperimentHeader
-                  title="Prot458_Ma"
-                  sex={tab.metadata.sex}
-                  strain={tab.metadata.strain}
-                  dob={tab.metadata.date_of_birth}
-                  cellInjDate={tab.metadata.cell_injection_date}
-                  cellLine={tab.metadata.cell_line}
-                />
-
-                <CaliperGroupedTable data={convertToLegacyFormat(tab)} />
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
+            </Tabs>
+          </div>
+        )}
       </div>
     </Dialog>
   );

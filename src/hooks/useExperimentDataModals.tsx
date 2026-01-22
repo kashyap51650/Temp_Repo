@@ -16,6 +16,7 @@ interface ExperimentDataItem {
   status?: string;
   dataType?: string;
   experiment?: {
+    id: number;
     experiment_name: string;
   };
   data_type?: {
@@ -115,6 +116,13 @@ export function useExperimentDataModals(
     // Convert ID to string
     const experimentDataId = String(selectedExperiment.id);
 
+    // Validate experiment ID - warn developers if missing
+    const experimentId = selectedExperiment.experiment?.id;
+
+    if (!experimentId || experimentId === 0) {
+      toast.error("something went wrong: experiment ID is missing or invalid.");
+    }
+
     // Get status
     const experimentStatus = selectedExperiment.status || "";
     const experimentDataType =
@@ -138,6 +146,7 @@ export function useExperimentDataModals(
             hideActions={hideActions || !canEditOrApprove}
             experimentDataType={experimentDataType}
             experimentStudyType={experimentStudyType}
+            experimentId={experimentId || 0}
           />
         )}
         {weightSheetViewModal.isOpen && (

@@ -182,6 +182,12 @@ export const API_CONFIG = {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
     },
+    CALIPER_MEASUREMENTS: {
+      HISTORY_BY_MOUSE: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-mouse`,
+      HISTORY_BY_GROUP: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
+    },
   },
 } as const;
 
@@ -1916,5 +1922,94 @@ export const dosesApi = {
     >
   > => {
     return apiClient.get(API_CONFIG.ENDPOINTS.DOSES.DROPDOWN);
+  },
+};
+
+export interface CaliperHistoryMeasurement {
+  width_mm: number;
+  length_mm: number;
+  volume_mm3: number;
+}
+
+export interface CaliperHistoryMouseData {
+  id: number;
+  mouse_code: string;
+  delivery_id: string;
+}
+
+export interface CaliperHistoryTab {
+  tab_id: string;
+  tab_label: string;
+  metadata: {
+    sex: string;
+    strain: string;
+    date_of_birth: string;
+    cell_line: string;
+    cell_injection_date: string;
+  };
+  mouse_data_by_delivery_id: Record<string, CaliperHistoryMouseData>;
+  caliper_measurements: Record<
+    string,
+    Record<string, CaliperHistoryMeasurement>
+  >;
+  caliper_measurements_dates: string[];
+}
+
+export interface CaliperHistoryByMouseResponse {
+  success: boolean;
+  message: string;
+  data: {
+    tabs: CaliperHistoryTab[];
+  };
+}
+
+export interface CaliperHistoryGroupData {
+  id: number;
+  group_code: string;
+  group_name: string;
+}
+
+export interface CaliperHistoryGroupTab {
+  tab_id: string;
+  tab_label: string;
+  metadata: {
+    sex: string;
+    strain: string;
+    date_of_birth: string;
+    cell_line: string;
+    cell_injection_date: string;
+  };
+  group_data_by_group_id: Record<string, CaliperHistoryGroupData>;
+  mouse_data_by_delivery_id: Record<string, CaliperHistoryMouseData>;
+  caliper_measurements: Record<
+    string,
+    Record<string, Record<string, CaliperHistoryMeasurement>>
+  >;
+  caliper_measurements_dates: string[];
+}
+
+export interface CaliperHistoryByGroupResponse {
+  success: boolean;
+  message: string;
+  data: {
+    tabs: CaliperHistoryGroupTab[];
+  };
+}
+
+export const caliperMeasurementsApi = {
+  getHistoryByMouse: async (
+    experimentId: number
+  ): Promise<CaliperHistoryByMouseResponse> => {
+    return apiClient.get<CaliperHistoryByMouseResponse>(
+      API_CONFIG.ENDPOINTS.CALIPER_MEASUREMENTS.HISTORY_BY_MOUSE(experimentId)
+    );
+  },
+
+  getHistoryByGroup: async (
+    experimentId: number
+  ): Promise<CaliperHistoryByGroupResponse> => {
+    return apiClient.get<CaliperHistoryByGroupResponse>(
+      API_CONFIG.ENDPOINTS.CALIPER_MEASUREMENTS.HISTORY_BY_GROUP(experimentId)
+    );
   },
 };
