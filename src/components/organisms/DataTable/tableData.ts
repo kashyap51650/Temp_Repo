@@ -2162,6 +2162,7 @@ export interface BioDWeightMouse {
 }
 
 export interface BioDWeightData {
+  worksheetId?: number;
   sex: string;
   strain: string;
   dob: string;
@@ -2229,6 +2230,7 @@ export interface CalliperingMouseRow {
 }
 
 export interface CalliperingData {
+  worksheetId?: number;
   sex?: string;
   strain?: string;
   dob?: string;

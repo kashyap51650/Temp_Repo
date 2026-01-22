@@ -1,20 +1,24 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import { Label } from "@/components/atoms";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/molecules";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
-import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
-import { useExperimentDataByIdForWeightSheet } from "@/hooks/useExperimentDataById";
+import { useBioDWeightSheetData } from "@/hooks/useBioDWeightSheetData";
+import { type ExperimentDataForWeightSheetResponse } from "@/hooks/useExperimentDataById";
+import type {
+  MousePairRow,
+  TransformedWorksheetData,
+} from "@/types/weight-sheet";
 
-import { Label } from "../atoms";
-
-interface MousePairRow {
-  id: string;
-  leftId: string;
-  leftWeight: number;
-  rightId?: string;
-  rightWeight?: number;
-}
-
+/**
+ * Generate columns for read-only mouse pair display
+ */
 const getReadOnlyMousePairColumns = (): ColumnDef<MousePairRow>[] => [
   {
     accessorKey: "leftId",
@@ -50,48 +54,50 @@ const getReadOnlyMousePairColumns = (): ColumnDef<MousePairRow>[] => [
   },
 ];
 
+/**
+ * Transform mice data to pairs for table display
+ */
+const transformMiceToPairs = (
+  mice: TransformedWorksheetData["mice"]
+): MousePairRow[] => {
+  return Array.from({
+    length: Math.ceil(mice.length / 2),
+  }).map((_, idx) => {
+    const left = mice[idx * 2];
+    const right = mice[idx * 2 + 1];
+    return {
+      id: left.id + (right ? `-${right.id}` : ""),
+      leftId: left.id,
+      leftWeight: left.bodyWeight,
+      rightId: right?.id,
+      rightWeight: right?.bodyWeight,
+    };
+  });
+};
+
 interface BioDWeightSheetViewProps {
-  data?: BioDWeightData;
   experimentDataId?: string;
+  apiData: ExperimentDataForWeightSheetResponse | undefined;
+  isLoading: boolean;
+  error: Error | null;
 }
 
+/**
+ * BioDWeightSheetView - Multi-worksheet tab view component
+ * Displays body weight measurements across multiple worksheets with tabbed navigation
+ */
 export function BioDWeightSheetView({
-  data,
   experimentDataId,
+  apiData,
+  isLoading,
+  error,
 }: Readonly<BioDWeightSheetViewProps>) {
-  const [viewData, setViewData] = useState<BioDWeightData | null>(data || null);
+  const [activeTab, setActiveTab] = useState("0");
 
-  const {
-    data: apiData,
-    isLoading,
-    error,
-  } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
+  // Transform API data using custom hook
+  const { worksheets, hasMultipleWorksheets } = useBioDWeightSheetData(apiData);
 
-  useEffect(() => {
-    if (apiData && !data) {
-      const transformedData: BioDWeightData = {
-        sex: apiData.uploaded_data.sex ?? "",
-        strain: apiData.uploaded_data.strain ?? "",
-        dob: apiData.uploaded_data.date_of_birth ?? "",
-        cellInjectionDate: apiData.uploaded_data.cell_inj_date ?? "",
-        cellLine: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
-        treatmentDate: apiData.uploaded_data.treatment_date ?? "",
-        measurementDate: apiData.uploaded_data.measurement_date ?? "",
-        mice:
-          apiData.uploaded_data.body_weight_measurements?.map(
-            (measurement) => ({
-              id: measurement.mouse?.mouse_delivery_id ?? "",
-              bodyWeight: measurement.body_weight_grams ?? 0,
-              measurementId: measurement.id,
-            })
-          ) ?? [],
-      };
-      setViewData(transformedData);
-    } else if (data) {
-      setViewData(data);
-    }
-  }, [apiData, data]);
-
+  // Loading state
   if (isLoading && experimentDataId) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -100,6 +106,7 @@ export function BioDWeightSheetView({
     );
   }
 
+  // Error state
   if (error && experimentDataId) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -110,10 +117,59 @@ export function BioDWeightSheetView({
     );
   }
 
-  if (!viewData) return null;
+  // No data state
+  if (!worksheets || worksheets.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-500">
+          No worksheet data available.
+        </div>
+      </div>
+    );
+  }
 
+  // Single worksheet view (no tabs needed)
+  if (!hasMultipleWorksheets) {
+    return <WorksheetContent worksheet={worksheets[0]} />;
+  }
+
+  // Multiple worksheets view with tabs
   return (
-    <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
+    <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-full justify-start overflow-x-auto">
+          {worksheets.map((worksheet, index) => (
+            <TabsTrigger
+              key={index}
+              value={index.toString()}
+              className="text-sm"
+            >
+              {worksheet.worksheetName}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {worksheets.map((worksheet, index) => (
+          <TabsContent key={index} value={index.toString()}>
+            <WorksheetContent worksheet={worksheet} />
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  );
+}
+
+/**
+ * WorksheetContent - Displays individual worksheet data
+ */
+interface WorksheetContentProps {
+  worksheet: TransformedWorksheetData;
+}
+
+function WorksheetContent({ worksheet }: Readonly<WorksheetContentProps>) {
+  return (
+    <div className="space-y-4">
+      {/* Metadata section */}
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-10">
           {[
@@ -137,7 +193,7 @@ export function BioDWeightSheetView({
           ].map((group) => (
             <div className="space-y-3" key={group.id}>
               {group.fields.map(({ key, label }) => {
-                const value = viewData[key as keyof BioDWeightData];
+                const value = worksheet[key as keyof TransformedWorksheetData];
                 if (typeof value !== "string") return null;
                 return (
                   <div className="flex items-center gap-3" key={key}>
@@ -153,23 +209,12 @@ export function BioDWeightSheetView({
         </div>
       </div>
 
-      {viewData.mice && viewData.mice.length > 0 && (
+      {/* Measurements table */}
+      {worksheet.mice && worksheet.mice.length > 0 && (
         <div className="bg-white mt-4">
           <DataTable
             columns={getReadOnlyMousePairColumns()}
-            data={Array.from({
-              length: Math.ceil(viewData.mice.length / 2),
-            }).map((_, idx) => {
-              const left = viewData.mice[idx * 2];
-              const right = viewData.mice[idx * 2 + 1];
-              return {
-                id: left.id + (right ? `-${right.id}` : ""),
-                leftId: left.id,
-                leftWeight: left.bodyWeight,
-                rightId: right?.id,
-                rightWeight: right?.bodyWeight,
-              };
-            })}
+            data={transformMiceToPairs(worksheet.mice)}
           />
         </div>
       )}

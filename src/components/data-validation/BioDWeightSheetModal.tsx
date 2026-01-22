@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
-import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import { useBioDWeightSheetSave } from "@/hooks";
+import type { WorksheetEditData } from "@/types/weight-sheet";
 
 import { Button } from "../atoms";
 import { BioDWeightSheet } from "./BioDWeightSheet";
@@ -11,10 +11,9 @@ import { BioDWeightSheet } from "./BioDWeightSheet";
 interface BioDWeightSheetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: BioDWeightData) => void;
+  onSave: (data: WorksheetEditData[]) => void;
   experimentName: string;
   experimentDataId?: string;
-  data?: BioDWeightData;
 }
 
 export function BioDWeightSheetModal({
@@ -23,19 +22,25 @@ export function BioDWeightSheetModal({
   onSave,
   experimentName,
   experimentDataId,
-  data,
 }: Readonly<BioDWeightSheetModalProps>) {
-  const [currentData, setCurrentData] = useState<BioDWeightData | null>(null);
-  const [originalData, setOriginalData] = useState<BioDWeightData | null>(null);
+  const [currentData, setCurrentData] = useState<WorksheetEditData[] | null>(
+    null
+  );
+  const [originalData, setOriginalData] = useState<WorksheetEditData[] | null>(
+    null
+  );
   const { saveChanges, isPending } = useBioDWeightSheetSave();
 
-  const handleDataChange = (weightData: BioDWeightData) => {
-    setCurrentData(weightData);
+  const handleDataChange = useCallback(
+    (weightData: WorksheetEditData[]) => {
+      setCurrentData(weightData);
 
-    if (!originalData && weightData.mice.length > 0) {
-      setOriginalData(structuredClone(weightData));
-    }
-  };
+      if (!originalData && weightData) {
+        setOriginalData(structuredClone(weightData));
+      }
+    },
+    [originalData]
+  );
 
   const handleSave = () => {
     if (!currentData) {
@@ -67,7 +72,6 @@ export function BioDWeightSheetModal({
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
     >
       <BioDWeightSheet
-        data={data}
         onSave={handleDataChange}
         experimentDataId={experimentDataId}
       />
@@ -79,7 +83,7 @@ export function BioDWeightSheetModal({
           variant={"default"}
           size={"lg"}
           onClick={handleSave}
-          disabled={isPending}
+          disabled={isPending || !currentData || currentData?.length === 0}
         >
           {isPending ? "Saving..." : "Save Changes"}
         </Button>

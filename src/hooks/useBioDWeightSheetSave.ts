@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
-import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import { MAX_BODY_WEIGHT_GRAMS } from "@/lib/constants";
+import type { WorksheetEditData } from "@/types/weight-sheet";
 
 import useBulkUpdateBodyWeights, {
   type BulkUpdateBodyWeightsRequest,
@@ -23,15 +23,15 @@ interface MeasurementChange {
 }
 
 interface SaveOptions {
-  currentData: BioDWeightData | null;
-  originalData: BioDWeightData | null;
+  currentData: WorksheetEditData[] | null;
+  originalData: WorksheetEditData[] | null;
   experimentDataId?: string;
   onSuccess: () => void;
   onClose: () => void;
 }
 
 const FIELD_MAPPINGS: Array<{
-  current: keyof BioDWeightData;
+  current: keyof WorksheetEditData;
   api: string;
   transform?: (value: string) => string | number | null;
 }> = [
@@ -39,14 +39,12 @@ const FIELD_MAPPINGS: Array<{
   {
     current: "strain",
     api: "mouse_strain_id",
-    transform: (v) => (v === "" ? null : Number(v)),
   },
   { current: "dob", api: "date_of_birth" },
   { current: "cellInjectionDate", api: "cell_injection_date" },
   {
     current: "cellLine",
     api: "cell_line_id",
-    transform: (v) => (v === "" ? null : Number(v)),
   },
   { current: "treatmentDate", api: "treatment_date" },
   { current: "measurementDate", api: "measurement_date" },
@@ -56,8 +54,8 @@ export function useBioDWeightSheetSave() {
   const bulkUpdateMutation = useBulkUpdateBodyWeights();
 
   const validateInputs = (
-    currentData: BioDWeightData | null,
-    originalData: BioDWeightData | null,
+    currentData: WorksheetEditData | null,
+    originalData: WorksheetEditData | null,
     experimentDataId?: string
   ): boolean => {
     if (!currentData || !originalData) {
@@ -88,8 +86,8 @@ export function useBioDWeightSheetSave() {
   };
 
   const collectMetadataChanges = (
-    currentData: BioDWeightData,
-    originalData: BioDWeightData
+    currentData: WorksheetEditData,
+    originalData: WorksheetEditData
   ) => {
     const changes: MetadataChanges = {};
     let hasMetadataChanges = false;
@@ -149,13 +147,12 @@ export function useBioDWeightSheetSave() {
         hasMetadataChanges = true;
       }
     });
-
     return { changes, hasMetadataChanges };
   };
 
   const collectMeasurementChanges = (
-    currentData: BioDWeightData,
-    originalData: BioDWeightData
+    currentData: WorksheetEditData,
+    originalData: WorksheetEditData
   ) => {
     const measurements: MeasurementChange[] = [];
     let hasMeasurementChanges = false;
@@ -182,7 +179,6 @@ export function useBioDWeightSheetSave() {
         hasMeasurementChanges = true;
       }
     });
-
     return { measurements, hasMeasurementChanges, isValid };
   };
 
@@ -194,22 +190,40 @@ export function useBioDWeightSheetSave() {
     onClose,
   }: SaveOptions) => {
     // Validate inputs
-    if (!validateInputs(currentData, originalData, experimentDataId)) {
-      return;
-    }
 
-    // Collect metadata changes
-    const { changes: metadataChanges, hasMetadataChanges } =
-      collectMetadataChanges(currentData!, originalData!);
+    const payload: BulkUpdateBodyWeightsRequest = {
+      worksheets: [],
+    };
 
-    // Collect measurement changes
-    const { measurements, hasMeasurementChanges, isValid } =
-      collectMeasurementChanges(currentData!, originalData!);
+    currentData?.forEach((worksheet, index) => {
+      if (!validateInputs(worksheet, originalData![index], experimentDataId)) {
+        return;
+      }
+      // Collect metadata changes
+      const { changes: metadataChanges, hasMetadataChanges } =
+        collectMetadataChanges(worksheet, originalData![index]);
 
-    if (!isValid) return;
+      // Collect measurement changes
+      const { measurements, hasMeasurementChanges, isValid } =
+        collectMeasurementChanges(worksheet, originalData![index]);
+
+      if (!isValid) return;
+
+      if (!hasMetadataChanges && !hasMeasurementChanges) return;
+
+      payload.worksheets.push({
+        ...(hasMetadataChanges && {
+          worksheet: {
+            id: worksheet.worksheetId!,
+            ...metadataChanges,
+          },
+        }),
+        ...(hasMeasurementChanges && { measurements }),
+      });
+    });
 
     // Check if any changes exist
-    if (!hasMetadataChanges && !hasMeasurementChanges) {
+    if (payload.worksheets.length === 0) {
       toast.info("No changes detected", {
         description: "No modifications were made to the data",
       });
@@ -217,20 +231,16 @@ export function useBioDWeightSheetSave() {
       return;
     }
 
-    // Prepare final payload
-    const payload: BulkUpdateBodyWeightsRequest = {
-      ...metadataChanges,
-      experiment_data_id: experimentDataId!,
-    };
-
-    if (hasMeasurementChanges) {
-      payload.measurements = measurements;
-    }
-
     // Send to API
-    bulkUpdateMutation.mutate(payload, {
-      onSuccess,
-    });
+    bulkUpdateMutation.mutate(
+      {
+        request: payload,
+        experimentDataId: experimentDataId!,
+      },
+      {
+        onSuccess: onSuccess,
+      }
+    );
   };
 
   return {

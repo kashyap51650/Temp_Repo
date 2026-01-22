@@ -16,6 +16,8 @@ interface SheetActionsProps {
   /** Loading / disabled states */
   isApproveLoading?: boolean;
   isRejectLoading?: boolean;
+
+  isDataFetching?: boolean;
 }
 
 export function SheetActions({
@@ -26,6 +28,7 @@ export function SheetActions({
   onReject,
   isApproveLoading = false,
   isRejectLoading = false,
+  isDataFetching = false,
 }: Readonly<SheetActionsProps>) {
   return (
     <div className="flex items-center gap-2">
@@ -35,6 +38,7 @@ export function SheetActions({
           size="sm"
           onClick={onEdit}
           className="flex items-center gap-2"
+          disabled={isDataFetching}
         >
           <Edit className="size-4" />
           Edit
@@ -48,7 +52,7 @@ export function SheetActions({
             size="sm"
             onClick={onApprove}
             className="flex items-center gap-2 text-green-700 hover:bg-green-50 hover:text-green-800"
-            disabled={isApproveLoading}
+            disabled={isApproveLoading || isDataFetching}
           >
             <Check className="size-4" />
             Approve
@@ -58,7 +62,7 @@ export function SheetActions({
             size="sm"
             onClick={onReject}
             className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-            disabled={isRejectLoading}
+            disabled={isRejectLoading || isDataFetching}
           >
             <XIcon className="size-4" />
             Reject

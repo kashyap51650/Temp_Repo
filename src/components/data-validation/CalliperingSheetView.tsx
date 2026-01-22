@@ -1,13 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { useEffect, useState } from "react";
-
-import { DataTable } from "@/components/organisms/DataTable/DataTable";
-import type {
-  CalliperingData,
-  CalliperingMouseRow,
-} from "@/components/organisms/DataTable/tableData";
-import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
-import { DATA_TYPE, STUDY_TYPE } from "@/lib/constants";
+import { useState } from "react";
 
 import {
   Button,
@@ -15,7 +7,21 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "../atoms";
+} from "@/components/atoms";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/molecules";
+import { DataTable } from "@/components/organisms/DataTable/DataTable";
+import { useCalliperingSheetData } from "@/hooks/useCalliperingSheetData";
+import { DATA_TYPE, STUDY_TYPE } from "@/lib/constants";
+import type {
+  CalliperingMouseRow,
+  CalliperingSheetApiResponse,
+} from "@/types/callipering-sheet";
+
 import { NotesDialog } from "./NotesDialog";
 
 export interface SelectedNoteType {
@@ -23,6 +29,9 @@ export interface SelectedNoteType {
   id: number;
 }
 
+/**
+ * Generate columns for read-only callipering measurements display
+ */
 const getReadOnlyCalliperingColumns = ({
   shouldShowNotesColumn = false,
   onViewNotes,
@@ -98,67 +107,58 @@ const getReadOnlyCalliperingColumns = ({
 ];
 
 interface CalliperingSheetViewProps {
-  data?: CalliperingData;
   experimentDataId?: string;
   experimentDataType?: string;
   experimentStudyType?: string;
+  apiData?: CalliperingSheetApiResponse | undefined;
+  isLoading?: boolean;
+  error?: Error | null;
 }
 
+/**
+ * CalliperingSheetView Component
+ *
+ * Displays callipering measurement data with multi-worksheet tab support.
+ * Shows metadata (sex, strain, DOB, etc.) and a table of measurements per worksheet.
+ *
+ * @param experimentDataId - ID to fetch experiment data from API
+ * @param experimentDataType - Type of experiment data
+ * @param experimentStudyType - Study type (e.g., MODEL_STUDY)
+ * @param apiData - Pre-fetched API data for the callipering sheet
+ * @param isLoading - Loading state for the API data
+ * @param error - Error state for the API data
+ */
 export function CalliperingSheetView({
-  data,
   experimentDataId,
   experimentDataType,
   experimentStudyType,
+  apiData,
+  isLoading,
+  error,
 }: Readonly<CalliperingSheetViewProps>) {
-  const [viewData, setViewData] = useState<CalliperingData | null>(
-    data || null
-  );
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [selectedNote, setSelectedNote] = useState<SelectedNoteType | null>(
     null
   );
+  const [activeTab, setActiveTab] = useState<string>("0");
 
   const handleViewNotes = (note: SelectedNoteType) => {
     setSelectedNote(note);
     setShowNotesDialog(true);
   };
 
-  const {
-    data: apiData,
-    isLoading,
-    error,
-  } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
+  // Fetch experiment data from API
 
-  useEffect(() => {
-    if (apiData && !data) {
-      const transformedData: CalliperingData = {
-        sex: apiData.uploaded_data.sex ?? "",
-        strain: apiData.uploaded_data.strain ?? "",
-        dob: apiData.uploaded_data.date_of_birth ?? "",
-        cell_injection_date: apiData.uploaded_data.cell_inj_date ?? "",
-        cell_line: apiData.uploaded_data.cell_line?.cell_line_name ?? "",
-        treatment_date: apiData.uploaded_data.treatment_date ?? "",
-        measurement_date: apiData.uploaded_data.measurement_date ?? "",
-        mice:
-          apiData.uploaded_data.calliper_measurements?.map((measurement) => ({
-            id: measurement.mouse?.mouse_delivery_id ?? "",
-            length_mm: measurement.length_mm ?? 0,
-            width_mm: measurement.width_mm ?? 0,
-            volume_mm3: measurement.volume_mm3 ?? 0,
-            notes: measurement?.notes,
-            measurement_id: measurement.id,
-          })) ?? [],
-      };
-      setViewData(transformedData);
-    } else if (data) {
-      setViewData(data);
-    }
-  }, [apiData, data]);
+  // Transform API data into component-friendly format
+  const { worksheets, hasMultipleWorksheets } =
+    useCalliperingSheetData(apiData);
 
+  // Determine if notes column should be shown
   const shouldShowNotesColumn =
     experimentDataType === DATA_TYPE.CALLIPERING_SHEET &&
     experimentStudyType === STUDY_TYPE.MODEL_STUDY;
 
+  // Loading state
   if (isLoading && experimentDataId) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -167,6 +167,7 @@ export function CalliperingSheetView({
     );
   }
 
+  // Error state
   if (error && experimentDataId) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -177,60 +178,155 @@ export function CalliperingSheetView({
     );
   }
 
-  if (!viewData) return null;
+  // No data state
+  if (!worksheets.length) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600">
+          No worksheet data available.
+        </div>
+      </div>
+    );
+  }
+
+  // Single worksheet view (no tabs)
+  if (!hasMultipleWorksheets) {
+    const worksheet = worksheets[0];
+    return (
+      <>
+        <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
+          <WorksheetContent
+            worksheet={worksheet}
+            shouldShowNotesColumn={shouldShowNotesColumn}
+            onViewNotes={handleViewNotes}
+          />
+        </div>
+        <NotesDialog
+          open={showNotesDialog}
+          onOpenChange={setShowNotesDialog}
+          noteData={selectedNote}
+        />
+      </>
+    );
+  }
+
+  // Multi-worksheet view (with tabs)
   return (
     <>
-      <div className="space-y-4 overflow-y-auto h-[calc(100%-20%)]">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="grid grid-cols-2 gap-10">
-            {[
-              [
-                { key: "sex", label: "Sex:" },
-                { key: "strain", label: "Strain:" },
-                { key: "dob", label: "DOB:" },
-                { key: "cell_injection_date", label: "Cell Injection Date:" },
-              ],
-              [
-                { key: "cell_line", label: "Cell Line:" },
-                { key: "treatment_date", label: "Treatment Date:" },
-                { key: "measurement_date", label: "Measurement Date:" },
-              ],
-            ].map((group) => (
-              <div className="space-y-3" key={group[0].key}>
-                {group.map(({ key, label }) => {
-                  const value = viewData[key as keyof CalliperingData];
-                  // Only render if value is a string (not the mice array)
-                  if (typeof value !== "string") return null;
-                  return (
-                    <div className="flex items-center gap-3" key={key}>
-                      <Label className="font-semibold text-sm w-56">
-                        {label}
-                      </Label>
-                      <span className="flex-1">{value}</span>
-                    </div>
-                  );
-                })}
-              </div>
+      <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+            {worksheets.map((worksheet, index) => (
+              <TabsTrigger
+                key={index}
+                value={index.toString()}
+                className="whitespace-nowrap"
+              >
+                {worksheet.worksheetName}
+              </TabsTrigger>
             ))}
-          </div>
-        </div>
-        {viewData.mice && viewData.mice.length > 0 && (
-          <div className="bg-white mt-4">
-            <DataTable
-              columns={getReadOnlyCalliperingColumns({
-                shouldShowNotesColumn,
-                onViewNotes: handleViewNotes,
-              })}
-              data={viewData.mice}
-            />
-          </div>
-        )}
+          </TabsList>
+
+          {worksheets.map((worksheet, index) => (
+            <TabsContent key={index} value={index.toString()}>
+              <WorksheetContent
+                worksheet={worksheet}
+                shouldShowNotesColumn={shouldShowNotesColumn}
+                onViewNotes={handleViewNotes}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
       <NotesDialog
         open={showNotesDialog}
         onOpenChange={setShowNotesDialog}
         noteData={selectedNote}
       />
+    </>
+  );
+}
+
+/**
+ * WorksheetContent Component
+ *
+ * Renders the content for a single worksheet including metadata and measurements table.
+ * Extracted for reusability in both single and multi-worksheet views.
+ */
+interface WorksheetContentProps {
+  worksheet: {
+    sex: string;
+    strain: string;
+    dob: string;
+    cellInjectionDate: string;
+    cellLine: string;
+    treatmentDate: string;
+    measurementDate: string;
+    mice: CalliperingMouseRow[];
+  };
+  shouldShowNotesColumn: boolean;
+  onViewNotes: (note: SelectedNoteType) => void;
+}
+
+function WorksheetContent({
+  worksheet,
+  shouldShowNotesColumn,
+  onViewNotes,
+}: WorksheetContentProps) {
+  const metadataFields = [
+    [
+      { key: "sex", label: "Sex:", value: worksheet.sex },
+      { key: "strain", label: "Strain:", value: worksheet.strain },
+      { key: "dob", label: "DOB:", value: worksheet.dob },
+      {
+        key: "cellInjectionDate",
+        label: "Cell Injection Date:",
+        value: worksheet.cellInjectionDate,
+      },
+    ],
+    [
+      { key: "cellLine", label: "Cell Line:", value: worksheet.cellLine },
+      {
+        key: "treatmentDate",
+        label: "Treatment Date:",
+        value: worksheet.treatmentDate,
+      },
+      {
+        key: "measurementDate",
+        label: "Measurement Date:",
+        value: worksheet.measurementDate,
+      },
+    ],
+  ];
+
+  return (
+    <>
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="grid grid-cols-2 gap-10">
+          {metadataFields.map((group, groupIndex) => (
+            <div className="space-y-3" key={groupIndex}>
+              {group.map(({ key, label, value }) => (
+                <div className="flex items-center gap-3" key={key}>
+                  <Label className="font-semibold text-sm w-56">{label}</Label>
+                  <span className="flex-1">{value}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {worksheet.mice && worksheet.mice.length > 0 && (
+        <div className="bg-white mt-4">
+          <DataTable
+            columns={getReadOnlyCalliperingColumns({
+              shouldShowNotesColumn,
+              onViewNotes,
+            })}
+            data={worksheet.mice}
+          />
+        </div>
+      )}
     </>
   );
 }

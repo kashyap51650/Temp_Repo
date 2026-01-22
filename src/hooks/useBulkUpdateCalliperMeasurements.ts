@@ -9,8 +9,21 @@ export interface CalliperMeasurementUpdate {
   width_mm: number;
 }
 
-interface BulkUpdateCalliperMeasurementsRequest {
+export interface CalliperingWorksheetUpdate {
+  worksheet: {
+    id: number;
+    measurement_date?: string;
+    treatment_date?: string;
+    sex?: string;
+    mouse_strain_id?: number;
+    cell_line_id?: number;
+    cell_injection_date?: string;
+  };
   measurements: CalliperMeasurementUpdate[];
+}
+
+interface BulkUpdateCalliperMeasurementsRequest {
+  worksheets: CalliperingWorksheetUpdate[];
 }
 
 interface BulkUpdateCalliperMeasurementsResponse {
@@ -21,22 +34,24 @@ interface BulkUpdateCalliperMeasurementsResponse {
 }
 
 const bulkUpdateCalliperMeasurements = async (
-  request: BulkUpdateCalliperMeasurementsRequest
+  request: BulkUpdateCalliperMeasurementsRequest,
+  experimentDataId: string
 ): Promise<ApiResponse<BulkUpdateCalliperMeasurementsResponse>> => {
-  const endpoint = `/api/v1/caliper-measurements/bulk-update`;
+  const endpoint = `/api/v1/caliper-measurements/${experimentDataId}/bulk-update`;
 
-  if (!request.measurements || request.measurements.length === 0) {
-    throw new Error("No measurements provided for update");
-  }
+  // Validate all worksheets
+  request.worksheets.forEach((worksheet) => {
+    const invalidMeasurements = worksheet.measurements.filter(
+      (measurement) =>
+        !measurement.id ||
+        measurement.length_mm <= 0 ||
+        measurement.width_mm <= 0
+    );
 
-  const invalidMeasurements = request.measurements.filter(
-    (measurement) =>
-      !measurement.id || measurement.length_mm <= 0 || measurement.width_mm <= 0
-  );
-
-  if (invalidMeasurements.length > 0) {
-    throw new Error("Invalid measurement data provided");
-  }
+    if (invalidMeasurements.length > 0) {
+      throw new Error("Invalid measurement data provided");
+    }
+  });
 
   return apiClient.patch<BulkUpdateCalliperMeasurementsResponse>(
     endpoint,
@@ -48,7 +63,13 @@ export default function useBulkUpdateCalliperMeasurements() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: bulkUpdateCalliperMeasurements,
+    mutationFn: ({
+      request,
+      experimentDataId,
+    }: {
+      request: BulkUpdateCalliperMeasurementsRequest;
+      experimentDataId: string;
+    }) => bulkUpdateCalliperMeasurements(request, experimentDataId),
     onSuccess: (data) => {
       toast.success("Calliper measurements updated successfully", {
         description: `${data.data?.successful} measurements updated`,

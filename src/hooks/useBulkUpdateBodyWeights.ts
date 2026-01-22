@@ -8,16 +8,21 @@ export interface BodyWeightMeasurementUpdate {
   body_weight_grams: number;
 }
 
-export interface BulkUpdateBodyWeightsRequest {
+export interface WorksheetUpdate {
+  worksheet?: {
+    id: number;
+    measurement_date?: string;
+    treatment_date?: string;
+    sex?: string;
+    mouse_strain_id?: number;
+    cell_line_id?: number;
+    cell_injection_date?: string;
+  };
   measurements?: BodyWeightMeasurementUpdate[];
-  sex?: string;
-  mouse_strain_id?: number;
-  date_of_birth?: string;
-  cell_injection_date?: string;
-  cell_line_id?: number;
-  treatment_date?: string;
-  measurement_date?: string;
-  experiment_data_id: string;
+}
+
+export interface BulkUpdateBodyWeightsRequest {
+  worksheets: WorksheetUpdate[];
 }
 
 interface BulkUpdateBodyWeightsResponse {
@@ -28,19 +33,21 @@ interface BulkUpdateBodyWeightsResponse {
 }
 
 const bulkUpdateBodyWeights = async (
-  request: BulkUpdateBodyWeightsRequest
+  request: BulkUpdateBodyWeightsRequest,
+  experimentDataId: string
 ): Promise<ApiResponse<BulkUpdateBodyWeightsResponse>> => {
-  const endpoint = `/api/v1/body-weight-measurements/${request.experiment_data_id}/bulk-update`;
+  const endpoint = `/api/v1/body-weight-measurements/${experimentDataId}/bulk-update`;
 
-  if (request.measurements && request.measurements.length > 0) {
-    const invalidMeasurements = request.measurements.filter(
+  // Validate all worksheets
+  request.worksheets.forEach((worksheet) => {
+    const invalidMeasurements = worksheet?.measurements?.filter(
       (measurement) => !measurement.id || measurement.body_weight_grams <= 0
     );
 
-    if (invalidMeasurements.length > 0) {
+    if (invalidMeasurements?.length) {
       throw new Error("Invalid measurement data provided");
     }
-  }
+  });
 
   return apiClient.patch<BulkUpdateBodyWeightsResponse>(endpoint, request);
 };
@@ -49,7 +56,13 @@ export default function useBulkUpdateBodyWeights() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: bulkUpdateBodyWeights,
+    mutationFn: ({
+      request,
+      experimentDataId,
+    }: {
+      request: BulkUpdateBodyWeightsRequest;
+      experimentDataId: string;
+    }) => bulkUpdateBodyWeights(request, experimentDataId),
     onSuccess: (data) => {
       toast.success("Body weight measurements updated successfully", {
         description: `${data?.data?.successful} measurements updated`,

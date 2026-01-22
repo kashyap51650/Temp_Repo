@@ -3,9 +3,9 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
-import type { CalliperingData } from "@/components/organisms/DataTable/tableData";
 import {
   useApproveExperimentData,
+  useExperimentDataByIdForCalliperingSheet,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
@@ -24,7 +24,6 @@ interface CalliperingSheetViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
-  data?: CalliperingData;
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
@@ -36,7 +35,6 @@ export function CalliperingSheetViewModal({
   isOpen,
   onClose,
   experimentName,
-  data,
   experimentDataId,
   experimentStatus,
   hideActions = false,
@@ -53,6 +51,11 @@ export function CalliperingSheetViewModal({
   const caliperHistoryModal = useModal();
   const caliperHistoryGroupModal = useModal();
 
+  const {
+    data: apiData,
+    isLoading,
+    error,
+  } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
   const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
   const canApproveReject = hasPermission(
     PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
@@ -103,8 +106,7 @@ export function CalliperingSheetViewModal({
     );
   };
 
-  const handleSaveEdit = (editedData: CalliperingData) => {
-    console.log("Saved data:", editedData);
+  const handleSaveEdit = () => {
     editModal.closeModal();
   };
 
@@ -133,6 +135,7 @@ export function CalliperingSheetViewModal({
                 size="sm"
                 className="flex items-center gap-2"
                 onClick={viewGraphModal.openModal}
+                disabled={isLoading}
               >
                 <ChartBar className="size-4" />
                 View Graph
@@ -142,6 +145,7 @@ export function CalliperingSheetViewModal({
                 size="sm"
                 className="flex items-center gap-2"
                 onClick={caliperHistoryModal.openModal}
+                disabled={isLoading}
               >
                 Caliper History
               </Button>
@@ -150,6 +154,7 @@ export function CalliperingSheetViewModal({
                 size="sm"
                 className="flex items-center gap-2"
                 onClick={caliperHistoryGroupModal.openModal}
+                disabled={isLoading}
               >
                 <ChartBar className="size-4" />
                 Caliper History Group
@@ -164,6 +169,7 @@ export function CalliperingSheetViewModal({
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}
                 isRejectLoading={rejectMutation.isPending}
+                isDataFetching={isLoading}
               />
             )}
           </div>
@@ -172,10 +178,12 @@ export function CalliperingSheetViewModal({
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
         <CalliperingSheetView
-          data={data}
           experimentDataId={experimentDataId}
           experimentDataType={experimentDataType}
           experimentStudyType={experimentStudyType}
+          apiData={apiData}
+          isLoading={isLoading}
+          error={error}
         />
       </Dialog>
 

@@ -91,77 +91,100 @@ export interface ExperimentDataResponse {
 
 export type ExperimentDataForCaliperingResponse = {
   id: number;
-  project: Project;
-  experiment: Experiment;
-  data_type: DataType;
-  study_type: StudyType;
-  created_at: string;
-  measurement_date: string;
-  treatment_date: string;
-  status: ExperimentStatus;
-  randomization_status: RandomizationStatus;
-  reviewer: Reviewer;
-  rejection_reason: string | null;
+  project?: Project;
+  experiment?: Experiment;
+  data_type?: DataType;
+  study_type?: StudyType;
+  created_at?: string;
+  measurement_date?: string;
+  treatment_date?: string;
+  status?: ExperimentStatus;
+  randomization_status?: RandomizationStatus;
+  reviewer?: Reviewer;
+  rejection_reason?: string | null;
   uploaded_data: {
-    calliper_measurements: {
-      id: number;
-      mouse: Mouse;
-      measurement_date: string;
-      treatment_date: string | null;
-      length_mm: number;
-      width_mm: number;
-      volume_mm3: number;
-      is_flagged: boolean;
-      notes?: string | null;
+    worksheets: {
+      worksheet: {
+        id: number;
+        worksheet_name: string;
+        measurement_date: string;
+        treatment_date: string | null;
+        sex: "Male" | "Female";
+        date_of_birth: string;
+        mouse_strain: {
+          id: number;
+          mouse_strain_name: string;
+          mouse_strain_description: string;
+        };
+        cell_line: {
+          id: number;
+          cell_line_name: string;
+          vendor_name: string;
+        };
+        cell_injection_date: string;
+      };
+      measurements: {
+        id: number;
+        mouse: Mouse;
+        measurement_date: string;
+        treatment_date: string | null;
+        length_mm: number;
+        width_mm: number;
+        volume_mm3: number;
+        is_flagged: boolean;
+        notes: string | null;
+      }[];
     }[];
-    sex: "Male" | "Female";
-    strain: string;
-    date_of_birth: string;
-    cell_line: CellLine;
-    cell_inj_date: string | null;
-    treatment_date: string;
-    measurement_date: string;
   };
 };
 
 export type ExperimentDataForWeightSheetResponse = {
   id: number;
-  project: Project;
-  experiment: Experiment;
-  data_type: DataType;
-  study_type: StudyType;
-  created_at: string;
-  measurement_date: string;
-  treatment_date: string;
-  status: ExperimentStatus;
-  randomization_status: RandomizationStatus;
-  reviewer: Reviewer;
-  rejection_reason: string | null;
+  project?: Project;
+  experiment?: Experiment;
+  data_type?: DataType;
+  study_type?: StudyType;
+  created_at?: string;
+  measurement_date?: string;
+  treatment_date?: string;
+  status?: ExperimentStatus;
+  randomization_status?: RandomizationStatus;
+  reviewer?: Reviewer;
+  rejection_reason?: string | null;
   uploaded_data: {
-    body_weight_measurements: {
-      id: number;
-      mouse: Mouse;
-      measurement_date: string;
-      body_weight_grams: number;
-      baseline_weight_grams: number;
-      percent_change: number;
-      is_flagged: boolean;
-      terminated: boolean;
-      treatment_date: string | null;
-      treatment_phase: TreatmentPhase;
+    worksheets: {
+      worksheet: {
+        id: number;
+        worksheet_name: string;
+        measurement_date: string;
+        treatment_date: string | null;
+        sex: "Male" | "Female";
+        date_of_birth: string;
+        mouse_strain: {
+          id: number;
+          mouse_strain_name: string;
+          mouse_strain_description: string;
+        };
+        cell_line: {
+          id: number;
+          cell_line_name: string;
+          vendor_name: string;
+        };
+        cell_injection_date: string;
+      };
+      measurements: {
+        id: number;
+        mouse: Mouse;
+        measurement_date: string;
+        body_weight_grams: number;
+        baseline_weight_grams: number;
+        percent_change: number;
+        is_flagged: boolean;
+        terminated: boolean;
+        treatment_date: string | null;
+        treatment_phase: TreatmentPhase;
+      }[];
     }[];
-    sex: "Male" | "Female";
-    strain: string;
-    date_of_birth: string;
-    cell_line: CellLine;
-    cell_inj_date: string | null;
-    treatment_date: string | null;
-    measurement_date: string;
-    mouse_strain: {
-      id: number;
-      mouse_strain_name: string;
-      mouse_strain_description: string;
-    };
   };
 };
 

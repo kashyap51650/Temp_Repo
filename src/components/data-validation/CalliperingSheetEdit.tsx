@@ -1,21 +1,22 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/molecules";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
-import type {
-  CalliperingData,
-  CalliperingMouseRow,
-} from "@/components/organisms/DataTable/tableData";
-import useBulkUpdateCalliperMeasurements from "@/hooks/useBulkUpdateCalliperMeasurements";
-import { useExperimentDataByIdForCalliperingSheet } from "@/hooks/useExperimentDataById";
+import type { CalliperingMouseRow } from "@/components/organisms/DataTable/tableData";
+import { useCalliperingSheetEdit } from "@/hooks/useCalliperingSheetEdit";
 import { calculateTumorVolume } from "@/lib/utils";
+import type { CalliperingWorksheetEditData } from "@/types/callipering-sheet";
 
-import { Button, Input, Label } from "../atoms";
+import { Input, Label } from "../atoms";
 
 interface CalliperingSheetProps {
-  data?: CalliperingData;
-  onSave: (data: CalliperingData) => void;
-  onCancel: () => void;
+  onSave?: (data: CalliperingWorksheetEditData[]) => void;
   experimentDataId?: string;
 }
 
@@ -69,43 +70,173 @@ const getEditableCalliperingColumns = (
 ];
 
 export function CalliperingSheetEdit({
-  data,
-  onSave,
-  onCancel,
   experimentDataId,
+  onSave,
 }: Readonly<CalliperingSheetProps>) {
-  const [form, setForm] = useState<
-    CalliperingData & { mice: CalliperingMouseRow[] }
-  >({
-    sex: "",
-    strain: "",
-    dob: "",
-    cell_injection_date: "",
-    cell_line: "",
-    treatment_date: "",
-    measurement_date: "",
-    mice: [],
-  });
+  const [activeTab, setActiveTab] = useState<string>("0");
 
-  const [editedMeasurementIds, setEditedMeasurementIds] = useState<Set<number>>(
-    new Set()
-  );
-
-  const bulkUpdateMutation = useBulkUpdateCalliperMeasurements();
-
+  // Business logic hook for editing
   const {
-    data: apiData,
+    worksheetData,
+    handleMouseDataChange,
+    getCurrentData,
+    hasMultipleWorksheets,
     isLoading,
     error,
-  } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
+  } = useCalliperingSheetEdit(experimentDataId);
 
+  // Call onSave when worksheetData changes
+  useEffect(() => {
+    if (onSave && worksheetData.size > 0) {
+      const data = getCurrentData();
+      onSave(data);
+    }
+  }, [worksheetData, onSave]);
+
+  // Loading state
+  if (isLoading && experimentDataId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600">Loading experiment data...</div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error && experimentDataId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">
+          Error loading experiment data. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  // No worksheets - show empty state
+  if (worksheetData.size === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600">
+          No worksheet data available.
+        </div>
+      </div>
+    );
+  }
+
+  // Single worksheet view (no tabs)
+  if (!hasMultipleWorksheets) {
+    const worksheet = worksheetData.get(0)!;
+    return (
+      <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
+        <WorksheetEditForm
+          worksheet={worksheet}
+          worksheetIndex={0}
+          onMouseDataChange={handleMouseDataChange}
+        />
+      </div>
+    );
+  }
+
+  // Multi-worksheet view (with tabs)
+  return (
+    <div className="space-y-4 overflow-y-auto ">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
+          {Array.from(worksheetData.values()).map((worksheet, index) => (
+            <TabsTrigger
+              key={index}
+              value={index.toString()}
+              className="whitespace-nowrap"
+            >
+              {worksheet.worksheetName}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {Array.from(worksheetData.entries()).map(([index, worksheet]) => (
+          <TabsContent key={index} value={index.toString()}>
+            <WorksheetEditForm
+              worksheet={worksheet}
+              worksheetIndex={index}
+              onMouseDataChange={handleMouseDataChange}
+            />
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  );
+}
+
+interface WorksheetEditFormProps {
+  worksheet: CalliperingWorksheetEditData;
+  worksheetIndex: number;
+  onMouseDataChange: (
+    worksheetIndex: number,
+    updater: (
+      prev: Array<{
+        id: string;
+        measurement_id?: number;
+        length_mm: number;
+        width_mm: number;
+        volume_mm3: number;
+      }>
+    ) => Array<{
+      id: string;
+      measurement_id?: number;
+      length_mm: number;
+      width_mm: number;
+      volume_mm3: number;
+    }>
+  ) => void;
+}
+
+function WorksheetEditForm({
+  worksheet,
+  worksheetIndex,
+  onMouseDataChange,
+}: WorksheetEditFormProps) {
+  // Memoize header fields to prevent recreation on every render
+  const headerFields = useMemo(
+    () => [
+      [
+        { key: "sex", label: "Sex:" },
+        { key: "strain", label: "Strain:" },
+        { key: "dob", label: "DOB:" },
+        {
+          key: "cellInjectionDate",
+          label: "Cell Injection Date:",
+        },
+      ],
+      [
+        { key: "cellLine", label: "Cell Line:" },
+        { key: "treatmentDate", label: "Treatment Date:" },
+        { key: "measurementDate", label: "Measurement Date:" },
+      ],
+    ],
+    []
+  );
+
+  // Transform mice data for table display
+  const mousePairRows = useMemo<CalliperingMouseRow[]>(() => {
+    return worksheet.mice.map((mouse) => ({
+      id: mouse.id,
+      measurement_id: mouse.measurement_id,
+      length_mm: mouse.length_mm,
+      width_mm: mouse.width_mm,
+      volume_mm3: mouse.volume_mm3,
+      notes: null,
+    }));
+  }, [worksheet.mice]);
+
+  // Handle mouse measurement changes
   const handleMouseChange = useCallback(
     (idx: number, key: keyof CalliperingMouseRow, value: string) => {
-      setForm((prev) => {
-        const updatedMice: CalliperingMouseRow[] = prev.mice.map((m, i) => {
+      onMouseDataChange(worksheetIndex, (prevMice) => {
+        return prevMice.map((mouse, i) => {
           if (i === idx) {
-            const updatedMouse: CalliperingMouseRow = {
-              ...m,
+            const updatedMouse = {
+              ...mouse,
               [key]: key === "id" ? value : Number.parseFloat(value),
             };
 
@@ -125,23 +256,11 @@ export function CalliperingSheetEdit({
 
             return updatedMouse;
           }
-          return m;
+          return mouse;
         });
-
-        const measurementId = prev.mice[idx]?.measurement_id;
-        if (measurementId) {
-          setEditedMeasurementIds((prevIds) =>
-            new Set(prevIds).add(measurementId)
-          );
-        }
-
-        return {
-          ...prev,
-          mice: updatedMice,
-        };
       });
     },
-    []
+    [worksheetIndex, onMouseDataChange]
   );
 
   const editableColumns = useMemo(
@@ -149,114 +268,21 @@ export function CalliperingSheetEdit({
     [handleMouseChange]
   );
 
-  useEffect(() => {
-    if (apiData && !data) {
-      const transformedData = {
-        sex: apiData?.uploaded_data.sex ?? "",
-        strain: apiData?.uploaded_data.strain ?? "",
-        dob: apiData?.uploaded_data.date_of_birth ?? "",
-        cell_injection_date: apiData?.uploaded_data.cell_inj_date ?? "",
-        cell_line: apiData?.uploaded_data.cell_line?.cell_line_name ?? "",
-        treatment_date: apiData?.uploaded_data.treatment_date ?? "",
-        measurement_date: apiData?.uploaded_data.measurement_date ?? "",
-        mice:
-          apiData?.uploaded_data.calliper_measurements?.map((measurement) => {
-            const length = measurement.length_mm ?? 0;
-            const width = measurement.width_mm ?? 0;
-            const volume =
-              measurement.volume_mm3 ?? calculateTumorVolume(length, width);
-
-            return {
-              id: measurement.mouse?.mouse_delivery_id ?? "",
-              measurement_id: measurement.id,
-              length_mm: length,
-              width_mm: width,
-              volume_mm3: volume,
-            };
-          }) ?? [],
-      };
-      setForm(transformedData);
-    } else if (data) {
-      setForm(data as typeof form);
-    }
-  }, [apiData, data]);
-
-  if (isLoading && experimentDataId) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600">Loading experiment data...</div>
-      </div>
-    );
-  }
-
-  if (error && experimentDataId) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-red-600">
-          Error loading experiment data. Please try again.
-        </div>
-      </div>
-    );
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const measurements = form.mice
-      .filter((mouse) => {
-        const measurementId = mouse.measurement_id;
-        return (
-          measurementId !== undefined && editedMeasurementIds.has(measurementId)
-        );
-      })
-      .map((mouse) => ({
-        id: mouse.measurement_id!,
-        length_mm: mouse.length_mm,
-        width_mm: mouse.width_mm,
-        volume_mm3: mouse.volume_mm3,
-      }));
-
-    if (measurements.length === 0) {
-      onSave(form);
-      return;
-    }
-
-    bulkUpdateMutation.mutate(
-      { measurements },
-      {
-        onSuccess: () => {
-          onSave(form);
-        },
-      }
-    );
-  };
-
   return (
-    <form
-      className="space-y-6 overflow-y-auto h-full flex flex-col"
-      onSubmit={handleSubmit}
-    >
+    <>
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-10">
-          {[
-            [
-              { key: "sex", label: "Sex:" },
-              { key: "strain", label: "Strain:" },
-              { key: "dob", label: "DOB:" },
-              { key: "cell_injection_date", label: "Cell Injection Date:" },
-            ],
-            [
-              { key: "cell_line", label: "Cell Line:" },
-              { key: "treatment_date", label: "Treatment Date:" },
-              { key: "measurement_date", label: "Measurement Date:" },
-            ],
-          ].map((group) => (
-            <div className="space-y-3" key={group[0].key}>
+          {headerFields.map((group, groupIndex) => (
+            <div className="space-y-3" key={groupIndex}>
               {group.map(({ key, label }) => (
                 <div className="flex items-center gap-3" key={key}>
                   <Label className="font-semibold text-sm w-56">{label}</Label>
                   <Input
-                    value={form[key as keyof CalliperingData] as string}
+                    value={
+                      worksheet[
+                        key as keyof CalliperingWorksheetEditData
+                      ] as string
+                    }
                     disabled
                     className="flex-1"
                   />
@@ -266,24 +292,12 @@ export function CalliperingSheetEdit({
           ))}
         </div>
       </div>
-      {form.mice && form.mice.length > 0 && (
-        <div className="bg-white mt-4">
-          <DataTable columns={editableColumns} data={form.mice} />
+
+      {mousePairRows.length > 0 && (
+        <div className="bg-white h-96">
+          <DataTable columns={editableColumns} data={mousePairRows} />
         </div>
       )}
-      <div className="flex gap-2 justify-end mt-auto">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={
-            bulkUpdateMutation.isPending || editedMeasurementIds.size === 0
-          }
-        >
-          {bulkUpdateMutation.isPending ? "Saving..." : "Save Changes"}
-        </Button>
-      </div>
-    </form>
+    </>
   );
 }

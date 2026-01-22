@@ -4,6 +4,7 @@ import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import {
   useApproveExperimentData,
+  useExperimentDataByIdForWeightSheet,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
@@ -30,7 +31,6 @@ export function BioDWeightSheetViewModal({
   onClose,
   experimentName,
   experimentDataId,
-  data,
   experimentStatus,
   hideActions = false,
 }: Readonly<BioDWeightSheetViewModalProps>) {
@@ -41,6 +41,11 @@ export function BioDWeightSheetViewModal({
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
+  const {
+    data: apiData,
+    isLoading,
+    error,
+  } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
   const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
   const canApproveReject = hasPermission(
     PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
@@ -119,6 +124,7 @@ export function BioDWeightSheetViewModal({
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}
                 isRejectLoading={rejectMutation.isPending}
+                isDataFetching={isLoading}
               />
             )}
           </div>
@@ -126,7 +132,12 @@ export function BioDWeightSheetViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <BioDWeightSheetView data={data} experimentDataId={experimentDataId} />
+        <BioDWeightSheetView
+          experimentDataId={experimentDataId}
+          apiData={apiData}
+          isLoading={isLoading}
+          error={error}
+        />
       </Dialog>
 
       {editModal.isOpen && (
