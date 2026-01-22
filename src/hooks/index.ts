@@ -9,6 +9,7 @@ export { default as useBulkUpdateBodyWeights } from "./useBulkUpdateBodyWeights"
 export { default as useBulkUpdateCalliperMeasurements } from "./useBulkUpdateCalliperMeasurements";
 export * from "./useCalliperingSheetData";
 export * from "./useCalliperingSheetEdit";
+export * from "./useCalliperingSheetSave";
 export * from "./useConfirmExperimentMouseGroups";
 export * from "./useCreateBiodExperiment";
 export * from "./useCreateExperiment";
@@ -34,6 +35,7 @@ export * from "./useProjects";
 export * from "./useProjectsList";
 export { default as useRejectExperimentData } from "./useRejectExperimentData";
 export * from "./useStudyTypes";
+export * from "./useTerminateMice";
 export type { Theme } from "./useTheme";
 export * from "./useTheme";
 export { useTheme } from "./useTheme";

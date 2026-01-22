@@ -2,6 +2,8 @@
  * Types for Callipering Sheet Multi-Worksheet View
  */
 
+import type { ApiResponse } from "@/lib/api";
+
 import type { CellLine, MouseStrain } from "./common";
 
 /**
@@ -72,6 +74,8 @@ export interface CalliperingMouseRow {
   volume_mm3: number;
   notes: string | null;
   measurement_id: number;
+  is_flagged: boolean;
+  mouseId: number;
 }
 
 /**
@@ -115,3 +119,28 @@ export interface CalliperingWorksheetEditData {
     volume_mm3: number;
   }>;
 }
+
+/**
+ * Mouse termination payload
+ */
+export interface TerminateMicePayload {
+  experiment_id: number;
+  mouse_ids: number[];
+  termination_reason: string;
+}
+
+/**
+ * Mouse termination response
+ */
+export type TerminateMiceResponse = ApiResponse<{
+  message: string;
+  terminated_count: number;
+  terminated_mice: Array<{
+    mouse_id: number;
+    mouse_code: string | null;
+    is_terminated: boolean;
+    termination_date: string;
+    termination_type: string;
+    termination_reason: string;
+  }>;
+}>;

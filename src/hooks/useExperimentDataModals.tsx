@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -38,6 +39,8 @@ export function useExperimentDataModals(
   const { hideActions = false } = options;
   const { hasAnyPermission } = usePermissions();
 
+  const navigate = useNavigate();
+
   const canEditOrApprove =
     !hideActions &&
     hasAnyPermission([
@@ -77,6 +80,12 @@ export function useExperimentDataModals(
       const isAGCSheet = dataTypeLower.includes("agc");
 
       if (isCalliperingSheet) {
+        navigate({
+          to: "/data-validate",
+          search: {
+            experimentId: experiment.experiment?.id,
+          },
+        });
         calliperingViewModal.openModal();
         return;
       }
@@ -106,7 +115,6 @@ export function useExperimentDataModals(
 
   const renderModals = () => {
     if (!selectedExperiment) return null;
-
     // Get experiment name from different possible structures
     const experimentName =
       selectedExperiment.experimentName ||

@@ -45,11 +45,13 @@ export function useCalliperingSheetData(apiData?: CalliperingSheetApiResponse) {
           measurementDate: worksheet.measurement_date,
           mice: measurements.map((measurement) => ({
             id: measurement.mouse.mouse_delivery_id,
+            mouseId: measurement.mouse.id,
             measurement_id: measurement.id,
             length_mm: measurement.length_mm,
             width_mm: measurement.width_mm,
             volume_mm3: measurement.volume_mm3,
             notes: measurement.notes || null,
+            is_flagged: measurement.is_flagged,
           })),
         };
       }

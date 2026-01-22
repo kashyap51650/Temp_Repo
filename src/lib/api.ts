@@ -182,6 +182,9 @@ export const API_CONFIG = {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
     },
+    MICE_TERMINATION: {
+      TERMINATE_MICE: `/api/${import.meta.env.VITE_API_VERSION}/mice-termination`,
+    },
     CALIPER_MEASUREMENTS: {
       HISTORY_BY_MOUSE: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-mouse`,
