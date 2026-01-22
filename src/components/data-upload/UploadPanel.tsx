@@ -2,6 +2,7 @@ import { Download } from "lucide-react";
 import { useState } from "react";
 
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
+import { useNecropsyExperimentDataImport } from "@/hooks/useNecropsyExperimentDataImport";
 
 import { useDownloadSheet, useExperimentDataImport } from "../../hooks";
 import {
@@ -10,11 +11,18 @@ import {
   type Project,
   type StudyType,
 } from "../../lib/api";
-import { DATA_TYPE, SPECIALIZATION, STUDY_TYPE } from "../../lib/constants";
+import {
+  DATA_TYPE,
+  FILE_SIZE_LIMITS,
+  FILE_TYPES,
+  SPECIALIZATION,
+  STUDY_TYPE,
+} from "../../lib/constants";
 import { Button } from "../atoms";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
 import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
+import { GenericFileUploadArea } from "./GenericFileUploadArea";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
 import { ProjectSection } from "./ProjectSection";
 import { SpecializationSection } from "./SpecializationSection";
@@ -144,6 +152,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation === "Preclinical" &&
     formData.dataType === "Organ Weight Sheet";
 
+  const isNecropsyPdfUpload =
+    formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+    formData.dataType === DATA_TYPE.NECROPSY_SHEET;
+
   const [isOpenDownloadOrganSheetModal, setIsOpenDownloadOrganSheetModal] =
     useState(false);
   const [isOpenGroupSelectionModalForAGC, setIsOpenGroupSelectionModalForAGC] =
@@ -160,12 +172,23 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const { handleUploadAGCSheet, isAGCSheetUploading } =
     useAGCExperimentDataImport({ onSuccess: handleAgcFileUploadSuccess });
 
+  const handleUploadFileReset = () => {
+    setFormData((prev: FormData) => ({
+      ...prev,
+      uploadedFile: null,
+    }));
+  };
+
+  const { handleUploadNecropsyPdf, isNecropsyPdfUploading } =
+    useNecropsyExperimentDataImport({
+      onSuccess: () => {
+        handleUploadFileReset();
+      },
+    });
+
   const { uploadFile, isUploading } = useExperimentDataImport({
     onSuccess: () => {
-      setFormData((prev: FormData) => ({
-        ...prev,
-        uploadedFile: null,
-      }));
+      handleUploadFileReset();
     },
   });
 
@@ -243,6 +266,27 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
   };
 
+  const handleNecropsyPdfUpload = async () => {
+    if (!formData.uploadedFile) {
+      console.error("No file selected for upload");
+      return;
+    }
+
+    const experimentId = formData.experiment?.id;
+
+    if (!experimentId) {
+      console.error("No experiment selected");
+      return;
+    }
+
+    if (isNecropsyPdfUpload) {
+      handleUploadNecropsyPdf({
+        experiment_id: experimentId,
+        file: formData.uploadedFile,
+      });
+    }
+  };
+
   const renderDownloadButtonText = () => {
     if (isNecropsyData) {
       return "Download Organ Sheet";
@@ -311,7 +355,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         clearDataTypes={clearDataTypes}
       />
 
-      {formData.dataType !== DATA_TYPE.AGC_SHEET && (
+      {formData.dataType !== DATA_TYPE.AGC_SHEET && !isNecropsyPdfUpload && (
         <>
           <FileUploadArea
             formData={formData}
@@ -341,6 +385,36 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
               disabled={!canUploadData || isUploading}
             >
               {isUploading ? "Uploading..." : "Upload Data"}
+            </Button>
+          </div>
+        </>
+      )}
+
+      {isNecropsyPdfUpload && (
+        <>
+          <GenericFileUploadArea
+            formData={formData}
+            setFormData={setFormData}
+            isProjectSelected={isProjectSelected}
+            isHotlabSelected={isHotlabSelected}
+            isPreclinicSelected={isPreclinicSelected}
+            isSpecialisationSelected={isSpecialisationSelected}
+            isDataTypeSelected={isDataTypeSelected}
+            fileType={FILE_TYPES.PDF}
+            maxFileSize={FILE_SIZE_LIMITS.LARGE_FILE}
+          />
+          <div className="flex items-center gap-4 pt-4">
+            <Button
+              size="lg"
+              onClick={handleNecropsyPdfUpload}
+              disabled={
+                !canUploadData ||
+                !isExperimentSelected ||
+                isNecropsyPdfUploading
+              }
+              className="ml-auto"
+            >
+              {isNecropsyPdfUploading ? "Uploading..." : "Upload Data"}
             </Button>
           </div>
         </>

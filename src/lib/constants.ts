@@ -10,6 +10,7 @@ export const STUDY_TYPE = {
   BIO_DISTRIBUTION: "Bio Distribution",
   BIODISTRIBUTION: "Biodistribution",
   MODEL_STUDY: "Model Study",
+  DOSE_RANGE_FINDING: "Dose Range Finding",
 } as const;
 
 export const STUDY_TYPE_CODE = {
@@ -28,6 +29,7 @@ export const DATA_TYPE = {
   CALLIPERING_SHEET: "Callipering Sheet",
   ORGAN_WEIGHT_SHEET: "Organ Weight Sheet",
   AGC_SHEET: "AGC Sheet",
+  NECROPSY_SHEET: "Necropsy",
 } as const;
 
 // Type definitions for the constants
@@ -68,6 +70,13 @@ export const FILE_SIZE_LIMITS = {
   EXCEL_FILE: 10 * 1024 * 1024, // 10MB in bytes for Excel uploads
 } as const;
 
+export interface FileTypeConfig {
+  EXTENSIONS: string[];
+  MIME_TYPES: string[];
+  ACCEPT: string;
+  DISPLAY_NAME: string;
+}
+
 // File type constants
 export const FILE_TYPES = {
   EXCEL: {
@@ -77,8 +86,15 @@ export const FILE_TYPES = {
     ],
     ACCEPT:
       ".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    DISPLAY_NAME: "Excel",
   },
-} as const;
+  PDF: {
+    EXTENSIONS: [".pdf"],
+    MIME_TYPES: ["application/pdf"],
+    ACCEPT: ".pdf,application/pdf",
+    DISPLAY_NAME: "PDF",
+  },
+} as const satisfies Record<string, FileTypeConfig>;
 
 // Legacy constant for backward compatibility
 export const MAX_FILE_SIZE = FILE_SIZE_LIMITS.SMALL_FILE;

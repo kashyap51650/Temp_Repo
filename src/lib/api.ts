@@ -133,6 +133,7 @@ export const API_CONFIG = {
       UPDATE_TREATMENT_DATE: (experimentDataId: string) =>
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
       IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
+      IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-necropsy-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
@@ -1493,6 +1494,11 @@ export interface ImportAGCDataPayload {
   file: File;
 }
 
+export interface ImportNecropsyDataPayload {
+  experiment_id: number;
+  file: File;
+}
+
 export interface ImportExperimentDataResponse {
   success: boolean;
   message: string;
@@ -1576,6 +1582,40 @@ export const experimentDataApi = {
       );
     } catch (error) {
       console.error("Experiment agc data import error:", error);
+      throw error;
+    }
+  },
+
+  importNecropsyData: async (payload: ImportNecropsyDataPayload) => {
+    if (!payload.file) {
+      throw new Error("File is required");
+    }
+
+    const fileName = payload.file.name.toLowerCase();
+
+    if (!fileName.endsWith(".pdf")) {
+      throw new Error("Only .pdf files are allowed");
+    }
+
+    if (payload.file.size > FILE_SIZE_LIMITS.LARGE_FILE) {
+      throw new Error("File size must be less than 10MB");
+    }
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_NECROPSY_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment necropsy data import error:", error);
       throw error;
     }
   },
