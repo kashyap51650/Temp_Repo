@@ -26,19 +26,29 @@ export function DatePicker({
   className,
 }: Readonly<DatePickerProps>) {
   const [open, setOpen] = React.useState(false);
+
+  const parseDateString = (dateStr: string): Date | undefined => {
+    if (!dateStr) return undefined;
+    const [year, month, day] = dateStr.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const [selected, setSelected] = React.useState<Date | undefined>(
-    value ? new Date(value) : undefined
+    parseDateString(value || "")
   );
 
   React.useEffect(() => {
-    if (value) setSelected(new Date(value));
+    setSelected(parseDateString(value || ""));
   }, [value]);
 
   const handleSelect = (date?: Date) => {
     setSelected(date);
     setOpen(false);
     if (date && onChange) {
-      onChange(date.toISOString().slice(0, 10));
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      onChange(`${year}-${month}-${day}`);
     }
   };
 

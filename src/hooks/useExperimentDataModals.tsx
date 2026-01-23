@@ -165,6 +165,7 @@ export function useExperimentDataModals(
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
             hideActions={hideActions || !canEditOrApprove}
+            experimentStudyType={experimentStudyType}
           />
         )}
         {organViewModal.isOpen && (

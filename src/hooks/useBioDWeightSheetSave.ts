@@ -37,13 +37,13 @@ const FIELD_MAPPINGS: Array<{
 }> = [
   { current: "sex", api: "sex" },
   {
-    current: "strain",
+    current: "strainId",
     api: "mouse_strain_id",
   },
   { current: "dob", api: "date_of_birth" },
   { current: "cellInjectionDate", api: "cell_injection_date" },
   {
-    current: "cellLine",
+    current: "cellLineId",
     api: "cell_line_id",
   },
   { current: "treatmentDate", api: "treatment_date" },
@@ -212,13 +212,11 @@ export function useBioDWeightSheetSave() {
       if (!hasMetadataChanges && !hasMeasurementChanges) return;
 
       payload.worksheets.push({
-        ...(hasMetadataChanges && {
-          worksheet: {
-            id: worksheet.worksheetId!,
-            ...metadataChanges,
-          },
-        }),
-        ...(hasMeasurementChanges && { measurements }),
+        worksheet: {
+          id: worksheet.worksheetId!,
+          ...(hasMetadataChanges && { ...metadataChanges }),
+        },
+        measurements,
       });
     });
 

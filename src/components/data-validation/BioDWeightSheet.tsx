@@ -12,6 +12,7 @@ import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import { getBioDWeightMousePairColumns } from "@/components/organisms/DataTable/tableColumns";
 import type { BioDWeightData } from "@/components/organisms/DataTable/tableData";
 import { useBioDWeightSheetEdit } from "@/hooks/useBioDWeightSheetEdit";
+import { STUDY_TYPE } from "@/lib/constants";
 import type { WorksheetEditData } from "@/types/weight-sheet";
 
 import { Label } from "../atoms";
@@ -20,11 +21,13 @@ import { CellLineField, StrainField } from "../data-upload/FormFields";
 interface BioDWeightSheetProps {
   onSave?: (data: WorksheetEditData[]) => void;
   experimentDataId?: string;
+  experimentStudyType: string;
 }
 
 export function BioDWeightSheet({
   experimentDataId,
   onSave,
+  experimentStudyType,
 }: Readonly<BioDWeightSheetProps>) {
   const [activeTab, setActiveTab] = useState<string>("0");
 
@@ -89,6 +92,7 @@ export function BioDWeightSheet({
           experimentDataId={experimentDataId}
           onHeaderChange={handleHeaderChange}
           onMouseDataChange={handleMouseDataChange}
+          experimentStudyType={experimentStudyType}
         />
       </div>
     );
@@ -118,6 +122,7 @@ export function BioDWeightSheet({
               experimentDataId={experimentDataId}
               onHeaderChange={handleHeaderChange}
               onMouseDataChange={handleMouseDataChange}
+              experimentStudyType={experimentStudyType}
             />
           </TabsContent>
         ))}
@@ -155,6 +160,7 @@ interface WorksheetEditFormProps {
       measurementId?: number;
     }>
   ) => void;
+  experimentStudyType: string;
 }
 
 function WorksheetEditForm({
@@ -163,22 +169,31 @@ function WorksheetEditForm({
   experimentDataId,
   onHeaderChange,
   onMouseDataChange,
+  experimentStudyType,
 }: WorksheetEditFormProps) {
   // ✅ Memoize header fields to prevent recreation on every render
+  const isDoseRangeFinding =
+    experimentStudyType === STUDY_TYPE.DOSE_RANGE_FINDING;
   const headerFields = useMemo(
     () => [
       [
         { key: "sex", label: "Sex:", type: "input" },
         { key: "strain", label: "Strain:", type: "select" },
         { key: "dob", label: "DOB:", type: "date" },
-        {
-          key: "cellInjectionDate",
-          label: "Cell Injection Date:",
-          type: "date",
-        },
+        ...(!isDoseRangeFinding
+          ? [
+              {
+                key: "cellInjectionDate",
+                label: "Cell Injection Date:",
+                type: "date",
+              },
+            ]
+          : []),
       ],
       [
-        { key: "cellLine", label: "Cell Line:", type: "select" },
+        ...(!isDoseRangeFinding
+          ? [{ key: "cellLine", label: "Cell Line:", type: "select" }]
+          : []),
         { key: "treatmentDate", label: "Treatment Date:", type: "date" },
         {
           key: "measurementDate",
