@@ -48,6 +48,10 @@ export function CalendarDatePicker({
   const [month, setMonth] = React.useState<Date | undefined>(initialValue);
   const [value, setValue] = React.useState(formatDate(initialValue));
 
+  const currentYear = new Date().getFullYear();
+  const fromYear = disablePastDates ? currentYear : currentYear - 100;
+  const toYear = currentYear + 15;
+
   React.useEffect(() => {
     setDate(initialValue);
     setMonth(initialValue);
@@ -102,6 +106,8 @@ export function CalendarDatePicker({
               captionLayout="dropdown"
               month={month}
               onMonthChange={setMonth}
+              startMonth={new Date(fromYear, 0)}
+              endMonth={new Date(toYear, 0)}
               onSelect={(d: Date | undefined) => {
                 setDate(d);
                 setValue(formatDate(d));
@@ -109,7 +115,13 @@ export function CalendarDatePicker({
                 onChange?.(d);
               }}
               disabled={
-                disablePastDates ? (date: Date) => date < new Date() : undefined
+                disablePastDates
+                  ? (date: Date) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      return date < today;
+                    }
+                  : undefined
               }
             />
           </PopoverContent>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import * as React from "react";
+import { toast } from "sonner";
 
 import {
   Button,
@@ -96,10 +97,16 @@ export function PermissionsTab({
           queryKey: ["my-permissions"],
         });
       }
+
+      const roleName =
+        rolesDropdownData.find((r) => r.id === selectedRoleId)?.name ||
+        "this role";
+
+      toast.success(`Permissions updated successfully for ${roleName}`);
     },
     onError: (error) => {
       console.error("Failed to update permissions:", error);
-      // You can add toast notification here if available
+      toast.error(error.message);
     },
     onSettled: () => {
       setIsSaving(false);

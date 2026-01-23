@@ -229,6 +229,7 @@ export const UserModal: React.FC<UserModalProps> = ({
                       value={field.value ?? undefined}
                       onChange={field.onChange}
                       placeholder="Select expiry date (future dates only)"
+                      disablePastDates
                     />
                   </FormControl>
                   <FormMessage />
