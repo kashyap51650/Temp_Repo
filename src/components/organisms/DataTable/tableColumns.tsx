@@ -13,6 +13,7 @@ import type { Dispatch, FC, SetStateAction } from "react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -796,6 +797,7 @@ export function getUploadedDatasetColumns(
 export function getValidationColumns(
   onViewData?: (row: ValidationRow) => void,
   onRandomize?: (row: ValidationRow) => void,
+  onPerformBioD?: (row: ValidationRow) => void,
   data?: ValidationRow[]
 ): ColumnDef<ValidationRow>[] {
   const hasCalliperingsheet =
@@ -906,14 +908,21 @@ export function getValidationColumns(
       cell: ({ row }) => {
         const rowData = row.original;
 
-        const isCalliperingSsheet = rowData.dataType
-          .toLowerCase()
-          .includes("callipering");
+        const isCalliperingSheetBiod =
+          rowData.dataType.toLowerCase().includes("callipering") &&
+          rowData.studyType === STUDY_TYPE.BIO_DISTRIBUTION;
+
+        const isCalliperingSheetModelStudy =
+          rowData.dataType.toLowerCase().includes("callipering") &&
+          rowData.studyType === STUDY_TYPE.MODEL_STUDY;
+
         const isRandomizationDisabled =
           (rowData?.treatmentDate &&
             new Date(rowData.treatmentDate) >= new Date()) ||
           rowData.experiment.randomization_status === "completed" ||
           rowData.status !== "approved";
+
+        const isPerformBioDDisabled = rowData.status !== "approved";
 
         return (
           <div className="flex gap-2">
@@ -925,27 +934,38 @@ export function getValidationColumns(
               <Eye className="size-4" />
               View Data
             </Button>
-            <ProtectedComponent
-              permissions={PERMISSIONS.MOUSE.RANDOMIZATION}
-              redirectTo={false}
-            >
-              {isCalliperingSsheet && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isRandomizationDisabled}
-                  onClick={() => onRandomize?.(rowData)}
-                  title={
-                    isRandomizationDisabled
-                      ? "Randomization not allowed for this condition"
-                      : ""
-                  }
-                >
-                  <Shuffle className="size-4" />
-                  Randomize
-                </Button>
-              )}
-            </ProtectedComponent>
+            {isCalliperingSheetBiod && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRandomizationDisabled}
+                onClick={() => onRandomize?.(rowData)}
+                title={
+                  isRandomizationDisabled
+                    ? "Randomization not allowed for this condition"
+                    : ""
+                }
+              >
+                <Shuffle className="size-4" />
+                Randomize
+              </Button>
+            )}
+            {isCalliperingSheetModelStudy && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isPerformBioDDisabled}
+                onClick={() => onPerformBioD?.(rowData)}
+                title={
+                  isPerformBioDDisabled
+                    ? "Perform BioD is only available for approved data"
+                    : ""
+                }
+              >
+                <Shuffle className="size-4" />
+                Perform BioD
+              </Button>
+            )}
           </div>
         );
       },

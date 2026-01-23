@@ -11,7 +11,7 @@ import {
   strainOptions,
   studyTypeOptions,
 } from "@/data/experiments";
-import { useDataTypes, useProjects, useStudyTypes } from "@/hooks";
+import { useDataTypes, useModal, useProjects, useStudyTypes } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { ExperimentDropdownItem, Project } from "@/lib/api";
 import { STUDY_TYPE } from "@/lib/constants";
@@ -46,6 +46,7 @@ export default function DataUploadCommon() {
 
   const canUploadData = hasPermission(PERMISSIONS.DATA_UPLOAD.UPLOAD);
   const canViewUploadedData = hasPermission(PERMISSIONS.DATA_UPLOAD.VIEW);
+  const createExperimentModal = useModal();
 
   const {
     projects: apiProjects,
@@ -88,8 +89,6 @@ export default function DataUploadCommon() {
   const [isCreatingNewProject] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
-  const [showCreateExperimentModal, setShowCreateExperimentModal] =
-    useState(false);
   const [showProjectChangeConfirm, setShowProjectChangeConfirm] =
     useState(false);
   const [pendingProjectChange, setPendingProjectChange] = useState<{
@@ -307,7 +306,7 @@ export default function DataUploadCommon() {
   const actionProps = {
     onProjectChange: handleProjectChange,
     onShowCreateProjectModal: () => setShowCreateProjectModal(true),
-    onShowCreateExperimentModal: () => setShowCreateExperimentModal(true),
+    onShowCreateExperimentModal: () => createExperimentModal.openModal(),
     loadStudyTypes,
     clearStudyTypes,
     clearDataTypes,
@@ -360,30 +359,27 @@ export default function DataUploadCommon() {
         onCreateProject={handleCreateProject}
       />
 
-      {showCreateExperimentModal && (
-        <CreateExperimentModal
-          isOpen={showCreateExperimentModal}
-          onClose={() => setShowCreateExperimentModal(false)}
-          onCreateExperiment={handleCreateExperiment}
-          isotopeOptions={isotopeOptions}
-          cellLineOptions={cellLineOptions}
-          studyType={
-            apiStudyTypes.find(
-              (studyType) => studyType.study_type_name === formData.studyType
-            )?.study_type_code || ""
-          }
-          projectId={formData.project?.id}
-          specialization={formData.specialisation}
-          studyTypeId={
-            apiStudyTypes.find(
-              (st) => st.study_type_name === formData.studyType
-            )?.id
-          }
-          onMouseGroupingComplete={() => {
-            setActiveTab("upload-data");
-          }}
-        />
-      )}
+      <CreateExperimentModal
+        isOpen={createExperimentModal.isOpen}
+        onClose={() => createExperimentModal.closeModal()}
+        onCreateExperiment={handleCreateExperiment}
+        isotopeOptions={isotopeOptions}
+        cellLineOptions={cellLineOptions}
+        studyType={
+          apiStudyTypes.find(
+            (studyType) => studyType.study_type_name === formData.studyType
+          )?.study_type_code || ""
+        }
+        projectId={formData.project?.id}
+        specialization={formData.specialisation}
+        studyTypeId={
+          apiStudyTypes.find((st) => st.study_type_name === formData.studyType)
+            ?.id
+        }
+        onMouseGroupingComplete={() => {
+          setActiveTab("upload-data");
+        }}
+      />
 
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}

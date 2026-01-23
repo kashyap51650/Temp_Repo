@@ -16,6 +16,8 @@ export const useMouseGroupsByExperiment = (experimentId?: number) => {
         return {
           id: group.id,
           name: group.group_name,
+          cellLineId: group.cell_line_id,
+          mouseStrainId: group.mouse_strain_id,
         };
       });
     },

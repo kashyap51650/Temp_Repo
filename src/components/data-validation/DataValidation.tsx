@@ -8,27 +8,65 @@ import {
   RANDOMIZATION_PREVIEW_TYPES,
   SELECT_ALL,
   statusOptions,
+  STUDY_TYPE_CODE,
 } from "@/lib/constants";
 
-import { useExperimentDataModals, useValidationData } from "../../hooks";
+import {
+  useExperimentDataModals,
+  useModal,
+  useMouseGroupsByExperiment,
+  usePerformBioD,
+  useValidationData,
+} from "../../hooks";
 import { transformExperimentDataToValidationRows } from "../../lib/utils";
 import { Card } from "../atoms";
+import { CreateExperimentModal } from "../data-upload/CreateExperimentModal";
 import { AsyncSelect } from "../molecules";
 import { BaseSelect } from "../molecules/BaseSelect";
 import { DataTable } from "../organisms/DataTable/DataTable";
 import { getValidationColumns } from "../organisms/DataTable/tableColumns";
 import type { ValidationRow } from "../organisms/DataTable/tableData";
 import { DataTableSkeleton } from "../skeletons/DataTableSkeleton";
+import { PerformBioDModal } from "./PerformBioDModal";
+import { SelectBioDExperimentModal } from "./SelectBioDExperimentModal";
 
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
   const [studyTypeFilter, setStudyTypeFilter] = useState<string>(SELECT_ALL);
   const [dataTypeFilter, setDataTypeFilter] = useState<string>(SELECT_ALL);
+  const [selectedExperiment, setSelectedExperiment] = useState<{
+    id: number;
+    name: string;
+    projectId: number;
+  } | null>(null);
+  const [selectedMouseGroups, setSelectedMouseGroups] = useState<number[]>([]);
+  const [preselectedCellLineIds, setPreselectedCellLineIds] = useState<
+    number[]
+  >([]);
+  const [preselectedMouseStrainIds, setPreselectedMouseStrainIds] = useState<
+    number[]
+  >([]); // 👈 Add this state
+  const [isBiodCellLinesDisabled, setIsBiodCellLinesDisabled] =
+    useState<boolean>(false);
 
   const { handleViewData, renderModals } = useExperimentDataModals();
+  const performBioDModal = useModal();
+  const selectExperimentModal = useModal();
+  const createExperimentModal = useModal();
 
   const { data, isLoading, error, setFilters, filters } = useValidationData();
+
+  const { mouseGroups } = useMouseGroupsByExperiment(selectedExperiment?.id);
+
+  const { performBioD, isPerforming } = usePerformBioD({
+    onSuccess: () => {
+      selectExperimentModal.closeModal();
+      setSelectedExperiment(null);
+      setSelectedMouseGroups([]);
+      setPreselectedCellLineIds([]);
+    },
+  });
 
   const handlePageChange = (page: number) => {
     setFilters({
@@ -91,10 +129,92 @@ export default function DataValidation() {
     [data?.items, navigate]
   );
 
+  const handlePerformBioD = useCallback(
+    (row: ValidationRow) => {
+      const experimentData = data?.items.find(
+        (item) => item.id === Number(row.id)
+      );
+      if (!experimentData) {
+        console.error("Experiment data not found for row:", row);
+        return;
+      }
+      setSelectedExperiment({
+        id: experimentData.experiment.id,
+        name: experimentData.experiment.experiment_name,
+        projectId: experimentData.project.id,
+      });
+      performBioDModal.openModal();
+    },
+    [data?.items, performBioDModal]
+  );
+
+  const handleSaveMouseGroups = (selectedGroupIds: number[]) => {
+    setSelectedMouseGroups(selectedGroupIds);
+
+    if (mouseGroups) {
+      const cellLineIds = mouseGroups
+        .filter((group) => selectedGroupIds.includes(group.id))
+        .map((group) => group.cellLineId)
+        .filter((id): id is number => id !== null && id !== undefined)
+        .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
+
+      const mouseStrainIds = mouseGroups
+        .filter((group) => selectedGroupIds.includes(group.id))
+        .map((group) => group.mouseStrainId)
+        .filter((id): id is number => id !== null && id !== undefined)
+        .filter((id, index, self) => self.indexOf(id) === index); // unique IDs
+
+      setPreselectedCellLineIds(cellLineIds);
+      setPreselectedMouseStrainIds(mouseStrainIds); // 👈 Store mouse strain IDs
+      setIsBiodCellLinesDisabled(true);
+    }
+
+    selectExperimentModal.openModal();
+  };
+
+  const handleProceedWithExperiment = async (targetExperimentId: number) => {
+    if (!selectedExperiment || selectedMouseGroups.length === 0) {
+      return;
+    }
+
+    await performBioD({
+      group_ids: selectedMouseGroups,
+      source_experiment_id: selectedExperiment.id,
+      target_experiment_id: targetExperimentId,
+    });
+  };
+
+  const handleCreateNewExperiment = () => {
+    createExperimentModal.openModal();
+  };
+
+  const handleCloseSelectExperiment = () => {
+    selectExperimentModal.closeModal();
+    performBioDModal.openModal();
+  };
+
+  const handleCloseCreateExperiment = () => {
+    createExperimentModal.closeModal();
+  };
+
+  const handleExperimentCreated = async (createdExperiment: {
+    id: number;
+    name: string;
+  }) => {
+    createExperimentModal.closeModal();
+
+    if (selectedExperiment && selectedMouseGroups.length > 0) {
+      await performBioD({
+        group_ids: selectedMouseGroups,
+        source_experiment_id: selectedExperiment.id,
+        target_experiment_id: createdExperiment.id,
+      });
+    }
+  };
+
   const handleStudyTypeChange = (value: string | string[]) => {
     const stringValue = String(value);
     handleFilterChange("study_type", stringValue);
-    // Reset data type when study type changes
     if (stringValue !== studyTypeFilter) {
       setDataTypeFilter(SELECT_ALL);
       setFilters({
@@ -106,8 +226,14 @@ export default function DataValidation() {
   };
 
   const columns = useMemo(
-    () => getValidationColumns(handleViewData, handleRandomize, tableData),
-    [handleViewData, handleRandomize, tableData]
+    () =>
+      getValidationColumns(
+        handleViewData,
+        handleRandomize,
+        handlePerformBioD,
+        tableData
+      ),
+    [handleViewData, handleRandomize, handlePerformBioD, tableData]
   );
 
   if (error) {
@@ -251,6 +377,50 @@ export default function DataValidation() {
       </div>
 
       {renderModals()}
+
+      {/* First Modal: Select Mouse Groups */}
+      {selectedExperiment && (
+        <PerformBioDModal
+          isOpen={performBioDModal.isOpen}
+          onClose={performBioDModal.closeModal}
+          experimentId={selectedExperiment.id}
+          experimentName={selectedExperiment.name}
+          onSave={handleSaveMouseGroups}
+        />
+      )}
+
+      {/* Second Modal: Select Target Experiment */}
+      {selectedExperiment && (
+        <SelectBioDExperimentModal
+          isOpen={selectExperimentModal.isOpen}
+          onClose={handleCloseSelectExperiment}
+          sourceExperimentId={selectedExperiment.id}
+          sourceProjectId={selectedExperiment.projectId}
+          onProceed={handleProceedWithExperiment}
+          onCreateNew={handleCreateNewExperiment}
+          isProceedDisabled={isPerforming}
+          cellLineIds={preselectedCellLineIds}
+          mouseStrainIds={preselectedMouseStrainIds} // 👈 Pass mouse strain IDs
+        />
+      )}
+
+      {/* Third Modal: Create New Bio Distribution Experiment */}
+      {selectedExperiment && (
+        <CreateExperimentModal
+          isOpen={createExperimentModal.isOpen}
+          onClose={handleCloseCreateExperiment}
+          isotopeOptions={[]}
+          cellLineOptions={[]}
+          studyType={STUDY_TYPE_CODE.BIO_DISTRIBUTION}
+          projectId={selectedExperiment.projectId}
+          specialization="PRECLINICAL"
+          studyTypeId={1}
+          onExperimentCreated={handleExperimentCreated}
+          preselectedStudyType={STUDY_TYPE_CODE.BIO_DISTRIBUTION}
+          preselectedCellLineIds={preselectedCellLineIds}
+          isBiodCellLineDisabled={isBiodCellLinesDisabled}
+        />
+      )}
     </>
   );
 }

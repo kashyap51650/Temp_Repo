@@ -191,6 +191,11 @@ export const API_CONFIG = {
       HISTORY_BY_GROUP: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
     },
+    PERFORM_BIOD: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`,
+    CELL_LINE_VALIDATION: {
+      VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
+    },
   },
 } as const;
 
@@ -227,6 +232,9 @@ export interface ExperimentFilters {
   project_id: number;
   study_type_id: number;
   specialization: string;
+  cell_line_id?: number[];
+  mouse_strain_id?: number[];
+  status?: string;
 }
 // Common error handling utility functions
 export function extractValidationErrors(error: ApiError): string {
@@ -1388,6 +1396,19 @@ export const experimentApi = {
       specialization: filters.specialization,
     });
 
+    // Add optional filters only if they are provided
+    if (filters.cell_line_id && filters.cell_line_id.length > 0) {
+      params.append("cell_line_id", filters.cell_line_id.join(","));
+    }
+
+    if (filters.mouse_strain_id && filters.mouse_strain_id.length > 0) {
+      params.append("mouse_strain_id", filters.mouse_strain_id.join(","));
+    }
+
+    if (filters.status) {
+      params.append("status", filters.status);
+    }
+
     const endpoint = `${API_CONFIG.ENDPOINTS.EXPERIMENTS.DROPDOWN}?${params.toString()}`;
     return apiClient.get<ExperimentsDropdownResponse>(endpoint);
   },
@@ -1725,6 +1746,7 @@ export interface MouseGroup {
   group_name: string;
   group_type: string;
   cell_line_id: number | null;
+  mouse_strain_id: number | null; // 👈 Add this property
   cell_dose: number | null;
   strain: string | null;
   is_locked: boolean;
@@ -1928,6 +1950,29 @@ export const dosesApi = {
   },
 };
 
+export interface PerformBioDPayload {
+  group_ids: number[];
+  source_experiment_id: number;
+  target_experiment_id: number;
+}
+
+export interface PerformBioDResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export const performBioDApi = {
+  performBioD: async (
+    payload: PerformBioDPayload
+  ): Promise<PerformBioDResponse> => {
+    return apiClient.post<PerformBioDResponse>(
+      API_CONFIG.ENDPOINTS.PERFORM_BIOD,
+      payload
+    );
+  },
+};
+
 export interface CaliperHistoryMeasurement {
   width_mm: number;
   length_mm: number;
@@ -2013,6 +2058,35 @@ export const caliperMeasurementsApi = {
   ): Promise<CaliperHistoryByGroupResponse> => {
     return apiClient.get<CaliperHistoryByGroupResponse>(
       API_CONFIG.ENDPOINTS.CALIPER_MEASUREMENTS.HISTORY_BY_GROUP(experimentId)
+    );
+  },
+};
+
+export interface ValidateCellLineMouseStrainPayload {
+  mouse_strain_id: number;
+}
+
+export interface ValidateCellLineMouseStrainResponse {
+  success: boolean;
+  message: string;
+  data: {
+    is_valid: boolean;
+    cell_line_name: string;
+    mouse_strain_name: string;
+    message: string;
+  };
+}
+
+export const cellLineValidationApi = {
+  validateMouseStrain: async (
+    cellLineId: number,
+    payload: ValidateCellLineMouseStrainPayload
+  ): Promise<ValidateCellLineMouseStrainResponse> => {
+    return apiClient.post<ValidateCellLineMouseStrainResponse>(
+      API_CONFIG.ENDPOINTS.CELL_LINE_VALIDATION.VALIDATE_MOUSE_STRAIN(
+        cellLineId
+      ),
+      payload
     );
   },
 };

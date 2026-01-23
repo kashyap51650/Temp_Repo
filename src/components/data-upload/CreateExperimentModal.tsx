@@ -75,6 +75,10 @@ interface CreateExperimentModalProps {
   }) => void;
   keepOpenAfterCreate?: boolean;
   onMouseGroupingComplete?: () => void;
+  preselectedStudyType?: string;
+  onPerformBioDSave?: (experimentId: number) => void;
+  preselectedCellLineIds?: number[];
+  isBiodCellLineDisabled?: boolean;
 }
 
 export function CreateExperimentModal({
@@ -90,6 +94,8 @@ export function CreateExperimentModal({
   onExperimentCreated,
   keepOpenAfterCreate = false,
   onMouseGroupingComplete,
+  preselectedCellLineIds = [],
+  isBiodCellLineDisabled = false,
 }: Readonly<CreateExperimentModalProps>) {
   const {
     isotopes: apiIsotopes,
@@ -221,6 +227,29 @@ export function CreateExperimentModal({
     dynamicIsotopeOptions,
     formState.selectedIsotope,
     isIsotopeAutoSet,
+    updateFormState,
+  ]);
+
+  useEffect(() => {
+    if (
+      isOpen &&
+      preselectedCellLineIds.length > 0 &&
+      apiCellLines.length > 0 &&
+      formState.selectedCellLines.length === 0
+    ) {
+      const preselectedCellLines = apiCellLines
+        .filter((cellLine) => preselectedCellLineIds.includes(cellLine.id))
+        .map((cellLine) => cellLine.cell_line_name);
+
+      if (preselectedCellLines.length > 0) {
+        updateFormState({ selectedCellLines: preselectedCellLines });
+      }
+    }
+  }, [
+    isOpen,
+    preselectedCellLineIds,
+    apiCellLines,
+    formState.selectedCellLines.length,
     updateFormState,
   ]);
 
@@ -447,6 +476,7 @@ export function CreateExperimentModal({
                         : [values];
                       updateFormState({ selectedCellLines: cellLines });
                     }}
+                    disabled={isBiodCellLineDisabled}
                   />
                 </div>
                 {studyType === STUDY_TYPE_CODE.TOXICITY && (
