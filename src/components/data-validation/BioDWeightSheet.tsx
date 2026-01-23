@@ -202,7 +202,7 @@ function WorksheetEditForm({
         },
       ],
     ],
-    []
+    [isDoseRangeFinding]
   );
 
   // ✅ Memoize mouse pair rows calculation to prevent unnecessary recalculations

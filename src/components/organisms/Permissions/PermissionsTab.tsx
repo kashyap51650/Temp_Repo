@@ -106,7 +106,7 @@ export function PermissionsTab({
     },
     onError: (error) => {
       console.error("Failed to update permissions:", error);
-      toast.error(error.message);
+      toast.error(error.message || "Failed to update permissions");
     },
     onSettled: () => {
       setIsSaving(false);
