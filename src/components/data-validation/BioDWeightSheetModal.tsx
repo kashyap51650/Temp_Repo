@@ -3,6 +3,8 @@ import { toast } from "sonner";
 
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { useBioDWeightSheetSave } from "@/hooks";
+import type { StudyType } from "@/lib/constants";
+import { getSheetDataTypePrefix } from "@/lib/utils";
 import type { WorksheetEditData } from "@/types/weight-sheet";
 
 import { Button } from "../atoms";
@@ -14,6 +16,7 @@ interface BioDWeightSheetModalProps {
   onSave: (data: WorksheetEditData[]) => void;
   experimentName: string;
   experimentDataId?: string;
+  experimentStudyType: string;
 }
 
 export function BioDWeightSheetModal({
@@ -22,6 +25,7 @@ export function BioDWeightSheetModal({
   onSave,
   experimentName,
   experimentDataId,
+  experimentStudyType,
 }: Readonly<BioDWeightSheetModalProps>) {
   const [currentData, setCurrentData] = useState<WorksheetEditData[] | null>(
     null
@@ -66,7 +70,7 @@ export function BioDWeightSheetModal({
       onOpenChange={(open: boolean) => {
         if (!open) onClose();
       }}
-      title={`BioD Weight Sheet - ${experimentName}`}
+      title={`${getSheetDataTypePrefix(experimentStudyType as StudyType)} Weight Sheet - ${experimentName}`}
       description="Edit weight sheet data for the experiment"
       trigger={null}
       className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
@@ -74,6 +78,7 @@ export function BioDWeightSheetModal({
       <BioDWeightSheet
         onSave={handleDataChange}
         experimentDataId={experimentDataId}
+        experimentStudyType={experimentStudyType}
       />
       <div className="mt-auto flex justify-end gap-3">
         <Button variant="outline" size={"lg"} onClick={onClose}>

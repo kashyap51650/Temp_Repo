@@ -9,7 +9,9 @@ import {
   useRejectExperimentData,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { StudyType } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
+import { getSheetDataTypePrefix } from "@/lib/utils";
 
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
 import { BioDWeightSheetView } from "./BioDWeightSheetView";
@@ -24,6 +26,7 @@ interface BioDWeightSheetViewModalProps {
   data?: BioDWeightData;
   experimentStatus?: string;
   hideActions?: boolean;
+  experimentStudyType: string;
 }
 
 export function BioDWeightSheetViewModal({
@@ -33,6 +36,7 @@ export function BioDWeightSheetViewModal({
   experimentDataId,
   experimentStatus,
   hideActions = false,
+  experimentStudyType,
 }: Readonly<BioDWeightSheetViewModalProps>) {
   const { hasPermission } = usePermissions();
   const editModal = useModal();
@@ -109,7 +113,8 @@ export function BioDWeightSheetViewModal({
           <div className="flex items-center justify-between w-full pr-8">
             <div>
               <h2 className="text-xl font-semibold">
-                BioD Weight Sheet - {experimentName}
+                {getSheetDataTypePrefix(experimentStudyType as StudyType)}{" "}
+                Weight Sheet - {experimentName}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 View weight sheet data for the experiment
@@ -147,6 +152,7 @@ export function BioDWeightSheetViewModal({
           onSave={editModal.closeModal}
           experimentName={experimentName}
           experimentDataId={experimentDataId}
+          experimentStudyType={experimentStudyType}
         />
       )}
 

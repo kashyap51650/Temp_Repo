@@ -251,6 +251,7 @@ export function DataViewModal({
             onSave={handleSaveEdit}
             experimentName={experiment.experimentName}
             experimentDataId={experiment.id}
+            experimentStudyType={experiment?.studyType}
           />
         ) : (
           <BioDWeightSheetViewModal
@@ -261,6 +262,7 @@ export function DataViewModal({
             }}
             experimentName={experiment.experimentName}
             experimentDataId={experiment.id}
+            experimentStudyType={experiment?.studyType}
           />
         ))}
 

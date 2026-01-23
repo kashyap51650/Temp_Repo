@@ -5,6 +5,7 @@ import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
 import { type ExperimentDataItem } from "../lib/api";
+import type { StudyType } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -98,4 +99,25 @@ export const parseSearchParams = (value: unknown): number | undefined => {
   }
   const num = Number(value);
   return Number.isNaN(num) ? undefined : num;
+};
+
+export const getSheetDataTypePrefix = (studyType: StudyType) => {
+  switch (studyType) {
+    case "Bio Distribution":
+    case "Biodistribution": {
+      return "BioD";
+    }
+    case "Model Study": {
+      return "Model Study";
+    }
+    case "Dose Range Finding": {
+      return "DRF";
+    }
+    case "Efficacy": {
+      return "Efficacy";
+    }
+    default: {
+      return "";
+    }
+  }
 };
