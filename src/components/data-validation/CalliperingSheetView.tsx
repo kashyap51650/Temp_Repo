@@ -119,7 +119,7 @@ export function CalliperingSheetView({
     const worksheet = worksheets[0];
     return (
       <>
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
           <WorksheetContent
             worksheet={worksheet}
             shouldShowNotesColumn={shouldShowNotesColumn}

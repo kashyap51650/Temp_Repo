@@ -54,6 +54,26 @@ const ModelStudyExperimentForm = ({
     }
   }, [fields.length, handleAddPair]);
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name?.startsWith("cellLineStrainPairs.")) {
+        const match = name.match(/cellLineStrainPairs\.(\d+)\./);
+        if (match) {
+          const index = parseInt(match[1], 10);
+          const pair = value.cellLineStrainPairs?.[index];
+          if (
+            pair?.cell_line_id !== undefined &&
+            pair?.mouse_strain_id !== undefined
+          ) {
+            form.trigger("cellLineStrainPairs");
+          }
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   return (
     <>
       <Form {...form}>

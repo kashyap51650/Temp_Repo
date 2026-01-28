@@ -20,9 +20,32 @@ export const ModelStudyFormDataSchema = z.object({
         (pair) => pair.cell_line_id && pair.mouse_strain_id
       );
 
-      pairs.forEach((pair, index) => {
-        const hasCellLine = !!pair.cell_line_id;
-        const hasMouseStrain = !!pair.mouse_strain_id;
+      // Check for duplicate pairs
+      const pairKeys = new Set<string>();
+
+      for (const [index, pair] of pairs.entries()) {
+        const hasCellLine = pair.cell_line_id !== undefined;
+        const hasMouseStrain = pair.mouse_strain_id !== undefined;
+
+        if (hasCellLine && hasMouseStrain) {
+          const pairKey = `${pair.cell_line_id}-${pair.mouse_strain_id}`;
+          if (pairKeys.has(pairKey)) {
+            ctx.addIssue({
+              code: "custom",
+              message:
+                "This cell line and mouse strain combination already exists",
+              path: [index, "cell_line_id"],
+            });
+            ctx.addIssue({
+              code: "custom",
+              message:
+                "This cell line and mouse strain combination already exists",
+              path: [index, "mouse_strain_id"],
+            });
+            continue;
+          }
+          pairKeys.add(pairKey);
+        }
 
         if (!hasCellLine && !hasMouseStrain) {
           if (!hasValidPair) {
@@ -37,7 +60,7 @@ export const ModelStudyFormDataSchema = z.object({
               path: [index, "mouse_strain_id"],
             });
           }
-          return;
+          continue;
         }
 
         if (hasCellLine && !hasMouseStrain) {
@@ -53,7 +76,7 @@ export const ModelStudyFormDataSchema = z.object({
             path: [index, "cell_line_id"],
           });
         }
-      });
+      }
     }),
   cellInjectionCounts: z
     .array(z.number().positive("Cell injection count must be valid"))

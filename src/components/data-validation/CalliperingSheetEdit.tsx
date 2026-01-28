@@ -271,7 +271,7 @@ function WorksheetEditForm({
   return (
     <>
       <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="grid grid-cols-2 gap-10">
+        <div className="grid grid-cols-2 gap-3">
           {headerFields.map((group, groupIndex) => (
             <div className="space-y-3" key={groupIndex}>
               {group.map(({ key, label }) => (

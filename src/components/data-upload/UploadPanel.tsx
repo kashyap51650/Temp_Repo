@@ -147,10 +147,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const isDataTypeSelected = !!formData.dataType;
 
   const isNecropsyData =
-    (formData.studyType === "Biodistribution" ||
-      formData.studyType === "Model Study") &&
-    formData.specialisation === "Preclinical" &&
-    formData.dataType === "Organ Weight Sheet";
+    (formData.studyType === STUDY_TYPE.BIO_DISTRIBUTION ||
+      formData.studyType === STUDY_TYPE.MODEL_STUDY) &&
+    formData.specialisation?.toLowerCase() ===
+      SPECIALIZATION.PRECLINICAL.toLowerCase() &&
+    formData.dataType === DATA_TYPE.ORGAN_WEIGHT_SHEET;
 
   const isNecropsyPdfUpload =
     formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
