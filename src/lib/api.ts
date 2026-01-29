@@ -36,6 +36,12 @@ import {
   type StudyTypeCode,
 } from "./constants";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuthToken?: boolean;
+  }
+}
+
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
   VERSION: import.meta.env.VITE_API_VERSION,
@@ -299,7 +305,7 @@ export class ApiClient {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         const token = sessionStorage.getItem("access_token");
-        if (token) {
+        if (token && !config.skipAuthToken) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;

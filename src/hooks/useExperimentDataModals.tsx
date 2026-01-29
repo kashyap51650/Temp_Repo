@@ -6,6 +6,7 @@ import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModa
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
 import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
+import NecropsyViewModal from "@/components/data-validation/NecropsyViewModal";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { useModal } from "./useModal";
@@ -55,6 +56,7 @@ export function useExperimentDataModals(
   const weightSheetViewModal = useModal();
   const organViewModal = useModal();
   const agcViewModal = useModal();
+  const necropsyViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -78,6 +80,8 @@ export function useExperimentDataModals(
         dataTypeLower.includes("weight") && dataTypeLower.includes("sheet");
 
       const isAGCSheet = dataTypeLower.includes("agc");
+
+      const isNecropsy = dataTypeLower.includes("necropsy");
 
       if (isCalliperingSheet) {
         navigate({
@@ -105,12 +109,24 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (isNecropsy) {
+        necropsyViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
       );
     },
-    [calliperingViewModal, organViewModal, weightSheetViewModal, agcViewModal]
+    [
+      calliperingViewModal,
+      organViewModal,
+      weightSheetViewModal,
+      agcViewModal,
+      necropsyViewModal,
+      navigate,
+    ]
   );
 
   const renderModals = () => {
@@ -172,6 +188,16 @@ export function useExperimentDataModals(
           <BioDOrganViewModal
             isOpen={organViewModal.isOpen}
             onClose={organViewModal.closeModal}
+            experimentName={experimentName}
+            experimentDataId={experimentDataId}
+            experimentStatus={experimentStatus}
+            hideActions={hideActions || !canEditOrApprove}
+          />
+        )}
+        {necropsyViewModal.isOpen && (
+          <NecropsyViewModal
+            isOpen={necropsyViewModal.isOpen}
+            onClose={necropsyViewModal.closeModal}
             experimentName={experimentName}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}

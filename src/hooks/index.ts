@@ -34,6 +34,7 @@ export { useMouseGroupWithOrganWeight } from "./useMouseGroupWithOrganWeight";
 export { useMoveMice } from "./useMoveMice";
 export { useNecropsyFileDownload } from "./useNecropsyFileDownload";
 export { usePerformBioD } from "./usePerformBioD";
+export * from "./usePdfViewer";
 export * from "./useProfile";
 export * from "./useProjectFolders";
 export { useProjects } from "./useProjects";

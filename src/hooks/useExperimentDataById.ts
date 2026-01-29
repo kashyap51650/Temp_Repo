@@ -188,6 +188,14 @@ export type ExperimentDataForWeightSheetResponse = {
   };
 };
 
+export interface ExperimentDataForNecropsyResponse {
+  experiment_data_id: number;
+  file_url: string;
+  filename: string;
+  file_size_bytes: number | null;
+  uploaded_at: string;
+}
+
 const fetchExperimentDataForWeightSheet = async (
   experimentDataId: string
 ): Promise<ExperimentDataForWeightSheetResponse> => {
@@ -211,6 +219,13 @@ const fetchExperimentDataForBioDOrganSheet = async (
   return response;
 };
 
+const fetchExperimentDataForNecropsy = async (
+  experimentDataId: string
+): Promise<ExperimentDataForNecropsyResponse> => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/necropsy-data`;
+  return apiClient.get<ExperimentDataForNecropsyResponse>(endpoint);
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
@@ -228,6 +243,17 @@ export function useExperimentDataByIdForCalliperingSheet(
   return useQuery({
     queryKey: ["experimentData", "calliperingSheet", experimentDataId],
     queryFn: () => fetchExperimentDataForCalliperingSheet(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForNecropsy(experimentDataId: string) {
+  return useQuery({
+    queryKey: ["experimentData", "necropsy", experimentDataId],
+    queryFn: () => fetchExperimentDataForNecropsy(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,
