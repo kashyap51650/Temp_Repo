@@ -1,5 +1,7 @@
+import { Trash2 } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 
+import { Button } from "@/components/atoms/Button/Button";
 import {
   Table,
   TableBody,
@@ -19,6 +21,7 @@ interface RandomizationTableProps {
   groups: RandomizationGroupUI[];
   micePerGroup: number;
   renderGroupHeader?: (group: RandomizationGroupUI, index: number) => ReactNode;
+  onDeleteGroup?: (groupLabel: string) => void;
   className?: string;
 }
 
@@ -26,6 +29,7 @@ export const RandomizationTable = ({
   groups,
   micePerGroup,
   renderGroupHeader,
+  onDeleteGroup,
   className = "",
 }: RandomizationTableProps) => {
   return (
@@ -35,15 +39,33 @@ export const RandomizationTable = ({
       <Table className="min-w-full border border-gray-200">
         <TableHeader>
           <TableRow>
-            {groups.map((g, idx) => (
-              <TableHead
-                key={`${g.key}`}
-                colSpan={TABLE_COLUMNS.length}
-                className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 p-3`}
-              >
-                {g.label}
-              </TableHead>
-            ))}
+            {groups.map((g, idx) => {
+              // Check if this is a buffer group (no experiment_drug_id)
+              const isBufferGroup = !g.experiment_drug_id;
+
+              return (
+                <TableHead
+                  key={`${g.key}`}
+                  colSpan={TABLE_COLUMNS.length}
+                  className={`text-center font-semibold text-md ${getGroupColorHeader(idx)} border border-gray-200 p-3`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span>{g.label}</span>
+                    {isBufferGroup && onDeleteGroup && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDeleteGroup(g.label)}
+                        className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Delete buffer group"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </TableHead>
+              );
+            })}
           </TableRow>
 
           {renderGroupHeader && (

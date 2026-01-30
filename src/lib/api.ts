@@ -1729,6 +1729,7 @@ export const randomizationApi = {
     experiment_id: number;
     mice_per_group: number;
     randomization_type: string;
+    buffer_groups?: string[]; // Optional for dose range finding weight sheets
   }): Promise<RandomizationPreviewResponse> => {
     return apiClient.post(API_CONFIG.ENDPOINTS.RANDOMIZATION.PREVIEW, {
       ...payload,

@@ -1,13 +1,15 @@
 import { useRouterState } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import React, { useEffect, useMemo } from "react";
+import { ArrowLeft, Plus } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { Label } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
 import { Input } from "@/components/atoms/Input/Input";
 import { ExperimentDrugSelect } from "@/components/molecules/ExperimentDrugSelect";
+import { AddGroupDialog } from "@/components/randomization/AddGroupDialog";
 import { RandomizationTable } from "@/components/randomization/RandomizationTable";
 import { useRendomizationResult } from "@/hooks/useRendomizationResult";
+import { RANDOMIZATION_PREVIEW_TYPES } from "@/lib/constants";
 import { transformApiGroupsForUI } from "@/lib/randomization-utils";
 
 export default function RandomizationResults() {
@@ -20,6 +22,8 @@ export default function RandomizationResults() {
     handleConfirmClick,
     randomizationData,
     handleBack,
+    bufferGroups,
+    setBufferGroups,
   } = useRendomizationResult();
 
   const groups = useMemo(() => {
@@ -34,23 +38,103 @@ export default function RandomizationResults() {
   };
 
   const [nameFilter, setNameFilter] = React.useState("");
+  const [isAddGroupDialogOpen, setIsAddGroupDialogOpen] = useState(false);
+
+  // Check if this is weight sheet randomization
+  const isWeightSheetRandomization =
+    state.randomization_type === RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT;
+
+  // Auto-populate selected drugs from API response
+  useEffect(() => {
+    if (randomizationData?.groups) {
+      const drugSelections: Record<string, string> = {};
+
+      randomizationData.groups.forEach((group) => {
+        if (group.experiment_drug_id) {
+          drugSelections[group.group_code] =
+            group.experiment_drug_id.toString();
+        }
+      });
+
+      // Only update if there are actual selections from backend
+      if (Object.keys(drugSelections).length > 0) {
+        setSelectedGroupDrug(drugSelections);
+      }
+    }
+  }, [randomizationData, setSelectedGroupDrug]);
 
   useEffect(() => {
-    previewRandomizationfn({
+    const payload: {
+      experiment_id: number;
+      mice_per_group: number;
+      randomization_type: string;
+      buffer_groups?: string[];
+    } = {
       experiment_id: state.experiment_id,
       mice_per_group: state.mice_per_group,
       randomization_type: state.randomization_type,
-    });
+    };
+
+    // Add buffer_groups for weight sheet randomization
+    if (isWeightSheetRandomization) {
+      payload.buffer_groups = bufferGroups;
+    }
+
+    previewRandomizationfn(payload);
   }, []);
 
   const applyFilters = () => {
     // clear all selections
     setSelectedGroupDrug({});
-    previewRandomizationfn({
+
+    const payload: {
+      experiment_id: number;
+      mice_per_group: number;
+      randomization_type: string;
+      buffer_groups?: string[];
+    } = {
       experiment_id: state.experiment_id,
       mice_per_group: nameFilter ? Number(nameFilter) : state.mice_per_group,
       randomization_type: state.randomization_type,
-    });
+    };
+
+    // Add buffer_groups for weight sheet randomization
+    if (isWeightSheetRandomization) {
+      payload.buffer_groups = bufferGroups;
+    }
+
+    previewRandomizationfn(payload);
+  };
+
+  const handleAddGroup = (groupName: string) => {
+    const updatedGroups = [...bufferGroups, groupName];
+    setBufferGroups(updatedGroups);
+
+    // Immediately call API with new buffer groups
+    const payload = {
+      experiment_id: state.experiment_id,
+      mice_per_group: state.mice_per_group,
+      randomization_type: state.randomization_type,
+      buffer_groups: updatedGroups,
+    };
+
+    previewRandomizationfn(payload);
+  };
+
+  const handleDeleteBufferGroup = (groupName: string) => {
+    // Remove the group from buffer groups
+    const updatedGroups = bufferGroups.filter((name) => name !== groupName);
+    setBufferGroups(updatedGroups);
+
+    // Immediately call API with updated buffer groups
+    const payload = {
+      experiment_id: state.experiment_id,
+      mice_per_group: state.mice_per_group,
+      randomization_type: state.randomization_type,
+      buffer_groups: updatedGroups,
+    };
+
+    previewRandomizationfn(payload);
   };
 
   return (
@@ -65,19 +149,41 @@ export default function RandomizationResults() {
       </div>
 
       <div className="flex items-center mb-3 gap-3 py-2">
-        <div className="flex flex-col gap-2">
-          <Label>Number of Mouse in Group</Label>
-          <Input
-            placeholder="Enter mouse count"
-            value={nameFilter}
-            onChange={(e) => setNameFilter(e.target.value)}
-            className="w-64"
-            type="number"
-          />
-        </div>
-        <Button onClick={applyFilters} className="mt-6" disabled={isPending}>
-          Apply
-        </Button>
+        {isWeightSheetRandomization ? (
+          // For weight sheet: Show Add Group button
+          <div className="flex flex-col gap-2">
+            <Label>Buffer Groups</Label>
+            <Button
+              onClick={() => setIsAddGroupDialogOpen(true)}
+              disabled={isPending}
+              className="flex items-center gap-2"
+            >
+              <Plus className="size-4" />
+              Add Group
+            </Button>
+          </div>
+        ) : (
+          // For callipering sheet: Show mouse count input (existing behavior)
+          <>
+            <div className="flex flex-col gap-2">
+              <Label>Number of Mouse in Group</Label>
+              <Input
+                placeholder="Enter mouse count"
+                value={nameFilter}
+                onChange={(e) => setNameFilter(e.target.value)}
+                className="w-64"
+                type="number"
+              />
+            </div>
+            <Button
+              onClick={applyFilters}
+              className="mt-6"
+              disabled={isPending}
+            >
+              Apply
+            </Button>
+          </>
+        )}
       </div>
 
       {isPending ? (
@@ -88,6 +194,9 @@ export default function RandomizationResults() {
             <RandomizationTable
               groups={groups}
               micePerGroup={randomizationData?.mice_per_group || 0}
+              onDeleteGroup={
+                isWeightSheetRandomization ? handleDeleteBufferGroup : undefined
+              }
               renderGroupHeader={(g) => (
                 <div className="flex justify-center">
                   <ExperimentDrugSelect
@@ -116,6 +225,12 @@ export default function RandomizationResults() {
           </div>
         </>
       )}
+
+      <AddGroupDialog
+        isOpen={isAddGroupDialogOpen}
+        onClose={() => setIsAddGroupDialogOpen(false)}
+        onSave={handleAddGroup}
+      />
     </div>
   );
 }

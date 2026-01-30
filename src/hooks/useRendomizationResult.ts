@@ -18,6 +18,9 @@ export const useRendomizationResult = () => {
   const [randomizationData, setRandomizationData] =
     useState<RandomizationPreviewData | null>(null);
 
+  // Buffer groups state for weight sheet randomization
+  const [bufferGroups, setBufferGroups] = useState<string[]>(["Buffer"]);
+
   const navigate = useNavigate();
 
   const {
@@ -29,10 +32,15 @@ export const useRendomizationResult = () => {
       experiment_id: number;
       mice_per_group: number;
       randomization_type: string;
+      buffer_groups?: string[];
     }) => randomizationApi.previewRandomization(payload),
     onSuccess: (data: RandomizationPreviewResponse) => {
       if (data.data) {
         setRandomizationData(data.data);
+        // Update buffer groups from response if available
+        if (data.data.buffer_groups) {
+          setBufferGroups(data.data.buffer_groups);
+        }
       }
     },
     onError: (error: Error) => {
@@ -88,5 +96,7 @@ export const useRendomizationResult = () => {
     handleBack,
     isPending,
     isError,
+    bufferGroups,
+    setBufferGroups,
   };
 };

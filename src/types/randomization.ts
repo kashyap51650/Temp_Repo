@@ -79,6 +79,7 @@ export interface RandomizationPreviewData {
   excluded_mice_count: number;
   groups: RandomizationGroup[];
   algorithm_summary: AlgorithmSummary;
+  buffer_groups?: string[]; // For dose range finding weight sheets
 }
 
 export type RandomizationPreviewResponse =

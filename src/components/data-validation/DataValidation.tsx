@@ -8,6 +8,7 @@ import {
   RANDOMIZATION_PREVIEW_TYPES,
   SELECT_ALL,
   statusOptions,
+  STUDY_TYPE,
   STUDY_TYPE_CODE,
 } from "@/lib/constants";
 
@@ -117,12 +118,27 @@ export default function DataValidation() {
         console.error("Experiment data not found for row:", row);
         return;
       }
+
+      // Determine randomization type based on data type and study type
+      const isCalliperingSheet = row.dataType
+        .toLowerCase()
+        .includes("callipering");
+      const isWeightSheetDoseRange =
+        row.dataType.toLowerCase().includes("weight") &&
+        row.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+
+      const randomizationType = isCalliperingSheet
+        ? RANDOMIZATION_PREVIEW_TYPES.VOLUME
+        : isWeightSheetDoseRange
+          ? RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT
+          : RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT; // default fallback
+
       navigate({
         to: "/randomization-results",
         search: {
           experiment_id: experimentData?.experiment.id,
           mice_per_group: 5,
-          randomization_type: RANDOMIZATION_PREVIEW_TYPES.VOLUME,
+          randomization_type: randomizationType,
         },
       });
     },

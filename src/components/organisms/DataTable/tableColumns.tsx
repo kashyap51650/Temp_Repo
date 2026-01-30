@@ -804,6 +804,18 @@ export function getValidationColumns(
     data?.some((row) => row.dataType.toLowerCase().includes("callipering")) ??
     false;
 
+  // Check if there's any dose range finding weight sheet data
+  const hasDoseRangeWeightSheet =
+    data?.some(
+      (row) =>
+        row.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+        row.dataType.toLowerCase().includes("weight")
+    ) ?? false;
+
+  // Show treatment date column if either condition is met
+  const showTreatmentDateColumn =
+    hasCalliperingsheet || hasDoseRangeWeightSheet;
+
   const columns: ColumnDef<ValidationRow>[] = [
     {
       accessorKey: "experimentName",
@@ -857,7 +869,7 @@ export function getValidationColumns(
     },
   ];
 
-  if (hasCalliperingsheet) {
+  if (showTreatmentDateColumn) {
     columns.push({
       accessorKey: "treatmentDate",
       header: () => <span>Treatment Date</span>,
@@ -866,7 +878,11 @@ export function getValidationColumns(
           .toLowerCase()
           .includes("callipering");
 
-        if (isCalliperingsheet) {
+        const isDoseRangeWeightSheet =
+          row.original.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+          row.original.dataType.toLowerCase().includes("weight");
+
+        if (isCalliperingsheet || isDoseRangeWeightSheet) {
           return (
             <RandomizeDateCell
               value={row.original.treatmentDate}
@@ -912,9 +928,17 @@ export function getValidationColumns(
           rowData.dataType.toLowerCase().includes("callipering") &&
           rowData.studyType === STUDY_TYPE.BIO_DISTRIBUTION;
 
+        const isWeightSheetDoseRange =
+          rowData.dataType.toLowerCase().includes("weight") &&
+          rowData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+
         const isCalliperingSheetModelStudy =
           rowData.dataType.toLowerCase().includes("callipering") &&
           rowData.studyType === STUDY_TYPE.MODEL_STUDY;
+
+        // Show randomize button for both Bio-D callipering and Dose Range weight sheets
+        const showRandomizeButton =
+          isCalliperingSheetBiod || isWeightSheetDoseRange;
 
         const isRandomizationDisabled =
           (rowData?.treatmentDate &&
@@ -934,7 +958,7 @@ export function getValidationColumns(
               <Eye className="size-4" />
               View Data
             </Button>
-            {isCalliperingSheetBiod && (
+            {showRandomizeButton && (
               <Button
                 variant="outline"
                 size="sm"
