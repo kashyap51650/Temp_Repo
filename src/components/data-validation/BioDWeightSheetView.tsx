@@ -17,7 +17,7 @@ import type {
   MousePairRow,
   TransformedWorksheetData,
 } from "@/types/weight-sheet";
-import { getWeightColumnColor } from "@/utils/tableUtils";
+import { getWeightSheetColumnColor } from "@/utils/tableUtils";
 
 /**
  * Generate columns for read-only mouse pair display
@@ -51,7 +51,7 @@ const getReadOnlyMousePairColumns = ({
               "border-gray-200 h-auto flex items-center w-full",
               showPercentChangeColumn ? "" : "border-r",
               showFlaggedWeightColor &&
-                getWeightColumnColor({
+                getWeightSheetColumnColor({
                   isFlagged: row.original.isLeftFlagged,
                   percentageChange: row.original.leftPercentageChange,
                 })
@@ -72,7 +72,13 @@ const getReadOnlyMousePairColumns = ({
             cell: ({ row }: { row: Row<MousePairRow> }) => (
               <div className="flex items-stretch h-full min-h-12">
                 <div
-                  className={`border-r border-gray-200 h-auto flex items-center w-full`}
+                  className={cn(
+                    `border-r border-gray-200 h-auto flex items-center w-full`,
+                    getWeightSheetColumnColor({
+                      isFlagged: row.original.isLeftFlagged,
+                      percentageChange: row.original.leftPercentageChange,
+                    })
+                  )}
                 >
                   {row.original.leftPercentageChange !== undefined &&
                     `${row.original.leftPercentageChange}%`}
@@ -100,7 +106,7 @@ const getReadOnlyMousePairColumns = ({
           <span
             className={cn(
               showFlaggedWeightColor &&
-                getWeightColumnColor({
+                getWeightSheetColumnColor({
                   isFlagged: row.original.isRightFlagged,
                   percentageChange: row.original.rightPercentageChange,
                 })
@@ -118,7 +124,12 @@ const getReadOnlyMousePairColumns = ({
               <span className={headerClassName}>Percentage Change</span>
             ),
             cell: ({ row }: { row: Row<MousePairRow> }) => (
-              <span>
+              <span
+                className={getWeightSheetColumnColor({
+                  isFlagged: row.original.isRightFlagged,
+                  percentageChange: row.original.rightPercentageChange,
+                })}
+              >
                 {row.original.rightPercentageChange !== undefined &&
                   `${row.original.rightPercentageChange}%`}
               </span>

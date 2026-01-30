@@ -5,7 +5,7 @@ import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
 import { type ExperimentDataItem } from "../lib/api";
-import type { StudyType } from "./constants";
+import { FILE_SIZE_LIMITS, type StudyType } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -121,3 +121,16 @@ export const getSheetDataTypePrefix = (studyType: StudyType) => {
     }
   }
 };
+
+export function validatePDFFile(file: File): void {
+  if (!file) {
+    throw new Error("File is required");
+  }
+  const fileName = file.name.toLowerCase();
+  if (!fileName.endsWith(".pdf")) {
+    throw new Error("Only .pdf files are allowed");
+  }
+  if (file.size > FILE_SIZE_LIMITS.LARGE_FILE) {
+    throw new Error("File size must be less than 10MB");
+  }
+}

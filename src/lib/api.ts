@@ -10,6 +10,10 @@ import type {
   ExperimentsListResponse,
 } from "@/types/experiment";
 import type {
+  HematologyPDFPayload,
+  HematologyPDFUploadResponse,
+} from "@/types/hematology";
+import type {
   CalliperingNotesListParams,
   CalliperingNotesListResponse,
   ConfirmExperimentMouseGroupsPayload,
@@ -35,6 +39,7 @@ import {
   FILE_SIZE_LIMITS,
   type StudyTypeCode,
 } from "./constants";
+import { validatePDFFile } from "./utils";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -165,6 +170,9 @@ export const API_CONFIG = {
     },
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
+    },
+    HEMATOLOGY: {
+      EXTRACT_HEMATOLOGY: `/api/${import.meta.env.VITE_API_VERSION}/hematology/extract-hematology-report`,
     },
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
@@ -1530,10 +1538,17 @@ export interface ImportAGCDataPayload {
   file: File;
 }
 
-export interface ImportNecropsyDataPayload {
+export interface ImportPDFDataPayload {
   experiment_id: number;
   file: File;
 }
+
+export type ImportNecropsyDataPayload = ImportPDFDataPayload;
+export type ImportNecropsyDataResponse = ApiResponse<{
+  filename: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;
 
 export interface ImportExperimentDataResponse {
   success: boolean;
@@ -1622,20 +1637,10 @@ export const experimentDataApi = {
     }
   },
 
-  importNecropsyData: async (payload: ImportNecropsyDataPayload) => {
-    if (!payload.file) {
-      throw new Error("File is required");
-    }
-
-    const fileName = payload.file.name.toLowerCase();
-
-    if (!fileName.endsWith(".pdf")) {
-      throw new Error("Only .pdf files are allowed");
-    }
-
-    if (payload.file.size > FILE_SIZE_LIMITS.LARGE_FILE) {
-      throw new Error("File size must be less than 10MB");
-    }
+  importNecropsyData: async (
+    payload: ImportNecropsyDataPayload
+  ): Promise<ImportNecropsyDataResponse> => {
+    validatePDFFile(payload.file);
 
     const formData = new FormData();
 
@@ -1652,6 +1657,30 @@ export const experimentDataApi = {
       );
     } catch (error) {
       console.error("Experiment necropsy data import error:", error);
+      throw error;
+    }
+  },
+
+  importHematologyData: async (
+    payload: HematologyPDFPayload
+  ): Promise<HematologyPDFUploadResponse> => {
+    validatePDFFile(payload.file);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.HEMATOLOGY.EXTRACT_HEMATOLOGY,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment hematology data import error:", error);
       throw error;
     }
   },

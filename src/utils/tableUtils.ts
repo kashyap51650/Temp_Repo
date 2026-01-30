@@ -24,7 +24,7 @@ export function getStatusBadgeClassName(status: string): string {
   return "bg-yellow-100 text-yellow-700 border-yellow-200";
 }
 
-export const getWeightColumnColor = ({
+export const getWeightSheetColumnColor = ({
   isFlagged,
   percentageChange,
 }: {

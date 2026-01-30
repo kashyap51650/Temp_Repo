@@ -2,7 +2,7 @@ import { Download } from "lucide-react";
 import { useState } from "react";
 
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
-import { useNecropsyExperimentDataImport } from "@/hooks/useNecropsyExperimentDataImport";
+import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
 
 import { useDownloadSheet, useExperimentDataImport } from "../../hooks";
 import {
@@ -13,6 +13,7 @@ import {
 } from "../../lib/api";
 import {
   DATA_TYPE,
+  type ExperimentDataType,
   FILE_SIZE_LIMITS,
   FILE_TYPES,
   SPECIALIZATION,
@@ -153,9 +154,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       SPECIALIZATION.PRECLINICAL.toLowerCase() &&
     formData.dataType === DATA_TYPE.ORGAN_WEIGHT_SHEET;
 
-  const isNecropsyPdfUpload =
+  const isPdfUpload =
     formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
-    formData.dataType === DATA_TYPE.NECROPSY_SHEET;
+    (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
+      formData.dataType === DATA_TYPE.HEMATOLOGY ||
+      formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY);
 
   const [isOpenDownloadOrganSheetModal, setIsOpenDownloadOrganSheetModal] =
     useState(false);
@@ -180,12 +183,12 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }));
   };
 
-  const { handleUploadNecropsyPdf, isNecropsyPdfUploading } =
-    useNecropsyExperimentDataImport({
-      onSuccess: () => {
-        handleUploadFileReset();
-      },
-    });
+  const { handleUploadPdf, isPdfUploading } = usePdfExperimentDataImport({
+    onSuccess: () => {
+      handleUploadFileReset();
+    },
+    experimentDataType: formData.dataType as ExperimentDataType,
+  });
 
   const { uploadFile, isUploading } = useExperimentDataImport({
     onSuccess: () => {
@@ -267,7 +270,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
   };
 
-  const handleNecropsyPdfUpload = async () => {
+  const handleUploadPdfClick = async () => {
     if (!formData.uploadedFile) {
       console.error("No file selected for upload");
       return;
@@ -280,8 +283,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return;
     }
 
-    if (isNecropsyPdfUpload) {
-      handleUploadNecropsyPdf({
+    if (isPdfUpload) {
+      handleUploadPdf({
         experiment_id: experimentId,
         file: formData.uploadedFile,
       });
@@ -356,7 +359,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         clearDataTypes={clearDataTypes}
       />
 
-      {formData.dataType !== DATA_TYPE.AGC_SHEET && !isNecropsyPdfUpload && (
+      {formData.dataType !== DATA_TYPE.AGC_SHEET && !isPdfUpload && (
         <>
           <FileUploadArea
             formData={formData}
@@ -391,7 +394,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         </>
       )}
 
-      {isNecropsyPdfUpload && (
+      {isPdfUpload && (
         <>
           <GenericFileUploadArea
             formData={formData}
@@ -407,15 +410,13 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           <div className="flex items-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={handleNecropsyPdfUpload}
+              onClick={handleUploadPdfClick}
               disabled={
-                !canUploadData ||
-                !isExperimentSelected ||
-                isNecropsyPdfUploading
+                !canUploadData || !isExperimentSelected || isPdfUploading
               }
               className="ml-auto"
             >
-              {isNecropsyPdfUploading ? "Uploading..." : "Upload Data"}
+              {isPdfUploading ? "Uploading..." : "Upload Data"}
             </Button>
           </div>
         </>

@@ -30,6 +30,8 @@ export const DATA_TYPE = {
   ORGAN_WEIGHT_SHEET: "Organ Weight Sheet",
   AGC_SHEET: "AGC Sheet",
   NECROPSY_SHEET: "Necropsy",
+  HEMATOLOGY: "Hematology",
+  BLOOD_CHEMISTRY: "Blood Chemistry",
 } as const;
 
 // Type definitions for the constants
