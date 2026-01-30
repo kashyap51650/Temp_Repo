@@ -3,8 +3,13 @@ import { useState } from "react";
 
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
+import type { HematologyReport } from "@/types/hematology";
 
-import { useDownloadSheet, useExperimentDataImport } from "../../hooks";
+import {
+  useDownloadSheet,
+  useExperimentDataImport,
+  useModal,
+} from "../../hooks";
 import {
   type DataType,
   type ExperimentDropdownItem,
@@ -25,6 +30,7 @@ import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
 import { GenericFileUploadArea } from "./GenericFileUploadArea";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
+import { PreviewHematologyReportModal } from "./PreviewHematologyReportModal";
 import { ProjectSection } from "./ProjectSection";
 import { SpecializationSection } from "./SpecializationSection";
 import { UploadedFilesList } from "./UploadedFilesList";
@@ -165,6 +171,16 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const [isOpenGroupSelectionModalForAGC, setIsOpenGroupSelectionModalForAGC] =
     useState(false);
 
+  const [hematologyDataForPreview, setHematologyDataForPreview] = useState<
+    HematologyReport | undefined
+  >();
+
+  const {
+    isOpen: isOpenHematologyReportModal,
+    closeModal: closeHematologyReportModal,
+    openModal: openHematologyReportModal,
+  } = useModal();
+
   const handleAgcFileUploadSuccess = () => {
     setIsOpenGroupSelectionModalForAGC(false);
     setFormData((prev: FormData) => ({
@@ -173,6 +189,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }));
   };
 
+  // AGC Sheet Upload Handler
   const { handleUploadAGCSheet, isAGCSheetUploading } =
     useAGCExperimentDataImport({ onSuccess: handleAgcFileUploadSuccess });
 
@@ -184,8 +201,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   };
 
   const { handleUploadPdf, isPdfUploading } = usePdfExperimentDataImport({
-    onSuccess: () => {
+    onSuccess: (data) => {
       handleUploadFileReset();
+      if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
+        setHematologyDataForPreview(data.data as HematologyReport);
+      }
     },
     experimentDataType: formData.dataType as ExperimentDataType,
   });
@@ -196,14 +216,17 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     },
   });
 
+  // Download Sheet Hook
   const { downloadSheet, isDownloading } = useDownloadSheet();
 
   const downloadButtonClickHandler = () => {
+    // Handle download for Organ Sheet
     if (isNecropsyData) {
       setIsOpenDownloadOrganSheetModal(true);
       return;
     }
 
+    // Handle download for other sheets
     if (
       formData.experiment?.id &&
       (formData.dataType === DATA_TYPE.WEIGHT_SHEET ||
@@ -418,6 +441,16 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             >
               {isPdfUploading ? "Uploading..." : "Upload Data"}
             </Button>
+
+            {formData.dataType === DATA_TYPE.HEMATOLOGY && (
+              <Button
+                size="lg"
+                onClick={openHematologyReportModal}
+                disabled={isPdfUploading || !hematologyDataForPreview}
+              >
+                Preview
+              </Button>
+            )}
           </div>
         </>
       )}
@@ -465,6 +498,17 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           isUploading={isAGCSheetUploading}
         />
       )}
+
+      {isOpenHematologyReportModal &&
+        formData.experiment?.id &&
+        hematologyDataForPreview && (
+          <PreviewHematologyReportModal
+            experimentId={formData.experiment?.id}
+            open={isOpenHematologyReportModal}
+            onOpenChange={closeHematologyReportModal}
+            hematologyData={hematologyDataForPreview}
+          />
+        )}
     </>
   );
 }

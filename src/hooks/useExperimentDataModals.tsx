@@ -2,11 +2,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { ViewHematologyDataModal } from "@/components/data-upload/ViewHematologyDataModal";
 import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModal";
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
 import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
 import NecropsyViewModal from "@/components/data-validation/NecropsyViewModal";
+import { DATA_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { useModal } from "./useModal";
@@ -56,6 +58,7 @@ export function useExperimentDataModals(
   const weightSheetViewModal = useModal();
   const organViewModal = useModal();
   const agcViewModal = useModal();
+  const hematologyViewModal = useModal();
   const necropsyViewModal = useModal();
 
   const handleViewData = useCallback(
@@ -81,6 +84,7 @@ export function useExperimentDataModals(
 
       const isAGCSheet = dataTypeLower.includes("agc");
 
+      const isHematologySheet = dataTypeName === DATA_TYPE.HEMATOLOGY;
       const isNecropsy = dataTypeLower.includes("necropsy");
 
       if (isCalliperingSheet) {
@@ -113,7 +117,10 @@ export function useExperimentDataModals(
         necropsyViewModal.openModal();
         return;
       }
-
+      if (isHematologySheet) {
+        hematologyViewModal.openModal();
+        return;
+      }
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -124,6 +131,7 @@ export function useExperimentDataModals(
       organViewModal,
       weightSheetViewModal,
       agcViewModal,
+      hematologyViewModal,
       necropsyViewModal,
       navigate,
     ]
@@ -208,6 +216,16 @@ export function useExperimentDataModals(
           <AGCSheetViewModal
             isOpen={agcViewModal.isOpen}
             onClose={agcViewModal.closeModal}
+          />
+        )}
+        {experimentId && hematologyViewModal.isOpen && (
+          <ViewHematologyDataModal
+            open={hematologyViewModal.isOpen}
+            onOpenChange={hematologyViewModal.closeModal}
+            experimentId={experimentId}
+            experimentDataId={experimentDataId}
+            experimentStatus={experimentStatus}
+            hideActions={hideActions || !canEditOrApprove}
           />
         )}
       </>

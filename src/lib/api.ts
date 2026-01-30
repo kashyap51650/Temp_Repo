@@ -10,8 +10,11 @@ import type {
   ExperimentsListResponse,
 } from "@/types/experiment";
 import type {
+  GetHematologyReportResponse,
   HematologyPDFPayload,
   HematologyPDFUploadResponse,
+  SaveHematologyDataResponse,
+  SaveHematologyPDFPayload,
 } from "@/types/hematology";
 import type {
   CalliperingNotesListParams,
@@ -168,11 +171,14 @@ export const API_CONFIG = {
       EXPORT_CALIPER_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/caliper-sheet/export-caliper-sheet`,
       EXPORT_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/weight-sheet/export-weight-sheet`,
     },
+    HEMATOLOGY: {
+      SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/hematology/save-hematology-report`,
+      EXTRACT_HEMATOLOGY: `/api/${import.meta.env.VITE_API_VERSION}/hematology/extract-hematology-report`,
+      GET_HEMATOLOGY_REPORT: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentId}/hematology`,
+    },
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
-    },
-    HEMATOLOGY: {
-      EXTRACT_HEMATOLOGY: `/api/${import.meta.env.VITE_API_VERSION}/hematology/extract-hematology-report`,
     },
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
@@ -1685,6 +1691,15 @@ export const experimentDataApi = {
     }
   },
 
+  saveHematologyData: async (
+    payload: SaveHematologyPDFPayload
+  ): Promise<ApiResponse<SaveHematologyDataResponse>> => {
+    return apiClient.post<ApiResponse<SaveHematologyDataResponse>>(
+      API_CONFIG.ENDPOINTS.HEMATOLOGY.SAVE_HEMATOLOGY_REPORT,
+      payload
+    );
+  },
+
   getExperimentData: async (
     filters?: ExperimentDataFilters
   ): Promise<ExperimentDataResponse> => {
@@ -1983,6 +1998,16 @@ export const dosesApi = {
     >
   > => {
     return apiClient.get(API_CONFIG.ENDPOINTS.DOSES.DROPDOWN);
+  },
+};
+
+export const hematologyApi = {
+  getHematologyReportData: async (
+    experimentDataId: number
+  ): Promise<GetHematologyReportResponse> => {
+    return apiClient.get(
+      API_CONFIG.ENDPOINTS.HEMATOLOGY.GET_HEMATOLOGY_REPORT(experimentDataId)
+    );
   },
 };
 
