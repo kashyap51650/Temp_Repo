@@ -1,4 +1,4 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { useState } from "react";
 
 import { Label } from "@/components/atoms";
@@ -11,48 +11,123 @@ import {
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import { useBioDWeightSheetData } from "@/hooks/useBioDWeightSheetData";
 import { type ExperimentDataForWeightSheetResponse } from "@/hooks/useExperimentDataById";
+import { STUDY_TYPE } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import type {
   MousePairRow,
   TransformedWorksheetData,
 } from "@/types/weight-sheet";
+import { getWeightColumnColor } from "@/utils/tableUtils";
 
 /**
  * Generate columns for read-only mouse pair display
  */
-const getReadOnlyMousePairColumns = (): ColumnDef<MousePairRow>[] => [
-  {
-    accessorKey: "leftId",
-    header: () => <span className="block lg:w-72">Mouse Delivery ID</span>,
-    cell: ({ row }) => (
-      <span className="font-medium text-center">{row.original.leftId}</span>
-    ),
-  },
-  {
-    accessorKey: "leftWeight",
-    header: () => <span className="block lg:w-72">Body Weight (g)</span>,
-    cell: ({ row }) => (
-      <div className="flex items-stretch h-full min-h-12">
-        <div className="border-r border-gray-200 h-auto flex items-center w-full">
-          {row.original.leftWeight}
+const getReadOnlyMousePairColumns = ({
+  showPercentChangeColumn,
+  showFlaggedWeightColor,
+}: {
+  showPercentChangeColumn: boolean;
+  showFlaggedWeightColor: boolean;
+}): ColumnDef<MousePairRow>[] => {
+  const headerClassName = showPercentChangeColumn
+    ? "block lg:w-52"
+    : "block lg:w-72";
+
+  return [
+    {
+      accessorKey: "leftId",
+      header: () => <span className={headerClassName}>Mouse Delivery ID</span>,
+      cell: ({ row }) => (
+        <span className="font-medium text-center">{row.original.leftId}</span>
+      ),
+    },
+    {
+      accessorKey: "leftWeight",
+      header: () => <span className={headerClassName}>Body Weight (g)</span>,
+      cell: ({ row }) => (
+        <div className="flex items-stretch h-full min-h-12">
+          <div
+            className={cn(
+              "border-gray-200 h-auto flex items-center w-full",
+              showPercentChangeColumn ? "" : "border-r",
+              showFlaggedWeightColor &&
+                getWeightColumnColor({
+                  isFlagged: row.original.isLeftFlagged,
+                  percentageChange: row.original.leftPercentageChange,
+                })
+            )}
+          >
+            {row.original.leftWeight}
+          </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    accessorKey: "rightId",
-    header: () => <span className="lg:w-72 block">Mouse Delivery ID</span>,
-    cell: ({ row }) =>
-      row.original.rightId ? (
-        <span className="font-medium text-center">{row.original.rightId}</span>
-      ) : null,
-  },
-  {
-    accessorKey: "rightWeight",
-    header: () => <span className="block lg:w-72">Body Weight (g)</span>,
-    cell: ({ row }) =>
-      row.original.rightId ? <span>{row.original.rightWeight}</span> : null,
-  },
-];
+      ),
+    },
+    ...(showPercentChangeColumn
+      ? [
+          {
+            accessorKey: "leftPercentageChange",
+            header: () => (
+              <span className={headerClassName}>Percentage Change</span>
+            ),
+            cell: ({ row }: { row: Row<MousePairRow> }) => (
+              <div className="flex items-stretch h-full min-h-12">
+                <div
+                  className={`border-r border-gray-200 h-auto flex items-center w-full`}
+                >
+                  {row.original.leftPercentageChange !== undefined &&
+                    `${row.original.leftPercentageChange}%`}
+                </div>
+              </div>
+            ),
+          },
+        ]
+      : []),
+    {
+      accessorKey: "rightId",
+      header: () => <span className={headerClassName}>Mouse Delivery ID</span>,
+      cell: ({ row }) =>
+        row.original.rightId ? (
+          <span className="font-medium text-center">
+            {row.original.rightId}
+          </span>
+        ) : null,
+    },
+    {
+      accessorKey: "rightWeight",
+      header: () => <span className={headerClassName}>Body Weight (g)</span>,
+      cell: ({ row }) =>
+        row.original.rightId ? (
+          <span
+            className={cn(
+              showFlaggedWeightColor &&
+                getWeightColumnColor({
+                  isFlagged: row.original.isRightFlagged,
+                  percentageChange: row.original.rightPercentageChange,
+                })
+            )}
+          >
+            {row.original.rightWeight}
+          </span>
+        ) : null,
+    },
+    ...(showPercentChangeColumn
+      ? [
+          {
+            accessorKey: "rightPercentageChange",
+            header: () => (
+              <span className={headerClassName}>Percentage Change</span>
+            ),
+            cell: ({ row }: { row: Row<MousePairRow> }) => (
+              <span>
+                {row.original.rightPercentageChange !== undefined &&
+                  `${row.original.rightPercentageChange}%`}
+              </span>
+            ),
+          },
+        ]
+      : []),
+  ];
+};
 
 /**
  * Transform mice data to pairs for table display
@@ -69,8 +144,12 @@ const transformMiceToPairs = (
       id: left.id + (right ? `-${right.id}` : ""),
       leftId: left.id,
       leftWeight: left.bodyWeight,
+      isLeftFlagged: left?.isFlagged,
+      leftPercentageChange: left?.percentageChange,
       rightId: right?.id,
       rightWeight: right?.bodyWeight,
+      isRightFlagged: right?.isFlagged,
+      rightPercentageChange: right?.percentageChange,
     };
   });
 };
@@ -80,6 +159,7 @@ interface BioDWeightSheetViewProps {
   apiData: ExperimentDataForWeightSheetResponse | undefined;
   isLoading: boolean;
   error: Error | null;
+  experimentStudyType: string;
 }
 
 /**
@@ -91,6 +171,7 @@ export function BioDWeightSheetView({
   apiData,
   isLoading,
   error,
+  experimentStudyType,
 }: Readonly<BioDWeightSheetViewProps>) {
   const [activeTab, setActiveTab] = useState("0");
 
@@ -130,7 +211,14 @@ export function BioDWeightSheetView({
 
   // Single worksheet view (no tabs needed)
   if (!hasMultipleWorksheets) {
-    return <WorksheetContent worksheet={worksheets[0]} />;
+    return (
+      <div className="space-y-4 overflow-y-auto h-[calc(100%-5%)]">
+        <WorksheetContent
+          worksheet={worksheets[0]}
+          experimentStudyType={experimentStudyType}
+        />
+      </div>
+    );
   }
 
   // Multiple worksheets view with tabs
@@ -151,7 +239,10 @@ export function BioDWeightSheetView({
 
         {worksheets.map((worksheet, index) => (
           <TabsContent key={index} value={index.toString()}>
-            <WorksheetContent worksheet={worksheet} />
+            <WorksheetContent
+              worksheet={worksheet}
+              experimentStudyType={experimentStudyType}
+            />
           </TabsContent>
         ))}
       </Tabs>
@@ -164,9 +255,17 @@ export function BioDWeightSheetView({
  */
 interface WorksheetContentProps {
   worksheet: TransformedWorksheetData;
+  experimentStudyType: string;
 }
 
-function WorksheetContent({ worksheet }: Readonly<WorksheetContentProps>) {
+function WorksheetContent({
+  worksheet,
+  experimentStudyType,
+}: Readonly<WorksheetContentProps>) {
+  const isDoseRangeFinding =
+    experimentStudyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+  const showPercentChangeColumn = isDoseRangeFinding;
+  const showFlaggedWeightColor = isDoseRangeFinding;
   return (
     <div className="space-y-4">
       {/* Metadata section */}
@@ -213,7 +312,10 @@ function WorksheetContent({ worksheet }: Readonly<WorksheetContentProps>) {
       {worksheet.mice && worksheet.mice.length > 0 && (
         <div className="bg-white mt-4">
           <DataTable
-            columns={getReadOnlyMousePairColumns()}
+            columns={getReadOnlyMousePairColumns({
+              showFlaggedWeightColor,
+              showPercentChangeColumn,
+            })}
             data={transformMiceToPairs(worksheet.mice)}
           />
         </div>

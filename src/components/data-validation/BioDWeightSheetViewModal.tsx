@@ -142,6 +142,7 @@ export function BioDWeightSheetViewModal({
           apiData={apiData}
           isLoading={isLoading}
           error={error}
+          experimentStudyType={experimentStudyType}
         />
       </Dialog>
 

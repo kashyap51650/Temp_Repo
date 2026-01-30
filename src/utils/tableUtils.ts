@@ -23,3 +23,23 @@ export function getStatusBadgeClassName(status: string): string {
   }
   return "bg-yellow-100 text-yellow-700 border-yellow-200";
 }
+
+export const getWeightColumnColor = ({
+  isFlagged,
+  percentageChange,
+}: {
+  isFlagged?: boolean;
+  percentageChange?: number;
+}) => {
+  if (isFlagged !== undefined && percentageChange !== undefined) {
+    if (isFlagged) {
+      if (percentageChange <= -10 && percentageChange >= -20) {
+        return "text-yellow-600 font-semibold";
+      } else if (percentageChange < -20) {
+        return "text-red-600 font-semibold";
+      }
+    }
+  }
+
+  return "";
+};

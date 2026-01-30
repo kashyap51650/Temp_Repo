@@ -33,6 +33,8 @@ export function useBioDWeightSheetData(apiData?: WeightSheetApiResponse) {
             id: measurement.mouse.mouse_delivery_id,
             bodyWeight: measurement.body_weight_grams,
             measurementId: measurement.id,
+            isFlagged: measurement?.is_flagged,
+            percentageChange: measurement?.percent_change,
           })),
         };
       }

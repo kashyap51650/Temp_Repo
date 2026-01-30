@@ -67,6 +67,8 @@ export interface TransformedWorksheetData {
     id: string;
     bodyWeight: number;
     measurementId: number;
+    isFlagged?: boolean;
+    percentageChange?: number;
   }[];
 }
 
@@ -77,8 +79,12 @@ export interface MousePairRow {
   id: string;
   leftId: string;
   leftWeight: number;
+  isLeftFlagged?: boolean;
+  leftPercentageChange?: number;
   rightId?: string;
   rightWeight?: number;
+  isRightFlagged?: boolean;
+  rightPercentageChange?: number;
 }
 
 export interface WorksheetEditData {
