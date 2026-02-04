@@ -99,7 +99,7 @@ export const MouseGroupForAgcSelectionModal: React.FC<
             }
           >
             {isUploading
-              ? "Procedding"
+              ? "Proceeding..."
               : `Proceed (${selectedGroupCodes.length})`}
           </Button>
         </div>

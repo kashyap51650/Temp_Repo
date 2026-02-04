@@ -9,14 +9,22 @@ import {
 import { DATA_TYPE, type ExperimentDataType } from "@/lib/constants";
 import { formatFieldLabel } from "@/lib/utils";
 import type {
+  BloodChemistryPDFPayload,
+  BloodChemistryPDFUploadResponse,
+} from "@/types/bloodChemistry";
+import type {
   HematologyPDFPayload,
   HematologyPDFUploadResponse,
 } from "@/types/hematology";
 
-type PdfImportPayloadType = ImportNecropsyDataPayload | HematologyPDFPayload;
+type PdfImportPayloadType =
+  | ImportNecropsyDataPayload
+  | HematologyPDFPayload
+  | BloodChemistryPDFPayload;
 type PdfImportResponseType =
   | ImportNecropsyDataResponse
-  | HematologyPDFUploadResponse;
+  | HematologyPDFUploadResponse
+  | BloodChemistryPDFUploadResponse;
 
 type UsePdfExperimentDataImportProps = {
   onSuccess?: (data: PdfImportResponseType) => void;
@@ -37,6 +45,11 @@ export const usePdfExperimentDataImport = ({
         });
       } else if (experimentDataType === DATA_TYPE.HEMATOLOGY) {
         return experimentDataApi.importHematologyData({
+          experiment_id: payload.experiment_id,
+          file: payload.file,
+        });
+      } else if (experimentDataType === DATA_TYPE.BLOOD_CHEMISTRY) {
+        return experimentDataApi.importBloodChemistryData({
           experiment_id: payload.experiment_id,
           file: payload.file,
         });

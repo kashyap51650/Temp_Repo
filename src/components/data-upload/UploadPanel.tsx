@@ -1,8 +1,9 @@
 import { Download } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
+import type { BloodChemistryReport } from "@/types/bloodChemistry";
 import type { HematologyReport } from "@/types/hematology";
 
 import {
@@ -30,6 +31,7 @@ import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
 import { GenericFileUploadArea } from "./GenericFileUploadArea";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
+import PreviewBloodChemistryReportModal from "./PreviewBloodChemistryReportModal";
 import { PreviewHematologyReportModal } from "./PreviewHematologyReportModal";
 import { ProjectSection } from "./ProjectSection";
 import { SpecializationSection } from "./SpecializationSection";
@@ -175,11 +177,33 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     HematologyReport | undefined
   >();
 
+  const [bloodChemistryDataForPreview, setBloodChemistryDataForPreview] =
+    useState<BloodChemistryReport | undefined>();
+
   const {
     isOpen: isOpenHematologyReportModal,
     closeModal: closeHematologyReportModal,
     openModal: openHematologyReportModal,
   } = useModal();
+
+  const {
+    isOpen: isOpenBloodChemistryReportModal,
+    closeModal: closeBloodChemistryReportModal,
+    openModal: openBloodChemistryReportModal,
+  } = useModal();
+
+  const handlePreviewModalOpen = () => {
+    if (formData.dataType === DATA_TYPE.HEMATOLOGY) {
+      openHematologyReportModal();
+    } else if (formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
+      openBloodChemistryReportModal();
+    }
+  };
+
+  useEffect(() => {
+    setHematologyDataForPreview(undefined);
+    setBloodChemistryDataForPreview(undefined);
+  }, [formData.experiment?.id]);
 
   const handleAgcFileUploadSuccess = () => {
     setIsOpenGroupSelectionModalForAGC(false);
@@ -205,6 +229,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       handleUploadFileReset();
       if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
         setHematologyDataForPreview(data.data as HematologyReport);
+      } else if (data && formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
+        setBloodChemistryDataForPreview(data.data as BloodChemistryReport);
       }
     },
     experimentDataType: formData.dataType as ExperimentDataType,
@@ -442,11 +468,15 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
               {isPdfUploading ? "Uploading..." : "Upload Data"}
             </Button>
 
-            {formData.dataType === DATA_TYPE.HEMATOLOGY && (
+            {(formData.dataType === DATA_TYPE.HEMATOLOGY ||
+              formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) && (
               <Button
                 size="lg"
-                onClick={openHematologyReportModal}
-                disabled={isPdfUploading || !hematologyDataForPreview}
+                onClick={handlePreviewModalOpen}
+                disabled={
+                  isPdfUploading ||
+                  (!hematologyDataForPreview && !bloodChemistryDataForPreview)
+                }
               >
                 Preview
               </Button>
@@ -507,6 +537,19 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             open={isOpenHematologyReportModal}
             onOpenChange={closeHematologyReportModal}
             hematologyData={hematologyDataForPreview}
+            onSaveSuccess={() => setHematologyDataForPreview(undefined)}
+          />
+        )}
+
+      {isOpenBloodChemistryReportModal &&
+        formData.experiment?.id &&
+        bloodChemistryDataForPreview && (
+          <PreviewBloodChemistryReportModal
+            experimentId={formData.experiment?.id}
+            open={isOpenBloodChemistryReportModal}
+            onOpenChange={closeBloodChemistryReportModal}
+            bloodChemistryData={bloodChemistryDataForPreview}
+            onSaveSuccess={() => setBloodChemistryDataForPreview(undefined)}
           />
         )}
     </>

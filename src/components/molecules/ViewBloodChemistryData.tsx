@@ -4,42 +4,39 @@ import { useCallback, useMemo, useState } from "react";
 
 import { moveMiceApi } from "@/lib/api";
 import type {
-  HematologyReportData,
-  ReportParameters,
-} from "@/types/hematology";
+  BloodChemistryReportData,
+  BloodChemistryReportParameters,
+} from "@/types/bloodChemistry";
 
 import { Input } from "../atoms";
-import { CalendarDatePicker } from "../organisms";
-import { DataTable } from "../organisms/DataTable/DataTable";
+import { CalendarDatePicker, DataTable } from "../organisms";
 import { AsyncSelect } from "./AsyncSelect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs/Tabs";
 
-interface ViewHematologyDataProps {
-  data: HematologyReportData[];
+interface ViewBloodChemistryDataProps {
+  data: BloodChemistryReportData[];
   mode?: "view" | "edit";
   reportCallbacks?: Array<
-    (index: number, field: keyof ReportParameters, value: string) => void
+    (
+      index: number,
+      field: keyof BloodChemistryReportParameters,
+      value: string
+    ) => void
   >;
   mouseChangeCallbacks?: Array<(mouseId: number) => void>;
   reportDateTimeChangeCallbacks?: Array<(dateTime: string) => void>;
   experimentId: number;
 }
 
-/**
- * Extended parameter type with required id field for DataTable
- */
-type ParameterWithId = ReportParameters & {
+type ParameterWithId = BloodChemistryReportParameters & {
   id: string | number;
 };
 
-/**
- * Column definitions for hematology parameters table
- */
-const getHematologyColumns = (
+const getBloodChemistryColumns = (
   mode: "view" | "edit",
   onChange?: (
     index: number,
-    field: keyof ReportParameters,
+    field: keyof BloodChemistryReportParameters,
     value: string
   ) => void
 ): ColumnDef<ParameterWithId>[] => [
@@ -97,7 +94,7 @@ const getHematologyColumns = (
 ];
 
 interface ReportHeaderProps {
-  report: HematologyReportData;
+  report: BloodChemistryReportData;
   mode: "view" | "edit";
   onMouseChange?: (mouseId: number) => void;
   onDateTimeChange?: (dateTime: string) => void;
@@ -172,11 +169,11 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({
 };
 
 interface ReportTableProps {
-  report: HematologyReportData;
+  report: BloodChemistryReportData;
   mode: "view" | "edit";
   onParameterChange?: (
     index: number,
-    field: keyof ReportParameters,
+    field: keyof BloodChemistryReportParameters,
     value: string
   ) => void;
 }
@@ -186,7 +183,6 @@ const ReportTable: React.FC<ReportTableProps> = ({
   mode,
   onParameterChange,
 }) => {
-  // Transform parameters to include unique IDs for DataTable
   const parametersWithIds: ParameterWithId[] = useMemo(
     () =>
       report.parameters.map((param, index) => ({
@@ -196,28 +192,26 @@ const ReportTable: React.FC<ReportTableProps> = ({
     [report.parameters]
   );
 
-  // Memoize columns to prevent recreation on every render
   const columns = useMemo(
-    () => getHematologyColumns(mode, onParameterChange),
+    () => getBloodChemistryColumns(mode, onParameterChange),
     [mode, onParameterChange]
   );
 
   return <DataTable columns={columns} data={parametersWithIds} />;
 };
 
-export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
+export default function ViewBloodChemistryData({
   data,
   mode = "view",
   reportCallbacks = [],
   mouseChangeCallbacks = [],
   reportDateTimeChangeCallbacks = [],
   experimentId,
-}) => {
+}: ViewBloodChemistryDataProps) {
   const [activeTab, setActiveTab] = useState<string>("0");
 
   const reports = data;
 
-  // No reports state
   if (!reports || reports.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -228,7 +222,6 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
     );
   }
 
-  // Single report view (no tabs)
   if (reports.length === 1) {
     const report = reports[0];
     return (
@@ -254,9 +247,9 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
     <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-5%)]">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="justify-start overflow-x-auto flex-nowrap">
-          {reports.map((_, index) => (
+          {reports.map((report, index) => (
             <TabsTrigger
-              key={index}
+              key={`${report?.blood_chemistry_report_id}-${index}`}
               value={index.toString()}
               className="whitespace-nowrap"
             >
@@ -266,7 +259,10 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
         </TabsList>
 
         {reports.map((report, index) => (
-          <TabsContent key={index} value={index.toString()}>
+          <TabsContent
+            key={`${report?.blood_chemistry_report_id}-${index}`}
+            value={index.toString()}
+          >
             <ReportHeader
               report={report}
               mode={mode}
@@ -284,4 +280,4 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
       </Tabs>
     </div>
   );
-};
+}

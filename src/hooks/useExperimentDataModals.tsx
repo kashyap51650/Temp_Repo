@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import ViewBloodChemistryDataModal from "@/components/data-upload/ViewBloodChemistryDataModal";
 import { ViewHematologyDataModal } from "@/components/data-upload/ViewHematologyDataModal";
 import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModal";
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
@@ -59,6 +60,7 @@ export function useExperimentDataModals(
   const organViewModal = useModal();
   const agcViewModal = useModal();
   const hematologyViewModal = useModal();
+  const bloodChemistryViewModal = useModal();
   const necropsyViewModal = useModal();
 
   const handleViewData = useCallback(
@@ -85,6 +87,7 @@ export function useExperimentDataModals(
       const isAGCSheet = dataTypeLower.includes("agc");
 
       const isHematologySheet = dataTypeName === DATA_TYPE.HEMATOLOGY;
+      const isBloodChemistrySheet = dataTypeName === DATA_TYPE.BLOOD_CHEMISTRY;
       const isNecropsy = dataTypeLower.includes("necropsy");
 
       if (isCalliperingSheet) {
@@ -121,6 +124,10 @@ export function useExperimentDataModals(
         hematologyViewModal.openModal();
         return;
       }
+      if (isBloodChemistrySheet) {
+        bloodChemistryViewModal.openModal();
+        return;
+      }
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -132,6 +139,7 @@ export function useExperimentDataModals(
       weightSheetViewModal,
       agcViewModal,
       hematologyViewModal,
+      bloodChemistryViewModal,
       necropsyViewModal,
       navigate,
     ]
@@ -222,6 +230,16 @@ export function useExperimentDataModals(
           <ViewHematologyDataModal
             open={hematologyViewModal.isOpen}
             onOpenChange={hematologyViewModal.closeModal}
+            experimentId={experimentId}
+            experimentDataId={experimentDataId}
+            experimentStatus={experimentStatus}
+            hideActions={hideActions || !canEditOrApprove}
+          />
+        )}
+        {experimentId && bloodChemistryViewModal.isOpen && (
+          <ViewBloodChemistryDataModal
+            open={bloodChemistryViewModal.isOpen}
+            onOpenChange={bloodChemistryViewModal.closeModal}
             experimentId={experimentId}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}

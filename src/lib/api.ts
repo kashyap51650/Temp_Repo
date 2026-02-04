@@ -2,6 +2,13 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import type {
+  BloodChemistryPDFPayload,
+  BloodChemistryPDFUploadResponse,
+  GetBloodChemistryReportResponse,
+  SaveBloodChemistryDataResponse,
+  SaveBloodChemistryPDFPayload,
+} from "@/types/bloodChemistry";
+import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,
 } from "@/types/doseRangeFinding";
@@ -176,6 +183,12 @@ export const API_CONFIG = {
       EXTRACT_HEMATOLOGY: `/api/${import.meta.env.VITE_API_VERSION}/hematology/extract-hematology-report`,
       GET_HEMATOLOGY_REPORT: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentId}/hematology`,
+    },
+    BLOOD_CHEMISTRY: {
+      SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/blood-chemistry/save-blood-chemistry-report`,
+      EXTRACT_BLOOD_CHEMISTRY: `/api/${import.meta.env.VITE_API_VERSION}/blood-chemistry/extract-blood-chemistry-report`,
+      GET_BLOOD_CHEMISTRY_REPORT: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentId}/blood-chemistry`,
     },
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
@@ -1691,11 +1704,44 @@ export const experimentDataApi = {
     }
   },
 
+  importBloodChemistryData: async (
+    payload: BloodChemistryPDFPayload
+  ): Promise<BloodChemistryPDFUploadResponse> => {
+    validatePDFFile(payload.file);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.EXTRACT_BLOOD_CHEMISTRY,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment blood chemistry data import error:", error);
+      throw error;
+    }
+  },
+
   saveHematologyData: async (
     payload: SaveHematologyPDFPayload
   ): Promise<ApiResponse<SaveHematologyDataResponse>> => {
     return apiClient.post<ApiResponse<SaveHematologyDataResponse>>(
       API_CONFIG.ENDPOINTS.HEMATOLOGY.SAVE_HEMATOLOGY_REPORT,
+      payload
+    );
+  },
+
+  saveBloodChemistryData: async (
+    payload: SaveBloodChemistryPDFPayload
+  ): Promise<ApiResponse<SaveBloodChemistryDataResponse>> => {
+    return apiClient.post<ApiResponse<SaveBloodChemistryDataResponse>>(
+      API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.SAVE_BLOOD_CHEMISTRY_REPORT,
       payload
     );
   },
@@ -2007,6 +2053,18 @@ export const hematologyApi = {
   ): Promise<GetHematologyReportResponse> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.HEMATOLOGY.GET_HEMATOLOGY_REPORT(experimentDataId)
+    );
+  },
+};
+
+export const bloodChemistryApi = {
+  getBloodChemistryReportData: async (
+    experimentDataId: number
+  ): Promise<GetBloodChemistryReportResponse> => {
+    return apiClient.get(
+      API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.GET_BLOOD_CHEMISTRY_REPORT(
+        experimentDataId
+      )
     );
   },
 };

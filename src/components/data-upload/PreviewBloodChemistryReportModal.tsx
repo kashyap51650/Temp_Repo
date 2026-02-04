@@ -1,52 +1,57 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { useHematologyDataEdit } from "@/hooks/useHematologyDataEdit";
-import { useSaveHematologyReport } from "@/hooks/useSaveHematologyReport";
-import type { HematologyReport } from "@/types/hematology";
+import {
+  useBloodChemistryDataEdit,
+  useSaveBloodChemistryReport,
+} from "@/hooks";
+import type { BloodChemistryReport } from "@/types/bloodChemistry";
 
 import { Button, Dialog } from "../atoms";
-import { ViewHematologyData } from "../molecules/ViewHematologyData";
+import ViewBloodChemistryData from "../molecules/ViewBloodChemistryData";
 
-interface PreviewHematologyReportModalProps {
+interface PreviewBloodChemistryReportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  hematologyData: HematologyReport;
+  bloodChemistryData: BloodChemistryReport;
   experimentId: number;
   onSaveSuccess?: () => void;
 }
 
 /**
- * PreviewHematologyReportModal Component
+ * PreviewBloodChemistryReportModal Component
  *
- * Handles previewing and editing hematology data passed via props.
+ * Handles previewing and editing blood chemistry data passed via props.
  * Used after PDF upload to preview extracted data before saving.
  */
-export const PreviewHematologyReportModal: React.FC<
-  PreviewHematologyReportModalProps
-> = ({ open, onOpenChange, experimentId, hematologyData, onSaveSuccess }) => {
+export default function PreviewBloodChemistryReportModal({
+  experimentId,
+  open,
+  onOpenChange,
+  bloodChemistryData,
+  onSaveSuccess,
+}: PreviewBloodChemistryReportModalProps) {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
-  // Use the custom hook for data management with props data
   const {
     editableData,
     reportCallbacks,
     mouseChangeCallbacks,
     reportDateTimeChangeCallbacks,
     resetData,
-  } = useHematologyDataEdit({
-    initialData: hematologyData,
+  } = useBloodChemistryDataEdit({
+    initialData: bloodChemistryData,
     experimentId,
   });
 
-  const { saveHematologyReport, isSaving } = useSaveHematologyReport();
+  const { saveBloodChemistryReport, isSaving } = useSaveBloodChemistryReport();
 
   const handleEdit = () => {
     setMode("edit");
   };
 
   const handleSave = () => {
-    saveHematologyReport(
+    saveBloodChemistryReport(
       { payload: editableData },
       {
         onSuccess: (data) => {
@@ -59,7 +64,7 @@ export const PreviewHematologyReportModal: React.FC<
           toast.error(
             error instanceof Error
               ? error.message
-              : "Failed to save hematology data."
+              : "Failed to save blood chemistry data."
           );
         },
       }
@@ -80,15 +85,15 @@ export const PreviewHematologyReportModal: React.FC<
   // Render dialog content based on data state
   const renderDialogContent = () => {
     // No data state
-    if (!hematologyData || !hematologyData.reports_data?.length) {
+    if (!bloodChemistryData || !bloodChemistryData.reports_data?.length) {
       return (
         <div className="flex flex-col items-center justify-center h-64">
           <div>
             <p className="text-lg font-semibold text-foreground mb-2">
-              No Hematology Data Found
+              No Blood Chemistry Data Found
             </p>
             <p className="text-sm text-muted-foreground">
-              No hematology report data was extracted from the PDF.
+              No blood chemistry report data was extracted from the PDF.
             </p>
           </div>
         </div>
@@ -101,7 +106,7 @@ export const PreviewHematologyReportModal: React.FC<
         className="overflow-auto"
         style={{ maxHeight: "calc(90vh - 180px)" }}
       >
-        <ViewHematologyData
+        <ViewBloodChemistryData
           experimentId={experimentId}
           data={editableData.reports_data}
           mode={mode}
@@ -121,9 +126,12 @@ export const PreviewHematologyReportModal: React.FC<
       title={
         <div className="flex items-center justify-between w-full pr-8">
           <div>
-            <h2 className="text-xl font-semibold">Preview Hematology Data</h2>
+            <h2 className="text-xl font-semibold">
+              Preview Blood Chemistry Data
+            </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Review the extracted hematology data before confirming the upload.
+              Review the extracted blood chemistry data before confirming the
+              upload.
             </p>
           </div>
           <div className="flex gap-3">
@@ -158,4 +166,4 @@ export const PreviewHematologyReportModal: React.FC<
       {renderDialogContent()}
     </Dialog>
   );
-};
+}

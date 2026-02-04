@@ -127,11 +127,13 @@ export default function DataValidation() {
         row.dataType.toLowerCase().includes("weight") &&
         row.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
 
-      const randomizationType = isCalliperingSheet
-        ? RANDOMIZATION_PREVIEW_TYPES.VOLUME
-        : isWeightSheetDoseRange
-          ? RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT
-          : RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT; // default fallback
+      let randomizationType: string = RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT;
+
+      if (isCalliperingSheet) {
+        randomizationType = RANDOMIZATION_PREVIEW_TYPES.VOLUME;
+      } else if (isWeightSheetDoseRange) {
+        randomizationType = RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT;
+      }
 
       navigate({
         to: "/randomization-results",
