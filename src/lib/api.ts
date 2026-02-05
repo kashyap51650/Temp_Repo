@@ -47,6 +47,7 @@ import type { ProjectFilters, ProjectsListResponse } from "../types/project";
 import {
   API_CUSTOM_TIMEOUT,
   FILE_SIZE_LIMITS,
+  SESSION_STORAGE_KEYS,
   type StudyTypeCode,
 } from "./constants";
 import { validatePDFFile } from "./utils";
@@ -331,7 +332,7 @@ export class ApiClient {
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        const token = sessionStorage.getItem("access_token");
+        const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
         if (token && !config.skipAuthToken) {
           config.headers.Authorization = `Bearer ${token}`;
         }

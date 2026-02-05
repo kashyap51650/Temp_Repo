@@ -13,6 +13,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import App from "./App.tsx";
 import ErrorBoundary from "./app/ErrorBoundary.tsx";
 import store from "./app/store/index.ts";
+import { SocketProvider } from "./contexts/SocketProvider.tsx";
 import queryClient from "./lib/queryClient";
 
 Sentry.init({
@@ -46,10 +47,12 @@ createRoot(document.getElementById("root")!).render(
     <ErrorBoundary>
       <ReduxProvider store={store}>
         <QueryClientProvider client={queryClient}>
-          <NotificationProvider>
-            <App />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </NotificationProvider>
+          <SocketProvider>
+            <NotificationProvider>
+              <App />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </NotificationProvider>
+          </SocketProvider>
         </QueryClientProvider>
       </ReduxProvider>
     </ErrorBoundary>

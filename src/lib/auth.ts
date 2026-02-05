@@ -10,7 +10,7 @@ import type {
   User,
 } from "@/types/auth";
 
-import { CUSTOM_EVENTS } from "./constants";
+import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "./constants";
 
 // Query keys for TanStack Query
 export const AUTH_QUERY_KEYS = {
@@ -78,8 +78,14 @@ export const useLogin = () => {
     mutationFn: authApi.login,
     onSuccess: async (data: LoginResponse) => {
       // Store tokens in sessionStorage
-      sessionStorage.setItem("access_token", data.access_token);
-      sessionStorage.setItem("refresh_token", data.refresh_token);
+      sessionStorage.setItem(
+        SESSION_STORAGE_KEYS.ACCESS_TOKEN,
+        data.access_token
+      );
+      sessionStorage.setItem(
+        SESSION_STORAGE_KEYS.REFRESH_TOKEN,
+        data.refresh_token
+      );
       window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
 
       // Cache auth data in TanStack Query
@@ -97,8 +103,8 @@ export const useLogin = () => {
           description: `Welcome back, ${data.user.full_name || data.user.username}!`,
         });
       } catch (error) {
-        sessionStorage.removeItem("access_token");
-        sessionStorage.removeItem("refresh_token");
+        sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+        sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
         window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
         queryClient.removeQueries({
           queryKey: AUTH_QUERY_KEYS.auth,
@@ -237,16 +243,16 @@ export const useIsAuthenticated = () => {
 // Utility functions for token management
 export const tokenUtils = {
   getAccessToken: (): string | null => {
-    return sessionStorage.getItem("access_token");
+    return sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
   },
 
   getRefreshToken: (): string | null => {
-    return sessionStorage.getItem("refresh_token");
+    return sessionStorage.getItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
   },
 
   removeTokens: (): void => {
-    sessionStorage.removeItem("access_token");
-    sessionStorage.removeItem("refresh_token");
+    sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+    sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
     window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
   },
 

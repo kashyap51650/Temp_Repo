@@ -52,6 +52,7 @@ export type ExperimentStatus =
 
 export const REACT_QUERY_CONFIG = {
   STALE_TIME_OPTIONS: {
+    VERY_SHORT: 1000 * 30, // 30 seconds - for highly dynamic data
     SHORT: 2 * 60 * 1000, // 2 minutes - for frequently changing data
     MEDIUM: 3 * 60 * 1000, // 3 minutes - for moderately stable data
     LONG: 5 * 60 * 1000, // 5 minutes - for stable data
@@ -150,3 +151,41 @@ export const MAX_BODY_WEIGHT_GRAMS = 1000;
 export const CUSTOM_EVENTS = {
   TOKEN_CHANGE: "tokenChange",
 };
+
+export const SESSION_STORAGE_KEYS = {
+  ACCESS_TOKEN: "access_token",
+  REFRESH_TOKEN: "refresh_token",
+} as const;
+
+export const SOCKET_EVENTS = {
+  // Connection events
+  CONNECT: "connect", // Socket connected
+  DISCONNECT: "disconnect", // Socket disconnected
+  CONNECT_ERROR: "connect_error", // Connection error occurred
+  RECONNECT_ATTEMPT: "reconnect_attempt", // Attempting to reconnect
+  RECONNECT_FAILED: "reconnect_failed", // Reconnection failed
+  RECONNECT: "reconnect", // Successfully reconnected
+
+  // Error
+  ERROR: "error", // General socket error
+
+  // Notification events
+  NOTIFICATION_NEW: "notification:new", // New notification received
+  NOTIFICATION_READ: "notification:read", // Notification marked as read
+  NOTIFICATION_UNREAD_COUNT: "notification:unread_count", // Unread count update
+  NOTIFICATION_DELETE: "notification:delete", // Notification deleted
+
+  // User activity events
+  USER_ONLINE: "user:online", // User came online
+  USER_OFFLINE: "user:offline", // User went offline
+
+  // Data upload events
+  DATA_UPLOAD: "data:upload", // New data uploaded
+} as const;
+
+export const SOCKET_CONFIG = {
+  reconnectionAttempts: 3,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 10000,
+} as const;
