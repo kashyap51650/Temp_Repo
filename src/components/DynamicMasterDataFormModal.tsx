@@ -278,6 +278,22 @@ export function DynamicMasterDataFormModal({
           placeholder: "Enter description",
         },
       ],
+      antibodies: [
+        {
+          key: "antibody_name",
+          label: "Antibody Name",
+          type: "text",
+          required: true,
+          placeholder: "Enter antibody name",
+        },
+        {
+          key: "description",
+          label: "Description",
+          type: "textarea",
+          required: true,
+          placeholder: "Enter description",
+        },
+      ],
     };
 
     return (
