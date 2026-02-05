@@ -124,7 +124,7 @@ export type NotificationRow = {
   date: string;
   type: string[];
   recipients: number;
-  status: NotificationStatus | string;
+  status: NotificationStatus;
 };
 
 export const notificationData: NotificationRow[] = [
@@ -739,28 +739,28 @@ export const generateBioDOrganData = (
     const regularData: Record<string, string> = {};
 
     const mouseGroups: Record<string, string[]> = {};
-    mouseList.forEach((mouseCode) => {
+    for (const mouseCode of mouseList) {
       const groupCode = mouseCode.charAt(0);
       if (!mouseGroups[groupCode]) mouseGroups[groupCode] = [];
       mouseGroups[groupCode].push(mouseCode);
-    });
+    }
 
-    Object.entries(mouseGroups).forEach(([groupCode, groupMice]) => {
+    for (const [groupCode, groupMice] of Object.entries(mouseGroups)) {
       if (groupMice.length > 0) {
         groupedData[groupCode] = {
           value: getValueForGroup(groupCode),
           colspan: groupMice.length,
           startColumn: groupMice[0],
-          endColumn: groupMice[groupMice.length - 1],
+          endColumn: groupMice.at(-1) ?? "",
         };
       }
-    });
+    }
 
     // Also create regular data for backward compatibility
-    mouseList.forEach((mouseCode) => {
+    for (const mouseCode of mouseList) {
       const groupCode = mouseCode.charAt(0);
       regularData[mouseCode] = getValueForGroup(groupCode);
-    });
+    }
 
     return { groupedData, regularData };
   };
@@ -1729,64 +1729,6 @@ export const cellLineData: CellLine[] = [
   },
 ];
 
-export const doseValuesData: DoseValues[] = [
-  {
-    id: "1",
-    doseId: "DS-001",
-    doseName: "Low Dose",
-    doseValue: 5.0,
-    unit: "mg/kg",
-    createdBy: "admin@oranomed.com",
-    updatedBy: "admin@oranomed.com",
-    createdAt: "2024-01-15 10:30:00",
-    updatedAt: "2024-01-15 10:30:00",
-  },
-  {
-    id: "2",
-    doseId: "DS-002",
-    doseName: "Medium Dose",
-    doseValue: 15.0,
-    unit: "mg/kg",
-    createdBy: "admin@oranomed.com",
-    updatedBy: "admin@oranomed.com",
-    createdAt: "2024-01-16 14:20:00",
-    updatedAt: "2024-01-16 14:20:00",
-  },
-  {
-    id: "3",
-    doseId: "DS-003",
-    doseName: "High Dose",
-    doseValue: 30.0,
-    unit: "mg/kg",
-    createdBy: "admin@oranomed.com",
-    updatedBy: "admin@oranomed.com",
-    createdAt: "2024-01-17 09:15:00",
-    updatedAt: "2024-01-17 09:15:00",
-  },
-  {
-    id: "4",
-    doseId: "DS-004",
-    doseName: "Therapeutic Dose",
-    doseValue: 100.0,
-    unit: "MBq",
-    createdBy: "admin@oranomed.com",
-    updatedBy: "admin@oranomed.com",
-    createdAt: "2024-01-18 11:45:00",
-    updatedAt: "2024-01-18 11:45:00",
-  },
-  {
-    id: "5",
-    doseId: "DS-005",
-    doseName: "Maintenance Dose",
-    doseValue: 2.5,
-    unit: "ml/day",
-    createdBy: "admin@oranomed.com",
-    updatedBy: "admin@oranomed.com",
-    createdAt: "2024-01-19 16:30:00",
-    updatedAt: "2024-01-19 16:30:00",
-  },
-];
-
 export const vehiclesData: Vehicles[] = [
   {
     id: "1",
@@ -2240,25 +2182,3 @@ export interface CalliperingData {
   measurement_date?: string;
   mice?: CalliperingMouseRow[];
 }
-
-export const calliperingData: CalliperingData = {
-  sex: "Female",
-  strain: "R2G2",
-  dob: "2024-01-11",
-  cell_injection_date: "2024-01-15",
-  cell_line: "A549",
-  treatment_date: "2024-01-20",
-  measurement_date: "2024-01-25",
-  mice: [
-    { id: "MUS01", length_mm: 12.1, width_mm: 8.2, volume_mm3: 820.5 },
-    { id: "MUS02", length_mm: 13.0, width_mm: 8.5, volume_mm3: 920.3 },
-    { id: "MUS03", length_mm: 11.8, width_mm: 7.9, volume_mm3: 735.8 },
-    { id: "MUS04", length_mm: 12.5, width_mm: 8.1, volume_mm3: 844.6 },
-    { id: "MUS05", length_mm: 13.2, width_mm: 8.7, volume_mm3: 957.2 },
-    { id: "MUS06", length_mm: 12.7, width_mm: 8.0, volume_mm3: 847.3 },
-    { id: "MUS07", length_mm: 12.9, width_mm: 8.3, volume_mm3: 892.1 },
-    { id: "MUS08", length_mm: 13.1, width_mm: 8.6, volume_mm3: 938.7 },
-    { id: "MUS09", length_mm: 12.3, width_mm: 8.0, volume_mm3: 820.0 },
-    { id: "MUS10", length_mm: 12.8, width_mm: 8.4, volume_mm3: 896.2 },
-  ],
-};

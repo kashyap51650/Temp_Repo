@@ -33,15 +33,15 @@ export function usePermissions(): UsePermissionsResult {
     if (!data?.roles) return [];
 
     const permissions: string[] = [];
-    data.roles.forEach((role) => {
+    for (const role of data.roles) {
       if (role.assigned_permissions) {
-        role.assigned_permissions.forEach((perm) => {
+        for (const perm of role.assigned_permissions) {
           if (!permissions.includes(perm.resource_key)) {
             permissions.push(perm.resource_key);
           }
-        });
+        }
       }
-    });
+    }
 
     return permissions;
   }, [data]);

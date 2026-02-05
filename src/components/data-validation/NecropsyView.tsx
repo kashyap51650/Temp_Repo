@@ -12,7 +12,7 @@ interface NecropsyViewProps {
 export default function NecropsyView({
   experimentDataId,
   experimentName,
-}: NecropsyViewProps) {
+}: Readonly<NecropsyViewProps>) {
   const { data, isLoading, error } = useExperimentDataByIdForNecropsy(
     experimentDataId || ""
   );

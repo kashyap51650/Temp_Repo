@@ -127,8 +127,7 @@ export default function DataValidation() {
         row.dataType.toLowerCase().includes("weight") &&
         row.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
 
-      let randomizationType: string = RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT;
-
+      let randomizationType: string = RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT; // default fallback
       if (isCalliperingSheet) {
         randomizationType = RANDOMIZATION_PREVIEW_TYPES.VOLUME;
       } else if (isWeightSheetDoseRange) {

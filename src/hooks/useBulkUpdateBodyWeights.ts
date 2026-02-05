@@ -39,7 +39,7 @@ const bulkUpdateBodyWeights = async (
   const endpoint = `/api/v1/body-weight-measurements/${experimentDataId}/bulk-update`;
 
   // Validate all worksheets
-  request.worksheets.forEach((worksheet) => {
+  for (const worksheet of request.worksheets) {
     const invalidMeasurements = worksheet?.measurements?.filter(
       (measurement) => !measurement.id || measurement.body_weight_grams <= 0
     );
@@ -47,7 +47,7 @@ const bulkUpdateBodyWeights = async (
     if (invalidMeasurements?.length) {
       throw new Error("Invalid measurement data provided");
     }
-  });
+  }
 
   return apiClient.patch<BulkUpdateBodyWeightsResponse>(endpoint, request);
 };

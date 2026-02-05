@@ -67,7 +67,6 @@ interface FormProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   errors: ValidationErrors;
-  handleSubmit: () => void;
   isCreatingNewProject: boolean;
 }
 

@@ -34,7 +34,19 @@ export function ProjectSection({
       <Label htmlFor="project">Project</Label>
       <div className="flex gap-2 items-start">
         <div className="flex-1">
-          {!isCreatingNewProject ? (
+          {isCreatingNewProject ? (
+            <Input
+              placeholder="Enter new project name"
+              value={formData.newProjectName}
+              size={"default"}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFormData((prev: any) => ({
+                  ...prev,
+                  newProjectName: e.target.value,
+                }))
+              }
+            />
+          ) : (
             <ProjectSelect
               projects={existingProjects}
               value={selectedProjectId}
@@ -58,18 +70,6 @@ export function ProjectSection({
               }}
               onCreateNew={() => onShowCreateProjectModal?.()}
               disabled={projectsLoading}
-            />
-          ) : (
-            <Input
-              placeholder="Enter new project name"
-              value={formData.newProjectName}
-              size={"default"}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFormData((prev: any) => ({
-                  ...prev,
-                  newProjectName: e.target.value,
-                }))
-              }
             />
           )}
           {projectsLoading && (

@@ -39,7 +39,7 @@ export function TerminateMouseModal({
   selectedMouseIds,
   onConfirm,
   isLoading = false,
-}: TerminateMouseModalProps) {
+}: Readonly<TerminateMouseModalProps>) {
   const [reason, setReason] = useState("");
 
   // Reset reason when modal closes

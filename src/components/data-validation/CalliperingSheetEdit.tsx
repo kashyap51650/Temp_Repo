@@ -145,7 +145,7 @@ export function CalliperingSheetEdit({
         <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
           {Array.from(worksheetData.values()).map((worksheet, index) => (
             <TabsTrigger
-              key={index}
+              key={`${worksheet.worksheetName}-${index}`}
               value={index.toString()}
               className="whitespace-nowrap"
             >
@@ -155,7 +155,10 @@ export function CalliperingSheetEdit({
         </TabsList>
 
         {Array.from(worksheetData.entries()).map(([index, worksheet]) => (
-          <TabsContent key={index} value={index.toString()}>
+          <TabsContent
+            key={`${worksheet.worksheetName}-${index}`}
+            value={index.toString()}
+          >
             <WorksheetEditForm
               worksheet={worksheet}
               worksheetIndex={index}
@@ -195,7 +198,7 @@ function WorksheetEditForm({
   worksheet,
   worksheetIndex,
   onMouseDataChange,
-}: WorksheetEditFormProps) {
+}: Readonly<WorksheetEditFormProps>) {
   // Memoize header fields to prevent recreation on every render
   const headerFields = useMemo(
     () => [
@@ -273,9 +276,15 @@ function WorksheetEditForm({
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-3">
           {headerFields.map((group, groupIndex) => (
-            <div className="space-y-3" key={groupIndex}>
-              {group.map(({ key, label }) => (
-                <div className="flex items-center gap-3" key={key}>
+            <div
+              className="space-y-3"
+              key={`group-${group?.[0]?.key}-${groupIndex}`}
+            >
+              {group.map(({ key, label }, index) => (
+                <div
+                  className="flex items-center gap-3"
+                  key={`field-${key}-${index}`}
+                >
                   <Label className="font-semibold text-sm w-56">{label}</Label>
                   <Input
                     value={

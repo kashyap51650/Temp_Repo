@@ -254,9 +254,9 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
     <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-5%)]">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="justify-start overflow-x-auto flex-nowrap">
-          {reports.map((_, index) => (
+          {reports.map((report, index) => (
             <TabsTrigger
-              key={index}
+              key={`${report?.hematology_report_id}-${index}`}
               value={index.toString()}
               className="whitespace-nowrap"
             >
@@ -266,7 +266,10 @@ export const ViewHematologyData: React.FC<ViewHematologyDataProps> = ({
         </TabsList>
 
         {reports.map((report, index) => (
-          <TabsContent key={index} value={index.toString()}>
+          <TabsContent
+            key={`${report?.hematology_report_id}-${index}`}
+            value={index.toString()}
+          >
             <ReportHeader
               report={report}
               mode={mode}

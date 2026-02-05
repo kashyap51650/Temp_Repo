@@ -24,6 +24,11 @@ import type {
   SaveHematologyPDFPayload,
 } from "@/types/hematology";
 import type {
+  CreateMasterDataItemResponse,
+  MasterDataListResponse,
+  UpdateMasterDataItemResponse,
+} from "@/types/masterData";
+import type {
   CalliperingNotesListParams,
   CalliperingNotesListResponse,
   ConfirmExperimentMouseGroupsPayload,
@@ -818,51 +823,10 @@ export const masterDataApi = {
       page: number;
       size: number;
     }
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: {
-      items: Array<{
-        id: number;
-        created_by: number;
-        updated_by: number;
-        created_at: string;
-        updated_at: string;
-        creator: {
-          id: number;
-          first_name: string;
-          last_name: string;
-          email: string;
-        };
-        updator: {
-          id: number;
-          first_name: string;
-          last_name: string;
-          email: string;
-        };
-        createdBy: string;
-        updatedBy: string;
-        [key: string]: any;
-      }>;
-      total: number;
-      page: number;
-      size: number;
-      pages: number;
-    };
-  }> => {
-    const response = (await apiClient.get(
+  ): Promise<MasterDataListResponse> => {
+    const response = await apiClient.get<MasterDataListResponse>(
       `${API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug)}?page=${filters.page}&size=${filters.size}`
-    )) as {
-      success: boolean;
-      message: string;
-      data: {
-        items: Array<any>;
-        total: number;
-        page: number;
-        size: number;
-        pages: number;
-      };
-    };
+    );
 
     if (response.success && response.data?.items) {
       response.data.items = response.data.items.map((item: any) => ({
@@ -878,40 +842,11 @@ export const masterDataApi = {
   createMasterDataItem: async (
     slug: string,
     data: Record<string, any>
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: {
-      id: number;
-      created_by: number;
-      updated_by: number;
-      created_at: string;
-      updated_at: string;
-      creator: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-      };
-      updator: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-      };
-      createdBy: string;
-      updatedBy: string;
-      [key: string]: any;
-    };
-  }> => {
-    const response = (await apiClient.post(
+  ): Promise<CreateMasterDataItemResponse> => {
+    const response = await apiClient.post<CreateMasterDataItemResponse>(
       API_CONFIG.ENDPOINTS.MASTER_DATA.ITEMS(slug),
       data
-    )) as {
-      success: boolean;
-      message: string;
-      data: any;
-    };
+    );
 
     if (response.success && response.data) {
       response.data = {
@@ -928,40 +863,11 @@ export const masterDataApi = {
     slug: string,
     id: number,
     data: Record<string, any>
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: {
-      id: number;
-      created_by: number;
-      updated_by: number;
-      created_at: string;
-      updated_at: string;
-      creator: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-      };
-      updator: {
-        id: number;
-        first_name: string;
-        last_name: string;
-        email: string;
-      };
-      createdBy: string;
-      updatedBy: string;
-      [key: string]: any;
-    };
-  }> => {
-    const response = (await apiClient.put(
+  ): Promise<UpdateMasterDataItemResponse> => {
+    const response = await apiClient.put<UpdateMasterDataItemResponse>(
       API_CONFIG.ENDPOINTS.MASTER_DATA.ITEM(slug, id),
       data
-    )) as {
-      success: boolean;
-      message: string;
-      data: any;
-    };
+    );
 
     if (response.success && response.data) {
       response.data = {

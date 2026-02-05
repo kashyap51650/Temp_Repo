@@ -4,7 +4,7 @@ import type { ExperimentStatus } from "@/lib/constants";
 export interface Project {
   id: number;
   project_name: string;
-  project_status: "In Progress" | "Completed" | "On Hold" | string;
+  project_status: "In Progress" | "Completed" | "On Hold";
 }
 export interface CellLine {
   id: number;
@@ -30,7 +30,7 @@ export interface Experiment {
   experiment_name: string;
   protocol_number: string;
 
-  specialization: "PRECLINICAL" | "CLINICAL" | string;
+  specialization: "PRECLINICAL" | "CLINICAL";
   status: ExperimentStatus;
 
   fda_tag: boolean;

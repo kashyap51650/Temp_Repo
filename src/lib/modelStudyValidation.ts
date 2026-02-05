@@ -19,50 +19,43 @@ export const ModelStudyFormDataSchema = z.object({
       const hasValidPair = pairs.some(
         (pair) => pair.cell_line_id && pair.mouse_strain_id
       );
-
-      // Check for duplicate pairs
       const pairKeys = new Set<string>();
 
-      for (const [index, pair] of pairs.entries()) {
-        const hasCellLine = pair.cell_line_id !== undefined;
-        const hasMouseStrain = pair.mouse_strain_id !== undefined;
+      function addDuplicateIssues(index: number) {
+        ctx.addIssue({
+          code: "custom",
+          message: "This cell line and mouse strain combination already exists",
+          path: [index, "cell_line_id"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "This cell line and mouse strain combination already exists",
+          path: [index, "mouse_strain_id"],
+        });
+      }
 
-        if (hasCellLine && hasMouseStrain) {
-          const pairKey = `${pair.cell_line_id}-${pair.mouse_strain_id}`;
-          if (pairKeys.has(pairKey)) {
-            ctx.addIssue({
-              code: "custom",
-              message:
-                "This cell line and mouse strain combination already exists",
-              path: [index, "cell_line_id"],
-            });
-            ctx.addIssue({
-              code: "custom",
-              message:
-                "This cell line and mouse strain combination already exists",
-              path: [index, "mouse_strain_id"],
-            });
-            continue;
-          }
-          pairKeys.add(pairKey);
-        }
+      function addEmptyPairIssues(index: number) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Cell line must be selected",
+          path: [index, "cell_line_id"],
+        });
+        ctx.addIssue({
+          code: "custom",
+          message: "Mouse strain must be selected",
+          path: [index, "mouse_strain_id"],
+        });
+      }
 
-        if (!hasCellLine && !hasMouseStrain) {
-          if (!hasValidPair) {
-            ctx.addIssue({
-              code: "custom",
-              message: "Cell line must be selected",
-              path: [index, "cell_line_id"],
-            });
-            ctx.addIssue({
-              code: "custom",
-              message: "Mouse strain must be selected",
-              path: [index, "mouse_strain_id"],
-            });
-          }
-          continue;
-        }
-
+      function addPartialPairIssues({
+        index,
+        hasCellLine,
+        hasMouseStrain,
+      }: {
+        index: number;
+        hasCellLine: boolean;
+        hasMouseStrain: boolean;
+      }) {
         if (hasCellLine && !hasMouseStrain) {
           ctx.addIssue({
             code: "custom",
@@ -76,6 +69,29 @@ export const ModelStudyFormDataSchema = z.object({
             path: [index, "cell_line_id"],
           });
         }
+      }
+
+      for (const [index, pair] of pairs.entries()) {
+        const hasCellLine = pair.cell_line_id !== undefined;
+        const hasMouseStrain = pair.mouse_strain_id !== undefined;
+
+        if (hasCellLine && hasMouseStrain) {
+          const pairKey = `${pair.cell_line_id}-${pair.mouse_strain_id}`;
+          if (pairKeys.has(pairKey)) {
+            addDuplicateIssues(index);
+            continue;
+          }
+          pairKeys.add(pairKey);
+        }
+
+        if (!hasCellLine && !hasMouseStrain) {
+          if (!hasValidPair) {
+            addEmptyPairIssues(index);
+          }
+          continue;
+        }
+
+        addPartialPairIssues({ index, hasCellLine, hasMouseStrain });
       }
     }),
   cellInjectionCounts: z

@@ -67,8 +67,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
     );
   }, [options, query]);
 
-  const shouldShowSearch =
-    showSearch !== undefined ? showSearch : options.length > 5;
+  const shouldShowSearch = showSearch ?? options.length > 5;
 
   const handleQueryChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

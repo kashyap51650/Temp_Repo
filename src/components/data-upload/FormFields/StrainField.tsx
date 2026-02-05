@@ -85,7 +85,7 @@ export function StrainField<T extends FieldValues = Record<string, never>>(
           return response.data || [];
         }}
         searchable={false}
-        queryKey={["strains-dropdown", experimentId ? experimentId : ""]}
+        queryKey={["strains-dropdown", experimentId ?? ""]}
         placeholder={"Select strain"}
         optionWithAll={false}
         size={size}

@@ -19,7 +19,7 @@ import queryClient from "./lib/queryClient";
 Sentry.init({
   // dsn: process.env.REACT_APP_SENTRY_DSN,
   integrations: [browserTracingIntegration()],
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 1,
   // release: APP_VERSION,
   beforeSend(event) {
     //for fututre use

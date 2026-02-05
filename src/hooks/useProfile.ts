@@ -56,8 +56,13 @@ export function useProfile() {
           };
 
           if (response && typeof response === "object" && "data" in response) {
-            const responseData = response.data as any;
-            if (responseData?.profile_picture) {
+            const responseData = response.data;
+            if (
+              responseData &&
+              typeof responseData === "object" &&
+              "profile_picture" in responseData &&
+              responseData?.profile_picture
+            ) {
               updatedData.profile_picture = responseData.profile_picture;
             }
           }

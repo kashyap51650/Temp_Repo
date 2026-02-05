@@ -1,5 +1,6 @@
 import { Label } from "@/components/atoms/Label/Label";
 import type { ExperimentDropdownItem, Project } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 import { CustomSelect } from "./CustomSelect";
 
@@ -71,7 +72,7 @@ export function SpecializationSection({
       <div className="space-y-2">
         <Label
           htmlFor="specialisation"
-          className={`${!isProjectSelected ? "text-muted-foreground" : ""}`}
+          className={cn(isProjectSelected ? "" : "text-muted-foreground")}
         >
           Specialisation
         </Label>
@@ -81,11 +82,10 @@ export function SpecializationSection({
           value={formData.specialisation}
           onValueChange={handleSpecialisationChange}
           disabled={!isProjectSelected}
-          className={
-            !isProjectSelected
-              ? "opacity-50 cursor-not-allowed w-full"
-              : "w-full"
-          }
+          className={cn(
+            "w-full",
+            isProjectSelected ? "" : "opacity-50 cursor-not-allowed"
+          )}
         />
         {!isProjectSelected && (
           <span className="text-xs text-muted-foreground">
@@ -102,7 +102,9 @@ export function SpecializationSection({
         <div className="space-y-2">
           <Label
             htmlFor="studyType"
-            className={`${!isSpecialisationSelected ? "text-muted-foreground" : ""}`}
+            className={cn(
+              isSpecialisationSelected ? "" : "text-muted-foreground"
+            )}
           >
             Study Type
           </Label>

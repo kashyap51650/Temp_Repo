@@ -24,7 +24,7 @@ interface CalliperingSheetViewProps {
   experimentDataId?: string;
   experimentDataType?: string;
   experimentStudyType?: string;
-  apiData?: CalliperingSheetApiResponse | undefined;
+  apiData?: CalliperingSheetApiResponse;
   isLoading?: boolean;
   error?: Error | null;
 }
@@ -153,7 +153,7 @@ export function CalliperingSheetView({
           <TabsList className="justify-start overflow-x-auto flex-nowrap">
             {worksheets.map((worksheet, index) => (
               <TabsTrigger
-                key={index}
+                key={`${worksheet.worksheetName}-${index}`}
                 value={index.toString()}
                 className="whitespace-nowrap"
               >
@@ -163,7 +163,10 @@ export function CalliperingSheetView({
           </TabsList>
 
           {worksheets.map((worksheet, index) => (
-            <TabsContent key={index} value={index.toString()}>
+            <TabsContent
+              key={`${worksheet.worksheetName}-${index}`}
+              value={index.toString()}
+            >
               <WorksheetContent
                 worksheet={worksheet}
                 shouldShowNotesColumn={shouldShowNotesColumn}

@@ -8,11 +8,14 @@ import {
   TabsTrigger,
 } from "@/components/molecules/Tabs/Tabs";
 import { useCaliperHistoryByGroup } from "@/hooks/useCaliperHistoryByGroup";
+import type { CaliperHistoryMeasurement } from "@/lib/api";
+import { getSortedDeliveryIds } from "@/utils/calliperHistoryGroupedUtils";
 
 import { Dialog, Label } from "../atoms";
 import type {
   GroupedCaliperData,
   GroupedMeasurement,
+  GroupedMouseData,
 } from "./CaliperGroupedTable";
 import { CaliperGroupedTable } from "./CaliperGroupedTable";
 
@@ -46,8 +49,7 @@ function ExperimentHeader(header: Readonly<ExperimentHeaderProps>) {
         >
           {group.map(({ key, label }) => {
             const value = header[key as keyof ExperimentHeaderProps];
-            if (typeof value !== "string" && typeof value !== "undefined")
-              return null;
+            if (typeof value !== "string" && value !== undefined) return null;
             return (
               <div className="flex items-center gap-3" key={key}>
                 <Label className="text-sm text-gray-600 w-56">{label}</Label>
@@ -89,6 +91,54 @@ const CaliperHistoryGroupModal: React.FC<
     }
   }, [error]);
 
+  function getSortedGroupIds(
+    tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0]
+  ): string[] {
+    return Object.keys(tabData.group_data_by_group_id).sort(
+      (a, b) => Number.parseInt(a, 10) - Number.parseInt(b, 10)
+    );
+  }
+
+  function convertMouseData(
+    mouseData: Record<string, CaliperHistoryMeasurement>,
+    deliveryId: string,
+    tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0]
+  ): Record<string, GroupedMeasurement> {
+    const result: Record<string, GroupedMeasurement> = {};
+    for (const [date, measurements] of Object.entries(mouseData)) {
+      result[date] = {
+        id: 0,
+        value: measurements.volume_mm3,
+        type: "float",
+        key: "volume_mm3",
+        mouse_id: tabData.mouse_data_by_delivery_id[deliveryId]?.id || 0,
+      };
+    }
+    return result;
+  }
+
+  function updateMouseDataForGroup(
+    groupMeasurements: Record<
+      string,
+      Record<string, CaliperHistoryMeasurement>
+    >,
+    groupName: string,
+    tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0],
+    updatedMouseData: Record<string, GroupedMouseData>
+  ) {
+    const deliveryIds = getSortedDeliveryIds(groupMeasurements);
+    for (const deliveryId of deliveryIds) {
+      const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
+      if (mouseInfo) {
+        updatedMouseData[deliveryId] = {
+          mouse_id: mouseInfo.id,
+          group: groupName,
+          mouse_code: mouseInfo.mouse_code,
+        };
+      }
+    }
+  }
+
   const convertToLegacyFormat = (
     tabData: NonNullable<typeof apiResponse>["data"]["tabs"][0]
   ): GroupedCaliperData => {
@@ -97,69 +147,40 @@ const CaliperHistoryGroupModal: React.FC<
       Record<string, Record<string, GroupedMeasurement>>
     > = {};
 
-    const groupIds = Object.keys(tabData.group_data_by_group_id).sort(
-      (a, b) => parseInt(a, 10) - parseInt(b, 10)
-    );
+    const groupIds = getSortedGroupIds(tabData);
 
-    groupIds.forEach((groupId) => {
+    for (const groupId of groupIds) {
       const groupInfo = tabData.group_data_by_group_id[groupId];
       const groupName = groupInfo?.group_name || `Group ${groupId}`;
-
       convertedMeasurements[groupName] = {};
-
       const groupMeasurements = tabData.caliper_measurements[groupId];
       if (groupMeasurements) {
-        const deliveryIds = Object.keys(groupMeasurements).sort((a, b) => {
-          const numA = parseInt(a.split("-").pop() || "0", 10);
-          const numB = parseInt(b.split("-").pop() || "0", 10);
-          return numA - numB;
-        });
-
-        deliveryIds.forEach((deliveryId) => {
+        const deliveryIds = getSortedDeliveryIds(groupMeasurements);
+        for (const deliveryId of deliveryIds) {
           const mouseData = groupMeasurements[deliveryId];
-          convertedMeasurements[groupName][deliveryId] = {};
-
-          Object.entries(mouseData).forEach(([date, measurements]) => {
-            const measurement: GroupedMeasurement = {
-              id: 0,
-              value: measurements.volume_mm3,
-              type: "float",
-              key: "volume_mm3",
-              mouse_id: tabData.mouse_data_by_delivery_id[deliveryId]?.id || 0,
-            };
-            convertedMeasurements[groupName][deliveryId][date] = measurement;
-          });
-        });
+          convertedMeasurements[groupName][deliveryId] = convertMouseData(
+            mouseData,
+            deliveryId,
+            tabData
+          );
+        }
       }
-    });
+    }
 
-    // Update mouse_data_by_delivery_id to include group names in chronological order
-    const updatedMouseData: Record<string, any> = {};
-
-    groupIds.forEach((groupId) => {
+    const updatedMouseData: Record<string, GroupedMouseData> = {};
+    for (const groupId of groupIds) {
       const groupInfo = tabData.group_data_by_group_id[groupId];
       const groupName = groupInfo?.group_name || `Group ${groupId}`;
       const groupMeasurements = tabData.caliper_measurements[groupId];
-
       if (groupMeasurements) {
-        const deliveryIds = Object.keys(groupMeasurements).sort((a, b) => {
-          const numA = parseInt(a.split("-").pop() || "0", 10);
-          const numB = parseInt(b.split("-").pop() || "0", 10);
-          return numA - numB;
-        });
-
-        deliveryIds.forEach((deliveryId) => {
-          const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
-          if (mouseInfo) {
-            updatedMouseData[deliveryId] = {
-              mouse_id: mouseInfo.id,
-              group: groupName,
-              mouse_code: mouseInfo.mouse_code,
-            };
-          }
-        });
+        updateMouseDataForGroup(
+          groupMeasurements,
+          groupName,
+          tabData,
+          updatedMouseData
+        );
       }
-    });
+    }
 
     return {
       caliper_measurements_dates: [...tabData.caliper_measurements_dates],

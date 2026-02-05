@@ -88,14 +88,14 @@ export function CaliperDataTable({ data }: Readonly<CaliperDataTableProps>) {
         mouseData: (typeof mouse_data_by_delivery_id)[string];
       }[]
     > = {};
-    Object.entries(mouse_data_by_delivery_id).forEach(
-      ([deliveryId, mouseData]) => {
-        if (!groups[mouseData.group]) {
-          groups[mouseData.group] = [];
-        }
-        groups[mouseData.group].push({ deliveryId, mouseData });
+    for (const [deliveryId, mouseData] of Object.entries(
+      mouse_data_by_delivery_id
+    )) {
+      if (!groups[mouseData.group]) {
+        groups[mouseData.group] = [];
       }
-    );
+      groups[mouseData.group].push({ deliveryId, mouseData });
+    }
     return groups;
   }, [mouse_data_by_delivery_id]);
 
@@ -147,21 +147,21 @@ export function CaliperDataTable({ data }: Readonly<CaliperDataTableProps>) {
                       caliper_measurements[groupName]?.[deliveryId]?.[date];
                     const volumeValue = measurement?.volume_mm3 ?? null;
                     const colorClass =
-                      volumeValue !== null
-                        ? getCellColorClass(volumeValue)
-                        : "";
+                      volumeValue === null
+                        ? ""
+                        : getCellColorClass(volumeValue);
                     return (
                       <TableCell
                         key={`${deliveryId}-${date}`}
                         className={cn("text-center border h-9!", colorClass)}
                       >
-                        {volumeValue !== null ? (
-                          <span className="font-semibold text-sm">
-                            {volumeValue.toFixed(1)}
-                          </span>
-                        ) : (
+                        {volumeValue === null ? (
                           <span className="text-muted-foreground text-sm">
                             —
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-sm">
+                            {volumeValue.toFixed(1)}
                           </span>
                         )}
                       </TableCell>

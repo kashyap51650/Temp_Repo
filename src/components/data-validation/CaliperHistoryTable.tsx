@@ -143,14 +143,16 @@ export function CaliperHistoryTable({
                 const measurement = caliper_measurements[deliveryId]?.[date];
                 const value = measurement?.value ?? null;
                 const colorClass =
-                  value !== null ? getCellColorClass(value) : "";
+                  value === null ? "" : getCellColorClass(value);
 
                 return (
                   <TableCell
                     key={`${deliveryId}-${date}`}
                     className={cn("text-center border font-medium", colorClass)}
                   >
-                    {value !== null ? (
+                    {value === null ? (
+                      <span className="text-muted-foreground text-lg">—</span>
+                    ) : (
                       <div className="flex flex-col">
                         <span className="font-semibold text-lg">
                           {value.toFixed(2)}
@@ -159,8 +161,6 @@ export function CaliperHistoryTable({
                           mm³
                         </span>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground text-lg">—</span>
                     )}
                   </TableCell>
                 );

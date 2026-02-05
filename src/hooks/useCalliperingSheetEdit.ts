@@ -36,7 +36,7 @@ export function useCalliperingSheetEdit(experimentDataId?: string) {
     if (worksheets.length > 0 && !initializedRef.current) {
       const newWorksheetData = new Map<number, CalliperingWorksheetEditData>();
 
-      worksheets.forEach((worksheet, index) => {
+      for (const [index, worksheet] of worksheets.entries()) {
         newWorksheetData.set(index, {
           worksheetId: worksheet.worksheetId,
           worksheetName: worksheet.worksheetName,
@@ -57,7 +57,7 @@ export function useCalliperingSheetEdit(experimentDataId?: string) {
             volume_mm3: mouse.volume_mm3,
           })),
         });
-      });
+      }
 
       setWorksheetData(newWorksheetData);
       initializedRef.current = true;
@@ -74,12 +74,12 @@ export function useCalliperingSheetEdit(experimentDataId?: string) {
         if (!worksheet) return prev;
 
         // Handle special cases for ID fields
-        if (field === "strain" && !isNaN(Number(value))) {
+        if (field === "strain" && !Number.isNaN(Number(value))) {
           newMap.set(worksheetIndex, {
             ...worksheet,
             strainId: Number(value),
           });
-        } else if (field === "cellLine" && !isNaN(Number(value))) {
+        } else if (field === "cellLine" && !Number.isNaN(Number(value))) {
           newMap.set(worksheetIndex, {
             ...worksheet,
             cellLineId: Number(value),

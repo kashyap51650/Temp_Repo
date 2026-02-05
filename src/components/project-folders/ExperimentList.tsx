@@ -51,7 +51,7 @@ export function ExperimentList({
     search: debounceValue || undefined,
     page: currentPage,
     size: DEFAULT_PAGE_SIZE,
-    status: statusFilter !== SELECT_ALL ? statusFilter : undefined,
+    status: statusFilter === SELECT_ALL ? undefined : statusFilter,
   });
 
   const experiments = experimentsData?.data?.experiments || [];

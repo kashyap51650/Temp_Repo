@@ -120,9 +120,7 @@ export function PermissionsTab({
       );
       setPermissionGroups(transformedGroups);
       // Store original state for reverting changes
-      setOriginalPermissionGroups(
-        JSON.parse(JSON.stringify(transformedGroups))
-      );
+      setOriginalPermissionGroups(structuredClone(transformedGroups));
     }
   }, [permissionsResponse]);
 
@@ -218,13 +216,13 @@ export function PermissionsTab({
     // Collect all selected permission IDs
     const selectedPermissionIds: number[] = [];
 
-    permissionGroups.forEach((group) => {
-      group.permissions.forEach((permission) => {
+    for (const group of permissionGroups) {
+      for (const permission of group.permissions) {
         if (permission.checked) {
           selectedPermissionIds.push(Number.parseInt(permission.id, 10));
         }
-      });
-    });
+      }
+    }
 
     // Call the API with the selected role ID and permission IDs
     updatePermissionsMutation.mutate({
@@ -235,7 +233,7 @@ export function PermissionsTab({
 
   const handleCancel = () => {
     // Revert all changes to original state
-    setPermissionGroups(JSON.parse(JSON.stringify(originalPermissionGroups)));
+    setPermissionGroups(structuredClone(originalPermissionGroups));
     onCancel();
   };
 

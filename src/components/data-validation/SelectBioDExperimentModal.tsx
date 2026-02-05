@@ -78,6 +78,64 @@ export function SelectBioDExperimentModal({
     onCreateNew();
   };
 
+  const renderExperimentSelection = () => {
+    if (experimentsLoading) {
+      return (
+        <div className="flex items-center justify-center py-4">
+          <div className="text-sm text-muted-foreground">
+            Loading experiments...
+          </div>
+        </div>
+      );
+    }
+
+    if (experimentOptions.length === 0) {
+      return (
+        <div className="p-4 border rounded-lg bg-muted/50 text-center">
+          <p className="text-sm text-muted-foreground mb-3">
+            No Bio Distribution experiments found
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCreateNew}
+            className="gap-2"
+            disabled={isProceedDisabled}
+          >
+            <Plus className="size-4" />
+            Create New Experiment
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <CustomSelect
+          options={experimentOptions}
+          placeholder="Select experiment..."
+          value={selectedExperimentId?.toString() ?? ""}
+          onValueChange={(value: string | string[]) => {
+            const id = typeof value === "string" ? value : value[0];
+            setSelectedExperimentId(id ? Number(id) : null);
+          }}
+          disabled={isProceedDisabled}
+          className="w-full"
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCreateNew}
+          className="w-full gap-2 mt-2"
+          disabled={isProceedDisabled}
+        >
+          <Plus className="size-4" />
+          Create New Experiment
+        </Button>
+      </>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
@@ -112,53 +170,7 @@ export function SelectBioDExperimentModal({
             <Label htmlFor="experiment-select">
               Bio Distribution Experiment
             </Label>
-            {experimentsLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="text-sm text-muted-foreground">
-                  Loading experiments...
-                </div>
-              </div>
-            ) : experimentOptions.length === 0 ? (
-              <div className="p-4 border rounded-lg bg-muted/50 text-center">
-                <p className="text-sm text-muted-foreground mb-3">
-                  No Bio Distribution experiments found
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCreateNew}
-                  className="gap-2"
-                  disabled={isProceedDisabled}
-                >
-                  <Plus className="size-4" />
-                  Create New Experiment
-                </Button>
-              </div>
-            ) : (
-              <>
-                <CustomSelect
-                  options={experimentOptions}
-                  placeholder="Select experiment..."
-                  value={selectedExperimentId?.toString() || ""}
-                  onValueChange={(value: string | string[]) => {
-                    const id = typeof value === "string" ? value : value[0];
-                    setSelectedExperimentId(id ? Number(id) : null);
-                  }}
-                  disabled={experimentsLoading || isProceedDisabled}
-                  className="w-full"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCreateNew}
-                  className="w-full gap-2 mt-2"
-                  disabled={isProceedDisabled}
-                >
-                  <Plus className="size-4" />
-                  Create New Experiment
-                </Button>
-              </>
-            )}
+            {renderExperimentSelection()}
           </div>
         </div>
 

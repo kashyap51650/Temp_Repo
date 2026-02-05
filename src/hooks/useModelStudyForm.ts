@@ -63,9 +63,24 @@ export function useModelStudyForm({
 
   const handleRemovePair = useCallback(
     (index: number) => {
+      const pairToRemove = form.getValues(`cellLineStrainPairs.${index}`);
       remove(index);
+      const remainingPairs = form.getValues("cellLineStrainPairs");
+      if (
+        pairToRemove?.cell_line_id !== undefined &&
+        pairToRemove?.mouse_strain_id !== undefined
+      ) {
+        const stillExists = remainingPairs.some(
+          (pair) =>
+            pair?.cell_line_id === pairToRemove.cell_line_id &&
+            pair?.mouse_strain_id === pairToRemove.mouse_strain_id
+        );
+        if (stillExists) {
+          form.trigger("cellLineStrainPairs");
+        }
+      }
     },
-    [remove]
+    [remove, form]
   );
 
   const handleCancel = useCallback(() => {

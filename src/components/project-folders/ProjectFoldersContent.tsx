@@ -92,7 +92,6 @@ export function ProjectFoldersContent() {
           goBackToStudyTypes={goBackToStudyTypes}
           sourceExperimentId={selectedExperiment.id}
           projectId={currentProject.id}
-          studyTypeId={selectedExperiment.study_type_id}
           specialization={selectedExperiment.specialization}
         />
       </div>

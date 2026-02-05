@@ -68,24 +68,24 @@ export const generateBioDOrganData = (
     const regularData: Record<string, string> = {};
     const miceByGroup: Record<string, string[]> = {};
 
-    mouseList.forEach((mouseCode) => {
+    for (const mouseCode of mouseList) {
       const groupCode = mouseCode.charAt(0);
       miceByGroup[groupCode] ??= [];
       miceByGroup[groupCode].push(mouseCode);
-    });
+    }
 
-    Object.entries(miceByGroup).forEach(([groupCode, groupMice]) => {
+    for (const [groupCode, groupMice] of Object.entries(miceByGroup)) {
       groupedData[groupCode] = {
         value: getValueByGroup(groupCode),
         colspan: groupMice.length,
         startColumn: groupMice[0],
-        endColumn: groupMice[groupMice.length - 1],
+        endColumn: groupMice.at(-1) ?? "",
       };
-    });
+    }
 
-    mouseList.forEach((mouseCode) => {
+    for (const mouseCode of mouseList) {
       regularData[mouseCode] = getValueByGroup(mouseCode.charAt(0));
-    });
+    }
 
     return { groupedData, regularData };
   };

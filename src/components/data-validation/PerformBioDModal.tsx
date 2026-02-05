@@ -60,13 +60,13 @@ export function PerformBioDModal({
     if (!mouseGroups || selectedGroups.length === 0) return new Set<string>();
 
     const pairs = new Set<string>();
-    mouseGroups
-      .filter((group) => selectedGroups.includes(group.id))
-      .forEach((group) => {
-        if (group.cellLineId && group.mouseStrainId) {
-          pairs.add(`${group.cellLineId}-${group.mouseStrainId}`);
-        }
-      });
+    for (const group of mouseGroups.filter((group) =>
+      selectedGroups.includes(group.id)
+    )) {
+      if (group.cellLineId && group.mouseStrainId) {
+        pairs.add(`${group.cellLineId}-${group.mouseStrainId}`);
+      }
+    }
 
     return pairs;
   }, [mouseGroups, selectedGroups]);
@@ -83,8 +83,14 @@ export function PerformBioDModal({
     return selectedPairs.has(groupKey);
   };
 
-  const handleCheckboxChange = (groupId: number, checked: boolean) => {
-    if (checked) {
+  const handleCheckboxChange = ({
+    groupId,
+    isChecked,
+  }: {
+    groupId: number;
+    isChecked: boolean;
+  }) => {
+    if (isChecked) {
       setSelectedGroups((prev) => [...prev, groupId]);
     } else {
       setSelectedGroups((prev) => {
@@ -136,7 +142,7 @@ export function PerformBioDModal({
         { cellLineId: number; mouseStrainId: number }
       >();
 
-      selectedMouseGroups.forEach((group) => {
+      for (const group of selectedMouseGroups) {
         if (group.cellLineId && group.mouseStrainId) {
           const key = `${group.cellLineId}-${group.mouseStrainId}`;
           if (!uniquePairs.has(key)) {
@@ -146,7 +152,7 @@ export function PerformBioDModal({
             });
           }
         }
-      });
+      }
 
       // Validate all unique pairs in parallel
       const validationPromises = Array.from(uniquePairs.values()).map(
@@ -271,6 +277,96 @@ export function PerformBioDModal({
     enabledGroupsCount > 0 &&
     selectedGroups.length === enabledGroupsCount;
 
+  const renderMouseGroupsSection = () => {
+    if (isLoadingGroups) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="text-sm text-muted-foreground">
+            Loading mouse groups...
+          </div>
+        </div>
+      );
+    }
+
+    if (!mouseGroups || mouseGroups.length === 0) {
+      return (
+        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+          No mouse groups available for this experiment
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-2">
+        {/* Select All Checkbox */}
+        <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
+          <Checkbox
+            id="select-all"
+            checked={isAllSelected}
+            onCheckedChange={handleSelectAll}
+            disabled={enabledGroupsCount === 0}
+          />
+          <label
+            htmlFor="select-all"
+            className="text-sm font-medium cursor-pointer flex-1"
+          >
+            Select All ({enabledGroupsCount} available of {mouseGroups.length}{" "}
+            groups)
+          </label>
+        </div>
+
+        {/* Individual Mouse Groups */}
+        <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-2">
+          {mouseGroups.map((group) => {
+            const isEnabled = isGroupEnabled(group);
+            const isDisabled = selectedGroups.length > 0 && !isEnabled;
+
+            return (
+              <div
+                key={group.id}
+                className={`flex items-start gap-3 p-3 border rounded-lg transition-colors ${
+                  isDisabled
+                    ? "bg-muted/30 opacity-50 cursor-not-allowed"
+                    : "hover:bg-muted/50 cursor-pointer"
+                }`}
+                title={
+                  isDisabled
+                    ? "Different cell line or mouse strain combination"
+                    : undefined
+                }
+              >
+                <Checkbox
+                  id={`group-${group.id}`}
+                  checked={selectedGroups.includes(group.id)}
+                  onCheckedChange={(checked: boolean) =>
+                    handleCheckboxChange({
+                      groupId: group.id,
+                      isChecked: checked,
+                    })
+                  }
+                  disabled={isDisabled}
+                />
+                <label
+                  htmlFor={`group-${group.id}`}
+                  className={`flex-1 ${
+                    isDisabled ? "cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  <div className="font-medium text-sm">{group.name}</div>
+                  {isDisabled && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Different combination - cannot mix
+                    </div>
+                  )}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog open={isOpen && !showConfirmDialog} onOpenChange={handleClose}>
@@ -287,84 +383,7 @@ export function PerformBioDModal({
               analysis:
             </p>
 
-            {isLoadingGroups ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-muted-foreground">
-                  Loading mouse groups...
-                </div>
-              </div>
-            ) : !mouseGroups || mouseGroups.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                No mouse groups available for this experiment
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {/* Select All Checkbox */}
-                <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/50">
-                  <Checkbox
-                    id="select-all"
-                    checked={isAllSelected}
-                    onCheckedChange={handleSelectAll}
-                    disabled={enabledGroupsCount === 0}
-                  />
-                  <label
-                    htmlFor="select-all"
-                    className="text-sm font-medium cursor-pointer flex-1"
-                  >
-                    Select All ({enabledGroupsCount} available of{" "}
-                    {mouseGroups.length} groups)
-                  </label>
-                </div>
-
-                {/* Individual Mouse Groups */}
-                <div className="max-h-[400px] overflow-y-auto space-y-2 border rounded-lg p-2">
-                  {mouseGroups.map((group) => {
-                    const isEnabled = isGroupEnabled(group);
-                    const isDisabled = selectedGroups.length > 0 && !isEnabled;
-
-                    return (
-                      <div
-                        key={group.id}
-                        className={`flex items-start gap-3 p-3 border rounded-lg transition-colors ${
-                          isDisabled
-                            ? "bg-muted/30 opacity-50 cursor-not-allowed"
-                            : "hover:bg-muted/50 cursor-pointer"
-                        }`}
-                        title={
-                          isDisabled
-                            ? "Different cell line or mouse strain combination"
-                            : undefined
-                        }
-                      >
-                        <Checkbox
-                          id={`group-${group.id}`}
-                          checked={selectedGroups.includes(group.id)}
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange(group.id, checked as boolean)
-                          }
-                          disabled={isDisabled}
-                        />
-                        <label
-                          htmlFor={`group-${group.id}`}
-                          className={`flex-1 ${
-                            isDisabled ? "cursor-not-allowed" : "cursor-pointer"
-                          }`}
-                        >
-                          <div className="font-medium text-sm">
-                            {group.name}
-                          </div>
-                          {isDisabled && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Different combination - cannot mix
-                            </div>
-                          )}
-                        </label>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {renderMouseGroupsSection()}
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t">
@@ -427,7 +446,7 @@ export function PerformBioDModal({
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {validationErrors.map((error, index) => (
                 <div
-                  key={index}
+                  key={`${error.message}-${index}`}
                   className="p-3 bg-destructive/10 border border-destructive/20 rounded-md"
                 >
                   <p className="text-sm font-medium text-destructive">

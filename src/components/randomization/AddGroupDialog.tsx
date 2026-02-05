@@ -21,7 +21,7 @@ export function AddGroupDialog({
   isOpen,
   onClose,
   onSave,
-}: AddGroupDialogProps) {
+}: Readonly<AddGroupDialogProps>) {
   const [groupName, setGroupName] = useState("");
 
   const handleSave = () => {

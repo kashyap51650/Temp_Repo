@@ -8,7 +8,8 @@ import {
 import * as React from "react";
 import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
 
-import { Button, buttonVariants } from "@/components/atoms/Button/Button";
+import { Button } from "@/components/atoms/Button/Button";
+import { buttonVariants } from "@/components/atoms/Button/buttonVariants";
 import { cn } from "@/lib/utils";
 
 function CalendarRoot({
@@ -32,12 +33,12 @@ function CalendarChevron({
   className,
   orientation,
   ...props
-}: {
+}: Readonly<{
   className?: string;
   size?: number;
   disabled?: boolean;
   orientation?: "left" | "right" | "down" | "up";
-}) {
+}>) {
   if (orientation === "left") {
     return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
   }

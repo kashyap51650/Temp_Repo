@@ -80,7 +80,7 @@ export const PreviewHematologyReportModal: React.FC<
   // Render dialog content based on data state
   const renderDialogContent = () => {
     // No data state
-    if (!hematologyData || !hematologyData.reports_data?.length) {
+    if (!hematologyData?.reports_data?.length) {
       return (
         <div className="flex flex-col items-center justify-center h-64">
           <div>

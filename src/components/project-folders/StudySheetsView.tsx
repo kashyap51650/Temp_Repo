@@ -14,7 +14,6 @@ interface StudySheetsViewProps {
   goBackToStudyTypes: () => void;
   sourceExperimentId: number;
   projectId: number;
-  studyTypeId?: number;
   specialization?: string;
 }
 

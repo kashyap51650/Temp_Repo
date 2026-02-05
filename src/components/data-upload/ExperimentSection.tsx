@@ -12,6 +12,7 @@ import type {
   RandomizationStatus,
 } from "@/lib/api";
 import { DATA_TYPE } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 import { ViewRandomizationButton } from "../molecules/ViewRandomizationButton/ViewRandomizationButton";
 import { CustomSelect } from "./CustomSelect";
@@ -191,7 +192,7 @@ export function ExperimentSection({
       <div className="space-y-2">
         <Label
           htmlFor="experiment"
-          className={`${!isStudyTypeSelected ? "text-muted-foreground" : ""}`}
+          className={cn(isStudyTypeSelected ? "" : "text-muted-foreground")}
         >
           Experiment
         </Label>
@@ -246,7 +247,7 @@ export function ExperimentSection({
       <div className="space-y-2">
         <Label
           htmlFor="dataType"
-          className={`${!isExperimentSelected ? "text-muted-foreground" : ""}`}
+          className={cn(isExperimentSelected ? "" : "text-muted-foreground")}
         >
           Data Type
         </Label>

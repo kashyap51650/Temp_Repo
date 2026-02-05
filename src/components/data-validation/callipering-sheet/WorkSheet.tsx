@@ -102,7 +102,7 @@ const getReadOnlyCalliperingColumns = ({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  className={`m-auto text-left p-0 ${!row.original.notes ? "cursor-default" : ""}`}
+                  className={`m-auto text-left p-0 ${row.original.notes ? "" : "cursor-default"}`}
                   size="sm"
                   onClick={() => {
                     if (row.original.notes && row.original.measurement_id) {
@@ -169,7 +169,7 @@ export function WorksheetContent({
   enableRowSelection,
   onViewNotes,
   onTerminateClick,
-}: WorksheetContentProps) {
+}: Readonly<WorksheetContentProps>) {
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
 
   // Get actual selected rows based on IDs
@@ -189,7 +189,7 @@ export function WorksheetContent({
     });
   };
 
-  const handleSelectAll = (isSelected: boolean) => {
+  const handleSelectAll = ({ isSelected }: { isSelected: boolean }) => {
     if (isSelected) {
       setSelectedRowIds(new Set(worksheet.mice.map((m) => m.id)));
     } else {
@@ -213,7 +213,7 @@ export function WorksheetContent({
     onViewNotes,
     selectedRowIds,
     onCheckboxChange: handleCheckboxChange,
-    onSelectAll: handleSelectAll,
+    onSelectAll: (isSelected) => handleSelectAll({ isSelected }),
     allRowsCount: worksheet.mice.length,
   });
 
@@ -266,8 +266,8 @@ export function WorksheetContent({
 
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-3">
-          {metadataFields.map((group, groupIndex) => (
-            <div className="space-y-3" key={groupIndex}>
+          {metadataFields.map((group, index) => (
+            <div className="space-y-3" key={`${group?.[0]?.key}-${index}`}>
               {group.map(({ key, label, value }) => (
                 <div className="flex items-center gap-3" key={key}>
                   <Label className="font-semibold text-sm w-56">{label}</Label>

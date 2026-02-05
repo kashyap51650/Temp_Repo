@@ -85,7 +85,7 @@ export function CellLineField<T extends FieldValues = Record<string, never>>(
           return response.data || [];
         }}
         searchable={false}
-        queryKey={["cell-lines-dropdown", experimentId ? experimentId : ""]}
+        queryKey={["cell-lines-dropdown", experimentId ?? ""]}
         placeholder="Select cell line"
         size={size}
         optionWithAll={false}

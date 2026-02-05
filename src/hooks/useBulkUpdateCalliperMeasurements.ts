@@ -40,7 +40,7 @@ const bulkUpdateCalliperMeasurements = async (
   const endpoint = `/api/v1/caliper-measurements/${experimentDataId}/bulk-update`;
 
   // Validate all worksheets
-  request.worksheets.forEach((worksheet) => {
+  for (const worksheet of request.worksheets) {
     const invalidMeasurements = worksheet.measurements.filter(
       (measurement) =>
         !measurement.id ||
@@ -51,7 +51,7 @@ const bulkUpdateCalliperMeasurements = async (
     if (invalidMeasurements.length > 0) {
       throw new Error("Invalid measurement data provided");
     }
-  });
+  }
 
   return apiClient.patch<BulkUpdateCalliperMeasurementsResponse>(
     endpoint,

@@ -239,7 +239,7 @@ export function BioDWeightSheetView({
         <TabsList className="w-full justify-start overflow-x-auto">
           {worksheets.map((worksheet, index) => (
             <TabsTrigger
-              key={index}
+              key={`${worksheet.worksheetName}-${index}`}
               value={index.toString()}
               className="text-sm"
             >
@@ -249,7 +249,10 @@ export function BioDWeightSheetView({
         </TabsList>
 
         {worksheets.map((worksheet, index) => (
-          <TabsContent key={index} value={index.toString()}>
+          <TabsContent
+            key={`${worksheet.worksheetName}-${index}`}
+            value={index.toString()}
+          >
             <WorksheetContent
               worksheet={worksheet}
               experimentStudyType={experimentStudyType}
@@ -306,7 +309,10 @@ function WorksheetContent({
                 const value = worksheet[key as keyof TransformedWorksheetData];
                 if (typeof value !== "string") return null;
                 return (
-                  <div className="flex items-center gap-3" key={key}>
+                  <div
+                    className="flex items-center gap-3"
+                    key={`${group.id}-${key}`}
+                  >
                     <Label className="font-semibold text-sm w-56">
                       {label}
                     </Label>

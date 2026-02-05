@@ -50,7 +50,7 @@ function GroupCell({
   experimentDrugs,
   onCellChange,
   onDrugChange,
-}: GroupCellProps) {
+}: Readonly<GroupCellProps>) {
   const isEditable = editable || fixedTopRowsEditable;
 
   if (rowId === "drugName" && isEditable && onDrugChange) {
@@ -106,7 +106,7 @@ function DataCell({
   editable,
   fixedTopRowsEditable = false,
   onCellChange,
-}: DataCellProps) {
+}: Readonly<DataCellProps>) {
   const isEditable = editable || fixedTopRowsEditable;
   const stringValue = value || "";
 

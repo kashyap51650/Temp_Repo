@@ -102,16 +102,14 @@ export function CaliperGroupedTable({
       }[]
     > = {};
 
-    const entries = Object.entries(mouse_data_by_delivery_id) as Array<
-      [string, (typeof mouse_data_by_delivery_id)[string]]
-    >;
+    const entries = Object.entries(mouse_data_by_delivery_id);
 
-    entries.forEach(([deliveryId, mouseData]) => {
+    for (const [deliveryId, mouseData] of entries) {
       if (!groups[mouseData.group]) {
         groups[mouseData.group] = [];
       }
       groups[mouseData.group].push({ deliveryId, mouseData });
-    });
+    }
     return groups;
   }, [mouse_data_by_delivery_id]);
 
@@ -188,7 +186,7 @@ export function CaliperGroupedTable({
                     caliper_measurements[groupName]?.[deliveryId]?.[date];
                   const value = measurement?.value ?? null;
                   const colorClass =
-                    value !== null ? getCellColorClass(value) : "";
+                    value === null ? "" : getCellColorClass(value);
 
                   return (
                     <TableCell
@@ -198,14 +196,14 @@ export function CaliperGroupedTable({
                         colorClass
                       )}
                     >
-                      {value !== null ? (
+                      {value === null ? (
+                        <span className="text-muted-foreground text-sm">—</span>
+                      ) : (
                         <div className="flex flex-col">
                           <span className="font-semibold text-sm">
                             {value.toFixed(0)}
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
                       )}
                     </TableCell>
                   );

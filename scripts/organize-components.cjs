@@ -39,7 +39,7 @@ const moveComponent = (componentName, targetFolder, atomicLevel) => {
 const updateBarrelExports = () => {
   const levels = ["atoms", "molecules", "organisms", "templates"];
 
-  levels.forEach((level) => {
+  for (const level of levels) {
     const levelPath = `src/components/${level}`;
     if (!fs.existsSync(levelPath)) {
       fs.mkdirSync(levelPath, { recursive: true });
@@ -60,10 +60,10 @@ const updateBarrelExports = () => {
     console.log(
       `Updated barrel exports for ${level}: ${components.length} components`
     );
-  });
+  }
 
   // Create other barrel exports
-  ["pages", "hooks"].forEach((folder) => {
+  for (const folder of ["pages", "hooks"]) {
     const folderPath = `src/${folder}`;
     if (!fs.existsSync(folderPath)) {
       fs.mkdirSync(folderPath, { recursive: true });
@@ -71,13 +71,13 @@ const updateBarrelExports = () => {
     if (!fs.existsSync(`${folderPath}/index.ts`)) {
       fs.writeFileSync(`${folderPath}/index.ts`, "// Barrel exports\n");
     }
-  });
+  }
 };
 
 // Execute organization
-componentMappings.forEach(({ ui, folder, level }) => {
+for (const { ui, folder, level } of componentMappings) {
   moveComponent(ui, folder, level);
-});
+}
 
 updateBarrelExports();
 

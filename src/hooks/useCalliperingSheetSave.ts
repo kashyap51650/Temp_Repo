@@ -70,9 +70,9 @@ export function useCalliperingSheetSave() {
     let isValid = true;
 
     // Process each worksheet
-    currentData!.forEach((currentWorksheet, worksheetIndex) => {
+    for (const [worksheetIndex, currentWorksheet] of currentData!.entries()) {
       const originalWorksheet = originalData![worksheetIndex];
-      if (!originalWorksheet || !currentWorksheet.worksheetId) return;
+      if (!originalWorksheet || !currentWorksheet.worksheetId) continue;
 
       const worksheetUpdate: CalliperingWorksheetUpdate = {
         worksheet: {
@@ -84,10 +84,10 @@ export function useCalliperingSheetSave() {
       let hasMeasurementChanges = false;
 
       // Check measurement changes
-      currentWorksheet.mice.forEach((currentMouse, index) => {
+      for (const [index, currentMouse] of currentWorksheet.mice.entries()) {
         const originalMouse = originalWorksheet.mice[index];
 
-        if (!originalMouse || !currentMouse.measurement_id) return;
+        if (!originalMouse || !currentMouse.measurement_id) continue;
 
         const lengthChanged =
           currentMouse.length_mm !== originalMouse.length_mm;
@@ -102,7 +102,7 @@ export function useCalliperingSheetSave() {
             )
           ) {
             isValid = false;
-            return;
+            continue;
           }
 
           worksheetUpdate.measurements.push({
@@ -112,14 +112,14 @@ export function useCalliperingSheetSave() {
           });
           hasMeasurementChanges = true;
         }
-      });
+      }
 
       // Add worksheet to updates if it has measurement changes
       if (hasMeasurementChanges) {
         worksheetUpdates.push(worksheetUpdate);
         hasAnyChanges = true;
       }
-    });
+    }
 
     if (!isValid) return;
 

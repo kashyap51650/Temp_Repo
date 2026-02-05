@@ -264,13 +264,14 @@ export function GenericFileUploadArea({
           {isUploading && (
             <div className="w-10/12 mx-auto mt-4">
               <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
+                <div // NOSONAR - Using div with ARIA progressbar for custom styling; native <progress> doesn't support rounded styling
                   className="h-2 bg-primary rounded-full transition-all"
                   style={{ width: `${uploadProgress}%` }}
                   role="progressbar"
                   aria-valuenow={uploadProgress}
                   aria-valuemin={0}
                   aria-valuemax={100}
+                  aria-label="File upload progress"
                 />
               </div>
               <div className="text-xs text-muted-foreground mt-1 text-center">

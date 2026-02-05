@@ -28,7 +28,7 @@ export function MoveMiceWizard({
   projectId,
   // studyTypeId: _studyTypeId, // Intentionally unused - kept for API compatibility
   specialization = "Preclinical",
-}: MoveMiceWizardProps) {
+}: Readonly<MoveMiceWizardProps>) {
   const [currentStep, setCurrentStep] = useState<MoveMiceStepType>(
     MoveMiceStep.SELECT_MICE
   );
@@ -94,7 +94,7 @@ export function MoveMiceWizard({
     } = studyTypeData;
     setSelectedStudyTypeId(studyTypeId);
     setSelectedStudyTypeName(studyTypeName);
-    setSelectedStudyTypeCode(studyTypeCode as StudyTypeCode);
+    setSelectedStudyTypeCode(studyTypeCode);
     setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
 

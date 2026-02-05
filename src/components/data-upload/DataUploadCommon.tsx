@@ -230,13 +230,6 @@ export default function DataUploadCommon() {
     setErrors((prev) => ({ ...prev, experiment: "" }));
   };
 
-  const handleSubmit = () => {
-    if (!formData.project) {
-      setErrors((p) => ({ ...p, project: "Project required" }));
-      return;
-    }
-  };
-
   const existingProjectsForSelect = useMemo(() => {
     return apiProjects.map((project) => ({
       id: project.id.toString(),
@@ -279,7 +272,6 @@ export default function DataUploadCommon() {
     formData,
     setFormData,
     errors,
-    handleSubmit,
     isCreatingNewProject,
   };
 

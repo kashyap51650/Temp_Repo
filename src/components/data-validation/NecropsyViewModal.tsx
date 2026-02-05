@@ -29,7 +29,7 @@ export default function NecropsyViewModal({
   experimentDataId,
   experimentStatus,
   hideActions,
-}: NecropsyViewModalProps) {
+}: Readonly<NecropsyViewModalProps>) {
   const { hasPermission } = usePermissions();
   const rejectModal = useModal();
 

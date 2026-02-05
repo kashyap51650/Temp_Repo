@@ -113,20 +113,20 @@ export const useBioDOrganEditModal = ({
     }));
 
     // Track changed drugs
-    if (originalDrugId !== newDrugId) {
+    if (originalDrugId === newDrugId) {
+      // Remove from changed if reverted to original
+      setChangedGroupDrugs((prev) => {
+        const newChanges = new Map(prev);
+        newChanges.delete(groupCode);
+        return newChanges;
+      });
+    } else {
       setChangedGroupDrugs((prev) => {
         const newChanges = new Map(prev);
         newChanges.set(groupCode, {
           groupId: group.id,
           drugId: newDrugId,
         });
-        return newChanges;
-      });
-    } else {
-      // Remove from changed if reverted to original
-      setChangedGroupDrugs((prev) => {
-        const newChanges = new Map(prev);
-        newChanges.delete(groupCode);
         return newChanges;
       });
     }
@@ -173,15 +173,15 @@ export const useBioDOrganEditModal = ({
     )?.data[mouseCode];
     const cellKey = `${rowId}-${mouseCode}`;
 
-    if (originalValue !== value) {
+    if (originalValue === value) {
+      newChangedCells.delete(cellKey);
+    } else {
       newChangedCells.set(cellKey, {
         rowId,
         mouseId: mouseCode,
         value,
         originalValue: originalValue ?? "",
       });
-    } else {
-      newChangedCells.delete(cellKey);
     }
   };
 
@@ -195,10 +195,10 @@ export const useBioDOrganEditModal = ({
     const updatedData = { ...row.data };
     const mouseCodes = getMouseCodesForGroup(groupCode);
 
-    mouseCodes.forEach((m) => {
+    for (const m of mouseCodes) {
       trackCellChange(rowId, m, value, newChangedCells);
       updatedData[m] = value;
-    });
+    }
 
     const updatedGroupedData = row.groupedData
       ? { ...row.groupedData }
@@ -275,7 +275,7 @@ export const useBioDOrganEditModal = ({
     const organ_weights: BulkUpdatePayload["organ_weights"] = [];
     const groups: BulkUpdatePayload["groups"] = [];
     // Only include changed cells
-    changedCells.forEach((change) => {
+    for (const change of changedCells.values()) {
       if (
         change.value !== "" &&
         change.value !== null &&
@@ -287,7 +287,7 @@ export const useBioDOrganEditModal = ({
         );
 
         // don't include if measurementId or mouseId is invalid
-        if (measurementId === 0 || mouseId === 0) return;
+        if (measurementId === 0 || mouseId === 0) continue;
 
         organ_weights.push({
           id: measurementId,
@@ -299,10 +299,10 @@ export const useBioDOrganEditModal = ({
           mouse_id: mouseId,
         });
       }
-    });
+    }
 
     // Include changed group drugs
-    changedGroupDrugs.forEach((change, groupCode) => {
+    for (const [groupCode, change] of changedGroupDrugs.entries()) {
       const group = rawUploadedData.groups[groupCode];
       if (group) {
         groups.push({
@@ -314,7 +314,7 @@ export const useBioDOrganEditModal = ({
           cell_line_id: group.cell_line.id,
         });
       }
-    });
+    }
 
     return {
       groups,

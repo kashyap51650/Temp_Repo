@@ -21,7 +21,7 @@ export function CreateExperimentModalForMoveMice({
   isOpen,
   onClose,
   onStudyTypeSelected,
-}: CreateExperimentModalForMoveMiceProps) {
+}: Readonly<CreateExperimentModalForMoveMiceProps>) {
   const [selectedStudyType, setSelectedStudyType] = useState<string>("");
 
   const { studyTypes, loading, error } = useStudyTypes({

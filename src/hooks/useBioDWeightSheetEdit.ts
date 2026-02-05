@@ -41,7 +41,7 @@ export function useBioDWeightSheetEdit(experimentDataId?: string) {
     if (worksheets.length > 0 && !initializedRef.current) {
       const newWorksheetData = new Map<number, WorksheetEditData>();
 
-      worksheets.forEach((worksheet, index) => {
+      for (const [index, worksheet] of worksheets.entries()) {
         newWorksheetData.set(index, {
           worksheetId: worksheet.worksheetId,
           worksheetName: worksheet.worksheetName,
@@ -60,7 +60,7 @@ export function useBioDWeightSheetEdit(experimentDataId?: string) {
             measurementId: mouse.measurementId,
           })),
         });
-      });
+      }
 
       setWorksheetData(newWorksheetData);
       initializedRef.current = true;
@@ -77,12 +77,12 @@ export function useBioDWeightSheetEdit(experimentDataId?: string) {
         if (!worksheet) return prev;
 
         // Handle special cases for ID fields
-        if (field === "strain" && !isNaN(Number(value))) {
+        if (field === "strain" && !Number.isNaN(Number(value))) {
           newMap.set(worksheetIndex, {
             ...worksheet,
             strainId: Number(value),
           });
-        } else if (field === "cellLine" && !isNaN(Number(value))) {
+        } else if (field === "cellLine" && !Number.isNaN(Number(value))) {
           newMap.set(worksheetIndex, {
             ...worksheet,
             cellLineId: Number(value),

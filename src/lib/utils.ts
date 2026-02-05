@@ -59,7 +59,7 @@ function isValidDate(dateString: string | null | undefined): boolean {
 }
 
 export const downloadBlobFile = (blob: Blob, fileName: string) => {
-  const url = window.URL.createObjectURL(blob);
+  const url = globalThis.URL.createObjectURL(blob);
   const link = document.createElement("a");
 
   link.href = url;
@@ -69,7 +69,7 @@ export const downloadBlobFile = (blob: Blob, fileName: string) => {
   link.click();
 
   link.remove();
-  window.URL.revokeObjectURL(url);
+  globalThis.URL.revokeObjectURL(url);
 };
 
 export const mapToOptions = <T>(

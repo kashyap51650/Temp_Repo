@@ -30,10 +30,12 @@ interface SaveOptions {
   onClose: () => void;
 }
 
+type StringNumberOrNull = string | number | null;
+
 const FIELD_MAPPINGS: Array<{
   current: keyof WorksheetEditData;
   api: string;
-  transform?: (value: string) => string | number | null;
+  transform?: (value: string) => StringNumberOrNull;
 }> = [
   { current: "sex", api: "sex" },
   {
@@ -94,8 +96,8 @@ export function useBioDWeightSheetSave() {
 
     const normalizeValue = (
       value: unknown,
-      transform?: (value: string) => string | number | null
-    ): string | number | null => {
+      transform?: (value: string) => StringNumberOrNull
+    ): StringNumberOrNull => {
       // Handle null/undefined
       if (value === null || value === undefined) {
         return null;
@@ -126,7 +128,7 @@ export function useBioDWeightSheetSave() {
       return value as string | number | null;
     };
 
-    FIELD_MAPPINGS.forEach(({ current, api, transform }) => {
+    for (const { current, api, transform } of FIELD_MAPPINGS) {
       const currentValue = currentData[current];
       const originalValue = originalData[current];
 
@@ -135,18 +137,18 @@ export function useBioDWeightSheetSave() {
 
       // Compare normalized values
       if (normalizedCurrentValue !== normalizedOriginalValue) {
-        // Only add to changes if the new value is not null
-        if (normalizedCurrentValue !== null) {
-          (changes as Record<string, string | number>)[api] =
-            normalizedCurrentValue as string | number;
-        } else {
+        if (normalizedCurrentValue === null) {
           // If changing to "no value", include it in changes
           (changes as Record<string, string | number | null>)[api] =
+            normalizedCurrentValue;
+        } else {
+          // Only add to changes if the new value is not null
+          (changes as Record<string, string | number>)[api] =
             normalizedCurrentValue;
         }
         hasMetadataChanges = true;
       }
-    });
+    }
     return { changes, hasMetadataChanges };
   };
 
@@ -158,10 +160,10 @@ export function useBioDWeightSheetSave() {
     let hasMeasurementChanges = false;
     let isValid = true;
 
-    currentData.mice.forEach((currentMouse, index) => {
+    for (const [index, currentMouse] of currentData.mice.entries()) {
       const originalMouse = originalData.mice[index];
 
-      if (!originalMouse || !currentMouse.measurementId) return;
+      if (!originalMouse || !currentMouse.measurementId) continue;
 
       const weightChanged =
         currentMouse.bodyWeight !== originalMouse.bodyWeight;
@@ -169,7 +171,7 @@ export function useBioDWeightSheetSave() {
       if (weightChanged) {
         if (!validateBodyWeight(currentMouse.bodyWeight, currentMouse.id)) {
           isValid = false;
-          return;
+          continue;
         }
 
         measurements.push({
@@ -178,7 +180,7 @@ export function useBioDWeightSheetSave() {
         });
         hasMeasurementChanges = true;
       }
-    });
+    }
     return { measurements, hasMeasurementChanges, isValid };
   };
 
@@ -195,30 +197,34 @@ export function useBioDWeightSheetSave() {
       worksheets: [],
     };
 
-    currentData?.forEach((worksheet, index) => {
-      if (!validateInputs(worksheet, originalData![index], experimentDataId)) {
-        return;
+    if (currentData) {
+      for (const [index, worksheet] of currentData.entries()) {
+        if (
+          !validateInputs(worksheet, originalData![index], experimentDataId)
+        ) {
+          continue;
+        }
+        // Collect metadata changes
+        const { changes: metadataChanges, hasMetadataChanges } =
+          collectMetadataChanges(worksheet, originalData![index]);
+
+        // Collect measurement changes
+        const { measurements, hasMeasurementChanges, isValid } =
+          collectMeasurementChanges(worksheet, originalData![index]);
+
+        if (!isValid) continue;
+
+        if (!hasMetadataChanges && !hasMeasurementChanges) continue;
+
+        payload.worksheets.push({
+          worksheet: {
+            id: worksheet.worksheetId!,
+            ...(hasMetadataChanges && { ...metadataChanges }),
+          },
+          measurements,
+        });
       }
-      // Collect metadata changes
-      const { changes: metadataChanges, hasMetadataChanges } =
-        collectMetadataChanges(worksheet, originalData![index]);
-
-      // Collect measurement changes
-      const { measurements, hasMeasurementChanges, isValid } =
-        collectMeasurementChanges(worksheet, originalData![index]);
-
-      if (!isValid) return;
-
-      if (!hasMetadataChanges && !hasMeasurementChanges) return;
-
-      payload.worksheets.push({
-        worksheet: {
-          id: worksheet.worksheetId!,
-          ...(hasMetadataChanges && { ...metadataChanges }),
-        },
-        measurements,
-      });
-    });
+    }
 
     // Check if any changes exist
     if (payload.worksheets.length === 0) {

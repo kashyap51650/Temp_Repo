@@ -38,7 +38,7 @@ export function FormSelect<T>({
         } else if (valueAsNumber) {
           // Convert number(s) to string(s) for display
           if (Array.isArray(field.value)) {
-            displayValue = field.value.map((v) => String(v));
+            displayValue = field.value.map(String);
           } else {
             displayValue = String(field.value);
           }
@@ -55,7 +55,7 @@ export function FormSelect<T>({
                 // Convert to number if valueAsNumber is true
                 if (valueAsNumber) {
                   if (Array.isArray(value)) {
-                    field.onChange(value.map((v) => Number(v)));
+                    field.onChange(value.map(Number));
                   } else {
                     field.onChange(Number(value));
                   }

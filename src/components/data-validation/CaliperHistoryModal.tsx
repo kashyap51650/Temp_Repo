@@ -96,8 +96,8 @@ export default function CaliperHistoryModal({
   ): CaliperData => {
     const deliveryIds = Object.keys(tabData.mouse_data_by_delivery_id).sort(
       (a, b) => {
-        const numA = parseInt(a.split("-").pop() || "0", 10);
-        const numB = parseInt(b.split("-").pop() || "0", 10);
+        const numA = Number.parseInt(a.split("-").pop() || "0", 10);
+        const numB = Number.parseInt(b.split("-").pop() || "0", 10);
         return numA - numB;
       }
     );
@@ -107,7 +107,7 @@ export default function CaliperHistoryModal({
       Record<string, Record<string, Measurement>>
     > = {};
 
-    deliveryIds.forEach((deliveryId) => {
+    for (const deliveryId of deliveryIds) {
       const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
       const groupKey = mouseInfo?.mouse_code || deliveryId;
 
@@ -119,26 +119,26 @@ export default function CaliperHistoryModal({
 
       const measurements = tabData.caliper_measurements[deliveryId];
       if (measurements) {
-        Object.keys(measurements).forEach((date) => {
+        for (const date of Object.keys(measurements)) {
           const measurementData = measurements[date];
           convertedMeasurements[groupKey][deliveryId][date] = {
             width_mm: measurementData.width_mm,
             length_mm: measurementData.length_mm,
             volume_mm3: measurementData.volume_mm3,
           };
-        });
+        }
       }
-    });
+    }
 
     const updatedMouseData: Record<string, any> = {};
-    deliveryIds.forEach((deliveryId) => {
+    for (const deliveryId of deliveryIds) {
       const mouseInfo = tabData.mouse_data_by_delivery_id[deliveryId];
       updatedMouseData[deliveryId] = {
         mouse_id: mouseInfo.id,
         group: mouseInfo.mouse_code,
         mouse_code: mouseInfo.mouse_code,
       };
-    });
+    }
 
     return {
       caliper_measurements_dates: [...tabData.caliper_measurements_dates],

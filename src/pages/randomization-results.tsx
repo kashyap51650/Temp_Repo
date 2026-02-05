@@ -49,12 +49,12 @@ export default function RandomizationResults() {
     if (randomizationData?.groups) {
       const drugSelections: Record<string, string> = {};
 
-      randomizationData.groups.forEach((group) => {
+      for (const group of randomizationData.groups) {
         if (group.experiment_drug_id) {
           drugSelections[group.group_code] =
             group.experiment_drug_id.toString();
         }
-      });
+      }
 
       // Only update if there are actual selections from backend
       if (Object.keys(drugSelections).length > 0) {

@@ -3,7 +3,8 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-import { buttonVariants, type VariantProps } from "./buttonVariants";
+import type { VariantProps } from "./buttonVariants";
+import { buttonVariants } from "./buttonVariants";
 
 function Button({
   className,
@@ -26,4 +27,4 @@ function Button({
   );
 }
 
-export { Button, buttonVariants };
+export { Button };

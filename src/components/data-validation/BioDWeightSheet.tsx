@@ -105,7 +105,7 @@ export function BioDWeightSheet({
         <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
           {Array.from(worksheetData.values()).map((worksheet, index) => (
             <TabsTrigger
-              key={index}
+              key={`${worksheet.worksheetName}-${index}`}
               value={index.toString()}
               className="whitespace-nowrap"
             >
@@ -115,7 +115,10 @@ export function BioDWeightSheet({
         </TabsList>
 
         {Array.from(worksheetData.entries()).map(([index, worksheet]) => (
-          <TabsContent key={index} value={index.toString()}>
+          <TabsContent
+            key={`${worksheet.worksheetName}-${index}`}
+            value={index.toString()}
+          >
             <WorksheetEditForm
               worksheet={worksheet}
               worksheetIndex={index}
@@ -170,7 +173,7 @@ function WorksheetEditForm({
   onHeaderChange,
   onMouseDataChange,
   experimentStudyType,
-}: WorksheetEditFormProps) {
+}: Readonly<WorksheetEditFormProps>) {
   // ✅ Memoize header fields to prevent recreation on every render
   const isDoseRangeFinding =
     experimentStudyType === STUDY_TYPE.DOSE_RANGE_FINDING;
@@ -180,20 +183,20 @@ function WorksheetEditForm({
         { key: "sex", label: "Sex:", type: "input" },
         { key: "strain", label: "Strain:", type: "select" },
         { key: "dob", label: "DOB:", type: "date" },
-        ...(!isDoseRangeFinding
-          ? [
+        ...(isDoseRangeFinding
+          ? []
+          : [
               {
                 key: "cellInjectionDate",
                 label: "Cell Injection Date:",
                 type: "date",
               },
-            ]
-          : []),
+            ]),
       ],
       [
-        ...(!isDoseRangeFinding
-          ? [{ key: "cellLine", label: "Cell Line:", type: "select" }]
-          : []),
+        ...(isDoseRangeFinding
+          ? []
+          : [{ key: "cellLine", label: "Cell Line:", type: "select" }]),
         { key: "treatmentDate", label: "Treatment Date:", type: "date" },
         {
           key: "measurementDate",
@@ -296,7 +299,7 @@ function WorksheetEditForm({
       case "date":
         fieldElement = (
           <DatePicker
-            value={value !== "N/A" ? (value as string) : ""}
+            value={value === "N/A" ? "" : (value as string)}
             onChange={(date) => handleChange(date)}
             className="flex-1"
           />
@@ -329,7 +332,10 @@ function WorksheetEditForm({
       <div className="bg-white border border-gray-200 rounded-lg p-4">
         <div className="grid grid-cols-2 gap-10">
           {headerFields.map((group, groupIndex) => (
-            <div className="space-y-3" key={groupIndex}>
+            <div
+              className="space-y-3"
+              key={`header-${group?.[0]?.key}-${groupIndex}`}
+            >
               {group.map((field) => renderHeaderField(field))}
             </div>
           ))}

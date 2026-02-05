@@ -86,7 +86,7 @@ export const useLogin = () => {
         SESSION_STORAGE_KEYS.REFRESH_TOKEN,
         data.refresh_token
       );
-      window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+      globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
 
       // Cache auth data in TanStack Query
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
@@ -105,7 +105,7 @@ export const useLogin = () => {
       } catch (error) {
         sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
         sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
-        window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+        globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
         queryClient.removeQueries({
           queryKey: AUTH_QUERY_KEYS.auth,
           exact: true,
@@ -230,10 +230,10 @@ export const useIsAuthenticated = () => {
   }, []);
 
   useEffect(() => {
-    window.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
+    globalThis.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
 
     return () => {
-      window.removeEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
+      globalThis.removeEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
     };
   }, [checkAuth]);
 
@@ -253,7 +253,7 @@ export const tokenUtils = {
   removeTokens: (): void => {
     sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
     sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
-    window.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+    globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
   },
 
   isTokenExpired: (token: string): boolean => {

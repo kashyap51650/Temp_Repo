@@ -62,7 +62,7 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
         size: filters.size ?? DEFAULT_PAGE_SIZE,
       });
       return {
-        data: response.data.items,
+        data: response?.data?.items ?? [],
         page: response?.data?.page ?? 0,
         size: response?.data?.size ?? 0,
         total: response?.data?.total ?? 0,

@@ -57,7 +57,9 @@ function notificationReducer(
   }
 }
 
-export function NotificationProvider({ children }: { children: ReactNode }) {
+export function NotificationProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
   const { isAuthenticated } = useAuthState();
 

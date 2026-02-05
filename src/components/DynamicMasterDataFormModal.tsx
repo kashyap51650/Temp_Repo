@@ -302,36 +302,49 @@ export function DynamicMasterDataFormModal({
 
   const formFields = generateFormFields();
 
-  useEffect(() => {
-    if (isOpen) {
-      // Load mouse strains if it's cell lines master data
-      if (isCellLines && mouseStrains.length === 0) {
-        loadExperimentData();
+  const buildEditableData = (): Record<string, string | number> => {
+    const editableData: Record<string, string | number> = {};
+
+    for (const field of formFields) {
+      if (field.key === "mouse_strain" && isCellLines) {
+        editableData[field.key] =
+          mouseStrains.find(
+            (strain) => strain.mouse_strain_name === initialData?.[field.key]
+          )?.id || "";
+        continue;
       }
 
-      if (mode === "edit" && initialData) {
-        const editableData: Record<string, any> = {};
-        formFields.forEach((field) => {
-          if (field.key === "mouse_strain" && isCellLines) {
-            editableData[field.key] =
-              mouseStrains.find(
-                (strain) => strain.mouse_strain_name === initialData[field.key]
-              )?.id || "";
-            return;
-          }
-
-          editableData[field.key] = initialData[field.key] || "";
-        });
-        setFormData(editableData);
-      } else {
-        const emptyData: Record<string, any> = {};
-        formFields.forEach((field) => {
-          emptyData[field.key] = "";
-        });
-        setFormData(emptyData);
-      }
-      setErrors({});
+      editableData[field.key] = initialData?.[field.key] || "";
     }
+
+    return editableData;
+  };
+
+  const buildEmptyData = (): Record<string, string> => {
+    const emptyData: Record<string, string> = {};
+    for (const field of formFields) {
+      emptyData[field.key] = "";
+    }
+    return emptyData;
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    // Load mouse strains if it's cell lines master data
+    if (isCellLines && mouseStrains.length === 0) {
+      loadExperimentData();
+    }
+
+    if (mode === "edit" && initialData) {
+      setFormData(buildEditableData());
+    } else {
+      setFormData(buildEmptyData());
+    }
+
+    setErrors({});
   }, [
     isOpen,
     mode,
@@ -345,7 +358,7 @@ export function DynamicMasterDataFormModal({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    formFields.forEach((field) => {
+    for (const field of formFields) {
       if (
         field.required &&
         (!formData[field.key] || formData[field.key] === "")
@@ -359,7 +372,7 @@ export function DynamicMasterDataFormModal({
           newErrors[field.key] = `${field.label} must be a valid number`;
         }
       }
-    });
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -382,11 +395,11 @@ export function DynamicMasterDataFormModal({
     try {
       const processedData = { ...formData };
 
-      formFields.forEach((field) => {
+      for (const field of formFields) {
         if (field.type === "number" && processedData[field.key] !== "") {
           processedData[field.key] = Number(processedData[field.key]);
         }
-      });
+      }
       // Convert mouse_strain_id to number for cell lines
       if (isCellLines && processedData.mouse_strain) {
         processedData.mouse_strain_id = Number(processedData.mouse_strain);

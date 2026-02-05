@@ -73,9 +73,9 @@ function DrawerContent({
   const contextClass = context?.className;
   const contextStyle = context?.style;
   const propsStyle = (props as { style?: React.CSSProperties }).style;
-  const mergedStyle = { ...(contextStyle ?? {}), ...(propsStyle ?? {}) } as
-    | React.CSSProperties
-    | undefined;
+  const mergedStyle =
+    contextStyle || propsStyle ? { ...contextStyle, ...propsStyle } : undefined;
+
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />

@@ -217,7 +217,7 @@ export function ChartAreaInteractive() {
                 <stop
                   offset="5%"
                   stopColor="var(--color-desktop)"
-                  stopOpacity={1.0}
+                  stopOpacity={1}
                 />
                 <stop
                   offset="95%"

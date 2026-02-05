@@ -130,7 +130,7 @@ export function useTerminateMice(experimentDataId?: string) {
   const handleTerminateConfirm = (reason: string) => {
     mutation.mutate({
       experiment_id: search?.experimentId as number,
-      mouse_ids: selectedMice.ids.map((id) => parseInt(id, 10)),
+      mouse_ids: selectedMice.ids.map((id) => Number.parseInt(id, 10)),
       termination_reason: reason,
     });
   };

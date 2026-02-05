@@ -15,7 +15,7 @@ export function SelectMiceModal({
   onClose,
   onNext,
   sourceExperimentId,
-}: SelectMiceModalProps) {
+}: Readonly<SelectMiceModalProps>) {
   const [selectedMice, setSelectedMice] = useState<string[]>([]);
 
   const {

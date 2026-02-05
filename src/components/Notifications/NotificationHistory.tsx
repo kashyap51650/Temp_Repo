@@ -3,7 +3,10 @@ import { toast } from "sonner";
 
 import { DataTable } from "@/components/organisms";
 import { getNotificationColumns } from "@/components/organisms/DataTable/tableColumns";
-import type { NotificationRow } from "@/components/organisms/DataTable/tableData";
+import type {
+  NotificationRow,
+  NotificationStatus,
+} from "@/components/organisms/DataTable/tableData";
 import { handleApiError, notificationApi, roleApi } from "@/lib/api";
 
 import { NotificationTableFilters } from "./NotificationTableFilters";
@@ -63,7 +66,9 @@ export function NotificationHistory() {
       ), // Capitalize first letter
       recipients: notification.recipients,
       status:
-        notification.status === "sent" ? "Delivered" : notification.status,
+        notification.status === "sent"
+          ? "Delivered"
+          : (notification.status as NotificationStatus),
     };
   };
 
