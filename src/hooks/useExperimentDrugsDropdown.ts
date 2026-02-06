@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { experimentDrugApi } from "@/lib/api";
+import { experimentDrugApi } from "@/api";
 
 export const useExperimentsDrugsDropdown = () => {
   const { data, isLoading } = useQuery({

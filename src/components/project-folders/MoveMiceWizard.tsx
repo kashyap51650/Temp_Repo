@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import type { StudyType } from "@/api";
 import { CreateExperimentModal } from "@/components/data-upload/CreateExperimentModal";
 import { CreateExperimentModalForMoveMice } from "@/components/project-folders/CreateExperimentModalForMoveMice";
 import { SelectMiceModal } from "@/components/project-folders/SelectMiceModal";
 import { SelectTargetExperimentModal } from "@/components/project-folders/SelectTargetExperimentModal";
 import { useGetTargetExperiments, useMoveMice } from "@/hooks/useMoveMice";
-import type { StudyType } from "@/lib/api";
 import { STUDY_TYPE, type StudyTypeCode } from "@/lib/constants";
 import { MoveMiceStep, type MoveMiceStepType } from "@/types/moveMice";
 

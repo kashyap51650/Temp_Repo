@@ -1,16 +1,16 @@
 import { useEffect, useRef } from "react";
 
-import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
-import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
-import { Label } from "@/components/atoms/Label/Label";
-import { ExperimentSelect } from "@/components/atoms/Selects";
-import { useDataTypes, useExperimentsDropdown } from "@/hooks";
 import type {
   DataType,
   ExperimentDropdownItem,
   Project,
   RandomizationStatus,
-} from "@/lib/api";
+} from "@/api";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
+import { Label } from "@/components/atoms/Label/Label";
+import { ExperimentSelect } from "@/components/atoms/Selects";
+import { useDataTypes, useExperimentsDropdown } from "@/hooks";
 import { DATA_TYPE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 

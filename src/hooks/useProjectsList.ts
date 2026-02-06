@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { projectApi } from "@/lib/api";
+import { projectApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { ProjectFilters } from "@/types/project";
 

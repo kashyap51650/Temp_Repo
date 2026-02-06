@@ -19,8 +19,8 @@ export const queryClient = new QueryClient({
           return false;
         }
 
-        const maxRetries = import.meta.env.VITE_REACT_QUERY_RETRY
-          ? Number(import.meta.env.VITE_REACT_QUERY_RETRY)
+        const maxRetries = REACT_QUERY_CONFIG.GLOBAL_RETRY
+          ? Number(REACT_QUERY_CONFIG.GLOBAL_RETRY)
           : 3;
 
         return failureCount < maxRetries;
@@ -29,12 +29,12 @@ export const queryClient = new QueryClient({
       // Retry delay function (exponential backoff)
       retryDelay: (attemptIndex) =>
         Math.min(
-          (import.meta.env.VITE_REACT_QUERY_RETRY_DELAY
-            ? Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY)
+          (REACT_QUERY_CONFIG.RETRY_DELAY
+            ? Number(REACT_QUERY_CONFIG.RETRY_DELAY)
             : 1000) *
             2 ** attemptIndex,
-          import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY
-            ? Number(import.meta.env.VITE_REACT_QUERY_MAX_RETRY_DELAY)
+          REACT_QUERY_CONFIG.MAX_RETRY_DELAY
+            ? Number(REACT_QUERY_CONFIG.MAX_RETRY_DELAY)
             : 30000
         ),
 
@@ -55,8 +55,8 @@ export const queryClient = new QueryClient({
       },
 
       // Retry delay for mutations
-      retryDelay: import.meta.env.VITE_REACT_QUERY_RETRY_DELAY
-        ? Number(import.meta.env.VITE_REACT_QUERY_RETRY_DELAY)
+      retryDelay: REACT_QUERY_CONFIG.MAX_RETRY_DELAY
+        ? Number(REACT_QUERY_CONFIG.MAX_RETRY_DELAY)
         : 1000,
     },
   },

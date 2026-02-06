@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { roleApi } from "@/api";
 import type { ApiResponse } from "@/lib/api";
-import { roleApi } from "@/lib/api";
 
 interface AssignUserRolePayload {
   role_id: number;

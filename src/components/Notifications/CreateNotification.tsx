@@ -2,6 +2,7 @@ import { Bell, Mail, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { notificationApi, roleApi } from "@/api";
 import {
   Button,
   Checkbox,
@@ -14,7 +15,7 @@ import {
   SelectValue,
   Textarea,
 } from "@/components/atoms";
-import { handleApiError, notificationApi, roleApi } from "@/lib/api";
+import { handleApiError } from "@/lib/api";
 
 interface Role {
   id: number;

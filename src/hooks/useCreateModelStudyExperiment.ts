@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { modelStudyExperimentApi } from "@/api";
 import { toast } from "@/components/atoms/Sonner/toast";
-import { modelStudyExperimentApi } from "@/lib/api";
 import type {
   CreateModelStudyPayload,
   CreateModelStudyResponse,

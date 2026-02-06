@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { handleApiError, moveMiceApi } from "@/lib/api";
+import { moveMiceApi } from "@/api";
+import { handleApiError } from "@/lib/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { MoveMicePayload } from "@/types/moveMice";
 

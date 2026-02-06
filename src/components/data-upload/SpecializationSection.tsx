@@ -1,5 +1,5 @@
+import type { ExperimentDropdownItem, Project } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
-import type { ExperimentDropdownItem, Project } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 import { CustomSelect } from "./CustomSelect";

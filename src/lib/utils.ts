@@ -3,8 +3,9 @@ import { twMerge } from "tailwind-merge";
 
 import type { SelectOption } from "@/types/utils";
 
+import type { ExperimentDataItem } from "@/api";
+
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
-import { type ExperimentDataItem } from "../lib/api";
 import { FILE_SIZE_LIMITS, type StudyType } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {

@@ -2,10 +2,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
-  experimentDataApi,
-  handleApiError,
+  importExperimentDataApi,
   type ImportExperimentDataPayload,
-} from "../lib/api";
+} from "@/api";
+
+import { handleApiError } from "../lib/api";
 import { FILE_SIZE_LIMITS } from "../lib/constants";
 
 export interface UseExperimentDataImportProps {
@@ -31,7 +32,7 @@ export const useExperimentDataImport = (
 
   const uploadMutation = useMutation({
     mutationFn: (payload: ImportExperimentDataPayload) =>
-      experimentDataApi.importExperimentData(payload),
+      importExperimentDataApi.importExperimentData(payload),
     retry: 0,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["experiment-data"] });
@@ -84,7 +85,9 @@ export const useExperimentDataImport = (
 
       if (response.success) {
         toast.success(response.message || "Data uploaded successfully!");
-        props?.onSuccess?.(response.data);
+        if (response?.data) {
+          props?.onSuccess?.(response.data);
+        }
       } else {
         toast.error(response.message || "Upload failed. Please try again.");
       }

@@ -1,5 +1,6 @@
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
+import { mouseStrainApi } from "@/api";
 import { Label } from "@/components/atoms";
 import { AsyncSelect } from "@/components/molecules/AsyncSelect";
 import { FormSelect } from "@/components/molecules/FormSelect";
@@ -8,7 +9,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/organisms/Form/Form";
-import { mouseStrainApi } from "@/lib/api";
 
 interface StrainFieldPropsWithForm<T extends FieldValues> {
   control: Control<T>;

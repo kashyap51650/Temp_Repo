@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import type { StudyType } from "@/api";
 import { Button, Dialog, Label } from "@/components/atoms";
 import {
   Select,
@@ -9,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/atoms/Select/Select";
 import { useStudyTypes } from "@/hooks/useStudyTypes";
-import type { StudyType } from "@/lib/api";
 
 interface CreateExperimentModalForMoveMiceProps {
   isOpen: boolean;

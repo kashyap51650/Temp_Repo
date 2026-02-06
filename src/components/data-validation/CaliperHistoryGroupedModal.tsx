@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import type { CaliperHistoryMeasurement } from "@/api";
 import {
   Tabs,
   TabsContent,
@@ -8,7 +9,6 @@ import {
   TabsTrigger,
 } from "@/components/molecules/Tabs/Tabs";
 import { useCaliperHistoryByGroup } from "@/hooks/useCaliperHistoryByGroup";
-import type { CaliperHistoryMeasurement } from "@/lib/api";
 import { getSortedDeliveryIds } from "@/utils/calliperHistoryGroupedUtils";
 
 import { Dialog, Label } from "../atoms";

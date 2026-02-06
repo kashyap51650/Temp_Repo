@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import type { ExperimentDropdownItem } from "@/api";
 import { useAppDispatch } from "@/app/store/hooks";
 import { experimentCreated } from "@/app/store/slices/experimentSlice";
 import { toast } from "@/components/atoms/Sonner/toast";
@@ -16,7 +17,6 @@ import {
   useExperimentData,
   useModal,
 } from "@/hooks";
-import type { ExperimentDropdownItem } from "@/lib/api";
 import { SPECIALIZATION, STUDY_TYPE_CODE } from "@/lib/constants";
 
 import { Button, Input } from "../atoms";

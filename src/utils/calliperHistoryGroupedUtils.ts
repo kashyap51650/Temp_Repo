@@ -1,4 +1,4 @@
-import type { CaliperHistoryMeasurement } from "@/lib/api";
+import type { CaliperHistoryMeasurement } from "@/api";
 
 export function getSortedDeliveryIds(
   groupMeasurements: Record<string, Record<string, CaliperHistoryMeasurement>>

@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 
-import { toast } from "@/components/atoms/Sonner/toast";
-
 import {
   type CellLine,
   cellLineApi,
-  handleApiError,
   type Isotope,
   isotopeApi,
   type MouseStrain,
   mouseStrainApi,
-} from "../lib/api";
+} from "@/api";
+import { toast } from "@/components/atoms/Sonner/toast";
+
+import { handleApiError } from "../lib/api";
 
 interface UseExperimentDataResult {
   isotopes: Isotope[];

@@ -3,13 +3,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { randomizationApi } from "@/lib/api";
+import { randomizationApi } from "@/api";
 import type {
   RandomizationPreviewData,
   RandomizationPreviewResponse,
 } from "@/types/randomization";
 
-export const useRendomizationResult = () => {
+export const useRandomizationResult = () => {
   // Drug Selection Dropdown State for each Group
   const [selectedGroupDrug, setSelectedGroupDrug] = useState<
     Record<string, string>

@@ -1,12 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 
+import { notificationApi } from "@/api";
 import {
   mockNotifications,
   transformApiNotification,
 } from "@/data/notifications";
 import { useSocketEvent } from "@/hooks";
-import { notificationApi } from "@/lib/api";
 import { REACT_QUERY_CONFIG, SOCKET_EVENTS } from "@/lib/constants";
 import queryClient from "@/lib/queryClient";
 

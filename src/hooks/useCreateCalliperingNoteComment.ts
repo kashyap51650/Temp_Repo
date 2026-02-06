@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { calliperingNotesCommentsApi } from "@/lib/api";
+import { calliperingNotesCommentsApi } from "@/api";
 import type {
   CreateCalliperingNotesCommentPayload,
   CreateCalliperingNotesCommentResponse,

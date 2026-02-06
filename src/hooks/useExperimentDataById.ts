@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiClient, type RandomizationStatus } from "@/lib/api";
+import type { RandomizationStatus } from "@/api";
+import { apiClient } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 

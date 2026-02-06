@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { necropsyApi } from "@/lib/api";
+import { necropsyApi } from "@/api";
 import { downloadBlobFile } from "@/lib/utils";
 
 export interface UseNecropsyFileDownloadProps {

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
+import { roleApi } from "@/api";
 import {
   Button,
   Dialog,
@@ -15,7 +16,7 @@ import {
 } from "@/components";
 import type { PermissionAssignment } from "@/components/organisms/DataTable/tableData";
 import { useAssignUserRole } from "@/hooks";
-import { handleApiError, roleApi } from "@/lib/api";
+import { handleApiError } from "@/lib/api";
 import type { UserAssignment } from "@/types/auth";
 
 interface EditAssignmentModalProps {

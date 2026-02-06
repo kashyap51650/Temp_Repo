@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { mouseGroupApi } from "@/lib/api";
+import { mouseGroupApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export const useMouseGroupsByExperiment = (experimentId?: number) => {

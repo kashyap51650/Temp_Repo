@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { masterDataApi } from "@/lib/api";
+import { masterDataApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface MasterDataSource {

@@ -5,8 +5,9 @@ import {
   type BiodExperimentResponse,
   type CreateBiodExperimentPayload,
   experimentApi,
-  handleApiError,
-} from "../lib/api";
+} from "@/api";
+
+import { handleApiError } from "../lib/api";
 
 export interface UseCreateBiodExperimentProps {
   onSuccess?: (data: BiodExperimentResponse["data"]) => void;

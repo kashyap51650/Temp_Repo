@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { authApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
-
-import { authApi } from "../lib/api";
 
 export interface UserProfile {
   id: number;

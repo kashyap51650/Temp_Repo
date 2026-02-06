@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { performBioDApi, type PerformBioDPayload } from "@/lib/api";
+import { performBioDApi, type PerformBioDPayload } from "@/api";
 import { handleApiError } from "@/lib/api";
 
 interface UsePerformBioDOptions {

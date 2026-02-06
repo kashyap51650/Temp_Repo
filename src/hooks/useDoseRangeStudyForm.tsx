@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import type { ExperimentDropdownItem } from "@/lib/api";
+import type { ExperimentDropdownItem } from "@/api";
 import {
   type DoseRangeFindingFormData,
   DoseRangeFindingFormDataSchema,

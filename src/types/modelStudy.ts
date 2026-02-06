@@ -3,7 +3,8 @@
  * Types for Model Study Experiment creation and management
  */
 
-import type { ApiResponse, RandomizationStatus } from "@/lib/api";
+import type { RandomizationStatus } from "@/api";
+import type { ApiResponse } from "@/lib/api";
 
 export interface CellLineStrainPair {
   cell_line_id: number;

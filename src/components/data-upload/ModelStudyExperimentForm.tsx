@@ -1,8 +1,8 @@
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import type { ExperimentDropdownItem } from "@/api";
 import { useModelStudyForm } from "@/hooks/useModelStudyForm";
-import type { ExperimentDropdownItem } from "@/lib/api";
 
 import { Button, Label } from "../atoms";
 import { Form } from "../organisms";

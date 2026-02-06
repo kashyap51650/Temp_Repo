@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { type StudyType, studyTypeApi } from "@/api";
 import { toast } from "@/components/atoms/Sonner/toast";
 
-import { handleApiError, type StudyType, studyTypeApi } from "../lib/api";
+import { handleApiError } from "../lib/api";
 import { REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseStudyTypesProps {

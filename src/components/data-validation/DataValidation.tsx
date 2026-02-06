@@ -1,8 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
-import type { DataType, StudyType } from "@/lib/api";
-import { dataTypeApi, studyTypeApi } from "@/lib/api";
+import {
+  type DataType,
+  dataTypeApi,
+  type StudyType,
+  studyTypeApi,
+} from "@/api";
 import {
   DataValidationFilter,
   RANDOMIZATION_PREVIEW_TYPES,

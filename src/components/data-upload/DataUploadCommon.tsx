@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import type { ExperimentDropdownItem, Project } from "@/api";
 import { useAppDispatch } from "@/app/store/hooks";
 import { projectChanged } from "@/app/store/slices/experimentSlice";
 import type { Experiment } from "@/data/experiments";
@@ -13,7 +14,6 @@ import {
 } from "@/data/experiments";
 import { useDataTypes, useModal, useProjects, useStudyTypes } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
-import type { ExperimentDropdownItem, Project } from "@/lib/api";
 import { STUDY_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 

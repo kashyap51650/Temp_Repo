@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
-
 import {
   experimentDataApi,
   type ExperimentDataFilters,
   type ExperimentDataResponse,
-} from "../lib/api";
+} from "@/api";
+import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface UseValidationDataResult {
   data: ExperimentDataResponse | undefined;

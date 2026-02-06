@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 
-import type { CaliperHistoryByGroupResponse } from "@/lib/api";
-import { caliperMeasurementsApi } from "@/lib/api";
+import {
+  type CaliperHistoryByGroupResponse,
+  caliperMeasurementsApi,
+} from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 /**

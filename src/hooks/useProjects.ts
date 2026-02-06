@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { type Project, projectApi } from "@/api";
 import { toast } from "@/components/atoms/Sonner/toast";
 import { useIsAuthenticated } from "@/lib/auth";
 
-import { handleApiError, type Project, projectApi } from "../lib/api";
+import { handleApiError } from "../lib/api";
 import useDebounce from "./useDebounce";
 
 interface UseProjectsResult {

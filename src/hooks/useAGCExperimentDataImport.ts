@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { experimentDataApi, type ImportAGCDataPayload } from "@/lib/api";
+import { type ImportAGCDataPayload, importExperimentDataApi } from "@/api";
 
 type UseAgcExperimentDataImportProps = {
   onSuccess?: () => void;
@@ -11,7 +11,7 @@ export const useAGCExperimentDataImport = ({
 }: UseAgcExperimentDataImportProps = {}) => {
   const { mutate, isPending, error } = useMutation({
     mutationFn: (payload: ImportAGCDataPayload) =>
-      experimentDataApi.importAGCExperimentData(payload),
+      importExperimentDataApi.importAGCExperimentData(payload),
     onSuccess: () => {
       toast.success("AGC Experiment data imported successfully.");
       onSuccess?.();

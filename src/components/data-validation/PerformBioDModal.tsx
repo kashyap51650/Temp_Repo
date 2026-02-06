@@ -2,6 +2,7 @@ import { Loader2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { cellLineValidationApi } from "@/api";
 import { Button } from "@/components/atoms/Button/Button";
 import { Checkbox } from "@/components/atoms/Checkbox/Checkbox";
 import {
@@ -12,7 +13,6 @@ import {
 } from "@/components/molecules/Dialog/Dialog";
 import { useAddCellLineMouseStrainAssociation } from "@/hooks/useAddCellLineMouseStrainAssociation";
 import { useMouseGroupsByExperiment } from "@/hooks/useMouseGroupsByExperiment";
-import { cellLineValidationApi } from "@/lib/api";
 
 interface PerformBioDModalProps {
   isOpen: boolean;

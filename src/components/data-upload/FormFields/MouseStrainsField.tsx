@@ -1,12 +1,12 @@
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
+import { mouseStrainApi } from "@/api";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import {
   FormField,
   FormItem,
   FormLabel,
 } from "@/components/organisms/Form/Form";
-import { mouseStrainApi } from "@/lib/api";
 
 interface MouseStrainsFieldProps<T extends FieldValues> {
   control: Control<T>;

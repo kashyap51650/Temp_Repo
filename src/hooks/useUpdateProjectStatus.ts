@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { projectApi } from "@/lib/api";
+import { projectApi } from "@/api";
 
 export function useUpdateProjectStatus({
   onSuccess,

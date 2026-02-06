@@ -2,10 +2,10 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import {
-  experimentDataApi,
+  importExperimentDataApi,
   type ImportNecropsyDataPayload,
   type ImportNecropsyDataResponse,
-} from "@/lib/api";
+} from "@/api";
 import { DATA_TYPE, type ExperimentDataType } from "@/lib/constants";
 import { formatFieldLabel } from "@/lib/utils";
 import type {
@@ -39,17 +39,17 @@ export const usePdfExperimentDataImport = ({
       payload: PdfImportPayloadType
     ): Promise<PdfImportResponseType> => {
       if (experimentDataType === DATA_TYPE.NECROPSY_SHEET) {
-        return experimentDataApi.importNecropsyData({
+        return importExperimentDataApi.importNecropsyData({
           experiment_id: payload.experiment_id,
           file: payload.file,
         });
       } else if (experimentDataType === DATA_TYPE.HEMATOLOGY) {
-        return experimentDataApi.importHematologyData({
+        return importExperimentDataApi.importHematologyData({
           experiment_id: payload.experiment_id,
           file: payload.file,
         });
       } else if (experimentDataType === DATA_TYPE.BLOOD_CHEMISTRY) {
-        return experimentDataApi.importBloodChemistryData({
+        return importExperimentDataApi.importBloodChemistryData({
           experiment_id: payload.experiment_id,
           file: payload.file,
         });

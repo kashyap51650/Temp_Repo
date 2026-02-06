@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { exportSheetApi } from "@/lib/api";
+import { exportSheetApi } from "@/api";
 import { DATA_TYPE, type ExperimentDataType } from "@/lib/constants";
 import { downloadBlobFile } from "@/lib/utils";
 

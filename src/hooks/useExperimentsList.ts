@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { experimentApi } from "@/lib/api";
+import { experimentApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { ExperimentListFilters } from "@/types/experiment";
 

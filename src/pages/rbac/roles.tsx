@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ProtectedComponent } from "@/components";
+import { roleApi } from "@/api";
 import { Button } from "@/components/atoms/Button/Button";
 import {
   Tabs,
@@ -24,7 +25,6 @@ import { CreateRoleModal } from "@/components/organisms/Roles/CreateRoleModal";
 import { EditRoleModal } from "@/components/organisms/Roles/EditRoleModal";
 import { EditAssignmentModal } from "@/components/organisms/UserAssignments/EditAssignmentModal";
 import { usePermissions } from "@/hooks/usePermissions";
-import { roleApi } from "@/lib/api";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 import {

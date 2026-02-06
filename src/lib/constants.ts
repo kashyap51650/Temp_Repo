@@ -64,6 +64,9 @@ export const REACT_QUERY_CONFIG = {
     THREE: 3,
     FOUR: 4,
   }, // Number of retry attempts for failed queries
+  GLOBAL_RETRY: 3,
+  RETRY_DELAY: 1000,
+  MAX_RETRY_DELAY: 30000,
 } as const;
 
 // File size constants

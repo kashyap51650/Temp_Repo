@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { experimentApi } from "@/lib/api";
+import { experimentApi } from "@/api";
 
 export function useUpdateExperimentStatus({
   onSuccess,

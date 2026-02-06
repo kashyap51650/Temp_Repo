@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { calliperingNotesCommentsApi } from "@/lib/api";
+import { calliperingNotesCommentsApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type {
   CalliperingNotesListParams,

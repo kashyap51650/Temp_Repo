@@ -1,4 +1,5 @@
-import type { ApiResponse, ImportPDFDataPayload } from "@/lib/api";
+import type { ImportPDFDataPayload } from "@/api";
+import type { ApiResponse } from "@/lib/api";
 
 export interface BloodChemistryReportParameters {
   id?: number;

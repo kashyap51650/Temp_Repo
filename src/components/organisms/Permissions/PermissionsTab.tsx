@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { roleApi } from "@/api";
 import {
   Button,
   Checkbox,
@@ -14,7 +15,6 @@ import {
   SelectValue,
 } from "@/components";
 import { usePermissions } from "@/hooks/usePermissions";
-import { roleApi } from "@/lib/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { ApiModule, ApiPermission } from "@/types/auth";

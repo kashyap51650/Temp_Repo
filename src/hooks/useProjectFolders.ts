@@ -1,7 +1,7 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-import { type StudyType } from "@/lib/api";
+import type { StudyType } from "@/api";
 import type { Experiment } from "@/types/experiment";
 import type { ProjectItem, View } from "@/types/project";
 

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { permissionsApi } from "@/lib/api";
+import { permissionsApi } from "@/api";
 import type { Permission } from "@/lib/permissions";
 import type { Role } from "@/types/permissions";
 

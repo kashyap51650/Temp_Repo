@@ -1,12 +1,12 @@
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
+import { isotopeApi } from "@/api";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import {
   FormField,
   FormItem,
   FormLabel,
 } from "@/components/organisms/Form/Form";
-import { isotopeApi } from "@/lib/api";
 
 interface IsotopeFieldProps<T extends FieldValues> {
   control: Control<T>;

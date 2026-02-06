@@ -5,8 +5,9 @@ import {
   experimentApi,
   type ExperimentDropdownItem,
   type ExperimentFilters,
-  handleApiError,
-} from "../lib/api";
+} from "@/api";
+
+import { handleApiError } from "../lib/api";
 import { REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseExperimentsDropdownProps {

@@ -1,15 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { toast } from "@/components/atoms/Sonner/toast";
-
 import {
-  handleApiError,
   uploadedExperimentDataApi,
   type UploadedExperimentDataFilters,
   type UploadedExperimentDataItem,
   type UploadedExperimentDataResponse,
-} from "../lib/api";
+} from "@/api";
+import { toast } from "@/components/atoms/Sonner/toast";
+
+import { handleApiError } from "../lib/api";
 import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseUploadedExperimentDataProps {

@@ -1,10 +1,10 @@
 import { ArrowLeft } from "lucide-react";
 import React, { useState } from "react";
 
+import type { StudyType } from "@/api";
 import { Button } from "@/components/atoms";
 import { MoveMiceWizard } from "@/components/project-folders/MoveMiceWizard";
 import { useDataTypes } from "@/hooks";
-import type { StudyType } from "@/lib/api";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { ProtectedComponent } from "../organisms/ProtectedRoute";

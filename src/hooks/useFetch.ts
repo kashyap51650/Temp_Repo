@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { roleApi, userApi } from "@/lib/api";
+import { roleApi, userApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { RolesResponse, UserFilters, UsersResponse } from "@/types/auth";
 

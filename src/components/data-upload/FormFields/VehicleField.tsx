@@ -1,12 +1,12 @@
 import { type Control, type FieldValues, type Path } from "react-hook-form";
 
+import { vehiclesDropdownApi } from "@/api";
 import { FormSelect } from "@/components/molecules/FormSelect";
 import {
   FormField,
   FormItem,
   FormLabel,
 } from "@/components/organisms/Form/Form";
-import { vehiclesDropdownApi } from "@/lib/api";
 
 interface VehicleFieldProps<T extends FieldValues> {
   control: Control<T>;

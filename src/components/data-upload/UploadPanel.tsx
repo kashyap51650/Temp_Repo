@@ -1,6 +1,12 @@
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import type {
+  DataType,
+  ExperimentDropdownItem,
+  Project,
+  StudyType,
+} from "@/api";
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
 import type { BloodChemistryReport } from "@/types/bloodChemistry";
@@ -11,12 +17,6 @@ import {
   useExperimentDataImport,
   useModal,
 } from "../../hooks";
-import {
-  type DataType,
-  type ExperimentDropdownItem,
-  type Project,
-  type StudyType,
-} from "../../lib/api";
 import {
   DATA_TYPE,
   type ExperimentDataType,

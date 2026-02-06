@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { randomizationApi } from "@/lib/api";
+import { randomizationApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export const useViewRandomization = (experimentId: number) => {

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { masterDataApi } from "@/lib/api";
+import { masterDataApi } from "@/api";
 import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
 
 export interface MasterDataItem {

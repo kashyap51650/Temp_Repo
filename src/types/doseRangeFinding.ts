@@ -1,4 +1,5 @@
-import type { ApiResponse, RandomizationStatus } from "@/lib/api";
+import type { RandomizationStatus } from "@/api";
+import type { ApiResponse } from "@/lib/api";
 
 export interface CreateDoseRangeFindingPayload {
   experiment_name: string;

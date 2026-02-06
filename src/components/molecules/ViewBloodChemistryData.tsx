@@ -2,7 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useCallback, useMemo, useState } from "react";
 
-import { moveMiceApi } from "@/lib/api";
+import { moveMiceApi } from "@/api";
 import type {
   BloodChemistryReportData,
   BloodChemistryReportParameters,

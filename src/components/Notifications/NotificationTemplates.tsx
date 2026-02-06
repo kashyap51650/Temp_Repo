@@ -2,11 +2,12 @@ import { Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { notificationApi } from "@/api";
 import { Button } from "@/components/atoms";
 import { DataTable } from "@/components/organisms";
 import { getTemplateColumns } from "@/components/organisms/DataTable/tableColumns";
 import { type TemplateRow } from "@/components/organisms/DataTable/tableData";
-import { handleApiError, notificationApi } from "@/lib/api";
+import { handleApiError } from "@/lib";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { ProtectedComponent } from "../organisms/ProtectedRoute";

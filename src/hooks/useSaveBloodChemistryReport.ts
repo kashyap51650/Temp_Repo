@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { experimentDataApi } from "@/lib/api";
+import { importExperimentDataApi } from "@/api";
 import type { SaveBloodChemistryPDFPayload } from "@/types/bloodChemistry";
 
 export const useSaveBloodChemistryReport = () => {
@@ -9,7 +9,7 @@ export const useSaveBloodChemistryReport = () => {
       payload,
     }: {
       payload: SaveBloodChemistryPDFPayload;
-    }) => await experimentDataApi.saveBloodChemistryData(payload),
+    }) => await importExperimentDataApi.saveBloodChemistryData(payload),
   });
 
   return { saveBloodChemistryReport: mutate, isSaving: isPending };

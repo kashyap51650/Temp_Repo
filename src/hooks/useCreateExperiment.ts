@@ -5,8 +5,9 @@ import {
   type CreateExperimentPayload,
   type CreateExperimentResponse,
   experimentApi,
-  handleApiError,
-} from "../lib/api";
+} from "@/api";
+
+import { handleApiError } from "../lib/api";
 
 export interface UseCreateExperimentProps {
   onSuccess?: (data: CreateExperimentResponse["data"]) => void;

@@ -1,4 +1,4 @@
-import type { StatusType } from "@/lib/api";
+import type { StatusType } from "@/api";
 
 import type { UserRow } from "./tableColumns";
 

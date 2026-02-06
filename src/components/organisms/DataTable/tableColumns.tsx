@@ -17,11 +17,12 @@ import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
 import { PERMISSIONS } from "@/lib/permissions";
 
-import { type UploadedExperimentDataItem } from "../../../lib/api";
+import type { UploadedExperimentDataItem } from "@/api";
 import {
   getStatusBadgeClassName,
   getStatusBadgeVariant,
 } from "../../../utils/tableUtils";
+
 import {
   Badge,
   Button,

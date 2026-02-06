@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { modelStudyExperimentApi } from "@/lib/api";
+import { modelStudyExperimentApi } from "@/api";
 import type {
   ConfirmExperimentMouseGroupsPayload,
   ConfirmExperimentMouseGroupsResponse,

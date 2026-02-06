@@ -2,9 +2,9 @@ import { UploadCloud } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import type { ExperimentDropdownItem, Project } from "@/api";
 import { Button, Input } from "@/components/atoms";
 import { Label } from "@/components/atoms/Label/Label";
-import type { ExperimentDropdownItem, Project } from "@/lib/api";
 import { FILE_SIZE_LIMITS, FILE_TYPES } from "@/lib/constants";
 
 interface FormData {

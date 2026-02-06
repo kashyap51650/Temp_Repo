@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { notificationApi, roleApi } from "@/api";
 import { DataTable } from "@/components/organisms";
 import { getNotificationColumns } from "@/components/organisms/DataTable/tableColumns";
 import type {
   NotificationRow,
   NotificationStatus,
 } from "@/components/organisms/DataTable/tableData";
-import { handleApiError, notificationApi, roleApi } from "@/lib/api";
+import { handleApiError } from "@/lib/api";
 
 import { NotificationTableFilters } from "./NotificationTableFilters";
 import NotificationViewModal from "./NotificationViewModal";

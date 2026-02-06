@@ -1,8 +1,8 @@
 import React from "react";
 
+import type { StudyType } from "@/api";
 import { Button } from "@/components/atoms";
 import { useStudyTypes } from "@/hooks";
-import type { StudyType } from "@/lib/api";
 import { STUDY_TYPE_COLORS } from "@/lib/constants";
 
 interface StudyTypeSelectionProps {

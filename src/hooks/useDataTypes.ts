@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { type DataType, dataTypeApi, handleApiError } from "../lib/api";
+import { type DataType, dataTypeApi } from "@/api";
+
+import { handleApiError } from "../lib/api";
 import { REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseDataTypesProps {

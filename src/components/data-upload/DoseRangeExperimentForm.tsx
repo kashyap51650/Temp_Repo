@@ -1,5 +1,5 @@
+import type { ExperimentDropdownItem } from "@/api";
 import { useDoseRangeStudyForm } from "@/hooks/useDoseRangeStudyForm";
-import type { ExperimentDropdownItem } from "@/lib/api";
 
 import { Button } from "../atoms";
 import { Form } from "../organisms";

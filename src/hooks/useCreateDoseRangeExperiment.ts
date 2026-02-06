@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { doseRangeFindingExperimentApi } from "@/lib/api";
+import { doseRangeFindingExperimentApi } from "@/api";
 import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,

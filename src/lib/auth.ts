@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { API_CONFIG, apiClient, permissionsApi } from "@/lib/api";
+import { permissionsApi } from "@/api";
+import { API_CONFIG, apiClient } from "@/lib/api";
 import type {
   LoginApiResponse,
   LoginCredentials,

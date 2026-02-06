@@ -8,7 +8,7 @@ import { Input } from "@/components/atoms/Input/Input";
 import { ExperimentDrugSelect } from "@/components/molecules/ExperimentDrugSelect";
 import { AddGroupDialog } from "@/components/randomization/AddGroupDialog";
 import { RandomizationTable } from "@/components/randomization/RandomizationTable";
-import { useRendomizationResult } from "@/hooks/useRendomizationResult";
+import { useRandomizationResult } from "@/hooks/useRandomizationResult";
 import { RANDOMIZATION_PREVIEW_TYPES } from "@/lib/constants";
 import { transformApiGroupsForUI } from "@/lib/randomization-utils";
 
@@ -24,7 +24,7 @@ export default function RandomizationResults() {
     handleBack,
     bufferGroups,
     setBufferGroups,
-  } = useRendomizationResult();
+  } = useRandomizationResult();
 
   const groups = useMemo(() => {
     if (!randomizationData) return null;
