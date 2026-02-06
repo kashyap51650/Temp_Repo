@@ -93,6 +93,21 @@ export const API_CONFIG = {
     DOSE_RANGE_FINDING_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/drf-experiments/`,
     },
+    CLRF_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/clrf-experiments/`,
+    },
+    DIRECT_BINDING_ASSAY_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/direct-binding-assay-experiments/`,
+    },
+    CONJUGATION_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/conjugation-experiments/`,
+    },
+    IRF: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/irf-experiments/`,
+    },
+    RECEPTOR_QUANTIFICATION: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/receptor-quantification-experiments/`,
+    },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
     },
@@ -113,6 +128,9 @@ export const API_CONFIG = {
     },
     DOSES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/doses/dropdown`,
+    },
+    ANTIBODIES: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/antibodies/dropdown`,
     },
     RANDOMIZATION: {
       PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,

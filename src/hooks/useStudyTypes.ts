@@ -8,6 +8,7 @@ import { REACT_QUERY_CONFIG } from "../lib/constants";
 
 interface UseStudyTypesProps {
   enabled?: boolean;
+  specialisation?: string;
 }
 
 interface UseStudyTypesResult {
@@ -19,7 +20,7 @@ interface UseStudyTypesResult {
 }
 
 export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
-  const { enabled = false } = props || {};
+  const { enabled = false, specialisation } = props || {};
 
   const {
     data: studyTypes = [],
@@ -27,10 +28,10 @@ export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["study-types"],
+    queryKey: ["study-types", specialisation],
     queryFn: async () => {
       try {
-        const response = await studyTypeApi.getStudyTypes();
+        const response = await studyTypeApi.getStudyTypes(specialisation);
 
         if (response.success) {
           return response.data;

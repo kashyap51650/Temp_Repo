@@ -2,6 +2,7 @@
 export const SPECIALIZATION = {
   HOTLAB: "hotlab",
   PRECLINICAL: "preclinical",
+  CMC: "cmc",
 } as const;
 
 // Study types
@@ -11,6 +12,11 @@ export const STUDY_TYPE = {
   BIODISTRIBUTION: "Biodistribution",
   MODEL_STUDY: "Model Study",
   DOSE_RANGE_FINDING: "Dose Range Finding",
+  CLRF: "clRF",
+  CONJUGATION: "Conjugation",
+  DIRECT_BINDING_ASSAY: "Direct Binding Assay",
+  IRF: "IRF",
+  RECEPTOR_QUANTIFICATION: "Receptor Quantification",
 } as const;
 
 export const STUDY_TYPE_CODE = {
@@ -19,6 +25,11 @@ export const STUDY_TYPE_CODE = {
   EFFICACY: "EFFICACY",
   MODEL_STUDY: "MODEL_STUDY",
   TOXICITY: "TOXICITY",
+  CLRF: "CLRF",
+  CONJUGATION: "CONJUGATION",
+  DIRECT_BINDING_ASSAY: "DIRECT_BINDING_ASSAY",
+  IRF: "IRF",
+  RECEPTOR_QUANTIFICATION: "RECEPTOR_QUANTIFICATION",
 } as const;
 
 export type StudyTypeCode =
@@ -83,6 +94,8 @@ export interface FileTypeConfig {
   DISPLAY_NAME: string;
 }
 
+const JPEG_MIME_TYPE = "image/jpeg";
+
 // File type constants
 export const FILE_TYPES = {
   EXCEL: {
@@ -99,6 +112,33 @@ export const FILE_TYPES = {
     MIME_TYPES: ["application/pdf"],
     ACCEPT: ".pdf,application/pdf",
     DISPLAY_NAME: "PDF",
+  },
+  DOCX: {
+    EXTENSIONS: [".docx"],
+    MIME_TYPES: [
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    ACCEPT:
+      ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    DISPLAY_NAME: "Word",
+  },
+  PNG: {
+    EXTENSIONS: [".png"],
+    MIME_TYPES: ["image/png"],
+    ACCEPT: ".png,image/png",
+    DISPLAY_NAME: "PNG",
+  },
+  JPG: {
+    EXTENSIONS: [".jpg"],
+    MIME_TYPES: [JPEG_MIME_TYPE],
+    ACCEPT: `.jpg,${JPEG_MIME_TYPE}`,
+    DISPLAY_NAME: "JPG",
+  },
+  JPEG: {
+    EXTENSIONS: [".jpeg"],
+    MIME_TYPES: [JPEG_MIME_TYPE],
+    ACCEPT: `.jpeg,${JPEG_MIME_TYPE}`,
+    DISPLAY_NAME: "JPEG",
   },
 } as const satisfies Record<string, FileTypeConfig>;
 

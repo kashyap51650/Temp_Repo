@@ -13,6 +13,18 @@ import type {
   SaveBloodChemistryPDFPayload,
 } from "@/types/bloodChemistry";
 import type {
+  CreateClrfExperimentPayload,
+  CreateClrfExperimentResponse,
+} from "@/types/clrfExperiment";
+import type {
+  CreateConjugationExperimentPayload,
+  CreateConjugationExperimentResponse,
+} from "@/types/conjugationExperiment";
+import type {
+  CreateDirectBindingAssayExperimentPayload,
+  CreateDirectBindingAssayExperimentResponse,
+} from "@/types/directBindingAssay";
+import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,
 } from "@/types/doseRangeFinding";
@@ -28,6 +40,10 @@ import type {
   SaveHematologyPDFPayload,
 } from "@/types/hematology";
 import type {
+  CreateIrfExperimentPayload,
+  CreateIrfExperimentResponse,
+} from "@/types/irfExperiment";
+import type {
   CalliperingNotesListParams,
   CalliperingNotesListResponse,
   ConfirmExperimentMouseGroupsPayload,
@@ -40,6 +56,10 @@ import type {
   ModelStudyExperimentMouseGroupsResponse,
 } from "@/types/modelStudy";
 import type { ProjectFilters, ProjectsListResponse } from "@/types/project";
+import type {
+  CreateReceptorQuantificationExperimentPayload,
+  CreateReceptorQuantificationExperimentResponse,
+} from "@/types/receptorQuantification";
 
 export interface Project {
   id: number;
@@ -328,10 +348,18 @@ export const projectApi = {
 };
 
 export const studyTypeApi = {
-  getStudyTypes: async (): Promise<StudyTypesResponse> => {
-    return apiClient.get<StudyTypesResponse>(
-      API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST
-    );
+  getStudyTypes: async (
+    specialisation?: string
+  ): Promise<StudyTypesResponse> => {
+    const params = new URLSearchParams();
+    if (specialisation) {
+      params.append("specialization", specialisation.toUpperCase());
+    }
+
+    const endpoint = specialisation
+      ? `${API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST}?${params.toString()}`
+      : API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST;
+    return apiClient.get<StudyTypesResponse>(endpoint);
   },
 };
 
@@ -951,6 +979,72 @@ export const bloodChemistryApi = {
       API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.GET_BLOOD_CHEMISTRY_REPORT(
         experimentDataId
       )
+    );
+  },
+};
+
+export const experimentAntibodiesApi = {
+  getExperimentAntibodiesDropdown: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: Array<{
+      id: number;
+      antibody_name: string;
+      description: string;
+    }>;
+  }> => {
+    return apiClient.get(API_CONFIG.ENDPOINTS.ANTIBODIES.DROPDOWN);
+  },
+};
+
+export const clrfExperimentApi = {
+  createClrfExperiment: async (
+    payload: CreateClrfExperimentPayload
+  ): Promise<CreateClrfExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.CLRF_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const directBindingAssayExperimentApi = {
+  createDirectBindingAssayExperiment: async (
+    payload: CreateDirectBindingAssayExperimentPayload
+  ): Promise<CreateDirectBindingAssayExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.DIRECT_BINDING_ASSAY_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const conjugationExperimentApi = {
+  createConjugationExperiment: async (
+    payload: CreateConjugationExperimentPayload
+  ): Promise<CreateConjugationExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.CONJUGATION_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const irfExperimentApi = {
+  createIrfExperiment: async (
+    payload: CreateIrfExperimentPayload
+  ): Promise<CreateIrfExperimentResponse> => {
+    return apiClient.post(API_CONFIG.ENDPOINTS.IRF.CREATE, payload);
+  },
+};
+
+export const receptorQuantificationExperimentApi = {
+  createReceptorQuantificationExperiment: async (
+    payload: CreateReceptorQuantificationExperimentPayload
+  ): Promise<CreateReceptorQuantificationExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.RECEPTOR_QUANTIFICATION.CREATE,
+      payload
     );
   },
 };

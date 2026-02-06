@@ -14,7 +14,7 @@ import {
 } from "@/data/experiments";
 import { useDataTypes, useModal, useProjects, useStudyTypes } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
-import { STUDY_TYPE } from "@/lib/constants";
+import { SPECIALIZATION, STUDY_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { Card } from "../atoms";
@@ -73,7 +73,10 @@ export default function DataUploadCommon() {
   const [activeTab, setActiveTab] = useState<string>(getDefaultTab());
 
   const isStudyTypesEnabled = useMemo(() => {
-    return formData.specialisation?.toLowerCase() === "preclinical";
+    return (
+      formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL ||
+      formData.specialisation?.toLowerCase() === SPECIALIZATION.CMC
+    );
   }, [formData.specialisation]);
 
   const {
@@ -84,6 +87,7 @@ export default function DataUploadCommon() {
     clearStudyTypes,
   } = useStudyTypes({
     enabled: isStudyTypesEnabled,
+    specialisation: formData.specialisation,
   });
 
   const [isCreatingNewProject] = useState(false);

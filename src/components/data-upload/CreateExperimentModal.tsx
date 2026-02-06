@@ -23,10 +23,15 @@ import { Button, Input } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
 import { Label } from "../atoms/Label/Label";
 import { CalendarDatePicker } from "../organisms";
+import ClrfExperimentForm from "./ClrfExperimentForm";
+import ConjugationExperimentForm from "./ConjugationExperimentForm";
 import { CustomSelect } from "./CustomSelect";
+import DirectBindingAssayExperimentForm from "./DirectBindingAssayExperimentForm";
 import DoseRangeExperimentForm from "./DoseRangeExperimentForm";
+import IrfExperimentForm from "./IrfExperimentForm";
 import ModelStudyExperimentForm from "./ModelStudyExperimentForm";
 import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
+import ReceptorQuantificationExperimentForm from "./ReceptorQuantificationExperiment";
 
 interface FormState {
   experimentName: string;
@@ -400,6 +405,68 @@ export function CreateExperimentModal({
   }, [isOpen, studyType, loadExperimentData]);
 
   const renderExperimentForm = () => {
+    if (specialization?.toLowerCase() === SPECIALIZATION.CMC.toLowerCase()) {
+      if (studyType === STUDY_TYPE_CODE.CLRF) {
+        return (
+          <ClrfExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.DIRECT_BINDING_ASSAY) {
+        return (
+          <DirectBindingAssayExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.CONJUGATION) {
+        return (
+          <ConjugationExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.IRF) {
+        return (
+          <IrfExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.RECEPTOR_QUANTIFICATION) {
+        return (
+          <ReceptorQuantificationExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+    }
+
     if (
       specialization?.toLowerCase() === SPECIALIZATION.PRECLINICAL.toLowerCase()
     ) {

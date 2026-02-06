@@ -15,6 +15,7 @@ interface CellLineFieldPropsWithForm<T extends FieldValues> {
   name: Path<T>;
   value?: never;
   onChange?: never;
+  multiple?: boolean;
 }
 
 interface CellLineFieldPropsWithValue {
@@ -58,6 +59,7 @@ export function CellLineField<T extends FieldValues = Record<string, never>>(
               queryKey={["cell-lines-dropdown"]}
               placeholder="Select cell line"
               valueAsNumber={true}
+              multiple={props.multiple ?? false}
             />
           </FormItem>
         )}
