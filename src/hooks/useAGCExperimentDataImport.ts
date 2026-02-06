@@ -5,9 +5,11 @@ import { type ImportAGCDataPayload, importExperimentDataApi } from "@/api";
 
 type UseAgcExperimentDataImportProps = {
   onSuccess?: () => void;
+  onError?: (error: Error) => void;
 };
 export const useAGCExperimentDataImport = ({
   onSuccess,
+  onError,
 }: UseAgcExperimentDataImportProps = {}) => {
   const { mutate, isPending, error } = useMutation({
     mutationFn: (payload: ImportAGCDataPayload) =>
@@ -18,7 +20,7 @@ export const useAGCExperimentDataImport = ({
     },
     onError: (error: Error) => {
       console.error("Error importing AGC Experiment data:", error);
-      toast.error(error.message);
+      onError?.(error);
     },
     retry: false,
   });

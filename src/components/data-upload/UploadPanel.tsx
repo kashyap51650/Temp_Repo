@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import type {
   DataType,
@@ -26,6 +27,7 @@ import {
   STUDY_TYPE,
 } from "../../lib/constants";
 import { Button } from "../atoms";
+import { CustomToast } from "../molecules";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
 import { ExperimentSection } from "./ExperimentSection";
 import { FileUploadArea } from "./FileUploadArea";
@@ -214,7 +216,29 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   // AGC Sheet Upload Handler
   const { handleUploadAGCSheet, isAGCSheetUploading } =
-    useAGCExperimentDataImport({ onSuccess: handleAgcFileUploadSuccess });
+    useAGCExperimentDataImport({
+      onSuccess: handleAgcFileUploadSuccess,
+      onError: (error) => {
+        const errors = error?.message
+          ?.split("\n")
+          .filter((val) => val.trim() !== "");
+
+        toast.custom(
+          (_id) => (
+            <CustomToast
+              title="Error importing AGC Experiment data"
+              variant="error"
+              onDismiss={() => toast.dismiss(_id)}
+              errors={errors}
+              position="top-right"
+            />
+          ),
+          {
+            duration: Infinity,
+          }
+        );
+      },
+    });
 
   const handleUploadFileReset = () => {
     setFormData((prev: FormData) => ({
