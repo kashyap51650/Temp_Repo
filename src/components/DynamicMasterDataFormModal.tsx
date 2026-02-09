@@ -34,6 +34,7 @@ export function DynamicMasterDataFormModal({
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const DESCRIPTION_MAX_LENGTH = 500;
 
   // Load mouse strains for cell lines
   const {
@@ -386,6 +387,14 @@ export function DynamicMasterDataFormModal({
         const numValue = Number(formData[field.key]);
         if (Number.isNaN(numValue)) {
           newErrors[field.key] = `${field.label} must be a valid number`;
+        }
+      }
+
+      if (field.key.includes("description") && formData[field.key]) {
+        const descriptionValue = String(formData[field.key]);
+        if (descriptionValue.length > DESCRIPTION_MAX_LENGTH) {
+          newErrors[field.key] =
+            `${field.label} must be ${DESCRIPTION_MAX_LENGTH} characters or less`;
         }
       }
     }

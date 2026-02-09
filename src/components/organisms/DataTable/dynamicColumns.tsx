@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/atoms";
 import { Button } from "@/components/atoms/Button/Button";
+import { TruncateWithTooltip } from "@/components/atoms/TruncateWithTooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,25 +50,20 @@ export const createDynamicMasterDataColumns = (
     enableSorting: true,
     cell: ({ row }) => {
       const value = row.getValue(key);
-      const strValue = value ? String(value) : "-";
+      const hasValue =
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === "string" && value === "");
+      const strValue = hasValue ? String(value) : "-";
       const extraClass =
         formatFieldLabel(key) === "Half Life Hours" ? "pl-5" : "";
-      const isTruncated = strValue.length > 24;
       return (
-        <div className={`capitalize truncate w-58 ${extraClass}`}>
-          {isTruncated ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span>{strValue}</span>
-              </TooltipTrigger>
-              <TooltipContent align="start" className="max-w-xl">
-                {strValue}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            strValue
-          )}
-        </div>
+        <TruncateWithTooltip
+          className={`capitalize block w-58 ${extraClass}`}
+          tooltipContentClassName="max-w-xl"
+        >
+          {strValue}
+        </TruncateWithTooltip>
       );
     },
   }));

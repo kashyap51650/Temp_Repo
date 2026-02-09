@@ -2,11 +2,17 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./Tooltip/Tooltip";
 
+interface TruncateWithTooltipProps
+  extends React.HTMLAttributes<HTMLSpanElement> {
+  tooltipContentClassName?: string;
+}
+
 export function TruncateWithTooltip({
   children,
   className = "",
+  tooltipContentClassName = "",
   ...props
-}: React.HTMLAttributes<HTMLSpanElement>) {
+}: TruncateWithTooltipProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
@@ -26,7 +32,9 @@ export function TruncateWithTooltip({
   return isTruncated ? (
     <Tooltip>
       <TooltipTrigger asChild>{span}</TooltipTrigger>
-      <TooltipContent>{children}</TooltipContent>
+      <TooltipContent className={tooltipContentClassName}>
+        {children}
+      </TooltipContent>
     </Tooltip>
   ) : (
     span
