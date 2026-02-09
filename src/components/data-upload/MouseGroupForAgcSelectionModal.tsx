@@ -70,7 +70,7 @@ export const MouseGroupForAgcSelectionModal: React.FC<
 
     return (
       <div className="text-sm text-muted-foreground">
-        Please Upload Necropsy File for atleat one group
+        Please Upload Organ Weight Sheet File for atleast one group
       </div>
     );
   };

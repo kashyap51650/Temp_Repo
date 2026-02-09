@@ -125,7 +125,7 @@ const getReadOnlyCalliperingColumns = ({
                   <div className="space-y-2">
                     <p>{row.original.notes}</p>
                     <p className="text-xs text-muted-foreground italic border-t pt-2">
-                      Click to view and add comments
+                      Click on the note below to view and add comments
                     </p>
                   </div>
                 </TooltipContent>

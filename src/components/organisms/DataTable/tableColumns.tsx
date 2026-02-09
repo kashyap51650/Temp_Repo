@@ -13,16 +13,15 @@ import type { Dispatch, FC, SetStateAction } from "react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
+import type { UploadedExperimentDataItem } from "@/api";
 import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
 import { PERMISSIONS } from "@/lib/permissions";
 
-import type { UploadedExperimentDataItem } from "@/api";
 import {
   getStatusBadgeClassName,
   getStatusBadgeVariant,
 } from "../../../utils/tableUtils";
-
 import {
   Badge,
   Button,
@@ -828,9 +827,9 @@ export function getValidationColumns(
         />
       ),
       cell: ({ row }) => (
-        <span className="block truncate w-48">
+        <TruncateWithTooltip className="block truncate w-48">
           {row.original.experimentName}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {
