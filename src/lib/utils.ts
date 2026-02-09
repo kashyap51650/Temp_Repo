@@ -1,9 +1,9 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-import type { SelectOption } from "@/types/utils";
-
 import type { ExperimentDataItem } from "@/api";
+import { specialisationOptions } from "@/data/experiments";
+import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
 import { FILE_SIZE_LIMITS, type StudyType } from "./constants";
@@ -40,6 +40,7 @@ export function transformExperimentDataToValidationRows(
       id: item.experiment.id,
       experiment_name: item.experiment.experiment_name,
       randomization_status: item.experiment.randomization_status || "",
+      specialization: item.experiment.specialization,
     },
     reviewer: item.reviewer
       ? {
@@ -135,3 +136,10 @@ export function validatePDFFile(file: File): void {
     throw new Error("File size must be less than 10MB");
   }
 }
+
+export const specializationLookup = new Map<string, string>(
+  specialisationOptions.map((option) => [
+    option.value.toLowerCase(),
+    option.label,
+  ])
+);

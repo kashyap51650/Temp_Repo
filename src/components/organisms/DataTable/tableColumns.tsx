@@ -14,6 +14,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 import type { UploadedExperimentDataItem } from "@/api";
+import { specializationLookup } from "@/lib";
 import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -831,6 +832,18 @@ export function getValidationColumns(
           {row.original.experimentName}
         </TruncateWithTooltip>
       ),
+    },
+    {
+      accessorKey: "experiment.specialization",
+      header: ({ column }) => (
+        <SortableHeader column={column} title="Specialization" />
+      ),
+      cell: ({ row }) => {
+        const specialization = row.original.experiment.specialization;
+        const label =
+          specializationLookup.get(specialization.toLowerCase()) ?? "Unknown";
+        return <span className="text-muted-foreground">{label}</span>;
+      },
     },
     {
       accessorKey: "studyType",

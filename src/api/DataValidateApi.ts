@@ -4,6 +4,7 @@ export interface ExperimentDataFilters {
   status?: string;
   data_type?: string;
   study_type?: string;
+  specialization?: string;
   page?: number;
   size?: number;
 }
@@ -24,6 +25,7 @@ export interface ExperimentDataItem {
     id: number;
     experiment_name: string;
     randomization_status?: string;
+    specialization: string;
   };
   project: {
     id: number;
@@ -65,6 +67,8 @@ export const experimentDataApi = {
     if (filters?.status) params.append("status", filters.status);
     if (filters?.data_type) params.append("data_type_id", filters.data_type);
     if (filters?.study_type) params.append("study_type_id", filters.study_type);
+    if (filters?.specialization)
+      params.append("specialization", filters.specialization.toUpperCase());
     if (filters?.page) params.append("page", filters.page.toString());
     if (filters?.size) params.append("size", filters.size.toString());
 

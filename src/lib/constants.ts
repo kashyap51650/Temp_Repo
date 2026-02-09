@@ -177,6 +177,7 @@ export const DataValidationFilter = {
   Status: "status",
   DataType: "data_type",
   StudyType: "study_type",
+  Specialization: "specialization",
 } as const;
 
 export type DataValidationFilter =

@@ -286,6 +286,7 @@ export type ValidationRow = {
     id: number;
     experiment_name: string;
     randomization_status: string;
+    specialization: string;
   };
   reviewer?: {
     id: number;

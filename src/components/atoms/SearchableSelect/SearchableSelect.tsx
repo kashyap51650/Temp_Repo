@@ -31,6 +31,7 @@ type SearchableSelectProps<TMultiple extends boolean = false> = {
   disabled?: boolean;
   multiple?: TMultiple;
   shouldShowCreateNew?: boolean;
+  id?: string;
 };
 
 export function SearchableSelect<TMultiple extends boolean = false>({
@@ -47,6 +48,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
   disabled = false,
   multiple = false as TMultiple,
   shouldShowCreateNew = true,
+  id,
 }: Readonly<SearchableSelectProps<TMultiple>>) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -140,6 +142,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
             size={size}
             className={cn("w-full", className)}
             aria-label={placeholder}
+            id={id}
           >
             <SelectValue placeholder={placeholder} className="text-xs">
               {selectedValues.length > 0
@@ -286,6 +289,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
         size={size}
         className={cn("w-full", className)}
         aria-label={placeholder}
+        id={id}
       >
         <SelectValue placeholder={placeholder} className="text-xs" />
       </SelectTrigger>

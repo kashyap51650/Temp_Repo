@@ -7,6 +7,7 @@ import {
   type StudyType,
   studyTypeApi,
 } from "@/api";
+import { specialisationOptions } from "@/data/experiments";
 import {
   DataValidationFilter,
   RANDOMIZATION_PREVIEW_TYPES,
@@ -38,6 +39,8 @@ import { SelectBioDExperimentModal } from "./SelectBioDExperimentModal";
 export default function DataValidation() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("All Status");
+  const [specializationFilter, setSpecializationFilter] =
+    useState<string>(SELECT_ALL);
   const [studyTypeFilter, setStudyTypeFilter] = useState<string>(SELECT_ALL);
   const [dataTypeFilter, setDataTypeFilter] = useState<string>(SELECT_ALL);
   const [selectedExperiment, setSelectedExperiment] = useState<{
@@ -88,6 +91,8 @@ export default function DataValidation() {
 
   const normalizeStudyType = (value: string) =>
     value === SELECT_ALL ? undefined : value;
+  const normalizeSpecialization = (value: string) =>
+    value === SELECT_ALL ? undefined : value;
 
   const handleFilterChange = (type: DataValidationFilter, value: string) => {
     const nextStatus =
@@ -96,6 +101,26 @@ export default function DataValidation() {
       type === DataValidationFilter.DataType ? value : dataTypeFilter;
     const nextStudyType =
       type === DataValidationFilter.StudyType ? value : studyTypeFilter;
+    const nextSpecialization =
+      type === DataValidationFilter.Specialization
+        ? value
+        : specializationFilter;
+
+    if (
+      type === DataValidationFilter.Specialization &&
+      String(value) !== specializationFilter
+    ) {
+      setSpecializationFilter(String(value));
+      setStudyTypeFilter(SELECT_ALL);
+      setDataTypeFilter(SELECT_ALL);
+      setFilters({
+        status: normalizeStatus(nextStatus),
+        specialization: normalizeSpecialization(nextSpecialization),
+        study_type: undefined,
+        data_type: undefined,
+      });
+      return;
+    }
 
     if (type === DataValidationFilter.Status) setStatusFilter(value);
     if (type === DataValidationFilter.DataType) setDataTypeFilter(value);
@@ -105,6 +130,7 @@ export default function DataValidation() {
       status: normalizeStatus(nextStatus),
       data_type: normalizeDataType(nextDataType),
       study_type: normalizeStudyType(nextStudyType),
+      specialization: normalizeSpecialization(nextSpecialization),
     });
   };
 
@@ -310,6 +336,31 @@ export default function DataValidation() {
           </div>
           <div className="w-full md:w-48">
             <label
+              htmlFor="specialization-select"
+              className="text-sm font-medium text-foreground block mb-2"
+            >
+              Filter by Specialization
+            </label>
+            <BaseSelect
+              id="specialization-select"
+              value={specializationFilter}
+              onChange={(value: string | string[]) =>
+                handleFilterChange(
+                  DataValidationFilter.Specialization,
+                  String(value)
+                )
+              }
+              options={[
+                { label: "All Specializations", value: SELECT_ALL },
+                ...specialisationOptions,
+              ]}
+              placeholder="All Specializations"
+              disabled={false}
+              searchable={false}
+            />
+          </div>
+          <div className="w-full md:w-48">
+            <label
               htmlFor="study-type-select"
               className="text-sm font-medium text-foreground block mb-2"
             >
@@ -319,15 +370,27 @@ export default function DataValidation() {
               value={studyTypeFilter}
               onChange={handleStudyTypeChange}
               query={async () => {
-                const response = await studyTypeApi.getStudyTypes();
-                return response.data;
+                if (
+                  specializationFilter &&
+                  specializationFilter !== SELECT_ALL
+                ) {
+                  const response = await studyTypeApi.getStudyTypes(
+                    normalizeSpecialization(specializationFilter)
+                  );
+                  return response.data;
+                }
+
+                return [];
               }}
               mapConfig={{
                 labelKey: "study_type_name",
                 valueKey: "id",
               }}
-              queryKey={["study-types"]}
+              queryKey={["study-types", specializationFilter]}
               allLabel="All Study Types"
+              disabled={
+                !specializationFilter || specializationFilter === SELECT_ALL
+              }
               searchable={false}
             />
           </div>

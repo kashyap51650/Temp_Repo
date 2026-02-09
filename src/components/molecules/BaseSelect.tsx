@@ -11,6 +11,7 @@ interface BaseSelectProps {
   isMulti?: boolean;
   disabled?: boolean;
   searchable?: boolean;
+  id?: string;
 }
 export function BaseSelect({
   value,
@@ -20,6 +21,7 @@ export function BaseSelect({
   placeholder = "Select...",
   disabled = false,
   searchable = false,
+  id,
 }: Readonly<BaseSelectProps>) {
   if (isLoading)
     return <div className="h-10 bg-muted rounded-md animate-pulse" />;
@@ -35,6 +37,7 @@ export function BaseSelect({
       showSearch={searchable}
       disabled={disabled}
       size="lg"
+      id={id}
     />
   );
 }
