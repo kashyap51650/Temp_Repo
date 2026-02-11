@@ -43,6 +43,12 @@ export const DATA_TYPE = {
   NECROPSY_SHEET: "Necropsy",
   HEMATOLOGY: "Hematology",
   BLOOD_CHEMISTRY: "Blood Chemistry",
+  CLRF: "CLRF",
+  CONJUGATION: "Conjugation",
+  GEL_IMAGE: "Gel Image",
+  DIRECT_BINDING_ASSAY: "Direct Binding Assay",
+  IRF: "IRF",
+  RECEPTOR_QUANTIFICATION: "Receptor Quantification",
 } as const;
 
 // Type definitions for the constants

@@ -25,12 +25,8 @@ interface FormData {
 interface GenericFileUploadAreaProps {
   formData: FormData;
   setFormData: (updater: (prev: FormData) => FormData) => void;
-  isProjectSelected: boolean;
-  isHotlabSelected: boolean;
-  isPreclinicSelected: boolean;
-  isSpecialisationSelected: boolean;
-  isDataTypeSelected: boolean;
-  fileType?: FileTypeConfig;
+  isDisabled?: boolean;
+  fileType?: FileTypeConfig | FileTypeConfig[];
   maxFileSize?: number;
   customValidation?: (file: File) => {
     isValid: boolean;
@@ -38,21 +34,19 @@ interface GenericFileUploadAreaProps {
   };
   fileFieldName?: "uploadedFile" | "uploadAGCFile";
   labelText?: string;
+  bottomText?: string;
 }
 
 export function GenericFileUploadArea({
   formData,
   setFormData,
-  isProjectSelected,
-  isHotlabSelected,
-  isPreclinicSelected,
-  isSpecialisationSelected,
-  isDataTypeSelected,
+  isDisabled,
   fileType = FILE_TYPES.EXCEL,
   maxFileSize = FILE_SIZE_LIMITS.EXCEL_FILE,
   customValidation,
   fileFieldName = "uploadedFile",
   labelText,
+  bottomText,
 }: Readonly<GenericFileUploadAreaProps>) {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -60,6 +54,32 @@ export function GenericFileUploadArea({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
   const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
+
+  const fileTypes = Array.isArray(fileType) ? fileType : [fileType];
+
+  const getAllExtensions = (): string[] => {
+    return fileTypes.flatMap((ft) => ft.EXTENSIONS);
+  };
+
+  const getAllMimeTypes = (): string[] => {
+    return fileTypes.flatMap((ft) => ft.MIME_TYPES);
+  };
+
+  const getAllAcceptValues = (): string => {
+    return fileTypes.map((ft) => ft.ACCEPT).join(",");
+  };
+
+  const getDisplayNames = (): string => {
+    if (fileTypes.length === 1) {
+      return fileTypes[0].DISPLAY_NAME;
+    }
+    return fileTypes.map((ft) => ft.DISPLAY_NAME).join(" or ");
+  };
+
+  const getDisplayExtensions = (): string => {
+    const extensions = getAllExtensions();
+    return extensions.join(", ");
+  };
 
   useEffect(() => {
     if (isUploading) {
@@ -88,14 +108,17 @@ export function GenericFileUploadArea({
       return true;
     }
 
-    const isValidExtension = fileType.EXTENSIONS.some((ext) =>
+    const validExtensions = getAllExtensions();
+    const validMimeTypes = getAllMimeTypes();
+
+    const isValidExtension = validExtensions.some((ext) =>
       file.name.toLowerCase().endsWith(ext)
     );
-    const isValidMimeType = fileType.MIME_TYPES.includes(file.type);
+    const isValidMimeType = validMimeTypes.includes(file.type);
 
     if (!isValidExtension && !isValidMimeType) {
       toast.error(
-        `Invalid file type. Please upload a ${fileType.DISPLAY_NAME} file (${fileType.EXTENSIONS.join(", ")}).`
+        `Invalid file type. Please upload a ${getDisplayNames()} file (${getDisplayExtensions()}).`
       );
       return false;
     }
@@ -165,25 +188,21 @@ export function GenericFileUploadArea({
     handleFileSelection(files);
   };
 
-  const isUploadDisabled =
-    !isProjectSelected ||
-    (isHotlabSelected && !isSpecialisationSelected) ||
-    (isPreclinicSelected && !isDataTypeSelected) ||
-    isUploading;
+  const isUploadDisabled = isDisabled || isUploading;
 
   const generateLabelText = () => {
     if (labelText) return labelText;
 
-    const fileExtension = fileType.EXTENSIONS[0] || "";
+    const extensions = getDisplayExtensions();
 
     if (formData.dataType) {
-      return `Upload ${formData.dataType} (${fileExtension})`;
+      return `Upload ${formData.dataType} (${extensions})`;
     }
-    return `Upload ${fileType.DISPLAY_NAME} File (${fileExtension})`;
+    return `Upload ${getDisplayNames()} File (${extensions})`;
   };
 
   const generateButtonText = () => {
-    const fileExtension = fileType.EXTENSIONS[0] || "";
+    const extensions = getDisplayExtensions();
     const selectedFile = formData[fileFieldName];
 
     if (selectedFile) {
@@ -194,10 +213,10 @@ export function GenericFileUploadArea({
     }
 
     if (formData.dataType) {
-      return `Upload ${formData.dataType} file (${fileExtension})`;
+      return `Upload ${formData.dataType} file (${extensions})`;
     }
 
-    return `Upload ${fileType.DISPLAY_NAME} File (${fileExtension})`;
+    return `Upload ${getDisplayNames()} File (${extensions})`;
   };
 
   const getDropZoneClasses = () => {
@@ -217,13 +236,7 @@ export function GenericFileUploadArea({
 
   return (
     <div className="space-y-2">
-      <Label
-        className={`${
-          isPreclinicSelected && !isDataTypeSelected
-            ? "text-muted-foreground"
-            : ""
-        }`}
-      >
+      <Label className={`${isUploadDisabled ? "text-muted-foreground" : ""}`}>
         {generateLabelText()}
       </Label>
       <div // NOSONAR - Using semantic <div> with ARIA attributes instead of role="button" because actual button element exists inside for keyboard interaction
@@ -241,7 +254,7 @@ export function GenericFileUploadArea({
             ref={fileInputRef}
             type="file"
             id={`file-upload-${fileFieldName}`}
-            accept={fileType.ACCEPT}
+            accept={getAllAcceptValues()}
             disabled={isUploadDisabled}
             className="hidden"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,25 +297,13 @@ export function GenericFileUploadArea({
             className="text-sm text-muted-foreground mt-3"
           >
             {isDragging
-              ? `Drop your ${fileType.DISPLAY_NAME} file here`
-              : `Click or drag & drop your ${fileType.DISPLAY_NAME} file (${fileType.EXTENSIONS.join(", ")}) here`}
+              ? `Drop your ${getDisplayNames()} file here`
+              : `Click or drag & drop your ${getDisplayNames()} file (${getDisplayExtensions()}) here`}
           </span>
         </div>
       </div>
-      {!isProjectSelected && (
-        <span className="text-xs text-muted-foreground">
-          Please select a project to continue
-        </span>
-      )}
-      {isProjectSelected && isHotlabSelected && !isSpecialisationSelected && (
-        <span className="text-xs text-muted-foreground">
-          Please complete specialisation selection to continue
-        </span>
-      )}
-      {isPreclinicSelected && !isDataTypeSelected && (
-        <span className="text-xs text-muted-foreground">
-          Please select data type to continue
-        </span>
+      {bottomText && (
+        <span className="text-xs text-muted-foreground">{bottomText}</span>
       )}
     </div>
   );

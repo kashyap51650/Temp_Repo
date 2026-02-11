@@ -1,4 +1,4 @@
-import { validatePDFFile } from "@/lib";
+import { validateFile, validatePDFFile } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import {
   API_CUSTOM_TIMEOUT,
@@ -13,16 +13,24 @@ import type {
   SaveBloodChemistryPDFPayload,
 } from "@/types/bloodChemistry";
 import type {
+  ClrfExperimentDataUploadPayload,
+  ClrfExperimentDataUploadResponse,
   CreateClrfExperimentPayload,
   CreateClrfExperimentResponse,
 } from "@/types/clrfExperiment";
 import type {
+  ConjugationExperimentDataUploadPayload,
+  ConjugationExperimentDataUploadResponse,
+  ConjugationGelImageDataUploadPayload,
+  ConjugationGelImageDataUploadResponse,
   CreateConjugationExperimentPayload,
   CreateConjugationExperimentResponse,
 } from "@/types/conjugationExperiment";
 import type {
   CreateDirectBindingAssayExperimentPayload,
   CreateDirectBindingAssayExperimentResponse,
+  DirectBindingAssayExperimentDataUploadPayload,
+  DirectBindingAssayExperimentDataUploadResponse,
 } from "@/types/directBindingAssay";
 import type {
   CreateDoseRangeFindingPayload,
@@ -42,6 +50,8 @@ import type {
 import type {
   CreateIrfExperimentPayload,
   CreateIrfExperimentResponse,
+  IrfExperimentDataUploadPayload,
+  IrfExperimentDataUploadResponse,
 } from "@/types/irfExperiment";
 import type {
   CalliperingNotesListParams,
@@ -59,6 +69,8 @@ import type { ProjectFilters, ProjectsListResponse } from "@/types/project";
 import type {
   CreateReceptorQuantificationExperimentPayload,
   CreateReceptorQuantificationExperimentResponse,
+  ReceptorQuantificationExperimentDataUploadPayload,
+  ReceptorQuantificationExperimentDataUploadResponse,
 } from "@/types/receptorQuantification";
 
 export interface Project {
@@ -805,6 +817,158 @@ export const importExperimentDataApi = {
       );
     } catch (error) {
       console.error("Experiment blood chemistry data import error:", error);
+      throw error;
+    }
+  },
+
+  importClrfExperimentDataApi: async (
+    payload: ClrfExperimentDataUploadPayload
+  ): Promise<ClrfExperimentDataUploadResponse> => {
+    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CLRF_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment CLRF data import error:", error);
+      throw error;
+    }
+  },
+
+  importDirectBindingAssayExperimentDataApi: async (
+    payload: DirectBindingAssayExperimentDataUploadPayload
+  ): Promise<DirectBindingAssayExperimentDataUploadResponse> => {
+    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
+          .IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Experiment Direct binding assay data import error:",
+        error
+      );
+      throw error;
+    }
+  },
+
+  importConjugationExperimentDataApi: async (
+    payload: ConjugationExperimentDataUploadPayload
+  ): Promise<ConjugationExperimentDataUploadResponse> => {
+    validateFile(payload.file, ["PDF"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment Conjugation data import error:", error);
+      throw error;
+    }
+  },
+
+  importConjugationGelImageDataApi: async (
+    payload: ConjugationGelImageDataUploadPayload
+  ): Promise<ConjugationGelImageDataUploadResponse> => {
+    validateFile(payload.file, ["JPEG", "JPG", "PNG"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_GEL_IMAGE_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment Gel Image data import error:", error);
+      throw error;
+    }
+  },
+
+  importIrfExperimentDataApi: async (
+    payload: IrfExperimentDataUploadPayload
+  ): Promise<IrfExperimentDataUploadResponse> => {
+    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_IRF_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error("Experiment IRF data import error:", error);
+      throw error;
+    }
+  },
+
+  importReceptorQuantificationExperimentDataApi: async (
+    payload: ReceptorQuantificationExperimentDataUploadPayload
+  ): Promise<ReceptorQuantificationExperimentDataUploadResponse> => {
+    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
+
+    const formData = new FormData();
+
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    try {
+      return await apiClient.postFormData(
+        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
+          .IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA,
+        formData,
+        {
+          timeout: API_CUSTOM_TIMEOUT,
+        }
+      );
+    } catch (error) {
+      console.error(
+        "Experiment Receptor Quantification data import error:",
+        error
+      );
       throw error;
     }
   },

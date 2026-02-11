@@ -29,3 +29,15 @@ export interface IrfExperiment {
 }
 
 export type CreateIrfExperimentResponse = ApiResponse<IrfExperiment>;
+
+export interface IrfExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type IrfExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;

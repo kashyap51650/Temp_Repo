@@ -122,6 +122,12 @@ export const API_CONFIG = {
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
       IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
       IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-necropsy-experiment-data`,
+      IMPORT_CLRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/clrf/import-clrf-experiment-data`,
+      IMPORT_CONJUGATION_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/conjugation/import-conjugation-experiment-data`,
+      IMPORT_CONJUGATION_GEL_IMAGE_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/conjugation/import-gel-image-experiment-data`,
+      IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/direct-binding-assay/import-direct-binding-assay-experiment-data`,
+      IMPORT_IRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/irf/import-irf-experiment-data`,
+      IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/receptor-quantification/import-receptor-quantification-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,

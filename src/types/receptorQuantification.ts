@@ -34,3 +34,15 @@ export interface ReceptorQuantificationExperiment {
 
 export type CreateReceptorQuantificationExperimentResponse =
   ApiResponse<ReceptorQuantificationExperiment>;
+
+export interface ReceptorQuantificationExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type ReceptorQuantificationExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;

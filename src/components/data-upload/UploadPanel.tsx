@@ -9,7 +9,17 @@ import type {
   StudyType,
 } from "@/api";
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
+import { useCMCExperimentDataImport } from "@/hooks/useCMCExperimentDataImport";
 import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
+import {
+  DATA_TYPE,
+  type ExperimentDataType,
+  FILE_SIZE_LIMITS,
+  FILE_TYPES,
+  SPECIALIZATION,
+  STUDY_TYPE,
+  type StudyType as ExperimentStudyType,
+} from "@/lib/constants";
 import type { BloodChemistryReport } from "@/types/bloodChemistry";
 import type { HematologyReport } from "@/types/hematology";
 
@@ -18,14 +28,6 @@ import {
   useExperimentDataImport,
   useModal,
 } from "../../hooks";
-import {
-  DATA_TYPE,
-  type ExperimentDataType,
-  FILE_SIZE_LIMITS,
-  FILE_TYPES,
-  SPECIALIZATION,
-  STUDY_TYPE,
-} from "../../lib/constants";
 import { Button } from "../atoms";
 import { CustomToast } from "../molecules";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
@@ -150,6 +152,17 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation?.toLowerCase() === SPECIALIZATION.HOTLAB;
   const isPreclinicSelected =
     formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL;
+  const isCMCSelected =
+    formData.specialisation?.toLowerCase() === SPECIALIZATION.CMC;
+  const isClrfData = formData.dataType === DATA_TYPE.CLRF;
+  const isDirectBindingAssayData =
+    formData.dataType === DATA_TYPE.DIRECT_BINDING_ASSAY;
+  const isIrfData = formData.dataType === DATA_TYPE.IRF;
+  const isReceptorQuantificationData =
+    formData.dataType === DATA_TYPE.RECEPTOR_QUANTIFICATION;
+  const isConjugationData = formData.dataType === DATA_TYPE.CONJUGATION;
+  const isGelImageData = formData.dataType === DATA_TYPE.GEL_IMAGE;
+
   const isStudyTypeSelected = !!formData.studyType;
 
   const isExperimentSelected =
@@ -168,6 +181,22 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
       formData.dataType === DATA_TYPE.HEMATOLOGY ||
       formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY);
+
+  const isGenericFileUploadVisible = isPdfUpload || isCMCSelected;
+
+  function isGenericUploadDisabled() {
+    if (!isProjectSelected) return true;
+
+    if (isPreclinicSelected && !isDataTypeSelected) return true;
+
+    if (isCMCSelected) {
+      if (!isExperimentSelected || !isDataTypeSelected) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 
   const [isOpenDownloadOrganSheetModal, setIsOpenDownloadOrganSheetModal] =
     useState(false);
@@ -259,6 +288,15 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     experimentDataType: formData.dataType as ExperimentDataType,
   });
 
+  const { handleUploadCMCData, isCMCDataUploading } =
+    useCMCExperimentDataImport({
+      onSuccess: () => {
+        handleUploadFileReset();
+      },
+      experimentDataType: formData.dataType as ExperimentDataType,
+      experimentStudyType: formData.studyType as ExperimentStudyType,
+    });
+
   const { uploadFile, isUploading } = useExperimentDataImport({
     onSuccess: () => {
       handleUploadFileReset();
@@ -320,6 +358,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return !!(formData.studyType && formData.dataType);
     }
 
+    if (isCMCSelected) {
+      return !!(formData.studyType && formData.dataType);
+    }
+
     return true;
   };
 
@@ -363,6 +405,37 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
   };
 
+  const handleCMCFileUpload = () => {
+    if (!formData.uploadedFile) {
+      console.error("No file selected for upload");
+      return;
+    }
+
+    const experimentId = formData.experiment?.id;
+
+    if (!experimentId) {
+      console.error("No experiment selected");
+      return;
+    }
+
+    if (isCMCSelected) {
+      handleUploadCMCData({
+        experiment_id: experimentId,
+        file: formData.uploadedFile,
+      });
+    }
+  };
+
+  const handleGenericFileUploadClick = () => {
+    if (isPdfUpload) {
+      handleUploadPdfClick();
+      return;
+    }
+    if (isCMCSelected) {
+      handleCMCFileUpload();
+    }
+  };
+
   const renderDownloadButtonText = () => {
     if (isNecropsyData) {
       return "Download Organ Sheet";
@@ -372,6 +445,75 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return "Downloading...";
     }
     return "Download Sample File";
+  };
+
+  const getGenericFileUploadBottomText = () => {
+    if (!isProjectSelected) {
+      return "Please select a project to continue";
+    }
+    if (isProjectSelected && !isSpecialisationSelected) {
+      return "Please complete specialisation selection to continue";
+    }
+    if (isPreclinicSelected && !isDataTypeSelected) {
+      return "Please select data type to continue";
+    }
+    if (isCMCSelected) {
+      if (!isExperimentSelected) {
+        return "Please select experiment to continue";
+      }
+      if (!isDataTypeSelected) {
+        return "Please select data type to continue";
+      }
+    }
+  };
+
+  const getGenericFileUploadFileTypeConfig = () => {
+    if (isPdfUpload) {
+      return {
+        fileType: FILE_TYPES.PDF,
+        maxFileSize: FILE_SIZE_LIMITS.LARGE_FILE,
+      };
+    }
+
+    if (isCMCSelected) {
+      if (
+        isClrfData ||
+        isIrfData ||
+        isReceptorQuantificationData ||
+        isDirectBindingAssayData
+      ) {
+        return {
+          fileType: [
+            FILE_TYPES.PDF,
+            FILE_TYPES.EXCEL,
+            FILE_TYPES.DOCX,
+            FILE_TYPES.PNG,
+            FILE_TYPES.JPG,
+            FILE_TYPES.JPEG,
+          ],
+          maxFileSize: FILE_SIZE_LIMITS.LARGE_FILE,
+        };
+      }
+
+      if (isConjugationData) {
+        return {
+          fileType: FILE_TYPES.PDF,
+          maxFileSize: FILE_SIZE_LIMITS.LARGE_FILE,
+        };
+      }
+
+      if (isGelImageData) {
+        return {
+          fileType: [FILE_TYPES.PNG, FILE_TYPES.JPG, FILE_TYPES.JPEG],
+          maxFileSize: FILE_SIZE_LIMITS.LARGE_FILE,
+        };
+      }
+    }
+
+    return {
+      fileType: FILE_TYPES.EXCEL,
+      maxFileSize: FILE_SIZE_LIMITS.EXCEL_FILE,
+    };
   };
 
   return (
@@ -431,64 +573,66 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         clearDataTypes={clearDataTypes}
       />
 
-      {formData.dataType !== DATA_TYPE.AGC_SHEET && !isPdfUpload && (
-        <>
-          <FileUploadArea
-            formData={formData}
-            setFormData={setFormData}
-            isProjectSelected={isProjectSelected}
-            isHotlabSelected={isHotlabSelected}
-            isPreclinicSelected={isPreclinicSelected}
-            isSpecialisationSelected={isSpecialisationSelected}
-            isDataTypeSelected={isDataTypeSelected}
-          />
-          <UploadedFilesList formData={formData} setFormData={setFormData} />
+      {formData.dataType !== DATA_TYPE.AGC_SHEET &&
+        !isGenericFileUploadVisible && (
+          <>
+            <FileUploadArea
+              formData={formData}
+              setFormData={setFormData}
+              isProjectSelected={isProjectSelected}
+              isHotlabSelected={isHotlabSelected}
+              isPreclinicSelected={isPreclinicSelected}
+              isSpecialisationSelected={isSpecialisationSelected}
+              isDataTypeSelected={isDataTypeSelected}
+            />
+            <UploadedFilesList formData={formData} setFormData={setFormData} />
 
-          <div className="flex justify-between items-center pt-4">
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={downloadButtonClickHandler}
-              disabled={!canShowDownloadButton || isDownloading}
-              type="button"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {renderDownloadButtonText()}
-            </Button>
-            <Button
-              size="lg"
-              onClick={handleDataUpload}
-              disabled={!canUploadData || isUploading}
-            >
-              {isUploading ? "Uploading..." : "Upload Data"}
-            </Button>
-          </div>
-        </>
-      )}
+            <div className="flex justify-between items-center pt-4">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={downloadButtonClickHandler}
+                disabled={!canShowDownloadButton || isDownloading}
+                type="button"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {renderDownloadButtonText()}
+              </Button>
+              <Button
+                size="lg"
+                onClick={handleDataUpload}
+                disabled={!canUploadData || isUploading}
+              >
+                {isUploading ? "Uploading..." : "Upload Data"}
+              </Button>
+            </div>
+          </>
+        )}
 
-      {isPdfUpload && (
+      {isGenericFileUploadVisible && (
         <>
           <GenericFileUploadArea
             formData={formData}
             setFormData={setFormData}
-            isProjectSelected={isProjectSelected}
-            isHotlabSelected={isHotlabSelected}
-            isPreclinicSelected={isPreclinicSelected}
-            isSpecialisationSelected={isSpecialisationSelected}
-            isDataTypeSelected={isDataTypeSelected}
-            fileType={FILE_TYPES.PDF}
-            maxFileSize={FILE_SIZE_LIMITS.LARGE_FILE}
+            isDisabled={isGenericUploadDisabled()}
+            {...getGenericFileUploadFileTypeConfig()}
+            bottomText={getGenericFileUploadBottomText()}
           />
           <div className="flex items-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={handleUploadPdfClick}
+              onClick={handleGenericFileUploadClick}
               disabled={
-                !canUploadData || !isExperimentSelected || isPdfUploading
+                !canUploadData ||
+                !isExperimentSelected ||
+                isPdfUploading ||
+                isCMCDataUploading
               }
               className="ml-auto"
             >
-              {isPdfUploading ? "Uploading..." : "Upload Data"}
+              {isPdfUploading || isCMCDataUploading
+                ? "Uploading..."
+                : "Upload Data"}
             </Button>
 
             {(formData.dataType === DATA_TYPE.HEMATOLOGY ||

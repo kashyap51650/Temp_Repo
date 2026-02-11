@@ -30,3 +30,15 @@ export interface DirectBindingAssayExperiment {
 
 export type CreateDirectBindingAssayExperimentResponse =
   ApiResponse<DirectBindingAssayExperiment>;
+
+export interface DirectBindingAssayExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type DirectBindingAssayExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;

@@ -29,3 +29,15 @@ export interface ClrfExperiment {
 }
 
 export type CreateClrfExperimentResponse = ApiResponse<ClrfExperiment>;
+
+export interface ClrfExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type ClrfExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;

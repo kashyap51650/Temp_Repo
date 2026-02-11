@@ -6,7 +6,7 @@ import { specialisationOptions } from "@/data/experiments";
 import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
-import { FILE_SIZE_LIMITS, type StudyType } from "./constants";
+import { FILE_SIZE_LIMITS, FILE_TYPES, type StudyType } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -143,3 +143,41 @@ export const specializationLookup = new Map<string, string>(
     option.label,
   ])
 );
+
+export type FileTypeKey = keyof typeof FILE_TYPES;
+
+export function validateFile(
+  file: File,
+  allowedTypes: FileTypeKey | FileTypeKey[],
+  maxFileSize: number = FILE_SIZE_LIMITS.LARGE_FILE
+): void {
+  if (!file) {
+    throw new Error("File is required");
+  }
+
+  const fileName = file.name.toLowerCase();
+
+  const typeKeys = Array.isArray(allowedTypes) ? allowedTypes : [allowedTypes];
+
+  const normalizedExtensions = typeKeys.flatMap(
+    (key) => FILE_TYPES[key].EXTENSIONS
+  );
+  const displayNames = typeKeys.map((key) => FILE_TYPES[key].DISPLAY_NAME);
+
+  const isValidExtension = normalizedExtensions.some((ext) =>
+    fileName.endsWith(ext)
+  );
+
+  if (!isValidExtension) {
+    const typeList =
+      displayNames.length > 0
+        ? displayNames.join(", ")
+        : normalizedExtensions.join(", ");
+    throw new Error(`Invalid file type. Allowed types: ${typeList}`);
+  }
+
+  if (file.size > maxFileSize) {
+    const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
+    throw new Error(`File size must be less than ${maxSizeMB}MB`);
+  }
+}

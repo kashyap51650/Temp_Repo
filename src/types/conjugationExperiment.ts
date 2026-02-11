@@ -30,3 +30,27 @@ export interface ConjugationExperiment {
 
 export type CreateConjugationExperimentResponse =
   ApiResponse<ConjugationExperiment>;
+
+export interface ConjugationExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type ConjugationExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;
+
+export interface ConjugationGelImageDataUploadPayload {
+  experiment_id: number;
+  file: File;
+}
+
+export type ConjugationGelImageDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;
