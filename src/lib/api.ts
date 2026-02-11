@@ -169,6 +169,15 @@ export const API_CONFIG = {
     NECROPSY: {
       EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
     },
+    HOTLAB: {
+      EXTRACT_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/hotlab/extract-report`,
+      CREATE_EXPERIMENT: `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments`,
+      GET_EXPERIMENT: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments/${experimentId}`,
+      UPDATE_EXPERIMENT: (experimentId: number) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments/${experimentId}`,
+      IMPORT_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/hotlab/import-hotlab-pdf`,
+    },
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/organ-weights/${experimentId}/bulk-update`,

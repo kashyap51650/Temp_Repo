@@ -43,6 +43,7 @@ export const DATA_TYPE = {
   NECROPSY_SHEET: "Necropsy",
   HEMATOLOGY: "Hematology",
   BLOOD_CHEMISTRY: "Blood Chemistry",
+  HOTLAB: "Hotlab",
   CLRF: "CLRF",
   CONJUGATION: "Conjugation",
   GEL_IMAGE: "Gel Image",

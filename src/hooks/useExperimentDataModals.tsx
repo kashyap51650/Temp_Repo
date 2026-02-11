@@ -8,7 +8,7 @@ import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModa
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
 import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
-import NecropsyViewModal from "@/components/data-validation/NecropsyViewModal";
+import { PDFViewModal } from "@/components/data-validation/PDFViewModal";
 import { DATA_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -62,6 +62,7 @@ export function useExperimentDataModals(
   const hematologyViewModal = useModal();
   const bloodChemistryViewModal = useModal();
   const necropsyViewModal = useModal();
+  const hotlabViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -88,6 +89,7 @@ export function useExperimentDataModals(
 
       const isHematologySheet = dataTypeName === DATA_TYPE.HEMATOLOGY;
       const isBloodChemistrySheet = dataTypeName === DATA_TYPE.BLOOD_CHEMISTRY;
+      const isHotlab = dataTypeName === DATA_TYPE.HOTLAB;
       const isNecropsy = dataTypeLower.includes("necropsy");
 
       if (isCalliperingSheet) {
@@ -128,6 +130,12 @@ export function useExperimentDataModals(
         bloodChemistryViewModal.openModal();
         return;
       }
+
+      if (isHotlab) {
+        hotlabViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -141,6 +149,7 @@ export function useExperimentDataModals(
       hematologyViewModal,
       bloodChemistryViewModal,
       necropsyViewModal,
+      hotlabViewModal,
       navigate,
     ]
   );
@@ -211,13 +220,25 @@ export function useExperimentDataModals(
           />
         )}
         {necropsyViewModal.isOpen && (
-          <NecropsyViewModal
+          <PDFViewModal
             isOpen={necropsyViewModal.isOpen}
             onClose={necropsyViewModal.closeModal}
             experimentName={experimentName}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
             hideActions={hideActions || !canEditOrApprove}
+            dataType="necropsy"
+          />
+        )}
+        {hotlabViewModal.isOpen && (
+          <PDFViewModal
+            isOpen={hotlabViewModal.isOpen}
+            onClose={hotlabViewModal.closeModal}
+            experimentName={experimentName}
+            experimentDataId={experimentDataId}
+            experimentStatus={experimentStatus}
+            hideActions={hideActions || !canEditOrApprove}
+            dataType="hotlab"
           />
         )}
         {agcViewModal.isOpen && (

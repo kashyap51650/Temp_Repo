@@ -1,16 +1,16 @@
 import { Download } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import type {
-  DataType,
-  ExperimentDropdownItem,
-  Project,
-  StudyType,
-} from "@/api";
+import type { ExperimentDropdownItem, Project } from "@/api";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
 import { useCMCExperimentDataImport } from "@/hooks/useCMCExperimentDataImport";
-import { usePdfExperimentDataImport } from "@/hooks/usePdfExperimentDataImport";
+import {
+  type PdfImportResponseType,
+  usePdfExperimentDataImport,
+} from "@/hooks/usePdfExperimentDataImport";
 import {
   DATA_TYPE,
   type ExperimentDataType,
@@ -22,6 +22,7 @@ import {
 } from "@/lib/constants";
 import type { BloodChemistryReport } from "@/types/bloodChemistry";
 import type { HematologyReport } from "@/types/hematology";
+import type { HotlabPDFUploadResponse } from "@/types/hotlab";
 
 import {
   useDownloadSheet,
@@ -30,15 +31,19 @@ import {
 } from "../../hooks";
 import { Button } from "../atoms";
 import { CustomToast } from "../molecules";
+import { ViewRandomizationButton } from "../molecules/ViewRandomizationButton/ViewRandomizationButton";
+import { DataTypeDropdown } from "./DataTypeDropdown";
 import { DownloadOrganSheetModal } from "./DownloadOrganSheetModal";
-import { ExperimentSection } from "./ExperimentSection";
+import { ExperimentDropdown } from "./ExperimentDropdown";
 import { FileUploadArea } from "./FileUploadArea";
 import { GenericFileUploadArea } from "./GenericFileUploadArea";
+import { LinkExperimentModal } from "./LinkExperimentModal";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
 import PreviewBloodChemistryReportModal from "./PreviewBloodChemistryReportModal";
 import { PreviewHematologyReportModal } from "./PreviewHematologyReportModal";
 import { ProjectSection } from "./ProjectSection";
-import { SpecializationSection } from "./SpecializationSection";
+import { SpecialisationDropdown } from "./SpecialisationDropdown";
+import { StudyTypeDropdown } from "./StudyTypeDropdown";
 import { UploadedFilesList } from "./UploadedFilesList";
 
 interface FormData {
@@ -47,6 +52,8 @@ interface FormData {
   studyType: string;
   experiment: ExperimentDropdownItem | null;
   dataType: string;
+  dataTypeId: number | null;
+  studyTypeId?: number | null;
   uploadedFile: File | null;
   newExperimentName?: string;
   uploadAGCFile?: File | null;
@@ -61,11 +68,6 @@ interface ValidationErrors {
   uploadedFile?: string;
 }
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
 // Define grouped prop interfaces
 interface FormProps {
   formData: FormData;
@@ -76,80 +78,42 @@ interface FormProps {
 
 interface ApiDataProps {
   projects: Array<{ id: string; name: string }>;
-  studyTypes: SelectOption[];
-  dataTypes: DataType[];
-  specialisationOptions: SelectOption[];
-  strainOptions: SelectOption[];
-  apiStudyTypes: StudyType[];
 }
 
 interface LoadingProps {
   projectsLoading: boolean;
-  studyTypesLoading: boolean;
-  dataTypesLoading: boolean;
-}
-
-interface ErrorProps {
-  studyTypesError: string | null;
-  dataTypesError: string | null;
 }
 
 interface ActionProps {
   onProjectChange: (project: Project | null) => void;
   onShowCreateProjectModal: () => void;
   onShowCreateExperimentModal: () => void;
-  loadStudyTypes: () => void;
-  clearStudyTypes: () => void;
-  clearDataTypes: () => void;
 }
 
 interface UploadPanelProps {
   formProps: FormProps;
   apiDataProps: ApiDataProps;
   loadingProps: LoadingProps;
-  errorProps: ErrorProps;
   actionProps: ActionProps;
 }
-
-const findStudyTypeId = (
-  apiStudyTypes: StudyType[],
-  studyTypeName: string
-): number | undefined => {
-  return apiStudyTypes?.find(
-    (st: StudyType) =>
-      st.study_type_name === studyTypeName ||
-      (st.study_type_name === STUDY_TYPE.BIO_DISTRIBUTION &&
-        studyTypeName === STUDY_TYPE.BIODISTRIBUTION)
-  )?.id;
-};
 
 export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const {
     formProps: { formData, setFormData, errors, isCreatingNewProject },
-    apiDataProps: {
-      projects: existingProjects,
-      studyTypes: studyTypeOptions,
-      dataTypes: apiDataTypes,
-      specialisationOptions,
-      strainOptions,
-      apiStudyTypes,
-    },
-    loadingProps: { projectsLoading, studyTypesLoading, dataTypesLoading },
-    errorProps: { studyTypesError, dataTypesError },
+    apiDataProps: { projects: existingProjects },
+    loadingProps: { projectsLoading },
     actionProps: {
       onProjectChange,
       onShowCreateProjectModal,
       onShowCreateExperimentModal,
-      loadStudyTypes,
-      clearStudyTypes,
-      clearDataTypes,
     },
   } = props;
-
   const isProjectSelected = !!formData.project;
   const isSpecialisationSelected = !!formData.specialisation;
+
   const isHotlabSelected =
     formData.specialisation?.toLowerCase() === SPECIALIZATION.HOTLAB;
+
   const isPreclinicSelected =
     formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL;
   const isCMCSelected =
@@ -177,10 +141,15 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.dataType === DATA_TYPE.ORGAN_WEIGHT_SHEET;
 
   const isPdfUpload =
-    formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
-    (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
-      formData.dataType === DATA_TYPE.HEMATOLOGY ||
-      formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY);
+    formData.specialisation.toLowerCase() === SPECIALIZATION.HOTLAB ||
+    (formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+      (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
+        formData.dataType === DATA_TYPE.HEMATOLOGY ||
+        formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY));
+
+  const canShowStudyType = isPreclinicSelected || isCMCSelected;
+  const canShowExperimentDropdown = isPreclinicSelected || isCMCSelected;
+  const canShowDataType = isPreclinicSelected || isCMCSelected;
 
   const isGenericFileUploadVisible = isPdfUpload || isCMCSelected;
 
@@ -203,12 +172,52 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   const [isOpenGroupSelectionModalForAGC, setIsOpenGroupSelectionModalForAGC] =
     useState(false);
 
+  const [extractedExperimentList, setExtractedExperimentList] = useState<
+    {
+      experimentId: number;
+      experimentName: string;
+    }[]
+  >([]);
+
   const [hematologyDataForPreview, setHematologyDataForPreview] = useState<
     HematologyReport | undefined
   >();
 
   const [bloodChemistryDataForPreview, setBloodChemistryDataForPreview] =
     useState<BloodChemistryReport | undefined>();
+
+  const dispatch = useAppDispatch();
+
+  const { lastCreatedExperiment, experimentEventCounter } = useAppSelector(
+    (state) => state.experiment
+  );
+
+  const processedExperimentCounter = useRef<number>(0);
+
+  useEffect(() => {
+    if (
+      lastCreatedExperiment &&
+      experimentEventCounter > 0 &&
+      processedExperimentCounter.current !== experimentEventCounter
+    ) {
+      processedExperimentCounter.current = experimentEventCounter;
+
+      const { experimentId, experimentName } = lastCreatedExperiment;
+
+      const formattedExperiment: ExperimentDropdownItem = {
+        id: experimentId,
+        experiment_name: experimentName,
+        randomization_status: lastCreatedExperiment.randomizationStatus,
+      };
+
+      setFormData((prev: FormData) => ({
+        ...prev,
+        experiment: formattedExperiment,
+      }));
+
+      dispatch(clearExperimentEvents());
+    }
+  }, [experimentEventCounter, lastCreatedExperiment, setFormData, dispatch]);
 
   const {
     isOpen: isOpenHematologyReportModal,
@@ -220,6 +229,12 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     isOpen: isOpenBloodChemistryReportModal,
     closeModal: closeBloodChemistryReportModal,
     openModal: openBloodChemistryReportModal,
+  } = useModal();
+
+  const {
+    isOpen: isOpenLinkExperimentModal,
+    closeModal: closeLinkExperimentModal,
+    openModal: openLinkExperimentModal,
   } = useModal();
 
   const handlePreviewModalOpen = () => {
@@ -277,7 +292,21 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   };
 
   const { handleUploadPdf, isPdfUploading } = usePdfExperimentDataImport({
-    onSuccess: (data) => {
+    onSuccess: (data: PdfImportResponseType) => {
+      if (data && isHotlabSelected) {
+        const hotlabData = data as HotlabPDFUploadResponse;
+        if (hotlabData.data?.experiments) {
+          const experimentsFromResponse = hotlabData.data.experiments.map(
+            (exp) => ({
+              experimentId: exp.experiment.id,
+              experimentName: exp.experiment.experiment_name,
+            })
+          );
+          setExtractedExperimentList(experimentsFromResponse);
+        }
+        openLinkExperimentModal();
+        return;
+      }
       handleUploadFileReset();
       if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
         setHematologyDataForPreview(data.data as HematologyReport);
@@ -286,6 +315,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       }
     },
     experimentDataType: formData.dataType as ExperimentDataType,
+    specialization: formData.specialisation,
   });
 
   const { handleUploadCMCData, isCMCDataUploading } =
@@ -330,18 +360,18 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
 
     let experimentId: number | null = null;
+
     if (formData.experiment?.id) {
       experimentId = Number.parseInt(formData.experiment.id.toString());
     }
 
-    const dataTypeId =
-      apiDataTypes?.find(
-        (dt: DataType) => dt.data_type_name === formData.dataType
-      )?.id || null;
+    if (!formData.dataTypeId) {
+      console.error("No data type selected");
+    }
 
     await uploadFile({
       experiment_id: experimentId,
-      data_type_id: dataTypeId,
+      data_type_id: formData.dataTypeId,
       file: formData.uploadedFile,
     });
   };
@@ -392,7 +422,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
     const experimentId = formData.experiment?.id;
 
-    if (!experimentId) {
+    if (!isHotlabSelected && !experimentId) {
       console.error("No experiment selected");
       return;
     }
@@ -525,8 +555,9 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         Follow the hierarchy to upload your research data
       </p>
 
+      {/* Project, Specialisation and Study Type Row */}
       <div
-        className={`grid grid-cols-1 gap-4 ${isPreclinicSelected ? "md:grid-cols-3" : "md:grid-cols-2"}`}
+        className={`grid grid-cols-1 gap-4 ${canShowStudyType ? "md:grid-cols-3" : "md:grid-cols-2"}`}
       >
         <ProjectSection
           formData={formData}
@@ -539,39 +570,100 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           projectsLoading={projectsLoading}
         />
 
-        <SpecializationSection
-          formData={formData}
-          setFormData={setFormData}
-          errors={errors}
-          specialisationOptions={specialisationOptions}
-          studyTypeOptions={studyTypeOptions}
-          strainOptions={strainOptions}
-          isProjectSelected={isProjectSelected}
-          isPreclinicSelected={isPreclinicSelected}
-          isSpecialisationSelected={isSpecialisationSelected}
-          studyTypesLoading={studyTypesLoading}
-          studyTypesError={studyTypesError}
-          loadStudyTypes={loadStudyTypes}
-          clearStudyTypes={clearStudyTypes}
+        <SpecialisationDropdown
+          value={formData.specialisation}
+          onValueChange={(value: string) => {
+            setFormData((prev: FormData) => ({
+              ...prev,
+              specialisation: value,
+              studyType: "", // Reset study type when specialisation changes
+              dataType: "", // Reset data type when specialisation changes
+              experiment: null, // Reset experiment when specialisation changes
+              dataTypeId: null, // Reset data type ID when specialisation changes
+              studyTypeId: null, // Reset study type ID when specialisation changes
+            }));
+          }}
+          disabled={!isProjectSelected}
+          error={errors.specialisation}
+          showHelperText={!isProjectSelected}
         />
-      </div>
 
-      <ExperimentSection
-        formData={formData}
-        setFormData={setFormData}
-        errors={errors}
-        onShowCreateExperimentModal={onShowCreateExperimentModal}
-        isPreclinicSelected={isPreclinicSelected}
-        isStudyTypeSelected={isStudyTypeSelected}
-        isExperimentSelected={isExperimentSelected}
-        projectId={formData.project?.id}
-        specialization={formData.specialisation}
-        studyTypeId={findStudyTypeId(apiStudyTypes, formData.studyType)}
-        apiDataTypes={apiDataTypes}
-        dataTypesLoading={dataTypesLoading}
-        dataTypesError={dataTypesError}
-        clearDataTypes={clearDataTypes}
-      />
+        {canShowStudyType && (
+          <StudyTypeDropdown
+            value={formData.studyType}
+            onValueChange={(value: string, studyTypeId?: number) => {
+              setFormData((prev: FormData) => ({
+                ...prev,
+                studyType: value,
+                studyTypeId: studyTypeId || null,
+                experiment: null, // Reset experiment when study type changes
+                dataType: "", // Reset data type when study type changes
+                dataTypeId: null, // Reset data type ID when study type changes
+              }));
+            }}
+            disabled={!isSpecialisationSelected}
+            error={errors.studyType}
+            showHelperText={!isSpecialisationSelected}
+            specialization={formData.specialisation}
+          />
+        )}
+        {/* </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> */}
+        {canShowExperimentDropdown && (
+          <ExperimentDropdown
+            value={formData.experiment?.id.toString() || ""}
+            onValueChange={(
+              val: string,
+              experiment?: ExperimentDropdownItem
+            ) => {
+              const experimentId = Number.parseInt(val, 10);
+              // Preserve experiment details when experiment changes
+              setFormData((prev: FormData) => ({
+                ...prev,
+                experiment:
+                  experiment ||
+                  ({
+                    id: experimentId,
+                    experiment_name: prev.experiment?.experiment_name,
+                    randomization_status: prev.experiment?.randomization_status,
+                  } as ExperimentDropdownItem),
+              }));
+            }}
+            onCreateNew={onShowCreateExperimentModal}
+            showHelperText={!isStudyTypeSelected}
+            validationError={errors.experiment}
+            projectId={formData.project?.id}
+            specialization={formData.specialisation}
+            studyTypeId={formData.studyTypeId ?? undefined}
+            disabled={!isStudyTypeSelected}
+          />
+        )}
+
+        {canShowDataType && (
+          <DataTypeDropdown
+            value={formData.dataType}
+            onValueChange={(value: string, dataTypeId?: number) => {
+              setFormData((prev: FormData) => ({
+                ...prev,
+                dataType: value,
+                dataTypeId: dataTypeId || null,
+                uploadedFile: null,
+              }));
+            }}
+            disabled={!isExperimentSelected}
+            error={errors.dataType}
+            showHelperText={!isExperimentSelected}
+            studyTypeId={formData.studyTypeId ?? undefined}
+          />
+        )}
+
+        {formData.experiment?.randomization_status === "completed" && (
+          <div className="md:mt-6">
+            <ViewRandomizationButton experimentId={formData.experiment?.id} />
+          </div>
+        )}
+      </div>
 
       {formData.dataType !== DATA_TYPE.AGC_SHEET &&
         !isGenericFileUploadVisible && (
@@ -624,7 +716,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
               onClick={handleGenericFileUploadClick}
               disabled={
                 !canUploadData ||
-                !isExperimentSelected ||
+                (!isHotlabSelected && !isExperimentSelected) ||
                 isPdfUploading ||
                 isCMCDataUploading
               }
@@ -719,6 +811,21 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             onSaveSuccess={() => setBloodChemistryDataForPreview(undefined)}
           />
         )}
+
+      {isOpenLinkExperimentModal && (
+        <LinkExperimentModal
+          open={isOpenLinkExperimentModal}
+          onOpenChange={closeLinkExperimentModal}
+          extractedExperimentList={extractedExperimentList}
+          onSuccess={() => {
+            setExtractedExperimentList([]);
+            handleUploadFileReset();
+            closeLinkExperimentModal();
+          }}
+          file={formData?.uploadedFile || undefined}
+          projectId={formData.project?.id}
+        />
+      )}
     </>
   );
 }

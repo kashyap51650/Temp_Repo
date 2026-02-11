@@ -21,6 +21,8 @@ interface AsyncSelectProps<T> {
   searchable?: boolean;
   multiple?: boolean;
   size?: "sm" | "default" | "lg";
+  shouldShowCreateNew?: boolean;
+  onCreateNew?: () => void;
 }
 
 export function AsyncSelect<T>({
@@ -36,12 +38,14 @@ export function AsyncSelect<T>({
   searchable = true,
   multiple = false,
   size = "lg",
+  shouldShowCreateNew = false,
+  onCreateNew,
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
     queryFn: query,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 
   const options = mapToOptions(data, mapConfig);
@@ -62,6 +66,8 @@ export function AsyncSelect<T>({
       disabled={disabled || isLoading}
       size={size}
       multiple={multiple}
+      shouldShowCreateNew={shouldShowCreateNew}
+      onCreateNew={onCreateNew}
     />
   );
 }

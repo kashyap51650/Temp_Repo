@@ -48,6 +48,13 @@ import type {
   SaveHematologyPDFPayload,
 } from "@/types/hematology";
 import type {
+  CreateHotlabExperimentPayload,
+  CreateHotlabExperimentResponse,
+  HotlabPDFUploadResponse,
+  ImportHotlabPDFPayload,
+  ImportHotlabPDFResponse,
+} from "@/types/hotlab";
+import type {
   CreateIrfExperimentPayload,
   CreateIrfExperimentResponse,
   IrfExperimentDataUploadPayload,
@@ -88,6 +95,7 @@ export interface StudyType {
   id: number;
   study_type_name: string;
   study_type_code: StudyTypeCode;
+  specialization: string;
 }
 
 export interface StudyTypesResponse {
@@ -140,7 +148,7 @@ export interface CreateExperimentPayload {
   study_type_id: number;
 }
 
-export type RandomizationStatus = "completed" | "pending";
+export type RandomizationStatus = "completed" | "pending" | "ready";
 
 export interface CreateExperimentResponse {
   success: boolean;
@@ -223,9 +231,9 @@ export interface ExperimentsDropdownResponse {
 }
 
 export interface ExperimentFilters {
-  project_id: number;
-  study_type_id: number;
-  specialization: string;
+  project_id?: number;
+  study_type_id?: number;
+  specialization?: string;
   cell_line_id?: number[];
   mouse_strain_id?: number[];
   status?: string;
@@ -427,11 +435,19 @@ export const experimentApi = {
   getExperimentsDropdown: async (
     filters: ExperimentFilters
   ): Promise<ExperimentsDropdownResponse> => {
-    const params = new URLSearchParams({
-      project_id: filters.project_id.toString(),
-      study_type_id: filters.study_type_id.toString(),
-      specialization: filters.specialization,
-    });
+    const params = new URLSearchParams();
+
+    if (filters.project_id) {
+      params.append("project_id", filters.project_id.toString());
+    }
+
+    if (filters.study_type_id) {
+      params.append("study_type_id", filters.study_type_id.toString());
+    }
+
+    if (filters.specialization) {
+      params.append("specialization", filters.specialization);
+    }
 
     // Add optional filters only if they are provided
     if (filters.cell_line_id && filters.cell_line_id.length > 0) {
@@ -1210,5 +1226,49 @@ export const receptorQuantificationExperimentApi = {
       API_CONFIG.ENDPOINTS.RECEPTOR_QUANTIFICATION.CREATE,
       payload
     );
+  },
+};
+
+export const hotlabApi = {
+  extractHotlabData: async (payload: { file: File }) => {
+    const formData = new FormData();
+    formData.append("file", payload.file, payload.file.name);
+
+    const response = await apiClient.postFormData<HotlabPDFUploadResponse>(
+      API_CONFIG.ENDPOINTS.HOTLAB.EXTRACT_REPORT,
+      formData
+    );
+    return response;
+  },
+  createExperiment: async (payload: CreateHotlabExperimentPayload) => {
+    const response = await apiClient.post<CreateHotlabExperimentResponse>(
+      API_CONFIG.ENDPOINTS.HOTLAB.CREATE_EXPERIMENT,
+      payload
+    );
+    return response;
+  },
+  getExperiment: async (experimentId: number) => {
+    const response = await apiClient.get<CreateHotlabExperimentResponse>(
+      API_CONFIG.ENDPOINTS.HOTLAB.GET_EXPERIMENT(experimentId)
+    );
+    return response;
+  },
+  updateExperiment: async (experimentId: number, payload: any) => {
+    const response = await apiClient.put<CreateHotlabExperimentResponse>(
+      API_CONFIG.ENDPOINTS.HOTLAB.UPDATE_EXPERIMENT(experimentId),
+      payload
+    );
+    return response;
+  },
+  importHotlabData: async (payload: ImportHotlabPDFPayload) => {
+    const formData = new FormData();
+    formData.append("experiment_id", payload.experiment_id.toString());
+    formData.append("file", payload.file, payload.file.name);
+
+    const response = await apiClient.postFormData<ImportHotlabPDFResponse>(
+      API_CONFIG.ENDPOINTS.HOTLAB.IMPORT_EXPERIMENT_DATA,
+      formData
+    );
+    return response;
   },
 };

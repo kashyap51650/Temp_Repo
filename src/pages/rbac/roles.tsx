@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { ProtectedComponent } from "@/components";
 import { roleApi } from "@/api";
+import { ProtectedComponent } from "@/components";
 import { Button } from "@/components/atoms/Button/Button";
 import {
   Tabs,

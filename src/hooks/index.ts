@@ -27,6 +27,7 @@ export * from "./useExperimentMouseGroups";
 export * from "./useExperimentsDropdown";
 export * from "./useFetch";
 export * from "./useHematologyDataEdit";
+export * from "./useLinkExperimentModal";
 export { useMasterData, type UseMasterDataResult } from "./useMasterData";
 export { useMasterDataSources } from "./useMasterDataSources";
 export { useIsMobile } from "./useMobile";

@@ -13,6 +13,7 @@ interface FormData {
   studyType: string;
   experiment: ExperimentDropdownItem | null;
   dataType: string;
+  dataTypeId: number | null;
   uploadedFile: File | null;
   newExperimentName?: string;
   uploadAGCFile?: File | null;

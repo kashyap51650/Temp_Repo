@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { RandomizationStatus } from "@/api";
 import { apiClient } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
+import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 
 // Type definitions for the API response
@@ -227,6 +228,11 @@ const fetchExperimentDataForNecropsy = async (
   return apiClient.get<ExperimentDataForNecropsyResponse>(endpoint);
 };
 
+const fetchExperimentDataForHotlab = async (experimentDataId: string) => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/hotlab-pdf`;
+  return apiClient.get<ImportHotlabPDFResponse>(endpoint);
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
@@ -266,6 +272,17 @@ export function useExperimentDataByIdForOrganSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "organSheet", experimentDataId],
     queryFn: () => fetchExperimentDataForBioDOrganSheet(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForHotlab(experimentDataId: string) {
+  return useQuery({
+    queryKey: ["experimentData", "hotlab", experimentDataId],
+    queryFn: () => fetchExperimentDataForHotlab(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,

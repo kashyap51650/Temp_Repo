@@ -1,6 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
-import type { ExperimentDropdownItem, Project } from "@/api";
+import type { ExperimentDropdownItem, Project, StudyType } from "@/api";
 import { useAppDispatch } from "@/app/store/hooks";
 import { projectChanged } from "@/app/store/slices/experimentSlice";
 import type { Experiment } from "@/data/experiments";
@@ -8,13 +9,10 @@ import {
   cellLineOptions,
   experiments as experimentData,
   isotopeOptions,
-  specialisationOptions,
-  strainOptions,
-  studyTypeOptions,
 } from "@/data/experiments";
-import { useDataTypes, useModal, useProjects, useStudyTypes } from "@/hooks";
+import { useModal, useProjects } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
-import { SPECIALIZATION, STUDY_TYPE } from "@/lib/constants";
+import { STUDY_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { Card } from "../atoms";
@@ -36,6 +34,7 @@ interface DataUploadFormData {
   studyType: string;
   experiment: ExperimentDropdownItem | null;
   dataType: string;
+  dataTypeId: number | null;
   uploadedFile: File | null;
   newExperimentName?: string;
   uploadAGCFile?: File | null;
@@ -60,6 +59,7 @@ export default function DataUploadCommon() {
     studyType: "",
     experiment: null,
     dataType: "",
+    dataTypeId: null,
     uploadedFile: null,
     uploadAGCFile: null,
   });
@@ -72,23 +72,12 @@ export default function DataUploadCommon() {
 
   const [activeTab, setActiveTab] = useState<string>(getDefaultTab());
 
-  const isStudyTypesEnabled = useMemo(() => {
-    return (
-      formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL ||
-      formData.specialisation?.toLowerCase() === SPECIALIZATION.CMC
-    );
-  }, [formData.specialisation]);
+  const queryClient = useQueryClient();
 
-  const {
-    studyTypes: apiStudyTypes,
-    loading: studyTypesLoading,
-    error: studyTypesError,
-    loadStudyTypes,
-    clearStudyTypes,
-  } = useStudyTypes({
-    enabled: isStudyTypesEnabled,
-    specialisation: formData.specialisation,
-  });
+  const studyTypes = queryClient.getQueryData([
+    "study-types",
+    formData.specialisation || "",
+  ]) as StudyType[];
 
   const [isCreatingNewProject] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -241,37 +230,6 @@ export default function DataUploadCommon() {
     }));
   }, [apiProjects]);
 
-  const currentStudyTypeId = useMemo(() => {
-    return apiStudyTypes.find((st) => st.study_type_name === formData.studyType)
-      ?.id;
-  }, [apiStudyTypes, formData.studyType]);
-
-  const isDataTypesEnabled = useMemo(() => {
-    return !!currentStudyTypeId && !!formData.studyType;
-  }, [currentStudyTypeId, formData.studyType]);
-
-  const {
-    dataTypes: apiDataTypes,
-    loading: dataTypesLoading,
-    error: dataTypesError,
-    clearDataTypes,
-  } = useDataTypes({
-    studyTypeId: currentStudyTypeId,
-    enabled: isDataTypesEnabled,
-  });
-
-  const dynamicStudyTypeOptions = useMemo(() => {
-    return apiStudyTypes.length > 0
-      ? apiStudyTypes.map((studyType) => {
-          return {
-            value: studyType.study_type_name,
-            label: studyType.study_type_name,
-            code: studyType.study_type_code,
-          };
-        })
-      : studyTypeOptions;
-  }, [apiStudyTypes]);
-
   const formProps = {
     formData,
     setFormData,
@@ -281,31 +239,16 @@ export default function DataUploadCommon() {
 
   const apiDataProps = {
     projects: existingProjectsForSelect,
-    studyTypes: dynamicStudyTypeOptions,
-    dataTypes: apiDataTypes,
-    specialisationOptions,
-    strainOptions,
-    apiStudyTypes,
   };
 
   const loadingProps = {
     projectsLoading,
-    studyTypesLoading,
-    dataTypesLoading,
-  };
-
-  const errorProps = {
-    studyTypesError,
-    dataTypesError,
   };
 
   const actionProps = {
     onProjectChange: handleProjectChange,
     onShowCreateProjectModal: () => setShowCreateProjectModal(true),
     onShowCreateExperimentModal: () => createExperimentModal.openModal(),
-    loadStudyTypes,
-    clearStudyTypes,
-    clearDataTypes,
   };
 
   // Note: visibleTabsCount will never be 0 because ProtectedRoute will only render this component if have at least one Permission
@@ -335,7 +278,6 @@ export default function DataUploadCommon() {
                 formProps={formProps}
                 apiDataProps={apiDataProps}
                 loadingProps={loadingProps}
-                errorProps={errorProps}
                 actionProps={actionProps}
               />
             </TabsContent>
@@ -355,27 +297,29 @@ export default function DataUploadCommon() {
         onCreateProject={handleCreateProject}
       />
 
-      <CreateExperimentModal
-        isOpen={createExperimentModal.isOpen}
-        onClose={() => createExperimentModal.closeModal()}
-        onCreateExperiment={handleCreateExperiment}
-        isotopeOptions={isotopeOptions}
-        cellLineOptions={cellLineOptions}
-        studyType={
-          apiStudyTypes.find(
-            (studyType) => studyType.study_type_name === formData.studyType
-          )?.study_type_code || ""
-        }
-        projectId={formData.project?.id}
-        specialization={formData.specialisation}
-        studyTypeId={
-          apiStudyTypes.find((st) => st.study_type_name === formData.studyType)
-            ?.id
-        }
-        onMouseGroupingComplete={() => {
-          setActiveTab("upload-data");
-        }}
-      />
+      {studyTypes && createExperimentModal.isOpen && (
+        <CreateExperimentModal
+          isOpen={createExperimentModal.isOpen}
+          onClose={() => createExperimentModal.closeModal()}
+          onCreateExperiment={handleCreateExperiment}
+          isotopeOptions={isotopeOptions}
+          cellLineOptions={cellLineOptions}
+          studyType={
+            studyTypes?.find(
+              (studyType) => studyType.study_type_name === formData.studyType
+            )?.study_type_code || ""
+          }
+          projectId={formData.project?.id}
+          specialization={formData.specialisation}
+          studyTypeId={
+            studyTypes?.find((st) => st.study_type_name === formData.studyType)
+              ?.id
+          }
+          onMouseGroupingComplete={() => {
+            setActiveTab("upload-data");
+          }}
+        />
+      )}
 
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}
