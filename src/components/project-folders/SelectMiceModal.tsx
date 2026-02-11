@@ -152,7 +152,6 @@ export function SelectMiceModal({
           <Button
             onClick={handleNext}
             disabled={selectedMice.length === 0 || isLoading}
-            className="bg-gray-600 hover:bg-gray-700 text-white"
           >
             Next
           </Button>

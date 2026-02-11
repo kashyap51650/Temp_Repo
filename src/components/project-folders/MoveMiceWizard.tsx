@@ -49,6 +49,7 @@ export function MoveMiceWizard({
     data: experimentsData,
     isLoading: experimentsLoading,
     refetch: refetchExperiments,
+    isRefetching: experimentsRefetching,
   } = useGetTargetExperiments(
     sourceExperimentId,
     isOpen &&
@@ -107,13 +108,13 @@ export function MoveMiceWizard({
 
     if (selectedStudyTypeName !== STUDY_TYPE.MODEL_STUDY) {
       try {
+        setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
         await refetchExperiments();
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to fetch experiments"
         );
       }
-      setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
     }
   };
 
@@ -173,7 +174,7 @@ export function MoveMiceWizard({
         onCreateNew={handleCreateNewExperiment}
         selectedMiceCount={selectedMiceIds.length}
         experiments={experimentsData || []}
-        isLoading={experimentsLoading}
+        isLoading={experimentsLoading || experimentsRefetching}
         preSelectedExperimentId={newlyCreatedExperimentId?.toString()}
       />
 

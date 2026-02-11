@@ -9,8 +9,8 @@ type Experiment = {
   name: string;
   cellLines: string[];
   isotope: string;
-  projectId: string;
-  studyType: string;
+  projectId?: string;
+  studyType?: string;
 };
 
 export interface ProjectSelectProps {

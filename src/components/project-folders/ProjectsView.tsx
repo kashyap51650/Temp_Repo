@@ -130,16 +130,16 @@ function ProjectCard({
       <Button
         onClick={() => onProjectClick(project)}
         variant="ghost"
-        className="gap-3 flex-1 hover:bg-transparent text-left items-start justify-start h-auto"
+        className="gap-3 flex-1 hover:bg-transparent text-left items-start justify-start h-auto min-w-0"
       >
         <FolderOpen className="size-6 text-muted-foreground shrink-0" />
-        <div>
-          <h3 className="font-medium">{project.project_name}</h3>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium truncate">{project.project_name}</h3>
           <p className="text-sm text-muted-foreground">
             {project.project_status}
           </p>
           {project.description && (
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 truncate">
               {project.description}
             </p>
           )}

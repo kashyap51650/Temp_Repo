@@ -8,8 +8,8 @@ type Experiment = {
   name: string;
   cellLines: string[];
   isotope: string;
-  projectId: string;
-  studyType: string;
+  projectId?: string;
+  studyType?: string;
 };
 
 interface SelectTargetExperimentModalProps {
@@ -112,7 +112,6 @@ export function SelectTargetExperimentModal({
           <Button
             onClick={handleMove}
             disabled={!selectedExperimentId || isLoading} // ✅ Disable while loading
-            className="bg-gray-600 hover:bg-gray-700 text-white"
           >
             Move
           </Button>

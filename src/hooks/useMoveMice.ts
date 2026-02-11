@@ -39,8 +39,8 @@ export function useGetTargetExperiments(
         name: exp.experiment_name,
         cellLines: [],
         isotope: "",
-        projectId: exp.project_id.toString(),
-        studyType: exp.study_type,
+        projectId: exp?.project_id?.toString(),
+        studyType: exp?.study_type,
       }));
     },
   });

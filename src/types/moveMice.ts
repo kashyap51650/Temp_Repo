@@ -14,8 +14,8 @@ export interface MoveMiceResponse {
 export interface TargetExperiment {
   id: number;
   experiment_name: string;
-  project_id: number;
-  study_type: string;
+  project_id?: number;
+  study_type?: string;
   study_type_id: number;
   specialization: string;
 }
