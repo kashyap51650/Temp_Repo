@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { RandomizationStatus } from "@/api";
 import { apiClient } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
+import type { CMCExperimentDataResponse } from "@/types/CMC";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 
@@ -233,6 +234,11 @@ const fetchExperimentDataForHotlab = async (experimentDataId: string) => {
   return apiClient.get<ImportHotlabPDFResponse>(endpoint);
 };
 
+const fetchExperimentDataForCMC = async (experimentDataId: string) => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/cmc-data`;
+  return apiClient.get<CMCExperimentDataResponse>(endpoint);
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
@@ -283,6 +289,17 @@ export function useExperimentDataByIdForHotlab(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "hotlab", experimentDataId],
     queryFn: () => fetchExperimentDataForHotlab(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForCMC(experimentDataId: string) {
+  return useQuery({
+    queryKey: ["experimentData", "cmc", experimentDataId],
+    queryFn: () => fetchExperimentDataForCMC(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,

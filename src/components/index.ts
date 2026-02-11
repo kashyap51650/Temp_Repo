@@ -8,6 +8,10 @@ export * from "./theme-provider";
 
 // Re-export data-validation components
 export * from "./data-validation/CaliperHistoryTable";
+export { DownloadOnlyFileViewer } from "./data-validation/DownloadOnlyFileViewer";
+export { FileViewer } from "./data-validation/FileViewer";
+export { ImageViewer } from "./data-validation/ImageViewer";
+export { PDFViewer } from "./data-validation/PDFViewer";
 
 // Re-export RBAC protection components
 export { ProtectedComponent, ProtectedRoute } from "./organisms/ProtectedRoute";

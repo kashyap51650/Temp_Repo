@@ -10,11 +10,11 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { DATA_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
-import { PDFView } from "./PDFView";
+import { NecropsyAndHotlabPDFView } from "./NecropsyAndHotlabPDFView";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SheetActions } from "./SheetActions";
 
-interface PDFViewModalProps {
+interface NecropsyAndHotlabPDFViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
@@ -26,7 +26,7 @@ interface PDFViewModalProps {
   description?: string;
 }
 
-export function PDFViewModal({
+export function NecropsyAndHotlabPDFViewModal({
   isOpen,
   onClose,
   experimentName,
@@ -36,7 +36,7 @@ export function PDFViewModal({
   dataType,
   title,
   description,
-}: Readonly<PDFViewModalProps>) {
+}: Readonly<NecropsyAndHotlabPDFViewModalProps>) {
   const { hasPermission } = usePermissions();
   const rejectModal = useModal();
 
@@ -139,7 +139,7 @@ export function PDFViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <PDFView
+        <NecropsyAndHotlabPDFView
           experimentName={experimentName}
           experimentDataId={experimentDataId}
           dataType={dataType}

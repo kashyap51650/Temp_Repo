@@ -8,7 +8,8 @@ import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModa
 import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
 import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
 import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
-import { PDFViewModal } from "@/components/data-validation/PDFViewModal";
+import CMCDataViewModal from "@/components/data-validation/CMCDataViewModal";
+import { NecropsyAndHotlabPDFViewModal } from "@/components/data-validation/NecropsyAndHotlabPDFViewModal";
 import { DATA_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -63,6 +64,7 @@ export function useExperimentDataModals(
   const bloodChemistryViewModal = useModal();
   const necropsyViewModal = useModal();
   const hotlabViewModal = useModal();
+  const cmcViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -91,6 +93,15 @@ export function useExperimentDataModals(
       const isBloodChemistrySheet = dataTypeName === DATA_TYPE.BLOOD_CHEMISTRY;
       const isHotlab = dataTypeName === DATA_TYPE.HOTLAB;
       const isNecropsy = dataTypeLower.includes("necropsy");
+
+      const isClrfData = dataTypeName === DATA_TYPE.CLRF;
+      const isConjugationData = dataTypeName === DATA_TYPE.CONJUGATION;
+      const isDirectBindingAssayData =
+        dataTypeName === DATA_TYPE.DIRECT_BINDING_ASSAY;
+      const isGelImageData = dataTypeName === DATA_TYPE.GEL_IMAGE;
+      const isIrfData = dataTypeName === DATA_TYPE.IRF;
+      const isReceptorQuantification =
+        dataTypeName === DATA_TYPE.RECEPTOR_QUANTIFICATION;
 
       if (isCalliperingSheet) {
         navigate({
@@ -136,6 +147,18 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (
+        isClrfData ||
+        isConjugationData ||
+        isDirectBindingAssayData ||
+        isGelImageData ||
+        isIrfData ||
+        isReceptorQuantification
+      ) {
+        cmcViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -150,6 +173,7 @@ export function useExperimentDataModals(
       bloodChemistryViewModal,
       necropsyViewModal,
       hotlabViewModal,
+      cmcViewModal,
       navigate,
     ]
   );
@@ -220,7 +244,7 @@ export function useExperimentDataModals(
           />
         )}
         {necropsyViewModal.isOpen && (
-          <PDFViewModal
+          <NecropsyAndHotlabPDFViewModal
             isOpen={necropsyViewModal.isOpen}
             onClose={necropsyViewModal.closeModal}
             experimentName={experimentName}
@@ -231,7 +255,7 @@ export function useExperimentDataModals(
           />
         )}
         {hotlabViewModal.isOpen && (
-          <PDFViewModal
+          <NecropsyAndHotlabPDFViewModal
             isOpen={hotlabViewModal.isOpen}
             onClose={hotlabViewModal.closeModal}
             experimentName={experimentName}
@@ -264,6 +288,17 @@ export function useExperimentDataModals(
             experimentId={experimentId}
             experimentDataId={experimentDataId}
             experimentStatus={experimentStatus}
+            hideActions={hideActions || !canEditOrApprove}
+          />
+        )}
+        {experimentId && cmcViewModal.isOpen && (
+          <CMCDataViewModal
+            isOpen={cmcViewModal.isOpen}
+            onClose={cmcViewModal.closeModal}
+            experimentDataId={experimentDataId}
+            experimentStatus={experimentStatus}
+            experimentName={experimentName}
+            experimentDataType={experimentDataType}
             hideActions={hideActions || !canEditOrApprove}
           />
         )}
