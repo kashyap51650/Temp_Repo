@@ -513,7 +513,10 @@ export function CreateExperimentModal({
         );
       }
 
-      if (studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING) {
+      if (
+        studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING ||
+        studyType === STUDY_TYPE_CODE.TOXICITY
+      ) {
         return (
           <DoseRangeExperimentForm
             projectId={projectId}
@@ -521,6 +524,11 @@ export function CreateExperimentModal({
             specialization={specialization}
             onCancel={handleCancel}
             onSuccess={handleSuccess}
+            experimentType={
+              studyType === STUDY_TYPE_CODE.DOSE_RANGE_FINDING
+                ? "dose-range"
+                : "toxicity"
+            }
           />
         );
       }

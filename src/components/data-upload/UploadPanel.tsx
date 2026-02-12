@@ -609,9 +609,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             specialization={formData.specialisation}
           />
         )}
-        {/* </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> */}
         {canShowExperimentDropdown && (
           <ExperimentDropdown
             value={formData.experiment?.id.toString() || ""}

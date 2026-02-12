@@ -15,7 +15,7 @@ const specialisationOptions = [
   { value: "Preclinical", label: "Preclinical" },
   { value: "CMC", label: "CMC" },
   { value: "chemistry", label: "Chemistry" },
-  { value: "Hotlab", label: "Hotlab" },
+  { value: "hotlab", label: "Hotlab" },
 ];
 
 export function SpecialisationDropdown({

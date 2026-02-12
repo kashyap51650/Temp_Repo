@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { type StudyType, studyTypeApi } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
 import { AsyncSelect } from "@/components/molecules/AsyncSelect";
@@ -22,10 +24,21 @@ export function StudyTypeDropdown({
   helperText = "Please select specialisation to continue",
   specialization,
 }: Readonly<StudyTypeDropdownProps>) {
-  const studyTypes = queryClient.getQueryData([
-    "study-types",
-    specialization || "",
-  ]) as StudyType[] | undefined;
+  const onStudyTypeChange = useCallback(
+    (value: string) => {
+      const studyTypes = queryClient.getQueryData([
+        "study-types",
+        specialization || "",
+      ]) as StudyType[] | undefined;
+
+      const selectedStudyType = studyTypes?.find(
+        (st) => st.study_type_name === value
+      );
+      onValueChange(value, selectedStudyType?.id);
+    },
+    [specialization, onValueChange]
+  );
+
   return (
     <div className="space-y-2">
       <Label
@@ -36,13 +49,7 @@ export function StudyTypeDropdown({
       </Label>
       <AsyncSelect
         value={value}
-        onChange={(newValue) => {
-          // Find the selected study type to get its ID
-          const selectedStudyType = studyTypes?.find(
-            (st) => st.study_type_name === newValue
-          );
-          onValueChange(newValue as string, selectedStudyType?.id);
-        }}
+        onChange={(value) => onStudyTypeChange(value as string)}
         mapConfig={{
           labelKey: "study_type_name" as const,
           valueKey: "study_type_name" as const,

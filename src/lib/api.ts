@@ -93,6 +93,9 @@ export const API_CONFIG = {
     DOSE_RANGE_FINDING_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/drf-experiments/`,
     },
+    TOXICITY: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/toxicity-experiments/`,
+    },
     CLRF_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/clrf-experiments/`,
     },

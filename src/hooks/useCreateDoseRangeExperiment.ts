@@ -1,13 +1,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { doseRangeFindingExperimentApi } from "@/api";
+import { doseRangeFindingExperimentApi, toxicityApi } from "@/api";
 import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,
 } from "@/types/doseRangeFinding";
 
 interface UseCreateDoseRangeExperimentOptions {
+  experimentType?: "dose-range" | "toxicity";
   onSuccess?: (data: CreateDoseRangeFindingResponse) => void;
   onError?: (error: Error) => void;
 }
@@ -19,16 +20,24 @@ export function useCreateDoseRangeExperiment(
 
   const mutation = useMutation({
     mutationFn: async (payload: CreateDoseRangeFindingPayload) =>
-      await doseRangeFindingExperimentApi.createDoseRangeExperiment(payload),
+      options?.experimentType === "dose-range"
+        ? await doseRangeFindingExperimentApi.createDoseRangeExperiment(payload)
+        : await toxicityApi.createToxicityExperiment(payload),
+
     onSuccess: (data: CreateDoseRangeFindingResponse) => {
       queryClient.invalidateQueries({ queryKey: ["experiments"] });
       queryClient.invalidateQueries({ queryKey: ["experiments-dropdown"] });
 
       if (data?.data) {
-        toast.success("Dose Range Finding Experiment Created", {
-          description: `${data?.data?.experiment_name} has been created successfully.`,
-        });
-
+        if (options?.experimentType === "dose-range") {
+          toast.success("Dose Range Finding Experiment Created", {
+            description: `${data?.data?.experiment_name} has been created successfully.`,
+          });
+        } else {
+          toast.success("Toxicity Experiment Created", {
+            description: `${data?.data?.experiment_name} has been created successfully.`,
+          });
+        }
         options?.onSuccess?.(data);
       }
     },

@@ -45,7 +45,6 @@ export function AsyncSelect<T>({
     queryKey,
     queryFn: query,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
-    refetchOnMount: true,
   });
 
   const options = mapToOptions(data, mapConfig);

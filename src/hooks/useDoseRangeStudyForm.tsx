@@ -18,6 +18,7 @@ interface UseDoseRangeStudyFormProps {
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;
   onCancel?: () => void;
+  experimentType?: "dose-range" | "toxicity";
 }
 
 export function useDoseRangeStudyForm({
@@ -26,8 +27,10 @@ export function useDoseRangeStudyForm({
   specialization,
   onSuccess,
   onCancel,
+  experimentType = "dose-range",
 }: UseDoseRangeStudyFormProps) {
   const { createExperiment, isCreating } = useCreateDoseRangeExperiment({
+    experimentType,
     onSuccess: (data: CreateDoseRangeFindingResponse) => {
       if (data?.data) {
         form.reset();

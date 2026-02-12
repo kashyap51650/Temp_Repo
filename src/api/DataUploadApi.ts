@@ -1140,6 +1140,14 @@ export const doseRangeFindingExperimentApi = {
   },
 };
 
+export const toxicityApi = {
+  createToxicityExperiment: async (
+    payload: CreateDoseRangeFindingPayload
+  ): Promise<CreateDoseRangeFindingResponse> => {
+    return apiClient.post(API_CONFIG.ENDPOINTS.TOXICITY.CREATE, payload);
+  },
+};
+
 export const dosesApi = {
   getDosesDropdown: async (): Promise<
     ApiResponse<
