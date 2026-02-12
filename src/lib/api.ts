@@ -108,6 +108,15 @@ export const API_CONFIG = {
     RECEPTOR_QUANTIFICATION: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/receptor-quantification-experiments/`,
     },
+    DELFIA_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/delfia-experiments/`,
+    },
+    ELISA_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/elisa-experiments/`,
+    },
+    SATURATION_BINDING_ASSAY_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/saturation-binding-assay-experiments/`,
+    },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
     },

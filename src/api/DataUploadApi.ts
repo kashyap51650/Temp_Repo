@@ -27,6 +27,10 @@ import type {
   CreateConjugationExperimentResponse,
 } from "@/types/conjugationExperiment";
 import type {
+  CreateDelfiaExperimentPayload,
+  CreateDelfiaExperimentResponse,
+} from "@/types/delfiaExperiment";
+import type {
   CreateDirectBindingAssayExperimentPayload,
   CreateDirectBindingAssayExperimentResponse,
   DirectBindingAssayExperimentDataUploadPayload,
@@ -36,6 +40,10 @@ import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,
 } from "@/types/doseRangeFinding";
+import type {
+  CreateElisaExperimentPayload,
+  CreateElisaExperimentResponse,
+} from "@/types/elisaExperiment";
 import type {
   ExperimentListFilters,
   ExperimentsListResponse,
@@ -79,6 +87,10 @@ import type {
   ReceptorQuantificationExperimentDataUploadPayload,
   ReceptorQuantificationExperimentDataUploadResponse,
 } from "@/types/receptorQuantification";
+import type {
+  CreateSaturationBindingExperimentPayload,
+  CreateSaturationBindingExperimentResponse,
+} from "@/types/saturationBindingExperiment";
 
 export interface Project {
   id: number;
@@ -1270,5 +1282,38 @@ export const hotlabApi = {
       formData
     );
     return response;
+  },
+};
+
+export const delfiaExperimentApi = {
+  createDelfiaExperiment: async (
+    payload: CreateDelfiaExperimentPayload
+  ): Promise<CreateDelfiaExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.DELFIA_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const elisaExperimentApi = {
+  createElisaExperiment: async (
+    payload: CreateElisaExperimentPayload
+  ): Promise<CreateElisaExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.ELISA_EXPERIMENTS.CREATE,
+      payload
+    );
+  },
+};
+
+export const saturationBindingExperimentApi = {
+  createSaturationBindingExperiment: async (
+    payload: CreateSaturationBindingExperimentPayload
+  ): Promise<CreateSaturationBindingExperimentResponse> => {
+    return apiClient.post(
+      API_CONFIG.ENDPOINTS.SATURATION_BINDING_ASSAY_EXPERIMENTS.CREATE,
+      payload
+    );
   },
 };

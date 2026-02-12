@@ -3,6 +3,7 @@ export const SPECIALIZATION = {
   HOTLAB: "hotlab",
   PRECLINICAL: "preclinical",
   CMC: "cmc",
+  CHEMISTRY: "chemistry",
 } as const;
 
 // Study types
@@ -30,6 +31,9 @@ export const STUDY_TYPE_CODE = {
   DIRECT_BINDING_ASSAY: "DIRECT_BINDING_ASSAY",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "RECEPTOR_QUANTIFICATION",
+  DELFIA: "DELFIA",
+  ELISA: "ELISA",
+  SATURATION_BINDING: "SATURATION_BINDING",
 } as const;
 
 export type StudyTypeCode =

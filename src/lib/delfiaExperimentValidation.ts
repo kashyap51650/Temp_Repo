@@ -2,8 +2,8 @@ import { z } from "zod";
 
 import { experimentNameSchema } from "./commonSchema";
 
-export const IrfFormDataSchema = z.object({
+export const DelfiaFormDataSchema = z.object({
   experimentName: experimentNameSchema,
 });
 
-export type IrfFormData = z.infer<typeof IrfFormDataSchema>;
+export type DelfiaFormData = z.infer<typeof DelfiaFormDataSchema>;

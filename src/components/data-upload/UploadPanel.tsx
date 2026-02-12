@@ -118,6 +118,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL;
   const isCMCSelected =
     formData.specialisation?.toLowerCase() === SPECIALIZATION.CMC;
+  const isChemistrySelected =
+    formData.specialisation?.toLowerCase() === SPECIALIZATION.CHEMISTRY;
   const isClrfData = formData.dataType === DATA_TYPE.CLRF;
   const isDirectBindingAssayData =
     formData.dataType === DATA_TYPE.DIRECT_BINDING_ASSAY;
@@ -147,18 +149,22 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         formData.dataType === DATA_TYPE.HEMATOLOGY ||
         formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY));
 
-  const canShowStudyType = isPreclinicSelected || isCMCSelected;
-  const canShowExperimentDropdown = isPreclinicSelected || isCMCSelected;
-  const canShowDataType = isPreclinicSelected || isCMCSelected;
+  const canShowStudyType =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
+  const canShowExperimentDropdown =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
+  const canShowDataType =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
 
-  const isGenericFileUploadVisible = isPdfUpload || isCMCSelected;
+  const isGenericFileUploadVisible =
+    isPdfUpload || isCMCSelected || isChemistrySelected;
 
   function isGenericUploadDisabled() {
     if (!isProjectSelected) return true;
 
     if (isPreclinicSelected && !isDataTypeSelected) return true;
 
-    if (isCMCSelected) {
+    if (isCMCSelected || isChemistrySelected) {
       if (!isExperimentSelected || !isDataTypeSelected) {
         return true;
       }
@@ -384,11 +390,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return true;
     }
 
-    if (isPreclinicSelected) {
-      return !!(formData.studyType && formData.dataType);
-    }
-
-    if (isCMCSelected) {
+    if (isPreclinicSelected || isCMCSelected || isChemistrySelected) {
       return !!(formData.studyType && formData.dataType);
     }
 
@@ -487,7 +489,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     if (isPreclinicSelected && !isDataTypeSelected) {
       return "Please select data type to continue";
     }
-    if (isCMCSelected) {
+    if (isCMCSelected || isChemistrySelected) {
       if (!isExperimentSelected) {
         return "Please select experiment to continue";
       }

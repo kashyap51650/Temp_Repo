@@ -25,11 +25,14 @@ import { CalendarDatePicker } from "../organisms";
 import ClrfExperimentForm from "./ClrfExperimentForm";
 import ConjugationExperimentForm from "./ConjugationExperimentForm";
 import { CustomSelect } from "./CustomSelect";
+import DelfiaExperimentForm from "./DelfiaExperimentForm";
 import DirectBindingAssayExperimentForm from "./DirectBindingAssayExperimentForm";
 import DoseRangeExperimentForm from "./DoseRangeExperimentForm";
+import ElisaExperimentForm from "./ElisaExperimentForm";
 import IrfExperimentForm from "./IrfExperimentForm";
 import ModelStudyExperimentForm from "./ModelStudyExperimentForm";
 import ReceptorQuantificationExperimentForm from "./ReceptorQuantificationExperiment";
+import SaturationBindingExperimentForm from "./SaturationBindingExperimentForm";
 
 interface FormState {
   experimentName: string;
@@ -445,6 +448,46 @@ export function CreateExperimentModal({
       if (studyType === STUDY_TYPE_CODE.RECEPTOR_QUANTIFICATION) {
         return (
           <ReceptorQuantificationExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.SATURATION_BINDING) {
+        return (
+          <SaturationBindingExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+    }
+
+    if (
+      specialization?.toLowerCase() === SPECIALIZATION.CHEMISTRY.toLowerCase()
+    ) {
+      if (studyType === STUDY_TYPE_CODE.DELFIA) {
+        return (
+          <DelfiaExperimentForm
+            projectId={projectId}
+            studyTypeId={studyTypeId}
+            specialization={specialization}
+            onCancel={handleCancel}
+            onSuccess={handleSuccess}
+          />
+        );
+      }
+
+      if (studyType === STUDY_TYPE_CODE.ELISA) {
+        return (
+          <ElisaExperimentForm
             projectId={projectId}
             studyTypeId={studyTypeId}
             specialization={specialization}
