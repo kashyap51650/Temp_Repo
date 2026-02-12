@@ -243,14 +243,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     openModal: openLinkExperimentModal,
   } = useModal();
 
-  const handlePreviewModalOpen = () => {
-    if (formData.dataType === DATA_TYPE.HEMATOLOGY) {
-      openHematologyReportModal();
-    } else if (formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
-      openBloodChemistryReportModal();
-    }
-  };
-
   useEffect(() => {
     setHematologyDataForPreview(undefined);
     setBloodChemistryDataForPreview(undefined);
@@ -316,8 +308,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       handleUploadFileReset();
       if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
         setHematologyDataForPreview(data.data as HematologyReport);
+        openHematologyReportModal();
       } else if (data && formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
         setBloodChemistryDataForPreview(data.data as BloodChemistryReport);
+        openBloodChemistryReportModal();
       }
     },
     experimentDataType: formData.dataType as ExperimentDataType,
@@ -726,20 +720,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
                 ? "Uploading..."
                 : "Upload Data"}
             </Button>
-
-            {(formData.dataType === DATA_TYPE.HEMATOLOGY ||
-              formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) && (
-              <Button
-                size="lg"
-                onClick={handlePreviewModalOpen}
-                disabled={
-                  isPdfUploading ||
-                  (!hematologyDataForPreview && !bloodChemistryDataForPreview)
-                }
-              >
-                Preview
-              </Button>
-            )}
           </div>
         </>
       )}

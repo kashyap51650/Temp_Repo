@@ -122,7 +122,7 @@ export default function PreviewBloodChemistryReportModal({
     <Dialog
       open={open}
       onOpenChange={handleClose}
-      preventOutsideClose={isSaving}
+      preventOutsideClose
       title={
         <div className="flex items-center justify-between w-full pr-8">
           <div>
