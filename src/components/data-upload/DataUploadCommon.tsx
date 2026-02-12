@@ -12,7 +12,7 @@ import {
 } from "@/data/experiments";
 import { useModal, useProjects } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
-import { STUDY_TYPE } from "@/lib/constants";
+import { STUDY_TYPE, STUDY_TYPE_CODE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { Card } from "../atoms";
@@ -25,6 +25,7 @@ import {
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { CreateExperimentModal } from "./CreateExperimentModal";
 import { CreateProjectModal } from "./CreateProjectModal";
+import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
 import UploadedList from "./UploadedList";
 import UploadPanel from "./UploadPanel";
 
@@ -41,11 +42,15 @@ interface DataUploadFormData {
 }
 
 export default function DataUploadCommon() {
+  const [createdExperimentId, setCreatedExperimentId] = useState<
+    number | undefined
+  >(undefined);
   const { hasPermission } = usePermissions();
 
   const canUploadData = hasPermission(PERMISSIONS.DATA_UPLOAD.UPLOAD);
   const canViewUploadedData = hasPermission(PERMISSIONS.DATA_UPLOAD.VIEW);
   const createExperimentModal = useModal();
+  const mouseGroupModal = useModal();
 
   const {
     projects: apiProjects,
@@ -92,6 +97,14 @@ export default function DataUploadCommon() {
   const [experiments, setExperiments] = useState<Experiment[]>(experimentData);
 
   const dispatch = useAppDispatch();
+
+  const selectedStudyType = useMemo(
+    () =>
+      studyTypes?.find(
+        (studyType) => studyType.study_type_name === formData.studyType
+      )?.study_type_code || "",
+    [studyTypes, formData.studyType]
+  );
 
   const hasFormData = () => {
     return !!(
@@ -188,12 +201,20 @@ export default function DataUploadCommon() {
   };
 
   const handleCreateExperiment = async (experimentData: {
+    id?: number;
     name: string;
     isotope: string;
     cellLines: string[];
   }) => {
     if (!formData.project) return;
 
+    setCreatedExperimentId(experimentData?.id);
+    if (
+      selectedStudyType === STUDY_TYPE_CODE.MODEL_STUDY &&
+      experimentData?.id
+    ) {
+      mouseGroupModal.openModal();
+    }
     if (formData.project.id && formData.specialisation && formData.studyType) {
       return;
     }
@@ -304,22 +325,27 @@ export default function DataUploadCommon() {
           onCreateExperiment={handleCreateExperiment}
           isotopeOptions={isotopeOptions}
           cellLineOptions={cellLineOptions}
-          studyType={
-            studyTypes?.find(
-              (studyType) => studyType.study_type_name === formData.studyType
-            )?.study_type_code || ""
-          }
+          studyType={selectedStudyType}
           projectId={formData.project?.id}
           specialization={formData.specialisation}
           studyTypeId={
             studyTypes?.find((st) => st.study_type_name === formData.studyType)
               ?.id
           }
-          onMouseGroupingComplete={() => {
-            setActiveTab("upload-data");
-          }}
         />
       )}
+
+      <MouseGroupsOrderModal
+        experimentId={createdExperimentId}
+        open={mouseGroupModal.isOpen}
+        onClose={() => mouseGroupModal.closeModal()}
+        onSuccess={() => {
+          mouseGroupModal.closeModal();
+        }}
+        onGroupingSaved={() => {
+          setActiveTab("upload-data");
+        }}
+      />
 
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}

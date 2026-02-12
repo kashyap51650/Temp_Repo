@@ -15,7 +15,6 @@ import {
   useCreateBiodExperiment,
   useCreateExperiment,
   useExperimentData,
-  useModal,
 } from "@/hooks";
 import { SPECIALIZATION, STUDY_TYPE_CODE } from "@/lib/constants";
 
@@ -30,7 +29,6 @@ import DirectBindingAssayExperimentForm from "./DirectBindingAssayExperimentForm
 import DoseRangeExperimentForm from "./DoseRangeExperimentForm";
 import IrfExperimentForm from "./IrfExperimentForm";
 import ModelStudyExperimentForm from "./ModelStudyExperimentForm";
-import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
 import ReceptorQuantificationExperimentForm from "./ReceptorQuantificationExperiment";
 
 interface FormState {
@@ -64,6 +62,7 @@ interface CreateExperimentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateExperiment?: (experimentData: {
+    id?: number;
     name: string;
     isotope: string;
     cellLines: string[];
@@ -79,7 +78,6 @@ interface CreateExperimentModalProps {
     name: string;
   }) => void;
   keepOpenAfterCreate?: boolean;
-  onMouseGroupingComplete?: () => void;
   preselectedStudyType?: string;
   onPerformBioDSave?: (experimentId: number) => void;
   preselectedCellLineIds?: number[];
@@ -98,7 +96,6 @@ export function CreateExperimentModal({
   studyTypeId,
   onExperimentCreated,
   keepOpenAfterCreate = false,
-  onMouseGroupingComplete,
   preselectedCellLineIds = [],
   isBiodCellLineDisabled = false,
 }: Readonly<CreateExperimentModalProps>) {
@@ -112,10 +109,6 @@ export function CreateExperimentModal({
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [isIsotopeAutoSet, setIsIsotopeAutoSet] = useState(false);
   const dispatch = useAppDispatch();
-  const [createdExperimentId, setCreatedExperimentId] = useState<
-    number | undefined
-  >(undefined);
-  const mouseGroupModal = useModal();
 
   const { createExperiment, isCreating } = useCreateExperiment({
     onSuccess: (data) => {
@@ -146,6 +139,7 @@ export function CreateExperimentModal({
 
   const handleSuccess = (data: ExperimentDropdownItem) => {
     onCreateExperiment({
+      id: data.id,
       name: formState.experimentName.trim(),
       isotope: formState.selectedIsotope,
       cellLines: formState.selectedCellLines,
@@ -164,12 +158,6 @@ export function CreateExperimentModal({
         id: data.id,
         name: data.experiment_name,
       });
-    }
-
-    setCreatedExperimentId(data.id);
-
-    if (studyType === STUDY_TYPE_CODE.MODEL_STUDY) {
-      mouseGroupModal.openModal();
     }
 
     if (!keepOpenAfterCreate) {
@@ -739,15 +727,6 @@ export function CreateExperimentModal({
       >
         {renderExperimentForm()}
       </Dialog>
-      <MouseGroupsOrderModal
-        experimentId={createdExperimentId}
-        open={mouseGroupModal.isOpen}
-        onClose={() => mouseGroupModal.closeModal()}
-        onSuccess={() => {
-          mouseGroupModal.closeModal();
-        }}
-        onGroupingSaved={onMouseGroupingComplete}
-      />
     </>
   );
 }
