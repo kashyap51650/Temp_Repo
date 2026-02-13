@@ -69,17 +69,23 @@ export const useRandomizationResult = () => {
   });
 
   const handleConfirmClick = () => {
-    // iterate selected group drug
-    for (const [key, value] of Object.entries(selectedGroupDrug)) {
-      const group = randomizationData?.groups.find((g) => g.group_code === key);
-      if (group) {
-        group.experiment_drug_id = Number(value);
-      }
-    }
+    if (!randomizationData) return;
 
-    if (randomizationData) {
-      mutate(randomizationData);
-    }
+    const updatedData: RandomizationPreviewData = {
+      ...randomizationData,
+      groups: randomizationData.groups.map((group) => {
+        const drugId = selectedGroupDrug[group.group_code];
+        if (drugId) {
+          return {
+            ...group,
+            experiment_drug_id: Number(drugId),
+          };
+        }
+        return group;
+      }),
+    };
+
+    mutate(updatedData);
   };
 
   const handleBack = () => {

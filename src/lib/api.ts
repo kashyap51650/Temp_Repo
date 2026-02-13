@@ -2,11 +2,65 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import { SESSION_STORAGE_KEYS } from "./constants";
+import { logger } from "./logger";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
     skipAuthToken?: boolean;
   }
+}
+
+/**
+ * Decode JWT token and extract payload
+ * Used for checking token expiration before API requests
+ *
+ * ✅ Handles base64url encoding with missing padding
+ * ✅ Uses TextDecoder for proper UTF-8 decoding (avoids edge cases)
+ */
+function decodeJWT(token: string): { exp?: number } | null {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+
+    // ✅ Convert base64url to base64
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    // ✅ Add required padding so length is a multiple of 4
+    // JWT payloads often omit padding - atob() requires it
+    const paddingNeeded = (4 - (base64.length % 4)) % 4;
+    const normalizedBase64 = base64 + "=".repeat(paddingNeeded);
+
+    // ✅ Decode base64 into bytes, then UTF-8 decode into a string
+    // Using TextDecoder instead of decodeURIComponent trick avoids UTF-8 edge cases
+    const binaryString = atob(normalizedBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const jsonPayload = new TextDecoder("utf-8").decode(bytes);
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    logger.error("[JWT] Failed to decode token:", error);
+    return null;
+  }
+}
+
+/**
+ * Check if JWT token is expired
+ * @param token - JWT token string
+ * @returns true if token is expired or invalid
+ */
+function isTokenExpired(token: string): boolean {
+  const decoded = decodeJWT(token);
+  if (!decoded?.exp) return true;
+
+  // exp is in seconds, Date.now() is in milliseconds
+  const expirationTime = decoded.exp * 1000;
+  const now = Date.now();
+
+  // Add 30 second buffer to avoid edge cases
+  return now >= expirationTime - 30000;
 }
 
 export const API_CONFIG = {
@@ -160,7 +214,7 @@ export const API_CONFIG = {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
-        `api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+        `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
     },
     EXCEL_EXPORT: {
       EXPORT_CALIPER_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/caliper-sheet/export-caliper-sheet`,
@@ -245,6 +299,12 @@ export interface ValidationError {
   };
 }
 
+export interface ApiErrorData {
+  message?: string;
+  details?: unknown;
+  errors?: ValidationError[];
+}
+
 export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;
@@ -285,7 +345,7 @@ export function handleApiError(
   return fallbackMessage;
 }
 
-function createApiError(status: number, data: any): ApiError {
+function createApiError(status: number, data: ApiErrorData): ApiError {
   const error = new Error(
     data.message || `HTTP error! status: ${status}`
   ) as ApiError;
@@ -313,10 +373,28 @@ export class ApiClient {
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
       (config) => {
+        // ✅ Get JWT token from sessionStorage
         const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+
         if (token && !config.skipAuthToken) {
+          // ✅ Check if token is expired before making request
+          if (isTokenExpired(token)) {
+            logger.warn("[API] JWT token expired, clearing session");
+
+            // Clear all session data
+            sessionStorage.clear();
+
+            // Redirect to login page
+            window.location.href = "/login?reason=session_expired";
+
+            // Reject the request
+            return Promise.reject(new Error("Token expired"));
+          }
+
+          // ✅ Token is valid - attach to Authorization header
           config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
       },
       (error) => {
@@ -329,6 +407,14 @@ export class ApiClient {
         return response;
       },
       (error) => {
+        // ✅ Handle 401 Unauthorized responses (expired/invalid token on backend)
+        if (error.response?.status === 401) {
+          logger.warn("[API] Received 401 Unauthorized, clearing session");
+          sessionStorage.clear();
+          window.location.href = "/login?reason=unauthorized";
+          return Promise.reject(error);
+        }
+
         if (error.response) {
           const apiError = createApiError(
             error.response.status,

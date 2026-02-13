@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/organisms";
 import { AppSidebar } from "@/components/templates";
 import { SiteHeader } from "@/components/templates/SiteHeader/site-header";
+import { useSessionTimeout, useTabCloseCleanup } from "@/hooks";
 import { useIsAuthenticated } from "@/lib/auth";
 
 function RootLayout() {
@@ -20,6 +21,18 @@ function RootLayout() {
   const isAuthenticated = useIsAuthenticated();
   const isAuthRoute = location.pathname.startsWith("/auth");
   const isNavigating = routerState.status === "pending";
+
+  // ✅ JWT Security: Automatic session timeout after 30 min of inactivity
+  useSessionTimeout({
+    timeoutMs: 30 * 60 * 1000, // 30 minutes
+    warningMs: 2 * 60 * 1000, // 2 minute warning before timeout
+  });
+
+  // ✅ JWT Security: Clear sessionStorage when browser tab closes
+  useTabCloseCleanup({
+    clearSessionStorage: true,
+    clearOnRefresh: false, // Keep session on page refresh for better UX
+  });
 
   useEffect(() => {
     if (isAuthRoute) return;

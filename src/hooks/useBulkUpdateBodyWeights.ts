@@ -1,7 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { apiClient, type ApiResponse, handleApiError } from "@/lib/api";
+
+import { useThrottledMutation } from "./useThrottledMutation";
 
 export interface BodyWeightMeasurementUpdate {
   id: number;
@@ -52,34 +54,61 @@ const bulkUpdateBodyWeights = async (
   return apiClient.patch<BulkUpdateBodyWeightsResponse>(endpoint, request);
 };
 
+/**
+ * Hook for bulk updating body weight measurements with heavy throttling
+ *
+ * This is an expensive operation that updates multiple measurements at once.
+ * Enforces a 5-second throttle to prevent accidental duplicate submissions
+ * and protect server resources.
+ *
+ * @returns Throttled mutation hook for bulk body weight updates
+ *
+ * @example
+ * ```tsx
+ * const bulkUpdate = useBulkUpdateBodyWeights();
+ *
+ * // In component - protected from rapid submissions
+ * <Button
+ *   onClick={() => bulkUpdate.mutate({ request, experimentDataId })}
+ *   disabled={bulkUpdate.isPending}
+ * >
+ *   Save All Changes
+ * </Button>
+ * ```
+ */
 export default function useBulkUpdateBodyWeights() {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({
-      request,
-      experimentDataId,
-    }: {
-      request: BulkUpdateBodyWeightsRequest;
-      experimentDataId: string;
-    }) => bulkUpdateBodyWeights(request, experimentDataId),
-    onSuccess: (data) => {
-      toast.success("Body weight measurements updated successfully", {
-        description: `${data?.data?.successful} measurements updated`,
-      });
+  return useThrottledMutation(
+    {
+      mutationFn: ({
+        request,
+        experimentDataId,
+      }: {
+        request: BulkUpdateBodyWeightsRequest;
+        experimentDataId: string;
+      }) => bulkUpdateBodyWeights(request, experimentDataId),
+      onSuccess: (data) => {
+        toast.success("Body weight measurements updated successfully", {
+          description: `${data?.data?.successful} measurements updated`,
+        });
 
-      queryClient.invalidateQueries({
-        queryKey: ["experimentData"],
-      });
+        // ✅ Invalidate experiment data queries to refresh
+        queryClient.invalidateQueries({
+          queryKey: ["experimentData"],
+        });
+      },
+      onError: (error) => {
+        // ✅ Standardized error handling with automatic toast notifications
+        const errorMessage = handleApiError(
+          error,
+          "Failed to update body weight measurements"
+        );
+        toast.error("Failed to update measurements", {
+          description: errorMessage,
+        });
+      },
     },
-    onError: (error) => {
-      const errorMessage = handleApiError(
-        error,
-        "Failed to update body weight measurements"
-      );
-      toast.error("Failed to update measurements", {
-        description: errorMessage,
-      });
-    },
-  });
+    5000 // ✅ 5 second throttle - bulk operations are expensive, need heavy protection
+  );
 }

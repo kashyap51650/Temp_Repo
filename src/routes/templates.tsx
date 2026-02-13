@@ -17,6 +17,7 @@ import { CreateFilterModal } from "@/components/templates/CreateFilterModal";
 import { ShareFilterPopover } from "@/components/templates/ShareFilterPopover";
 import { ViewFilterModal } from "@/components/templates/ViewFilterModal";
 import { usePermissions } from "@/hooks/usePermissions";
+import { logger } from "@/lib/logger";
 import { PERMISSIONS } from "@/lib/permissions";
 
 export const Route = createFileRoute("/templates")({
@@ -69,7 +70,7 @@ function TemplatesComponent() {
     value: string;
     accessLevel: string;
   }) => {
-    console.log("Sharing filter:", shareData);
+    logger.debug("Sharing filter:", shareData);
   };
 
   const existingFilterNames = useMemo(
