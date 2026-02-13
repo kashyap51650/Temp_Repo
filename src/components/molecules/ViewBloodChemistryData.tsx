@@ -161,6 +161,7 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({
             optionWithAll={false}
             searchable={true}
             size="default"
+            triggerClassName="bg-white"
           />
         </div>
       </div>

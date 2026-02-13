@@ -24,6 +24,7 @@ interface AsyncSelectProps<T> {
   shouldShowCreateNew?: boolean;
   createNewLabel?: string;
   onCreateNew?: () => void;
+  triggerClassName?: string;
 }
 
 export function AsyncSelect<T>({
@@ -42,6 +43,7 @@ export function AsyncSelect<T>({
   shouldShowCreateNew = false,
   createNewLabel = "Create New",
   onCreateNew,
+  triggerClassName = "",
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
@@ -70,6 +72,7 @@ export function AsyncSelect<T>({
       shouldShowCreateNew={shouldShowCreateNew}
       onCreateNew={onCreateNew}
       createNewLabel={createNewLabel}
+      className={triggerClassName}
     />
   );
 }
