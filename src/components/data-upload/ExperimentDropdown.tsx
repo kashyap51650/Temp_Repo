@@ -77,6 +77,7 @@ export function ExperimentDropdown({
         optionWithAll={false}
         size="lg"
         shouldShowCreateNew
+        createNewLabel="Create New Experiment"
         onCreateNew={onCreateNew}
       />
       {showHelperText && (

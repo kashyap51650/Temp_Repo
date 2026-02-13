@@ -304,7 +304,7 @@ export function PerformBioDModal({
             id="select-all"
             checked={isAllSelected}
             onCheckedChange={handleSelectAll}
-            disabled={enabledGroupsCount === 0}
+            disabled={enabledGroupsCount === 0 || selectedGroups.length === 0}
           />
           <label
             htmlFor="select-all"

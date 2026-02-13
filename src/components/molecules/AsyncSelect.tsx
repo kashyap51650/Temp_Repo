@@ -22,6 +22,7 @@ interface AsyncSelectProps<T> {
   multiple?: boolean;
   size?: "sm" | "default" | "lg";
   shouldShowCreateNew?: boolean;
+  createNewLabel?: string;
   onCreateNew?: () => void;
 }
 
@@ -39,6 +40,7 @@ export function AsyncSelect<T>({
   multiple = false,
   size = "lg",
   shouldShowCreateNew = false,
+  createNewLabel = "Create New",
   onCreateNew,
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
@@ -67,6 +69,7 @@ export function AsyncSelect<T>({
       multiple={multiple}
       shouldShowCreateNew={shouldShowCreateNew}
       onCreateNew={onCreateNew}
+      createNewLabel={createNewLabel}
     />
   );
 }
