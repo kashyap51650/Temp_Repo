@@ -19,7 +19,7 @@ export default function IrfExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: IrfExperimentFormProps) {
+}: Readonly<IrfExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } = useIrfExperimentForm(
     {
       projectId,

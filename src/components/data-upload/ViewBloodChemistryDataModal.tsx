@@ -37,7 +37,7 @@ export default function ViewBloodChemistryDataModal({
   experimentDataId,
   hideActions = false,
   experimentStatus,
-}: ViewBloodChemistryDataModalProps) {
+}: Readonly<ViewBloodChemistryDataModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();

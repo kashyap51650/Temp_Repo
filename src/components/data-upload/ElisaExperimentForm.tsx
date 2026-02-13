@@ -29,7 +29,7 @@ export default function ElisaExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: ElisaExperimentFormProps) {
+}: Readonly<ElisaExperimentFormProps>) {
   const {
     form,
     fields,

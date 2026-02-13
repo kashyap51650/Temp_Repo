@@ -181,10 +181,6 @@ export function CustomToast({
       )}
       data-toast-overlay="true"
       data-remove-scroll-bar="false"
-      aria-modal="true"
-      role="dialog"
-      aria-labelledby="toast-title"
-      aria-describedby={description ? "toast-description" : undefined}
     >
       {/* Toast container (positioned) */}
       <div
@@ -198,8 +194,14 @@ export function CustomToast({
           "animate-in slide-in-from-top-4 duration-300",
           className
         )}
-        // Mark as scrollable for our wheel handler
         data-toast-content="true"
+        role="alert"
+        aria-live={
+          variant === "error" || variant === "warning" ? "assertive" : "polite"
+        }
+        aria-atomic="true"
+        aria-labelledby="toast-title"
+        aria-describedby={description ? "toast-description" : undefined}
       >
         {/* Header */}
         <div

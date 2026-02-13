@@ -19,7 +19,7 @@ export default function SaturationBindingExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: SaturationBindingExperimentFormProps) {
+}: Readonly<SaturationBindingExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } =
     useSaturationBindingExperimentForm({
       projectId,

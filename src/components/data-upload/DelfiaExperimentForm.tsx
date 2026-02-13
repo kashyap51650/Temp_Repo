@@ -19,7 +19,7 @@ export default function DelfiaExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: DelfiaExperimentFormProps) {
+}: Readonly<DelfiaExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } =
     useDelfiaExperimentForm({
       projectId,

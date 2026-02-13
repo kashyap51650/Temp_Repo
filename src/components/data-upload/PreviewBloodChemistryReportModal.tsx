@@ -30,7 +30,7 @@ export default function PreviewBloodChemistryReportModal({
   onOpenChange,
   bloodChemistryData,
   onSaveSuccess,
-}: PreviewBloodChemistryReportModalProps) {
+}: Readonly<PreviewBloodChemistryReportModalProps>) {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   const {
@@ -85,7 +85,7 @@ export default function PreviewBloodChemistryReportModal({
   // Render dialog content based on data state
   const renderDialogContent = () => {
     // No data state
-    if (!bloodChemistryData || !bloodChemistryData.reports_data?.length) {
+    if (!bloodChemistryData?.reports_data?.length) {
       return (
         <div className="flex flex-col items-center justify-center h-64">
           <div>
