@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import { usePermissions } from "@/hooks/usePermissions";
 import { PERMISSIONS } from "@/lib/permissions";
 
@@ -34,10 +36,14 @@ export function ProjectSelect({
 }: Readonly<ProjectSelectProps>) {
   const { hasPermission } = usePermissions();
   const canCreateNew = hasPermission(PERMISSIONS.PROJECTS.CREATE);
-  const selectOptions = projects.map((project) => ({
-    value: project.id,
-    label: project.name,
-  }));
+  const selectOptions = useMemo(
+    () =>
+      projects.map((project) => ({
+        value: project.id,
+        label: project.name,
+      })),
+    [projects]
+  );
 
   return (
     <SearchableSelect

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/atoms";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
@@ -72,7 +72,10 @@ function TemplatesComponent() {
     console.log("Sharing filter:", shareData);
   };
 
-  const existingFilterNames = filters.map((f) => f.filterName);
+  const existingFilterNames = useMemo(
+    () => filters.map((f) => f.filterName),
+    [filters]
+  );
 
   const renderShareAction = canShareFilter
     ? (filter: VisualFilterRow) => (

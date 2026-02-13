@@ -1,5 +1,6 @@
 // Re-export atoms
 export * from "./atoms";
+export * from "./skeletons";
 
 // Re-export other component folders that might be used externally
 export * from "./DeleteConfirmModal";

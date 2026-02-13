@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   uploadedExperimentDataApi,
@@ -64,13 +64,16 @@ export function useUploadedExperimentData(
   const data = queryData?.items || [];
   const pagination = queryData?.pagination || null;
 
-  const handleSetFilters = (newFilters: UploadedExperimentDataFilters) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...newFilters,
-      page: newFilters.page ?? 1, // Reset to first page when filters change
-    }));
-  };
+  const handleSetFilters = useCallback(
+    (newFilters: UploadedExperimentDataFilters) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+        page: newFilters.page ?? 1, // Reset to first page when filters change
+      }));
+    },
+    []
+  );
 
   return {
     data,
