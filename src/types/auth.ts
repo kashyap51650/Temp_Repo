@@ -141,6 +141,8 @@ export interface ApiModule {
   description: string;
   is_active: boolean;
   permissions: ApiPermission[];
+  parent_id: number | null;
+  children: ApiModule[];
 }
 
 export interface PermissionsApiResponse {
