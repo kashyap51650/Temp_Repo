@@ -18,6 +18,7 @@ export const STUDY_TYPE = {
   DIRECT_BINDING_ASSAY: "Direct Binding Assay",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
+  TOXICITY: "Toxicity",
 } as const;
 
 export const STUDY_TYPE_CODE = {

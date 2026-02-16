@@ -144,7 +144,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const isPdfUpload =
     formData.specialisation.toLowerCase() === SPECIALIZATION.HOTLAB ||
-    (formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+    ((formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING ||
+      formData.studyType === STUDY_TYPE.TOXICITY) &&
       (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
         formData.dataType === DATA_TYPE.HEMATOLOGY ||
         formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY));
