@@ -44,7 +44,6 @@ export const useRandomizationResult = () => {
       }
     },
     onError: (error: Error) => {
-      console.error("Error previewing randomization:", error);
       toast.error(
         error.message || "Failed to preview randomization. Please try again."
       );
@@ -61,7 +60,6 @@ export const useRandomizationResult = () => {
       });
     },
     onError: (error: Error) => {
-      console.error("Error confirming randomization:", error);
       toast.error(
         error.message || "Failed to preview randomization. Please try again."
       );

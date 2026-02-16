@@ -42,7 +42,6 @@ export default function useExperimentMouseGroups(): UseExperimentMouseGroupsRetu
           error,
           "Failed to load mouse groups"
         );
-        console.error("Error loading mouse groups:", error);
         toast.error("Failed to load mouse groups", {
           description: errorMessage,
         });

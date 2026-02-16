@@ -1,5 +1,7 @@
+import type { AxiosError } from "axios";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
 import {
@@ -33,7 +35,9 @@ export function DeleteConfirmModal({
       await onConfirm();
       onClose();
     } catch (error) {
-      console.error("Failed to delete:", error);
+      toast.error("Failed to delete", {
+        description: (error as AxiosError)?.message,
+      });
     } finally {
       setLoading(false);
     }

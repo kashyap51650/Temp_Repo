@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 import { authApi } from "@/api";
 import { REACT_QUERY_CONFIG } from "@/lib/constants";
+import { setUserContext } from "@/lib/sentry-logger";
 
 export interface UserProfile {
   id: number;
@@ -37,6 +39,16 @@ export function useProfile() {
     queryFn: authApi.getProfile,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
   });
+
+  useEffect(() => {
+    if (profileData) {
+      setUserContext({
+        id: profileData?.data.id?.toString(),
+        email: profileData?.data.email,
+        username: profileData?.data.username,
+      });
+    }
+  }, [profileData]);
 
   const updateProfileMutation = useMutation({
     mutationFn: (profileData: {

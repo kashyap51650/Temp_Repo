@@ -44,7 +44,6 @@ export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
         }
       } catch (err) {
         const errorMessage = handleApiError(err, "Failed to load study types");
-        console.error("Error loading study types:", err);
         toast.error("Failed to load study types", {
           description: errorMessage,
         });

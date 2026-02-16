@@ -49,7 +49,6 @@ export function useUploadedExperimentData(
           err,
           "Failed to load uploaded experiment data"
         );
-        console.error("Error loading uploaded experiment data:", err);
         toast.error("Failed to load uploaded experiment data", {
           description: errorMessage,
         });

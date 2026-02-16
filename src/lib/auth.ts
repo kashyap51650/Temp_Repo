@@ -12,6 +12,7 @@ import type {
 } from "@/types/auth";
 
 import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "./constants";
+import { clearUserContext, setUserContext } from "./sentry-logger";
 
 // Query keys for TanStack Query
 export const AUTH_QUERY_KEYS = {
@@ -46,9 +47,8 @@ export const authApi = {
   logout: async (): Promise<void> => {
     try {
       await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
-    } catch (error) {
-      //Replace that by sentry logging in future
-      console.warn("Logout API call failed:", error);
+    } catch {
+      // Already logged by API interceptor, no need to log again
     } finally {
       tokenUtils.removeTokens();
     }
@@ -100,6 +100,12 @@ export const useLogin = () => {
           queryFn: () => permissionsApi.getMyPermissions(),
         });
 
+        setUserContext({
+          id: data.user.id?.toString(),
+          email: data.user.email,
+          username: data.user.username,
+        });
+
         toast.success("Login successful!", {
           description: `Welcome back, ${data.user.full_name || data.user.username}!`,
         });
@@ -143,6 +149,9 @@ export const useLogout = () => {
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.auth });
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.user });
       queryClient.clear();
+
+      clearUserContext();
+
       toast.success("Logged out successfully");
     },
   });

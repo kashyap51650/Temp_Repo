@@ -1,4 +1,6 @@
+import type { AxiosError } from "axios";
 import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button, Dialog, Input, Label, Textarea } from "../atoms";
 
@@ -27,7 +29,9 @@ export function CreateProjectModal({
       setDescription("");
       onClose();
     } catch (error) {
-      console.error("Failed to create project:", error);
+      toast.error("Failed to create project", {
+        description: (error as AxiosError)?.message,
+      });
     } finally {
       setIsLoading(false);
     }

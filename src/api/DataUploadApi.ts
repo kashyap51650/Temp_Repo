@@ -732,18 +732,13 @@ export const importExperimentDataApi = {
 
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData<ImportExperimentDataResponse>(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData<ImportExperimentDataResponse>(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importAGCExperimentData: async (payload: ImportAGCDataPayload) => {
@@ -763,18 +758,13 @@ export const importExperimentDataApi = {
     formData.append("group_ids", payload.group_ids.join(","));
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_AGC_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment agc data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_AGC_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importNecropsyData: async (
@@ -787,18 +777,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_NECROPSY_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment necropsy data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_NECROPSY_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importHematologyData: async (
@@ -811,18 +796,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.HEMATOLOGY.EXTRACT_HEMATOLOGY,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment hematology data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.HEMATOLOGY.EXTRACT_HEMATOLOGY,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importBloodChemistryData: async (
@@ -835,18 +815,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.EXTRACT_BLOOD_CHEMISTRY,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment blood chemistry data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.EXTRACT_BLOOD_CHEMISTRY,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importClrfExperimentDataApi: async (
@@ -859,18 +834,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CLRF_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment CLRF data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CLRF_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importDirectBindingAssayExperimentDataApi: async (
@@ -883,22 +853,14 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
-          .IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error(
-        "Experiment Direct binding assay data import error:",
-        error
-      );
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
+        .IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importConjugationExperimentDataApi: async (
@@ -911,18 +873,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment Conjugation data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importConjugationGelImageDataApi: async (
@@ -935,18 +892,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_GEL_IMAGE_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment Gel Image data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_GEL_IMAGE_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importIrfExperimentDataApi: async (
@@ -959,18 +911,13 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_IRF_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error("Experiment IRF data import error:", error);
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_IRF_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   importReceptorQuantificationExperimentDataApi: async (
@@ -983,22 +930,14 @@ export const importExperimentDataApi = {
     formData.append("experiment_id", payload.experiment_id.toString());
     formData.append("file", payload.file, payload.file.name);
 
-    try {
-      return await apiClient.postFormData(
-        API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
-          .IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA,
-        formData,
-        {
-          timeout: API_CUSTOM_TIMEOUT,
-        }
-      );
-    } catch (error) {
-      console.error(
-        "Experiment Receptor Quantification data import error:",
-        error
-      );
-      throw error;
-    }
+    return await apiClient.postFormData(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
+        .IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA,
+      formData,
+      {
+        timeout: API_CUSTOM_TIMEOUT,
+      }
+    );
   },
 
   saveHematologyData: async (

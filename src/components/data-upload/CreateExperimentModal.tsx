@@ -1,3 +1,4 @@
+import type { AxiosError } from "axios";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { ExperimentDropdownItem } from "@/api";
@@ -364,7 +365,9 @@ export function CreateExperimentModal({
         handleReset();
         onClose();
       } catch (error) {
-        console.error("Failed to create experiment:", error);
+        toast.error("Failed to create experiment", {
+          description: (error as AxiosError)?.message,
+        });
       }
     }
   };

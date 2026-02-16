@@ -54,7 +54,6 @@ export function useExperimentsDropdown(
         }
       } catch (err) {
         const errorMessage = handleApiError(err, "Failed to load experiments");
-        console.error("Error loading experiments:", err);
         toast.error("Failed to load experiments", {
           description: errorMessage,
         });

@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { toast } from "sonner";
 
 import { notificationApi } from "@/api";
 import {
@@ -65,7 +66,7 @@ export function useNotificationData(isAuthenticated: boolean) {
       });
     },
     onError: (error) => {
-      console.error("Failed to mark notification as read:", error);
+      toast.error(error?.message || "Failed to mark notification as read");
     },
   });
 
@@ -79,7 +80,7 @@ export function useNotificationData(isAuthenticated: boolean) {
       });
     },
     onError: (error) => {
-      console.error("Failed to mark all notifications as read:", error);
+      toast.error(error?.message || "Failed to mark all notifications as read");
     },
   });
 

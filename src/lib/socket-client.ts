@@ -5,6 +5,7 @@ import {
   SOCKET_CONFIG,
   SOCKET_EVENTS,
 } from "./constants";
+import { logError } from "./sentry-logger";
 
 /**
  * Singleton socket instance - shared across the app
@@ -30,19 +31,45 @@ function setupSocketEventHandlers(socketInstance: Socket): void {
 
   // Connection error - reset connecting flag
   socketInstance.on(SOCKET_EVENTS.CONNECT_ERROR, (error) => {
-    console.error("❌ Socket connection error:", error);
     isConnecting = false;
+    logError(error instanceof Error ? error : new Error(String(error)), {
+      level: "error",
+      tags: { error_type: "socket_connection_error" },
+      context: {
+        socket: {
+          event: "connect_error",
+          errorMessage: String(error),
+        },
+      },
+    });
   });
 
   // Reconnection failed
   socketInstance.on(SOCKET_EVENTS.RECONNECT_FAILED, () => {
-    console.error("❌ Reconnection failed after max attempts");
     isConnecting = false;
+    logError("Socket reconnection failed after max attempts", {
+      tags: { error_type: "socket_reconnection_failed" },
+      context: {
+        socket: {
+          event: "reconnect_failed",
+          maxAttempts: SOCKET_CONFIG.reconnectionAttempts,
+        },
+      },
+    });
   });
 
   // General error
   socketInstance.on(SOCKET_EVENTS.ERROR, (error) => {
-    console.error("❌ Socket error:", error);
+    logError(error instanceof Error ? error : new Error(String(error)), {
+      level: "error",
+      tags: { error_type: "socket_error" },
+      context: {
+        socket: {
+          event: "error",
+          errorMessage: String(error),
+        },
+      },
+    });
   });
 }
 
@@ -70,16 +97,26 @@ export function connectSocket(): void {
   const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
   if (!token) {
-    console.error("❌ No authentication token found. Cannot connect socket.");
+    logError("Cannot connect socket - no authentication token found", {
+      tags: { error_type: "socket_auth_missing" },
+      context: { socket: { action: "connect_attempt" } },
+    });
     return;
   }
 
   const socketUrl = import.meta.env.VITE_SOCKET_URL;
 
   if (!socketUrl || socketUrl.trim() === "") {
-    console.error(
-      "❌ VITE_SOCKET_URL is not configured or is empty in environment"
-    );
+    logError(new Error("Socket URL not configured"), {
+      level: "error",
+      tags: { error_type: "socket_config_missing" },
+      context: {
+        socket: {
+          action: "connect_attempt",
+          issue: "VITE_SOCKET_URL not configured",
+        },
+      },
+    });
     return;
   }
 
@@ -100,8 +137,17 @@ export function connectSocket(): void {
     setupSocketEventHandlers(socket);
     socket.connect();
   } catch (error) {
-    console.error("❌ Failed to initialize socket:", error);
     isConnecting = false;
+    logError(error instanceof Error ? error : new Error(String(error)), {
+      level: "error",
+      tags: { error_type: "socket_initialization_failed" },
+      context: {
+        socket: {
+          action: "initialize",
+          errorMessage: String(error),
+        },
+      },
+    });
   }
 }
 
@@ -117,7 +163,16 @@ export function disconnectSocket(): void {
     socket = null;
     isConnecting = false;
   } catch (error) {
-    console.error("Error during socket disconnection:", error);
+    logError(error instanceof Error ? error : new Error(String(error)), {
+      level: "warning",
+      tags: { error_type: "socket_disconnection_error" },
+      context: {
+        socket: {
+          action: "disconnect",
+          errorMessage: String(error),
+        },
+      },
+    });
   }
 }
 
@@ -129,9 +184,10 @@ export function socketOn(
   callback: (...args: unknown[]) => void
 ): void {
   if (!socket) {
-    console.error(
-      `❌ Cannot subscribe to event "${event}" - socket not initialized`
-    );
+    logError(`Cannot subscribe to event "${event}" - socket not initialized`, {
+      tags: { error_type: "socket_not_initialized" },
+      context: { socket: { action: "subscribe", event } },
+    });
     return;
   }
   socket.on(event, callback);
@@ -145,8 +201,12 @@ export function socketOff(
   callback?: (...args: unknown[]) => void
 ): void {
   if (!socket) {
-    console.error(
-      `❌ Cannot subscribe to event "${event}" - socket not initialized`
+    logError(
+      `Cannot unsubscribe from event "${event}" - socket not initialized`,
+      {
+        tags: { error_type: "socket_not_initialized" },
+        context: { socket: { action: "unsubscribe", event } },
+      }
     );
     return;
   }
@@ -163,14 +223,18 @@ export function socketOff(
  */
 export function socketEmit(event: string, ...args: unknown[]): void {
   if (!socket) {
-    console.error(
-      `❌ Cannot subscribe to event "${event}" - socket not initialized`
-    );
+    logError(`Cannot emit event "${event}" - socket not initialized`, {
+      tags: { error_type: "socket_not_initialized" },
+      context: { socket: { action: "emit", event } },
+    });
     return;
   }
 
   if (!socket.connected) {
-    console.error(`❌ Cannot emit event "${event}" - socket not connected`);
+    logError(`Cannot emit event "${event}" - socket not connected`, {
+      tags: { error_type: "socket_not_connected" },
+      context: { socket: { action: "emit", event } },
+    });
     return;
   }
 

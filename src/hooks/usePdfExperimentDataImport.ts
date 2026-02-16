@@ -87,10 +87,6 @@ export const usePdfExperimentDataImport = ({
       onSuccess?.(data);
     },
     onError: (error: Error) => {
-      console.error(
-        `Error importing ${formatFieldLabel(experimentDataType)} Experiment data:`,
-        error
-      );
       toast.error(error.message);
     },
     retry: false,

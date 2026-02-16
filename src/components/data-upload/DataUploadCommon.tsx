@@ -194,8 +194,7 @@ export default function DataUploadCommon() {
 
         setErrors((prev) => ({ ...prev, project: "" }));
       }
-    } catch (error) {
-      console.error("Failed to create project:", error);
+    } catch {
       setErrors((prev) => ({ ...prev, project: "Failed to create project" }));
     }
   };

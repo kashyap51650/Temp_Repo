@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import {
   type DataType,
@@ -145,7 +146,7 @@ export default function DataValidation() {
         (item) => item.id === Number(row.id)
       );
       if (!experimentData) {
-        console.error("Experiment data not found for row:", row);
+        toast.error("Experiment data not found for selected row");
         return;
       }
 
@@ -182,7 +183,7 @@ export default function DataValidation() {
         (item) => item.id === Number(row.id)
       );
       if (!experimentData) {
-        console.error("Experiment data not found for row:", row);
+        toast.error("Experiment data not found for selected row");
         return;
       }
       setSelectedExperiment({

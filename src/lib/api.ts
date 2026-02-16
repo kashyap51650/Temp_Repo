@@ -3,6 +3,7 @@ import axios from "axios";
 
 import { SESSION_STORAGE_KEYS } from "./constants";
 import { logger } from "./logger";
+import { logError } from "./sentry-logger";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -419,23 +420,75 @@ export class ApiClient {
           return Promise.reject(error);
         }
 
+        let apiError: ApiError;
+
         if (error.response) {
-          const apiError = createApiError(
+          apiError = createApiError(
             error.response.status,
             error.response.data || {}
           );
-          return Promise.reject(apiError);
+
+          // Log API error to Sentry (sanitization happens automatically in Sentry's beforeSend hook)
+          logError(apiError, {
+            level: error.response.status >= 500 ? "error" : "warning",
+            tags: {
+              api_error: "true",
+              http_status: error.response.status.toString(),
+              error_type: "api_response_error",
+            },
+            context: {
+              api: {
+                endpoint: error.config?.url || "unknown",
+                method: error.config?.method?.toUpperCase() || "unknown",
+                status: error.response.status,
+                statusText: error.response.statusText,
+                responseData: error.response.data,
+                requestData: error.config?.data,
+              },
+            },
+          });
         } else if (error.request) {
-          const apiError = createApiError(500, {
+          // Network error - request sent but no response received
+          apiError = createApiError(500, {
             message: "Network error - no response received",
           });
-          return Promise.reject(apiError);
+
+          logError(apiError, {
+            level: "error",
+            tags: {
+              api_error: "true",
+              error_type: "network_error",
+            },
+            context: {
+              api: {
+                endpoint: error.config?.url || "unknown",
+                method: error.config?.method?.toUpperCase() || "unknown",
+                errorDetails: "No response received from server",
+              },
+            },
+          });
         } else {
-          const apiError = createApiError(500, {
+          // Request setup error
+          apiError = createApiError(500, {
             message: error.message || "An unexpected error occurred",
           });
-          return Promise.reject(apiError);
+
+          logError(apiError, {
+            level: "error",
+            tags: {
+              api_error: "true",
+              error_type: "request_setup_error",
+            },
+            context: {
+              api: {
+                errorMessage: error.message || "Unknown error",
+                errorDetails: "Error occurred while setting up the request",
+              },
+            },
+          });
         }
+
+        return Promise.reject(apiError);
       }
     );
   }

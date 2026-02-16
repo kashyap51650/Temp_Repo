@@ -57,7 +57,6 @@ export function useProjects(): UseProjectsResult {
     } catch (err) {
       const errorMessage = handleApiError(err, "Failed to load projects");
       setError(errorMessage);
-      console.error("Error loading projects:", err);
 
       toast.error("Failed to load projects", {
         description: errorMessage,
@@ -108,7 +107,6 @@ export function useProjects(): UseProjectsResult {
       } catch (err) {
         const errorMessage = handleApiError(err, "Failed to create project");
         setError(errorMessage);
-        console.error("Error creating project:", err);
 
         toast.error("Failed to create project", {
           description: errorMessage,

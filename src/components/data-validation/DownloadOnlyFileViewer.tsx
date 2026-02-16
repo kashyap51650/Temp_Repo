@@ -24,8 +24,7 @@ export function DownloadOnlyFileViewer({
     try {
       await downloadFile(filename);
       toast.success("File downloaded successfully");
-    } catch (err) {
-      console.error("Download failed:", err);
+    } catch {
       toast.error("Failed to download file");
     }
   };

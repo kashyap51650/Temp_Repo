@@ -79,8 +79,6 @@ export function ProfileSettings() {
       toast.success("Profile updated successfully");
       setProfilePictureFile(undefined);
     } catch (error: any) {
-      console.error("Profile update error:", error);
-
       const errorMessage =
         error?.details?.message || error?.message || "Failed to update profile";
 

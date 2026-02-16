@@ -19,7 +19,6 @@ export const useAGCExperimentDataImport = ({
       onSuccess?.();
     },
     onError: (error: Error) => {
-      console.error("Error importing AGC Experiment data:", error);
       onError?.(error);
     },
     retry: false,

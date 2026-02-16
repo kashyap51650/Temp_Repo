@@ -173,8 +173,7 @@ function MasterDataComponent() {
         setIsDeleteModalOpen(false);
         setSelectedItem(null);
         toast.success("Record deleted successfully.");
-      } catch (error) {
-        console.error(error);
+      } catch {
         toast.error("Failed to delete record. Please try again.");
       }
     }

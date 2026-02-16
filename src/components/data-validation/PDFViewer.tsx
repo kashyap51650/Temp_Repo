@@ -31,8 +31,7 @@ export function PDFViewer({
     try {
       await downloadFile(fileName);
       toast.success("PDF downloaded successfully");
-    } catch (err) {
-      console.error("Download failed:", err);
+    } catch {
       toast.error("Failed to download PDF");
     }
   };

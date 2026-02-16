@@ -64,6 +64,7 @@ function TemplatesComponent() {
     setFilters([...filters, newFilter]);
   };
 
+  // TODO: Implement share functionality when backend API is ready
   const handleShare = (shareData: {
     filterId: string;
     shareBy: "email" | "role";

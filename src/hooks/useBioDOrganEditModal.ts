@@ -88,7 +88,6 @@ export const useBioDOrganEditModal = ({
     const newDrugId = Number(drugId);
 
     if (Number.isNaN(newDrugId)) {
-      console.error("Invalid drug ID:", drugId);
       return;
     }
 

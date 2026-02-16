@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { roleApi } from "@/api";
 import { ProtectedComponent } from "@/components";
@@ -110,8 +112,9 @@ export default function RBACRolesPage() {
       await roleApi.createRole(roleData);
       refetchRoles();
     } catch (error) {
-      // TBR by sonar in future
-      console.error("Error creating role:", error);
+      toast.error("Error creating role", {
+        description: (error as AxiosError)?.message,
+      });
     }
   };
 
@@ -131,7 +134,9 @@ export default function RBACRolesPage() {
         setSelectedRole(null);
         refetchRoles();
       } catch (error) {
-        console.error("Error updating role:", error);
+        toast.error("Error updating role", {
+          description: (error as AxiosError)?.message,
+        });
       }
     }
   };
@@ -153,10 +158,6 @@ export default function RBACRolesPage() {
     // In a real implementation, you would call an API to update the assignment
     // and then refetch the data
     refetchAssignments();
-  };
-
-  const handlePermissionsCancel = () => {
-    logger.debug("Permissions configuration cancelled");
   };
 
   if (rolesLoading) {
@@ -277,7 +278,6 @@ export default function RBACRolesPage() {
             <PermissionsTab
               selectedRole={permissionsSelectedRole}
               onRoleChange={setPermissionsSelectedRole}
-              onCancel={handlePermissionsCancel}
             />
           </TabsContent>
         )}

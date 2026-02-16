@@ -355,7 +355,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const handleDataUpload = async () => {
     if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
+      toast.error("No file selected for upload");
       return;
     }
 
@@ -366,7 +366,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
 
     if (!formData.dataTypeId) {
-      console.error("No data type selected");
+      toast.error("No data type selected");
     }
 
     await uploadFile({
@@ -412,14 +412,14 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const handleUploadPdfClick = async () => {
     if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
+      toast.error("No file selected for upload");
       return;
     }
 
     const experimentId = formData.experiment?.id;
 
     if (!isHotlabSelected && !experimentId) {
-      console.error("No experiment selected");
+      toast.error("No experiment selected");
       return;
     }
 
@@ -433,14 +433,14 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const handleCMCFileUpload = () => {
     if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
+      toast.error("No file selected for upload");
       return;
     }
 
     const experimentId = formData.experiment?.id;
 
     if (!experimentId) {
-      console.error("No experiment selected");
+      toast.error("No experiment selected");
       return;
     }
 

@@ -37,7 +37,7 @@ export interface PermissionGroup {
 interface PermissionsTabProps {
   selectedRole?: string;
   onRoleChange: (role: string) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 }
 
 export function PermissionsTab({
@@ -105,7 +105,6 @@ export function PermissionsTab({
       toast.success(`Permissions updated successfully for ${roleName}`);
     },
     onError: (error) => {
-      console.error("Failed to update permissions:", error);
       toast.error(error.message || "Failed to update permissions");
     },
     onSettled: () => {
@@ -234,7 +233,7 @@ export function PermissionsTab({
   const handleCancel = () => {
     // Revert all changes to original state
     setPermissionGroups(structuredClone(originalPermissionGroups));
-    onCancel();
+    onCancel?.();
   };
 
   const selectedRoleName =

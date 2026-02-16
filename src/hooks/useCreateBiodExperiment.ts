@@ -41,7 +41,6 @@ export const useCreateBiodExperiment = (
       }
     },
     onError: (error) => {
-      console.error("Error creating biodistribution experiment:", error);
       const errorMessage = handleApiError(
         error,
         "Failed to create biodistribution experiment"

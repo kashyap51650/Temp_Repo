@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { apiClient } from "@/lib/api";
 import { downloadBlobFile } from "@/lib/utils";
@@ -47,8 +48,7 @@ export function useFileViewer(
 
         const newBlobUrl = URL.createObjectURL(blob);
         setBlobUrl(newBlobUrl);
-      } catch (err) {
-        console.error("Failed to fetch file:", err);
+      } catch {
         setError("Failed to load file");
       } finally {
         setIsLoading(false);
@@ -70,7 +70,7 @@ export function useFileViewer(
 
   const downloadFile = async (fileName = "document"): Promise<void> => {
     if (!fileUrl) {
-      console.error("No file URL available for download");
+      toast.error("No file URL available for download");
       return;
     }
 
@@ -84,7 +84,7 @@ export function useFileViewer(
 
       downloadBlobFile(blob, fileName);
     } catch (err) {
-      console.error("Failed to download file:", err);
+      toast.error("Failed to download file");
       throw err;
     } finally {
       setIsDownloading(false);
@@ -95,7 +95,7 @@ export function useFileViewer(
     if (fileUrl) {
       window.open(fileUrl, "_blank", "noopener,noreferrer");
     } else {
-      console.warn("No file URL available to open in new tab");
+      toast.error("No file URL available to open in new tab");
     }
   };
 

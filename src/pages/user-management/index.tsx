@@ -110,7 +110,6 @@ export default function UserManagementPage() {
       setModalOpen(false);
       refetch();
     } catch (error) {
-      console.error("Error creating user:", error);
       const errorMessage = handleApiError(error, "Failed to create user");
       toast.error(errorMessage);
     }
@@ -167,7 +166,6 @@ export default function UserManagementPage() {
       //   console.log('Role unchanged, skipping user-roles API call');
       // }
     } catch (error) {
-      console.error("Error updating user:", error);
       const errorMessage = handleApiError(error, "Failed to update user");
       toast.error(errorMessage);
     }
@@ -190,10 +188,6 @@ export default function UserManagementPage() {
       toast.success(successMessage);
       setDisableUser(null);
     } catch (error) {
-      console.error(
-        `Error ${isCurrentlyActive ? "disabling" : "enabling"} user:`,
-        error
-      );
       const errorMessage = handleApiError(
         error,
         `Failed to ${isCurrentlyActive ? "disable" : "enable"} user`

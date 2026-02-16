@@ -92,7 +92,6 @@ export const useExperimentDataImport = (
         toast.error(response.message || "Upload failed. Please try again.");
       }
     } catch (error) {
-      console.error("Upload error:", error);
       const errorMessage = handleApiError(
         error,
         "Failed to upload data. Please try again."

@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { type FC, useState } from "react";
+import { toast } from "sonner";
 
 import { hotlabApi } from "@/api";
 import { Button, Input, Label } from "@/components/atoms";
@@ -23,7 +24,7 @@ const HotlabExperimentForm: FC<HotlabExperimentFormProps> = ({
 
   const handleSave = () => {
     if (projectId === undefined || specialization === undefined) {
-      console.error("Project ID or Specialization is undefined");
+      toast.error("Project ID or Specialization is undefined");
       return;
     }
 

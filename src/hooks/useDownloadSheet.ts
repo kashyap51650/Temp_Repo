@@ -36,7 +36,6 @@ export const useDownloadSheet = (props?: UseDownloadSheetProps) => {
       }
     },
     onError: (error: Error) => {
-      console.error("Error downloading sheet:", error);
       toast.error("Failed to download sheet");
       props?.onError?.(error);
     },

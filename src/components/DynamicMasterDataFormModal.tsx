@@ -452,8 +452,7 @@ export function DynamicMasterDataFormModal({
 
       await onSave(processedData);
       onClose();
-    } catch (error) {
-      console.error("Failed to save:", error);
+    } catch {
       setErrors({ general: "Failed to save. Please try again." });
     } finally {
       setLoading(false);

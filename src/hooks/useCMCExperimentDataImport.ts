@@ -118,10 +118,6 @@ export function useCMCExperimentDataImport({
       onSuccess?.(data);
     },
     onError: (error: Error) => {
-      console.error(
-        `Error importing ${experimentDataType ? formatFieldLabel(experimentDataType) : formatFieldLabel(experimentStudyType)} Experiment data:`,
-        error
-      );
       toast.error(error.message);
     },
     retry: false,

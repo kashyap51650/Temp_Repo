@@ -26,7 +26,6 @@ export const useNecropsyFileDownload = ({
       onSuccess?.();
     },
     onError: (error: Error) => {
-      console.error("Error downloading organ weight sheet:", error);
       toast.error(error.message);
       onError?.(error);
     },
