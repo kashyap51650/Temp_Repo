@@ -1,26 +1,28 @@
-import { useNavigate } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
-
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Label,
+  Switch,
 } from "@/components/atoms";
-import { useLogout } from "@/lib/auth";
+import { useUserNotificationSetting } from "@/hooks/useUserNotificationSetting";
 
 export function AccountActions() {
-  const navigate = useNavigate();
-  const logout = useLogout();
+  const {
+    notificationSetting,
+    updateNotificationSetting,
+    isLoading,
+    isUpdating,
+  } = useUserNotificationSetting();
 
-  const handleSignOut = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => {
-        navigate({ to: "/auth/login" });
-      },
-    });
+  const handleNotificationSettingToggle = ({
+    checked,
+  }: {
+    checked: boolean;
+  }) => {
+    updateNotificationSetting({ validate_notification: checked });
   };
 
   return (
@@ -31,23 +33,29 @@ export function AccountActions() {
           Account management and security actions
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        {/* Notification Setting */}
         <div className="flex items-center justify-between border border-gray-100 p-3 rounded-xl">
-          <div>
-            <div className="font-medium text-base">Sign Out</div>
+          <div className="flex-1">
+            <Label
+              htmlFor="notification-switch"
+              className="font-medium text-base cursor-pointer"
+            >
+              Validate Notification
+            </Label>
             <div className="text-muted-foreground text-sm">
-              Sign out of your account on this device
+              Receive notifications for data validation activities
             </div>
           </div>
-          <Button
-            variant="outline"
-            size={"default"}
-            onClick={handleSignOut}
-            disabled={logout.isPending}
-          >
-            <LogOut className="w-4 h-4" />
-            {logout.isPending ? "Signing Out..." : "Sign Out"}
-          </Button>
+          <Switch
+            id="notification-switch"
+            checked={notificationSetting}
+            onCheckedChange={(checked) =>
+              handleNotificationSettingToggle({ checked })
+            }
+            disabled={isLoading || isUpdating}
+            aria-label="Toggle validation notifications"
+          />
         </div>
       </CardContent>
     </Card>

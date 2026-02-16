@@ -280,6 +280,10 @@ export const API_CONFIG = {
       VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
     },
+    USER_NOTIFICATION_SETTINGS: {
+      GET_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
+      UPDATE_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
+    },
   },
 } as const;
 
