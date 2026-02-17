@@ -28,7 +28,6 @@ import { EditRoleModal } from "@/components/organisms/Roles/EditRoleModal";
 import { EditAssignmentModal } from "@/components/organisms/UserAssignments/EditAssignmentModal";
 import { usePermissions } from "@/hooks/usePermissions";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import { logger } from "@/lib/logger";
 import { PERMISSIONS } from "@/lib/permissions";
 import {
   type RoleDataType,

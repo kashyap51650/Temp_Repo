@@ -57,11 +57,6 @@ export default function CMCDataViewModal({
         });
         onClose();
       },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
-      },
     });
   };
 
@@ -79,11 +74,6 @@ export default function CMCDataViewModal({
           });
           rejectModal.closeModal();
           onClose();
-        },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
         },
       }
     );

@@ -76,11 +76,6 @@ export function CalliperingSheetViewModal({
         });
         onClose();
       },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
-      },
     });
   };
 
@@ -98,11 +93,6 @@ export function CalliperingSheetViewModal({
           });
           rejectModal.closeModal();
           onClose();
-        },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
         },
       }
     );

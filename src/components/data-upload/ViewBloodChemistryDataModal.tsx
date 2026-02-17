@@ -78,8 +78,12 @@ export default function ViewBloodChemistryDataModal({
         handleClose();
       },
       onError: (error) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to approve experiment data";
         toast.error("Failed to approve experiment data", {
-          description: error.message,
+          description: message,
         });
       },
     });
@@ -101,8 +105,12 @@ export default function ViewBloodChemistryDataModal({
           handleClose();
         },
         onError: (error) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Failed to reject experiment data";
           toast.error("Failed to reject experiment data", {
-            description: error.message,
+            description: message,
           });
         },
       }

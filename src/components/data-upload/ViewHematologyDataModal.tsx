@@ -80,11 +80,6 @@ export const ViewHematologyDataModal: React.FC<
         });
         handleClose();
       },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
-      },
     });
   };
 
@@ -102,11 +97,6 @@ export const ViewHematologyDataModal: React.FC<
           });
           rejectModal.closeModal();
           handleClose();
-        },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
         },
       }
     );
