@@ -813,9 +813,17 @@ export function getValidationColumns(
         row.dataType.toLowerCase().includes("weight")
     ) ?? false;
 
+  // Check if there's any toxicity weight sheet data
+  const hasToxicityWeightSheet =
+    data?.some(
+      (row) =>
+        row.studyType === STUDY_TYPE.TOXICITY &&
+        row.dataType.toLowerCase().includes("weight")
+    ) ?? false;
+
   // Show treatment date column if either condition is met
   const showTreatmentDateColumn =
-    hasCalliperingsheet || hasDoseRangeWeightSheet;
+    hasCalliperingsheet || hasDoseRangeWeightSheet || hasToxicityWeightSheet;
 
   const columns: ColumnDef<ValidationRow>[] = [
     {
@@ -891,11 +899,22 @@ export function getValidationColumns(
           .toLowerCase()
           .includes("callipering");
 
-        const isDoseRangeWeightSheet =
-          row.original.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
-          row.original.dataType.toLowerCase().includes("weight");
+        const isWeightSheet = row.original.dataType
+          .toLowerCase()
+          .includes("weight");
 
-        if (isCalliperingsheet || isDoseRangeWeightSheet) {
+        const isWeightSheetDoseRange =
+          row.original.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+          isWeightSheet;
+
+        const isWeightSheetToxicity =
+          row.original.studyType === STUDY_TYPE.TOXICITY && isWeightSheet;
+
+        if (
+          isCalliperingsheet ||
+          isWeightSheetDoseRange ||
+          isWeightSheetToxicity
+        ) {
           return (
             <RandomizeDateCell
               value={row.original.treatmentDate}
@@ -941,17 +960,22 @@ export function getValidationColumns(
           rowData.dataType.toLowerCase().includes("callipering") &&
           rowData.studyType === STUDY_TYPE.BIO_DISTRIBUTION;
 
+        const isWeightSheet = rowData.dataType.toLowerCase().includes("weight");
+
         const isWeightSheetDoseRange =
-          rowData.dataType.toLowerCase().includes("weight") &&
-          rowData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+          isWeightSheet && rowData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+        const isWeightSheetToxicity =
+          isWeightSheet && rowData.studyType === STUDY_TYPE.TOXICITY;
 
         const isCalliperingSheetModelStudy =
           rowData.dataType.toLowerCase().includes("callipering") &&
           rowData.studyType === STUDY_TYPE.MODEL_STUDY;
 
-        // Show randomize button for both Bio-D callipering and Dose Range weight sheets
+        // Show randomize button for both Bio-D callipering and Dose Range weight sheets and Toxicity weight sheets
         const showRandomizeButton =
-          isCalliperingSheetBiod || isWeightSheetDoseRange;
+          isCalliperingSheetBiod ||
+          isWeightSheetDoseRange ||
+          isWeightSheetToxicity;
 
         const isRandomizationDisabled =
           (rowData?.treatmentDate &&
