@@ -285,6 +285,82 @@ export const API_CONFIG = {
       GET_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
       UPDATE_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
     },
+    DATA_UPLOAD: {
+      PRECLINICAL: {
+        BIOD: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/callipering-sheet`,
+          ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/organ-weight-sheet`,
+          AGC_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/agc-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/hotlab`,
+        },
+
+        DRF: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/weight-sheet`,
+          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-blood-chemistry-report`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/hotlab`,
+        },
+
+        EFFICACY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/callipering-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/hotlab`,
+        },
+
+        MODEL_STUDY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/callipering-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/hotlab`,
+        },
+
+        TOXICITY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/weight-sheet`,
+          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-blood-chemistry-report`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/hotlab`,
+        },
+      },
+
+      HOTLAB: {
+        EXTRACT_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/extract-hotlab-report`,
+        SAVE_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/save-hotlab-report`,
+      },
+
+      CMC: {
+        CLRF: {
+          CLRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/clrf-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/hotlab`,
+        },
+
+        CONJUGATION: {
+          CONJUGATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/conjugation-data`,
+          GEL_IMAGE: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/gel-image`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/hotlab`,
+        },
+
+        DIRECT_BINDING_ASSAY: {
+          DIRECT_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/direct-binding-assay-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/hotlab`,
+        },
+
+        IRF: {
+          IRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/irf-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/hotlab`,
+        },
+
+        RECEPTOR_QUANTIFICATION: {
+          RECEPTOR_QUANTIFICATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/receptor-quantification-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/hotlab`,
+        },
+      },
+    },
   },
 } as const;
 

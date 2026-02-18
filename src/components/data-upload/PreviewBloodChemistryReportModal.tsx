@@ -5,6 +5,7 @@ import {
   useBloodChemistryDataEdit,
   useSaveBloodChemistryReport,
 } from "@/hooks";
+import { type StudyType as ExperimentStudyType } from "@/lib/constants";
 import type { BloodChemistryReport } from "@/types/bloodChemistry";
 
 import { Button, Dialog } from "../atoms";
@@ -16,6 +17,7 @@ interface PreviewBloodChemistryReportModalProps {
   bloodChemistryData: BloodChemistryReport;
   experimentId: number;
   onSaveSuccess?: () => void;
+  experimentStudyType: ExperimentStudyType;
 }
 
 /**
@@ -30,6 +32,7 @@ export default function PreviewBloodChemistryReportModal({
   onOpenChange,
   bloodChemistryData,
   onSaveSuccess,
+  experimentStudyType,
 }: Readonly<PreviewBloodChemistryReportModalProps>) {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -44,7 +47,9 @@ export default function PreviewBloodChemistryReportModal({
     experimentId,
   });
 
-  const { saveBloodChemistryReport, isSaving } = useSaveBloodChemistryReport();
+  const { saveBloodChemistryReport, isSaving } = useSaveBloodChemistryReport({
+    experimentStudyType,
+  });
 
   const handleEdit = () => {
     setMode("edit");

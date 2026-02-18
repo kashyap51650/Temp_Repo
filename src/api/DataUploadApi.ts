@@ -1,28 +1,19 @@
-import { validateFile, validatePDFFile } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import {
-  API_CUSTOM_TIMEOUT,
-  FILE_SIZE_LIMITS,
+  STUDY_TYPE,
+  type StudyType as ExperimentStudyType,
   type StudyTypeCode,
 } from "@/lib/constants";
 import type {
-  BloodChemistryPDFPayload,
-  BloodChemistryPDFUploadResponse,
   GetBloodChemistryReportResponse,
   SaveBloodChemistryDataResponse,
   SaveBloodChemistryPDFPayload,
 } from "@/types/bloodChemistry";
 import type {
-  ClrfExperimentDataUploadPayload,
-  ClrfExperimentDataUploadResponse,
   CreateClrfExperimentPayload,
   CreateClrfExperimentResponse,
 } from "@/types/clrfExperiment";
 import type {
-  ConjugationExperimentDataUploadPayload,
-  ConjugationExperimentDataUploadResponse,
-  ConjugationGelImageDataUploadPayload,
-  ConjugationGelImageDataUploadResponse,
   CreateConjugationExperimentPayload,
   CreateConjugationExperimentResponse,
 } from "@/types/conjugationExperiment";
@@ -33,8 +24,6 @@ import type {
 import type {
   CreateDirectBindingAssayExperimentPayload,
   CreateDirectBindingAssayExperimentResponse,
-  DirectBindingAssayExperimentDataUploadPayload,
-  DirectBindingAssayExperimentDataUploadResponse,
 } from "@/types/directBindingAssay";
 import type {
   CreateDoseRangeFindingPayload,
@@ -50,8 +39,6 @@ import type {
 } from "@/types/experiment";
 import type {
   GetHematologyReportResponse,
-  HematologyPDFPayload,
-  HematologyPDFUploadResponse,
   SaveHematologyDataResponse,
   SaveHematologyPDFPayload,
 } from "@/types/hematology";
@@ -65,8 +52,6 @@ import type {
 import type {
   CreateIrfExperimentPayload,
   CreateIrfExperimentResponse,
-  IrfExperimentDataUploadPayload,
-  IrfExperimentDataUploadResponse,
 } from "@/types/irfExperiment";
 import type {
   CalliperingNotesListParams,
@@ -84,8 +69,6 @@ import type { ProjectFilters, ProjectsListResponse } from "@/types/project";
 import type {
   CreateReceptorQuantificationExperimentPayload,
   CreateReceptorQuantificationExperimentResponse,
-  ReceptorQuantificationExperimentDataUploadPayload,
-  ReceptorQuantificationExperimentDataUploadResponse,
 } from "@/types/receptorQuantification";
 import type {
   CreateSaturationBindingExperimentPayload,
@@ -697,263 +680,37 @@ export interface ImportExperimentDataResponse {
 }
 
 export const importExperimentDataApi = {
-  importExperimentData: async (
-    payload: ImportExperimentDataPayload
-  ): Promise<ImportExperimentDataResponse> => {
-    if (!payload.file) {
-      throw new Error("File is required");
-    }
-
-    if (payload.experiment_id === null || payload.experiment_id === undefined) {
-      throw new Error("Experiment ID is required");
-    }
-
-    if (payload.data_type_id === null || payload.data_type_id === undefined) {
-      throw new Error("Data Type ID is required");
-    }
-
-    const fileName = payload.file.name.toLowerCase();
-    if (!fileName.endsWith(".xlsx")) {
-      throw new Error("Only .xlsx files are allowed");
-    }
-
-    if (payload.file.size > FILE_SIZE_LIMITS.EXCEL_FILE) {
-      throw new Error("File size must be less than 10MB");
-    }
-
-    if (payload.file.size === 0) {
-      throw new Error("File cannot be empty");
-    }
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("data_type_id", payload.data_type_id.toString());
-
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData<ImportExperimentDataResponse>(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importAGCExperimentData: async (payload: ImportAGCDataPayload) => {
-    if (!payload.file) {
-      throw new Error("File is required");
-    }
-
-    const fileName = payload.file.name.toLowerCase();
-
-    if (!fileName.endsWith(".xlsx")) {
-      throw new Error("Only .xlsx files are allowed");
-    }
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("group_ids", payload.group_ids.join(","));
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_AGC_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importNecropsyData: async (
-    payload: ImportNecropsyDataPayload
-  ): Promise<ImportNecropsyDataResponse> => {
-    validatePDFFile(payload.file);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_NECROPSY_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importHematologyData: async (
-    payload: HematologyPDFPayload
-  ): Promise<HematologyPDFUploadResponse> => {
-    validatePDFFile(payload.file);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.HEMATOLOGY.EXTRACT_HEMATOLOGY,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importBloodChemistryData: async (
-    payload: BloodChemistryPDFPayload
-  ): Promise<BloodChemistryPDFUploadResponse> => {
-    validatePDFFile(payload.file);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.EXTRACT_BLOOD_CHEMISTRY,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importClrfExperimentDataApi: async (
-    payload: ClrfExperimentDataUploadPayload
-  ): Promise<ClrfExperimentDataUploadResponse> => {
-    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CLRF_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importDirectBindingAssayExperimentDataApi: async (
-    payload: DirectBindingAssayExperimentDataUploadPayload
-  ): Promise<DirectBindingAssayExperimentDataUploadResponse> => {
-    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
-        .IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importConjugationExperimentDataApi: async (
-    payload: ConjugationExperimentDataUploadPayload
-  ): Promise<ConjugationExperimentDataUploadResponse> => {
-    validateFile(payload.file, ["PDF"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importConjugationGelImageDataApi: async (
-    payload: ConjugationGelImageDataUploadPayload
-  ): Promise<ConjugationGelImageDataUploadResponse> => {
-    validateFile(payload.file, ["JPEG", "JPG", "PNG"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_CONJUGATION_GEL_IMAGE_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importIrfExperimentDataApi: async (
-    payload: IrfExperimentDataUploadPayload
-  ): Promise<IrfExperimentDataUploadResponse> => {
-    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.IMPORT_IRF_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
-  importReceptorQuantificationExperimentDataApi: async (
-    payload: ReceptorQuantificationExperimentDataUploadPayload
-  ): Promise<ReceptorQuantificationExperimentDataUploadResponse> => {
-    validateFile(payload.file, ["PDF", "DOCX", "JPEG", "JPG", "PNG", "EXCEL"]);
-
-    const formData = new FormData();
-
-    formData.append("experiment_id", payload.experiment_id.toString());
-    formData.append("file", payload.file, payload.file.name);
-
-    return await apiClient.postFormData(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DATA
-        .IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA,
-      formData,
-      {
-        timeout: API_CUSTOM_TIMEOUT,
-      }
-    );
-  },
-
   saveHematologyData: async (
-    payload: SaveHematologyPDFPayload
+    payload: SaveHematologyPDFPayload,
+    experimentStudyType: ExperimentStudyType
   ): Promise<ApiResponse<SaveHematologyDataResponse>> => {
+    let endPoint: string =
+      API_CONFIG.ENDPOINTS.DATA_UPLOAD.PRECLINICAL.DRF.SAVE_HEMATOLOGY_REPORT;
+    if (experimentStudyType === STUDY_TYPE.TOXICITY) {
+      endPoint =
+        API_CONFIG.ENDPOINTS.DATA_UPLOAD.PRECLINICAL.TOXICITY
+          .SAVE_HEMATOLOGY_REPORT;
+    }
     return apiClient.post<ApiResponse<SaveHematologyDataResponse>>(
-      API_CONFIG.ENDPOINTS.HEMATOLOGY.SAVE_HEMATOLOGY_REPORT,
+      endPoint,
       payload
     );
   },
 
   saveBloodChemistryData: async (
-    payload: SaveBloodChemistryPDFPayload
+    payload: SaveBloodChemistryPDFPayload,
+    experimentStudyType: ExperimentStudyType
   ): Promise<ApiResponse<SaveBloodChemistryDataResponse>> => {
+    let endPoint: string =
+      API_CONFIG.ENDPOINTS.DATA_UPLOAD.PRECLINICAL.DRF
+        .SAVE_BLOOD_CHEMISTRY_REPORT;
+    if (experimentStudyType === STUDY_TYPE.TOXICITY) {
+      endPoint =
+        API_CONFIG.ENDPOINTS.DATA_UPLOAD.PRECLINICAL.TOXICITY
+          .SAVE_BLOOD_CHEMISTRY_REPORT;
+    }
     return apiClient.post<ApiResponse<SaveBloodChemistryDataResponse>>(
-      API_CONFIG.ENDPOINTS.BLOOD_CHEMISTRY.SAVE_BLOOD_CHEMISTRY_REPORT,
+      endPoint,
       payload
     );
   },
@@ -1225,7 +982,7 @@ export const hotlabApi = {
     formData.append("file", payload.file, payload.file.name);
 
     const response = await apiClient.postFormData<ImportHotlabPDFResponse>(
-      API_CONFIG.ENDPOINTS.HOTLAB.IMPORT_EXPERIMENT_DATA,
+      API_CONFIG.ENDPOINTS.DATA_UPLOAD.HOTLAB.SAVE_HOTLAB_REPORT,
       formData
     );
     return response;
