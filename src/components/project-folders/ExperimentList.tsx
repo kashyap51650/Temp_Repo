@@ -54,8 +54,8 @@ export function ExperimentList({
     status: statusFilter === SELECT_ALL ? undefined : statusFilter,
   });
 
-  const experiments = experimentsData?.data?.experiments || [];
-  const totalItems = experimentsData?.data?.total || 0;
+  const experiments = experimentsData?.data?.items || [];
+  const totalItems = experimentsData?.data?.pagination?.total ?? 0;
   const totalPages = Math.ceil(totalItems / DEFAULT_PAGE_SIZE);
 
   useEffect(() => {

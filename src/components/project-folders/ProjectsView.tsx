@@ -41,7 +41,7 @@ export function ProjectsView({
   });
 
   const projects = projectsData?.data?.items || [];
-  const totalItems = projectsData?.data?.total || 0;
+  const totalItems = projectsData?.data?.pagination?.total ?? 0;
   const totalPages = Math.ceil(totalItems / DEFAULT_PAGE_SIZE);
 
   const loading = isLoading && isFetching;

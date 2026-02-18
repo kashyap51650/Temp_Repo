@@ -13,9 +13,14 @@ export interface ProjectItem {
 
 export type ProjectsListResponse = ApiResponse<{
   items: ProjectItem[];
-  total: number;
-  page: number;
-  size: number;
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
 }>;
 
 export interface ProjectFilters {

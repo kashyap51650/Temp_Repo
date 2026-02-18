@@ -1,4 +1,5 @@
-import { PERMISSIONS } from "@/lib/permissions";
+import { objectToFlattenArray } from "@/lib";
+import { type Permission, PERMISSIONS } from "@/lib/permissions";
 
 export const sidebarData = {
   user: {
@@ -33,16 +34,13 @@ export const sidebarData = {
       title: "Data Upload",
       url: "/data-upload",
       icon: "IconChartBar",
-      permissions: [
-        PERMISSIONS.DATA_UPLOAD.VIEW,
-        PERMISSIONS.DATA_UPLOAD.UPLOAD,
-      ],
+      permissions: objectToFlattenArray<Permission>(PERMISSIONS.DATA_UPLOAD),
     },
     {
       title: "Data Validate",
       url: "/data-validate",
       icon: "IconFolder",
-      permissions: [PERMISSIONS.DATA_VALIDATE.VIEW_DATA],
+      permissions: objectToFlattenArray<Permission>(PERMISSIONS.DATA_VALIDATE),
     },
     {
       title: "Templates",

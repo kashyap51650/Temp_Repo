@@ -1,3 +1,5 @@
+import { STUDY_TYPE } from "./constants";
+
 // src/lib/permissions.ts
 export const PERMISSIONS = {
   // ─────────────────────────────
@@ -72,6 +74,51 @@ export const PERMISSIONS = {
         HOTLAB: "data_upload__preclinical__efficacy:hotlab_sheet_upload",
       },
     },
+    CMC: {
+      CLRF: {
+        CLRF: "data_upload__cmc__clrf:clrf_data_upload",
+        HOTLAB: "data_upload__cmc__clrf:hotlab_data_upload",
+      },
+      CONJUGATION: {
+        CONJUGATION: "data_upload__cmc__conjugation:conjugation_data_upload",
+        GEL_IMAGE: "data_upload__cmc__conjugation:gel_image_upload",
+        HOTLAB: "data_upload__cmc__conjugation:hotlab_data_upload",
+      },
+      DIRECT_BINDING_ASSAY: {
+        DIRECT_BINDING_ASSAY:
+          "data_upload__cmc__direct_binding_assay:direct_binding_assay_data_upload",
+        HOTLAB: "data_upload__cmc__direct_binding_assay:hotlab_data_upload",
+      },
+      IRF: {
+        IRF: "data_upload__cmc__irf:irf_data_upload",
+        HOTLAB: "data_upload__cmc__irf:hotlab_data_upload",
+      },
+      RECEPTOR_QUANTIFICATION: {
+        RECEPTOR_QUANTIFICATION:
+          "data_upload__cmc__receptor_quantification:receptor_quantification_data_upload",
+        HOTLAB: "data_upload__cmc__receptor_quantification:hotlab_data_upload",
+      },
+      SATURATION_BINDING_ASSAY: {
+        SATURATION_BINDING_ASSAY:
+          "data_upload__cmc__saturation_binding_assay:saturation_binding_assay_data_upload",
+        HOTLAB: "data_upload__cmc__saturation_binding_assay:hotlab_data_upload",
+      },
+    },
+    CHEMICAL: {
+      ELISA: {
+        ELISA: "data_upload__chemical__elisa:elisa_data_upload",
+        HOTLAB: "data_upload__chemical__elisa:hotlab_data_upload",
+      },
+      DELFIA: {
+        DELFIA: "data_upload__chemical__delfia:delfia_data_upload",
+        HOTLAB: "data_upload__chemical__delfia:hotlab_data_upload",
+      },
+    },
+    HOTLAB: {
+      HOTLAB: {
+        HOTLAB: "data_upload__hotlab__hotlab:hotlab_data_upload",
+      },
+    },
   },
 
   // ─────────────────────────────
@@ -122,6 +169,53 @@ export const PERMISSIONS = {
           "data_validate__preclinical__efficacy:callipering_sheet_validate",
         HOTLAB: "data_validate__preclinical__efficacy:hotlab_sheet_validate",
         PERFORM_BIOD: "data_validate__preclinical__efficacy:perform_biod",
+      },
+    },
+    CMC: {
+      CLRF: {
+        CLRF: "data_validate__cmc__clrf:clrf_data_validate",
+        HOTLAB: "data_validate__cmc__clrf:hotlab_data_validate",
+      },
+      CONJUGATION: {
+        CONJUGATION:
+          "data_validate__cmc__conjugation:conjugation_data_validate",
+        HOTLAB: "data_validate__cmc__conjugation:hotlab_data_validate",
+      },
+      DIRECT_BINDING_ASSAY: {
+        DIRECT_BINDING_ASSAY:
+          "data_validate__cmc__direct_binding_assay:direct_binding_assay_data_validate",
+        HOTLAB: "data_validate__cmc__direct_binding_assay:hotlab_data_validate",
+      },
+      IRF: {
+        IRF: "data_validate__cmc__irf:irf_data_validate",
+        HOTLAB: "data_validate__cmc__irf:hotlab_data_validate",
+      },
+      RECEPTOR_QUANTIFICATION: {
+        RECEPTOR_QUANTIFICATION:
+          "data_validate__cmc__receptor_quantification:receptor_quantification_data_validate",
+        HOTLAB:
+          "data_validate__cmc__receptor_quantification:hotlab_data_validate",
+      },
+      SATURATION_BINDING_ASSAY: {
+        SATURATION_BINDING_ASSAY:
+          "data_validate__cmc__saturation_binding_assay:saturation_binding_assay_data_validate",
+        HOTLAB:
+          "data_validate__cmc__saturation_binding_assay:hotlab_data_validate",
+      },
+    },
+    CHEMICAL: {
+      ELISA: {
+        ELISA: "data_validate__chemical__elisa:elisa_data_validate",
+        HOTLAB: "data_validate__chemical__elisa:hotlab_data_validate",
+      },
+      DELFIA: {
+        DELFIA: "data_validate__chemical__delfia:delfia_data_validate",
+        HOTLAB: "data_validate__chemical__delfia:hotlab_data_validate",
+      },
+    },
+    HOTLAB: {
+      HOTLAB: {
+        HOTLAB: "data_validate__hotlab__hotlab:hotlab_data_validate",
       },
     },
   },
@@ -198,3 +292,17 @@ type NestedValues<T> = T extends object
   : never;
 
 export type Permission = NestedValues<typeof PERMISSIONS>;
+
+export const getPerformBioDPermission = (studyType: string) => {
+  switch (studyType) {
+    case STUDY_TYPE.MODEL_STUDY: {
+      return PERMISSIONS.DATA_VALIDATE.PRECLINICAL.MODEL_STUDY.PERFORM_BIOD;
+    }
+    case STUDY_TYPE.EFFICACY: {
+      return PERMISSIONS.DATA_VALIDATE.PRECLINICAL.EFFICACY.PERFORM_BIOD;
+    }
+    default: {
+      return null;
+    }
+  }
+};

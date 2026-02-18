@@ -6,8 +6,6 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { Dialog } from "../atoms";
 import { FileViewer } from "./FileViewer";
@@ -33,14 +31,10 @@ export default function CMCDataViewModal({
   hideActions,
   experimentDataType,
 }: Readonly<CMCDataViewModalProps>) {
-  const { hasPermission } = usePermissions();
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const { data, isLoading } = useExperimentDataByIdForCMC(
     experimentDataId || ""
@@ -137,7 +131,6 @@ export default function CMCDataViewModal({
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}

@@ -7,8 +7,6 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { Dialog } from "../atoms";
 import { RejectExperimentModal } from "../data-validation/RejectExperimentModal";
@@ -42,12 +40,6 @@ export default function ViewBloodChemistryDataModal({
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
-
-  const { hasPermission } = usePermissions();
-
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const {
     data: fetchedData,
@@ -184,7 +176,6 @@ export default function ViewBloodChemistryDataModal({
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}

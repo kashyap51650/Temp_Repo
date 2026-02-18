@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import DataUploadCommon from "@/components/data-upload/DataUploadCommon";
 import { ProtectedRoute } from "@/components/organisms/ProtectedRoute";
+import { objectToFlattenArray } from "@/lib";
 import { PERMISSIONS } from "@/lib/permissions";
 
 export const Route = createFileRoute("/data-upload")({
@@ -11,10 +12,7 @@ export const Route = createFileRoute("/data-upload")({
 function DataUploadComponent() {
   return (
     <ProtectedRoute
-      permissions={[
-        PERMISSIONS.DATA_UPLOAD.VIEW,
-        PERMISSIONS.DATA_UPLOAD.UPLOAD,
-      ]}
+      permissions={objectToFlattenArray(PERMISSIONS.DATA_UPLOAD)}
       mode="any"
     >
       <div className="px-6 py-6">

@@ -8,9 +8,7 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
 import type { StudyType } from "@/lib/constants";
-import { PERMISSIONS } from "@/lib/permissions";
 import { getSheetDataTypePrefix } from "@/lib/utils";
 
 import { BioDWeightSheetModal } from "./BioDWeightSheetModal";
@@ -38,7 +36,6 @@ export function BioDWeightSheetViewModal({
   hideActions = false,
   experimentStudyType,
 }: Readonly<BioDWeightSheetViewModalProps>) {
-  const { hasPermission } = usePermissions();
   const editModal = useModal();
   const rejectModal = useModal();
 
@@ -50,10 +47,6 @@ export function BioDWeightSheetViewModal({
     isLoading,
     error,
   } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
-  const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const handleEdit = () => {
     editModal.openModal();
@@ -112,8 +105,6 @@ export function BioDWeightSheetViewModal({
             </div>
             {!hideActions && isPending && (
               <SheetActions
-                showEdit={canEdit}
-                showApproveReject={canApproveReject}
                 onEdit={handleEdit}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}

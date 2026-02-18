@@ -6,9 +6,7 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
 import { DATA_TYPE } from "@/lib/constants";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { NecropsyAndHotlabPDFView } from "./NecropsyAndHotlabPDFView";
 import { RejectExperimentModal } from "./RejectExperimentModal";
@@ -37,14 +35,10 @@ export function NecropsyAndHotlabPDFViewModal({
   title,
   description,
 }: Readonly<NecropsyAndHotlabPDFViewModalProps>) {
-  const { hasPermission } = usePermissions();
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -117,7 +111,6 @@ export function NecropsyAndHotlabPDFViewModal({
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}

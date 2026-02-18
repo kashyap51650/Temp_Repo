@@ -63,10 +63,10 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
       });
       return {
         data: response?.data?.items ?? [],
-        page: response?.data?.page ?? 0,
-        size: response?.data?.size ?? 0,
-        total: response?.data?.total ?? 0,
-        pages: response?.data?.pages ?? 0,
+        page: response?.data?.pagination?.page ?? 0,
+        size: response?.data?.pagination?.size ?? 0,
+        total: response?.data?.pagination?.total ?? 0,
+        pages: response?.data?.pagination?.pages ?? 0,
       };
     },
     enabled: !!slug,

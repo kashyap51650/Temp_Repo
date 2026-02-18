@@ -181,3 +181,27 @@ export function validateFile(
     throw new Error(`File size must be less than ${maxSizeMB}MB`);
   }
 }
+
+export function flattenObject<T = unknown>(
+  obj: Record<string, T>,
+  prefix: string = ""
+): Record<string, T> {
+  const result: Record<string, T> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(result, flattenObject(value as Record<string, T>, newKey));
+    } else {
+      result[newKey] = value;
+    }
+  }
+
+  return result;
+}
+
+export function objectToFlattenArray<T>(obj: Record<string, unknown>): T[] {
+  const flattenedObj = flattenObject(obj);
+  return Object.values(flattenedObj) as T[];
+}

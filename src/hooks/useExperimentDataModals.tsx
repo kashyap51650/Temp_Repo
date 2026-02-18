@@ -4,10 +4,8 @@ import { toast } from "sonner";
 
 import { ModalSkeleton } from "@/components/skeletons/ModalSkeleton";
 import { DATA_TYPE } from "@/lib/constants";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { useModal } from "./useModal";
-import { usePermissions } from "./usePermissions";
 
 const ViewBloodChemistryDataModal = lazy(
   () => import("@/components/data-upload/ViewBloodChemistryDataModal")
@@ -72,16 +70,8 @@ export function useExperimentDataModals(
   options: UseExperimentDataModalsOptions = {}
 ) {
   const { hideActions = false } = options;
-  const { hasAnyPermission } = usePermissions();
 
   const navigate = useNavigate();
-
-  const canEditOrApprove =
-    !hideActions &&
-    hasAnyPermission([
-      PERMISSIONS.DATA_VALIDATE.EDIT_DATA,
-      PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA,
-    ]);
 
   const [selectedExperiment, setSelectedExperiment] =
     useState<ExperimentDataItem | null>(null);
@@ -247,7 +237,7 @@ export function useExperimentDataModals(
               experimentName={experimentName}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
               experimentDataType={experimentDataType}
               experimentStudyType={experimentStudyType}
               experimentId={experimentId || 0}
@@ -262,7 +252,7 @@ export function useExperimentDataModals(
               experimentName={experimentName}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
               experimentStudyType={experimentStudyType}
             />
           </Suspense>
@@ -275,7 +265,7 @@ export function useExperimentDataModals(
               experimentName={experimentName}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
             />
           </Suspense>
         )}
@@ -287,7 +277,7 @@ export function useExperimentDataModals(
               experimentName={experimentName}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
               dataType="necropsy"
             />
           </Suspense>
@@ -300,7 +290,7 @@ export function useExperimentDataModals(
               experimentName={experimentName}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
               dataType="hotlab"
             />
           </Suspense>
@@ -321,7 +311,7 @@ export function useExperimentDataModals(
               experimentId={experimentId}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
             />
           </Suspense>
         )}
@@ -333,7 +323,7 @@ export function useExperimentDataModals(
               experimentId={experimentId}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
             />
           </Suspense>
         )}
@@ -346,7 +336,7 @@ export function useExperimentDataModals(
               experimentStatus={experimentStatus}
               experimentName={experimentName}
               experimentDataType={experimentDataType}
-              hideActions={hideActions || !canEditOrApprove}
+              hideActions={hideActions}
             />
           </Suspense>
         )}

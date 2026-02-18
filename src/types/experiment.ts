@@ -65,11 +65,15 @@ export interface Experiment {
 
 // Experiments list response with pagination
 export type ExperimentsListResponse = ApiResponse<{
-  experiments: Experiment[];
-  total: number;
-  page: number;
-  size: number;
-  total_pages: number;
+  items: Experiment[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
 }>;
 
 // Filters for experiments API

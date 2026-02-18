@@ -25,10 +25,14 @@ export interface MasterDataItemType {
 
 export type MasterDataListResponse = ApiResponse<{
   items: MasterDataItemType[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+    pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
 }>;
 
 export type CreateMasterDataItemResponse = ApiResponse<MasterDataItemType>;
