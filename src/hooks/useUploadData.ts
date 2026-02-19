@@ -8,7 +8,6 @@ import {
   apiClient,
   type ApiResponse,
   DATA_TYPE,
-  handleApiError,
   queryClient,
   SPECIALIZATION,
   STUDY_TYPE,
@@ -25,12 +24,10 @@ type Payload = {
 
 export const useUploadData = ({
   onSuccess,
-  onAgcSuccess,
-  onAgcError,
+  onError,
 }: {
-  onSuccess?: (data: unknown) => void;
-  onAgcSuccess?: (data: unknown) => void;
-  onAgcError?: (error: Error) => void;
+  onSuccess: (data: unknown) => void;
+  onError: (error: Error) => void;
 }) => {
   const { mutate: uploadData, isPending: isUploading } = useMutation({
     mutationFn: async (payload: Payload) => {
@@ -59,26 +56,16 @@ export const useUploadData = ({
       queryClient.invalidateQueries({ queryKey: ["experiment-data"] });
       queryClient.invalidateQueries({ queryKey: ["uploaded-experiment-data"] });
       toast.success(data.message || "File uploaded successfully");
-
-      if (onAgcSuccess) {
-        onAgcSuccess(data.data);
-        return;
-      }
       if (onSuccess) {
         onSuccess(data.data);
       }
     },
     onError: (error) => {
-      if (onAgcError) {
-        onAgcError(error);
+      logError(error);
+      if (onError) {
+        onError(error);
         return;
       }
-
-      const errorMessage = handleApiError(
-        error,
-        "Failed to upload data. Please try again."
-      );
-      toast.error(errorMessage);
     },
     retry: false,
   });
@@ -273,7 +260,13 @@ export const useUploadData = ({
     return null;
   };
 
-  const handleUpload = async (formData: FormData, isPdfUpload: boolean) => {
+  const handleUpload = async ({
+    formData,
+    isPdfUpload,
+  }: {
+    formData: FormData;
+    isPdfUpload?: boolean;
+  }) => {
     const url = getConfigurationUrl(formData);
 
     if (url === null) {

@@ -205,3 +205,9 @@ export function objectToFlattenArray<T>(obj: Record<string, unknown>): T[] {
   const flattenedObj = flattenObject(obj);
   return Object.values(flattenedObj) as T[];
 }
+
+export function generateQueryKey<T extends string | number | boolean>(
+  ...keys: (T | null | undefined)[]
+): T[] {
+  return keys.filter((key): key is T => key !== undefined && key !== null);
+}

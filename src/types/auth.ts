@@ -161,6 +161,8 @@ export interface PermissionsApiResponse {
   };
 }
 
+export type PermissionModuleType = "data_upload" | "data_validate";
+
 export const transformUserToRow = (
   user: User
 ): import("@/components/organisms/DataTable/tableColumns").UserRow => ({

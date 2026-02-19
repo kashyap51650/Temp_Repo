@@ -25,7 +25,10 @@ import {
   usePerformBioD,
   useValidationData,
 } from "../../hooks";
-import { transformExperimentDataToValidationRows } from "../../lib/utils";
+import {
+  generateQueryKey,
+  transformExperimentDataToValidationRows,
+} from "../../lib/utils";
 import { Card } from "../atoms";
 import { CreateExperimentModal } from "../data-upload/CreateExperimentModal";
 import { AsyncSelect } from "../molecules";
@@ -376,7 +379,8 @@ export default function DataValidation() {
                   specializationFilter !== SELECT_ALL
                 ) {
                   const response = await studyTypeApi.getStudyTypes(
-                    normalizeSpecialization(specializationFilter)
+                    normalizeSpecialization(specializationFilter),
+                    "data_validate"
                   );
                   return response.data;
                 }
@@ -387,7 +391,11 @@ export default function DataValidation() {
                 labelKey: "study_type_name",
                 valueKey: "id",
               }}
-              queryKey={["study-types", specializationFilter]}
+              queryKey={generateQueryKey(
+                "study-types",
+                specializationFilter,
+                "data_validate"
+              )}
               allLabel="All Study Types"
               disabled={
                 !specializationFilter || specializationFilter === SELECT_ALL
@@ -412,6 +420,7 @@ export default function DataValidation() {
                 if (studyTypeFilter && studyTypeFilter !== SELECT_ALL) {
                   const response = await dataTypeApi.getDataTypes({
                     study_type_id: Number.parseInt(studyTypeFilter, 10),
+                    module: "data_validate",
                   });
                   return response.data;
                 }
@@ -421,7 +430,11 @@ export default function DataValidation() {
                 labelKey: "data_type_name",
                 valueKey: "id",
               }}
-              queryKey={["data-types", studyTypeFilter]}
+              queryKey={generateQueryKey(
+                "data-types",
+                studyTypeFilter,
+                "data_validate"
+              )}
               allLabel="All Data Types"
               disabled={!studyTypeFilter || studyTypeFilter === SELECT_ALL}
               searchable={false}

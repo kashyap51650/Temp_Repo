@@ -1,4 +1,5 @@
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
+import type { PermissionModuleType } from "@/types/auth";
 
 export interface ExperimentDataFilters {
   status?: string;
@@ -7,6 +8,7 @@ export interface ExperimentDataFilters {
   specialization?: string;
   page?: number;
   size?: number;
+  module?: PermissionModuleType;
 }
 
 export interface ExperimentDataItem {
@@ -71,6 +73,9 @@ export const experimentDataApi = {
       params.append("specialization", filters.specialization.toUpperCase());
     if (filters?.page) params.append("page", filters.page.toString());
     if (filters?.size) params.append("size", filters.size.toString());
+    if (filters?.module) {
+      params.append("module_perm", filters.module);
+    }
 
     const queryString = params.toString();
     const endpoint = queryString

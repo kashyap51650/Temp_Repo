@@ -149,6 +149,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const isGenericFileUploadVisible =
     isPdfUpload || isCMCSelected || isChemistrySelected;
+  const isAGCSelected =
+    isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;
 
   function isGenericUploadDisabled() {
     if (!isProjectSelected) return true;
@@ -239,35 +241,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     setBloodChemistryDataForPreview(undefined);
   }, [formData.experiment?.id]);
 
-  const handleAgcFileUploadSuccess = () => {
-    setIsOpenGroupSelectionModalForAGC(false);
-    setFormData((prev: FormData) => ({
-      ...prev,
-      uploadAGCFile: null,
-    }));
-  };
-
-  const handleAgcFileUploadError = (error: Error) => {
-    const errors = error?.message
-      ?.split("\n")
-      .filter((val) => val.trim() !== "");
-
-    toast.custom(
-      (_id) => (
-        <CustomToast
-          title="Error importing AGC Experiment data"
-          variant="error"
-          onDismiss={() => toast.dismiss(_id)}
-          errors={errors}
-          position="top-right"
-        />
-      ),
-      {
-        duration: Infinity,
-      }
-    );
-  };
-
   const handleUploadFileReset = () => {
     setFormData((prev: FormData) => ({
       ...prev,
@@ -276,34 +249,68 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   };
 
   const handleSuccess = (data: unknown) => {
-    if (data && isHotlabSelected) {
-      const hotlabData = data as HotlabPDFUploadResponse;
-      if (hotlabData.data?.experiments) {
-        const experimentsFromResponse = hotlabData.data.experiments.map(
-          (exp) => ({
-            experimentId: exp.experiment.id,
-            experimentName: exp.experiment.experiment_name,
-          })
-        );
-        setExtractedExperimentList(experimentsFromResponse);
+    if (data) {
+      if (isAGCSelected) {
+        setIsOpenGroupSelectionModalForAGC(false);
+        handleUploadFileReset();
+        return;
       }
-      openLinkExperimentModal();
+
+      if (isHotlabSelected) {
+        const hotlabData = data as HotlabPDFUploadResponse;
+        if (hotlabData.data?.experiments) {
+          const experimentsFromResponse = hotlabData.data.experiments.map(
+            (exp) => ({
+              experimentId: exp.experiment.id,
+              experimentName: exp.experiment.experiment_name,
+            })
+          );
+          setExtractedExperimentList(experimentsFromResponse);
+        }
+        openLinkExperimentModal();
+        return;
+      }
+
+      handleUploadFileReset();
+
+      if (formData.dataType === DATA_TYPE.HEMATOLOGY) {
+        setHematologyDataForPreview(data as HematologyReport);
+        openHematologyReportModal();
+      } else if (formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
+        setBloodChemistryDataForPreview(data as BloodChemistryReport);
+        openBloodChemistryReportModal();
+      }
+    }
+  };
+
+  const handleError = (error: Error) => {
+    if (isAGCSelected) {
+      const errors = error?.message
+        ?.split("\n")
+        .filter((val) => val.trim() !== "");
+
+      toast.custom(
+        (_id) => (
+          <CustomToast
+            title="Error importing AGC Experiment data"
+            variant="error"
+            onDismiss={() => toast.dismiss(_id)}
+            errors={errors}
+            position="top-right"
+          />
+        ),
+        {
+          duration: Infinity,
+        }
+      );
       return;
     }
-    handleUploadFileReset();
-    if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
-      setHematologyDataForPreview(data as HematologyReport);
-      openHematologyReportModal();
-    } else if (data && formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
-      setBloodChemistryDataForPreview(data as BloodChemistryReport);
-      openBloodChemistryReportModal();
-    }
+    toast.error(error.message || "Error uploading file");
   };
 
   const { handleUpload, handleAgcUpload, isUploading } = useUploadData({
     onSuccess: handleSuccess,
-    onAgcSuccess: handleAgcFileUploadSuccess,
-    onAgcError: handleAgcFileUploadError,
+    onError: handleError,
   });
 
   // Download Sheet Hook
@@ -346,9 +353,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation &&
     formData.uploadedFile &&
     hasRequiredFieldsForUpload();
-
-  const isAGCSelected =
-    isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;
 
   const renderDownloadButtonText = () => {
     if (isNecropsyData) {
@@ -489,6 +493,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             error={errors.studyType}
             showHelperText={!isSpecialisationSelected}
             specialization={formData.specialisation}
+            module="data_upload"
           />
         )}
 
@@ -537,6 +542,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             error={errors.dataType}
             showHelperText={!isExperimentSelected}
             studyTypeId={formData.studyTypeId ?? undefined}
+            module="data_upload"
           />
         )}
 
@@ -575,7 +581,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
               </Button>
               <Button
                 size="lg"
-                onClick={() => handleUpload(formData, false)}
+                onClick={() => handleUpload({ formData, isPdfUpload: false })}
                 disabled={!canUploadData || isUploading}
               >
                 {isUploading ? "Uploading..." : "Upload Data"}
@@ -596,7 +602,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           <div className="flex items-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={() => handleUpload(formData, true)}
+              onClick={() => handleUpload({ formData, isPdfUpload: true })}
               disabled={
                 !canUploadData ||
                 (!isHotlabSelected && !isExperimentSelected) ||

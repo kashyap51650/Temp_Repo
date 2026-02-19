@@ -4,6 +4,7 @@ import {
   type StudyType as ExperimentStudyType,
   type StudyTypeCode,
 } from "@/lib/constants";
+import type { PermissionModuleType } from "@/types/auth";
 import type {
   GetBloodChemistryReportResponse,
   SaveBloodChemistryDataResponse,
@@ -288,6 +289,7 @@ export interface UploadedExperimentDataFilters {
   page?: number;
   size?: number;
   status?: string;
+  module?: PermissionModuleType;
 }
 
 export const projectApi = {
@@ -364,16 +366,20 @@ export const projectApi = {
 
 export const studyTypeApi = {
   getStudyTypes: async (
-    specialisation?: string
+    specialisation?: string,
+    module?: PermissionModuleType
   ): Promise<StudyTypesResponse> => {
     const params = new URLSearchParams();
     if (specialisation) {
       params.append("specialization", specialisation.toUpperCase());
     }
-
-    const endpoint = specialisation
-      ? `${API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST}?${params.toString()}`
-      : API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST;
+    if (module) {
+      params.append("module_perm", module);
+    }
+    const endpoint =
+      specialisation || module
+        ? `${API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST}?${params.toString()}`
+        : API_CONFIG.ENDPOINTS.STUDY_TYPES.LIST;
     return apiClient.get<StudyTypesResponse>(endpoint);
   },
 };
@@ -516,15 +522,20 @@ export interface DataTypesResponse {
 
 export interface DataTypeFilters {
   study_type_id: number;
+  module?: PermissionModuleType;
 }
 
 export const dataTypeApi = {
   getDataTypes: async (
     filters: DataTypeFilters
   ): Promise<DataTypesResponse> => {
-    const params = new URLSearchParams({
-      study_type_id: filters.study_type_id.toString(),
-    });
+    const params = new URLSearchParams();
+
+    params.append("study_type_id", filters.study_type_id.toString());
+
+    if (filters.module) {
+      params.append("module_perm", filters.module);
+    }
 
     const endpoint = `${API_CONFIG.ENDPOINTS.DATA_TYPES.DROPDOWN}?${params.toString()}`;
     return apiClient.get<DataTypesResponse>(endpoint);
@@ -570,6 +581,9 @@ export const uploadedExperimentDataApi = {
     if (filters?.size) params.append("size", filters.size.toString());
     if (filters?.status && filters.status !== "All Status") {
       params.append("status", filters.status.toLowerCase());
+    }
+    if (filters?.module) {
+      params.append("module_perm", filters.module);
     }
 
     const queryString = params.toString();
