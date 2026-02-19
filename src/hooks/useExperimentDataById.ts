@@ -6,6 +6,7 @@ import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { CMCExperimentDataResponse } from "@/types/CMC";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
+import type { SaturationBindingAssayExperimentDataResponse } from "@/types/saturationBindingAssay";
 
 // Type definitions for the API response
 interface Mouse {
@@ -239,6 +240,13 @@ const fetchExperimentDataForCMC = async (experimentDataId: string) => {
   return apiClient.get<CMCExperimentDataResponse>(endpoint);
 };
 
+const fetchExperimentDataForSaturationBinding = async (
+  experimentDataId: string
+) => {
+  const endpoint = `/api/v1/experiment-data/${experimentDataId}/saturation-binding-assay`;
+  return apiClient.get<SaturationBindingAssayExperimentDataResponse>(endpoint);
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
@@ -300,6 +308,19 @@ export function useExperimentDataByIdForCMC(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "cmc", experimentDataId],
     queryFn: () => fetchExperimentDataForCMC(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForSaturationBinding(
+  experimentDataId: string
+) {
+  return useQuery({
+    queryKey: ["experimentData", "saturation-binding-assay", experimentDataId],
+    queryFn: () => fetchExperimentDataForSaturationBinding(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,

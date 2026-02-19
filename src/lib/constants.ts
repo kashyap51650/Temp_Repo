@@ -55,6 +55,7 @@ export const DATA_TYPE = {
   DIRECT_BINDING_ASSAY: "Direct Binding Assay",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
+  SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
 } as const;
 
 // Type definitions for the constants

@@ -43,6 +43,13 @@ const NecropsyAndHotlabPDFViewModal = lazy(() =>
 const CMCDataViewModal = lazy(
   () => import("@/components/data-validation/CMCDataViewModal")
 );
+const SaturationBindingAssaySheetViewModal = lazy(() =>
+  import(
+    "@/components/data-validation/SaturationBindingAssaySheetViewModal"
+  ).then((module) => ({
+    default: module.SaturationBindingAssaySheetViewModal,
+  }))
+);
 
 interface ExperimentDataItem {
   id: string | number;
@@ -85,6 +92,7 @@ export function useExperimentDataModals(
   const necropsyViewModal = useModal();
   const hotlabViewModal = useModal();
   const cmcViewModal = useModal();
+  const saturationBindingAssayViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -122,6 +130,8 @@ export function useExperimentDataModals(
       const isIrfData = dataTypeName === DATA_TYPE.IRF;
       const isReceptorQuantification =
         dataTypeName === DATA_TYPE.RECEPTOR_QUANTIFICATION;
+      const isSaturationBindingAssay =
+        dataTypeName === DATA_TYPE.SATURATION_BINDING_ASSAY;
 
       if (isCalliperingSheet) {
         navigate({
@@ -179,6 +189,11 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (isSaturationBindingAssay) {
+        saturationBindingAssayViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -194,6 +209,7 @@ export function useExperimentDataModals(
       necropsyViewModal,
       hotlabViewModal,
       cmcViewModal,
+      saturationBindingAssayViewModal,
       navigate,
     ]
   );
@@ -332,6 +348,19 @@ export function useExperimentDataModals(
             <CMCDataViewModal
               isOpen={cmcViewModal.isOpen}
               onClose={cmcViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && saturationBindingAssayViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <SaturationBindingAssaySheetViewModal
+              isOpen={saturationBindingAssayViewModal.isOpen}
+              onClose={saturationBindingAssayViewModal.closeModal}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
               experimentName={experimentName}
