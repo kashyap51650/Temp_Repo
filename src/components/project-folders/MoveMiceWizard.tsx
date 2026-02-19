@@ -172,6 +172,7 @@ export function MoveMiceWizard({
         selectedMiceCount={selectedMiceIds.length}
         experiments={experimentsData || []}
         isLoading={experimentsLoading || experimentsRefetching}
+        isMoving={moveMiceMutation.isPending}
         preSelectedExperimentId={newlyCreatedExperimentId?.toString()}
       />
 

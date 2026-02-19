@@ -66,6 +66,10 @@ export function ExperimentList({
   const experimentOptions = [
     { value: SELECT_ALL, label: "All Status" },
     { value: EXPERIMENT_STATUS.PLANNED, label: "Planned" },
+    {
+      value: EXPERIMENT_STATUS.ONGOING,
+      label: "Ongoing",
+    },
     { value: EXPERIMENT_STATUS.COMPLETED, label: "Completed" },
     { value: EXPERIMENT_STATUS.TERMINATED, label: "Terminated" },
     { value: EXPERIMENT_STATUS.CLOSED, label: "Closed" },
@@ -81,6 +85,8 @@ export function ExperimentList({
         return "destructive";
       case EXPERIMENT_STATUS.CLOSED:
         return "outline";
+      case EXPERIMENT_STATUS.ONGOING:
+        return "secondary";
       default:
         return "secondary";
     }

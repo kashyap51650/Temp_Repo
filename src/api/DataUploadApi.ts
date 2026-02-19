@@ -1,4 +1,3 @@
-import type { PermissionModuleType } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import {
   STUDY_TYPE,

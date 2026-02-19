@@ -20,6 +20,7 @@ interface SelectTargetExperimentModalProps {
   selectedMiceCount: number;
   experiments: Experiment[];
   isLoading?: boolean;
+  isMoving?: boolean;
   preSelectedExperimentId?: string;
 }
 
@@ -31,6 +32,7 @@ export function SelectTargetExperimentModal({
   selectedMiceCount,
   experiments,
   isLoading = false,
+  isMoving = false,
   preSelectedExperimentId,
 }: Readonly<SelectTargetExperimentModalProps>) {
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
@@ -106,14 +108,18 @@ export function SelectTargetExperimentModal({
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isLoading || isMoving}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleMove}
-            disabled={!selectedExperimentId || isLoading} // ✅ Disable while loading
+            disabled={!selectedExperimentId || isLoading || isMoving}
           >
-            Move
+            {isMoving ? "Moving..." : "Move"}
           </Button>
         </div>
       </div>

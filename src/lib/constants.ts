@@ -74,6 +74,7 @@ export const EXPERIMENT_STATUS = {
   COMPLETED: "completed",
   TERMINATED: "terminated",
   CLOSED: "closed",
+  ONGOING: "on_going",
 } as const;
 
 export type ExperimentStatus =

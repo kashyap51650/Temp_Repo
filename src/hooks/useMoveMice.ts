@@ -75,7 +75,7 @@ export function useMoveMice() {
         queryKey: ["mouseGroups"],
       });
     },
-    onError: (error: unknown) => {
+    onError: (error) => {
       const errorMessage = handleApiError(error, "Failed to move mice");
       toast.error(errorMessage);
     },
