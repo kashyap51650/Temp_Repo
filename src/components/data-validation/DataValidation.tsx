@@ -16,6 +16,7 @@ import {
   statusOptions,
   STUDY_TYPE,
   STUDY_TYPE_CODE,
+  type StudyTypeCode,
 } from "@/lib/constants";
 
 import {
@@ -51,6 +52,7 @@ export default function DataValidation() {
     id: number;
     name: string;
     projectId: number;
+    studyTypeCode: StudyTypeCode;
   } | null>(null);
   const [selectedMouseGroups, setSelectedMouseGroups] = useState<number[]>([]);
   const [preselectedCellLineIds, setPreselectedCellLineIds] = useState<
@@ -193,6 +195,8 @@ export default function DataValidation() {
         id: experimentData.experiment.id,
         name: experimentData.experiment.experiment_name,
         projectId: experimentData.project.id,
+        studyTypeCode: experimentData.study_type
+          .study_type_code as StudyTypeCode,
       });
       performBioDModal.openModal();
     },
@@ -229,9 +233,12 @@ export default function DataValidation() {
     }
 
     await performBioD({
-      group_ids: selectedMouseGroups,
-      source_experiment_id: selectedExperiment.id,
-      target_experiment_id: targetExperimentId,
+      payload: {
+        group_ids: selectedMouseGroups,
+        source_experiment_id: selectedExperiment.id,
+        target_experiment_id: targetExperimentId,
+      },
+      studyTypeCode: selectedExperiment.studyTypeCode,
     });
   };
 
@@ -256,9 +263,12 @@ export default function DataValidation() {
 
     if (selectedExperiment && selectedMouseGroups.length > 0) {
       await performBioD({
-        group_ids: selectedMouseGroups,
-        source_experiment_id: selectedExperiment.id,
-        target_experiment_id: createdExperiment.id,
+        payload: {
+          group_ids: selectedMouseGroups,
+          source_experiment_id: selectedExperiment.id,
+          target_experiment_id: createdExperiment.id,
+        },
+        studyTypeCode: selectedExperiment.studyTypeCode,
       });
     }
   };

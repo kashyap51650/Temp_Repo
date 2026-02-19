@@ -276,7 +276,11 @@ export const API_CONFIG = {
       HISTORY_BY_GROUP: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
     },
-    PERFORM_BIOD: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`,
+    PERFORM_BIOD: {
+      LEGACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`, // Deprecated: Legacy endpoint, no longer used and scheduled for removal in a future release.
+      MODEL_STUDY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/model-study`,
+      EFFICACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/efficacy`,
+    },
     CELL_LINE_VALIDATION: {
       VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
