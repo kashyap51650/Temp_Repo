@@ -1,6 +1,22 @@
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { AxiosError } from "axios";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-import { Button, Dialog, Input, Label, Textarea } from "../atoms";
+import {
+  type ProjectFormDataType,
+  projectSchema,
+} from "@/schemas/dataUploadSchema";
+
+import { Button, Dialog, Input, Textarea } from "../atoms";
+import { Form } from "../organisms";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../organisms/Form/Form";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -13,29 +29,34 @@ export function CreateProjectModal({
   onClose,
   onCreateProject,
 }: Readonly<CreateProjectModalProps>) {
-  const [projectName, setProjectName] = useState("");
-  const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const form = useForm<ProjectFormDataType>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      projectName: "",
+      description: "",
+    },
+  });
+  const {
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
-  const handleCreate = async () => {
-    if (!projectName.trim()) return;
-
-    setIsLoading(true);
+  const handleCreate = async (data: ProjectFormDataType) => {
     try {
-      await onCreateProject(projectName.trim(), description.trim());
-      setProjectName("");
-      setDescription("");
+      const { projectName, description } = data;
+      await onCreateProject(projectName, description);
+      reset();
       onClose();
     } catch (error) {
-      console.error("Failed to create project:", error);
-    } finally {
-      setIsLoading(false);
+      toast.error("Failed to create project", {
+        description: (error as AxiosError)?.message,
+      });
     }
   };
 
   const handleCancel = () => {
-    setProjectName("");
-    setDescription("");
+    reset();
     onClose();
   };
 
@@ -52,63 +73,78 @@ export function CreateProjectModal({
       trigger={null}
     >
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="project-name" className="text-sm font-medium">
-            Project Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="project-name"
-            size="lg"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            placeholder="Enter project name"
-            className="w-full"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && projectName.trim()) {
-                handleCreate();
-              }
-              if (e.key === "Escape") {
-                handleCancel();
-              }
-            }}
-          />
-        </div>
+        <Form {...form}>
+          <form onSubmit={handleSubmit(handleCreate)}>
+            <FormField
+              control={form.control}
+              name="projectName"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>
+                    Project Name <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      size="lg"
+                      {...field}
+                      placeholder="Enter project name"
+                      className="w-full"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && field.value.trim()) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSubmit(handleCreate)();
+                        }
+                        if (e.key === "Escape") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleCancel();
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Enter project description (optional)"
+                      className="w-full min-h-[100px] resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") {
+                          handleCancel();
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="space-y-2">
-          <Label htmlFor="project-description" className="text-sm font-medium">
-            Description
-          </Label>
-          <Textarea
-            id="project-description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Enter project description (optional)"
-            className="w-full min-h-[100px] resize-none"
-            onKeyDown={(e) => {
-              if (e.key === "Escape") {
-                handleCancel();
-              }
-            }}
-          />
-        </div>
-
-        <div className="flex justify-end gap-3 pt-4">
-          <Button
-            variant="outline"
-            size={"lg"}
-            onClick={handleCancel}
-            disabled={isLoading}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreate}
-            size={"lg"}
-            disabled={!projectName.trim() || isLoading}
-          >
-            {isLoading ? "Creating..." : "Create"}
-          </Button>
-        </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                size={"lg"}
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" size={"lg"} disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </Dialog>
   );

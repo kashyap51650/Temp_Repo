@@ -19,7 +19,7 @@ export default function DirectBindingAssayExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: DirectBindingAssayExperimentFormProps) {
+}: Readonly<DirectBindingAssayExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } =
     useDirectBindingAssayForm({
       projectId,

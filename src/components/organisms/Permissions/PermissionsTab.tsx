@@ -32,12 +32,140 @@ export interface PermissionGroup {
   checked: boolean;
   indeterminate: boolean;
   permissions: Permission[];
+  children?: PermissionGroup[]; // Nested permission groups
 }
 
 interface PermissionsTabProps {
   selectedRole?: string;
   onRoleChange: (role: string) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+}
+
+type PermissionGroupItemProps = Readonly<{
+  group: PermissionGroup;
+  level: number;
+  toggleGroup: (groupId: string) => void;
+  toggleGroupCheckbox: (groupId: string) => void;
+  togglePermission: (groupId: string, permissionId: string) => void;
+  canEditPermission: boolean;
+}>;
+
+const getTotalSelectedCount = (g: PermissionGroup): number => {
+  let count = g.permissions.filter((p) => p.checked).length;
+  if (g.children && g.children.length > 0) {
+    for (const child of g.children) {
+      count += getTotalSelectedCount(child);
+    }
+  }
+  return count;
+};
+
+const getTotalPermissionsCount = (g: PermissionGroup): number => {
+  let count = g.permissions.length;
+  if (g.children && g.children.length > 0) {
+    for (const child of g.children) {
+      count += getTotalPermissionsCount(child);
+    }
+  }
+  return count;
+};
+
+function PermissionGroupItem({
+  group,
+  level,
+  toggleGroup,
+  toggleGroupCheckbox,
+  togglePermission,
+  canEditPermission,
+}: PermissionGroupItemProps) {
+  const hasContent =
+    group.permissions.length > 0 ||
+    (group.children && group.children.length > 0);
+
+  return (
+    <div
+      className="border border-border rounded-lg bg-background overflow-hidden"
+      style={{ marginLeft: level > 0 ? `${level * 1.5}rem` : "0" }}
+    >
+      <div className="flex items-center gap-2 bg-gray-50 py-3 px-4">
+        {hasContent && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1 h-6 w-6"
+            onClick={() => toggleGroup(group.id)}
+          >
+            {group.expanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+
+        <Checkbox
+          checked={group.checked}
+          ref={(el) => {
+            if (el)
+              (el as HTMLInputElement).indeterminate = group.indeterminate;
+          }}
+          onCheckedChange={() => toggleGroupCheckbox(group.id)}
+          className="mr-2"
+          disabled={!canEditPermission}
+        />
+
+        <span className="font-medium text-foreground">{group.name}</span>
+        <span className="text-sm text-muted-foreground ml-2">
+          ({getTotalSelectedCount(group)}/{getTotalPermissionsCount(group)}{" "}
+          selected)
+        </span>
+      </div>
+
+      {group.expanded && (
+        <div className="border-t border-border">
+          {/* Render permissions */}
+          {group.permissions.length > 0 && (
+            <div className="px-4 py-3 space-y-3">
+              {group.permissions.map((permission) => (
+                <div
+                  key={permission.id}
+                  className="flex items-center gap-3 pl-8"
+                >
+                  <Checkbox
+                    checked={permission.checked}
+                    onCheckedChange={() =>
+                      togglePermission(group.id, permission.id)
+                    }
+                    disabled={!canEditPermission}
+                  />
+                  <span className="text-sm text-foreground flex-1">
+                    {permission.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Render child groups recursively */}
+          {group.children && group.children.length > 0 && (
+            <div className="px-4 py-3 space-y-3">
+              {group.children.map((childGroup) => (
+                <PermissionGroupItem
+                  key={childGroup.id}
+                  group={childGroup}
+                  level={level + 1}
+                  toggleGroup={toggleGroup}
+                  toggleGroupCheckbox={toggleGroupCheckbox}
+                  togglePermission={togglePermission}
+                  canEditPermission={canEditPermission}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function PermissionsTab({
@@ -105,7 +233,6 @@ export function PermissionsTab({
       toast.success(`Permissions updated successfully for ${roleName}`);
     },
     onError: (error) => {
-      console.error("Failed to update permissions:", error);
       toast.error(error.message || "Failed to update permissions");
     },
     onSettled: () => {
@@ -124,10 +251,58 @@ export function PermissionsTab({
     }
   }, [permissionsResponse]);
 
+  // Shared helper to calculate checked/indeterminate state for a group
+  const calculateGroupState = (
+    group: Omit<PermissionGroup, "checked" | "indeterminate"> & {
+      checked?: boolean;
+      indeterminate?: boolean;
+    }
+  ): PermissionGroup => {
+    // First, recalculate all children recursively
+    const updatedChildren =
+      group.children?.map((child) => calculateGroupState(child)) || [];
+
+    // Count checked permissions in this group
+    const checkedPermissionsCount = group.permissions.filter(
+      (p) => p.checked
+    ).length;
+    const totalPermissionsCount = group.permissions.length;
+
+    // Count checked children
+    const checkedChildrenCount = updatedChildren.filter(
+      (child) => child.checked
+    ).length;
+    const totalChildrenCount = updatedChildren.length;
+
+    // Determine if there are any indeterminate children
+    const hasIndeterminateChildren = updatedChildren.some(
+      (child) => child.indeterminate
+    );
+
+    // Calculate total checked and total items (permissions + children)
+    const totalChecked = checkedPermissionsCount + checkedChildrenCount;
+    const totalItems = totalPermissionsCount + totalChildrenCount;
+
+    // Determine checked state
+    const isFullyChecked = totalChecked === totalItems && totalItems > 0;
+    const isPartiallyChecked = totalChecked > 0 && totalChecked < totalItems;
+
+    return {
+      ...group,
+      checked: isFullyChecked,
+      indeterminate: isPartiallyChecked || hasIndeterminateChildren,
+      children: updatedChildren,
+    };
+  };
+
   const transformPermissionsData = (
     modules: ApiModule[]
   ): PermissionGroup[] => {
     return modules.map((module) => {
+      let childGroups: PermissionGroup[] = [];
+      if (module.children && module.children.length > 0) {
+        childGroups = transformPermissionsData(module.children);
+      }
       const permissions: Permission[] = module.permissions.map(
         (permission: ApiPermission) => ({
           id: permission.id.toString(),
@@ -135,31 +310,40 @@ export function PermissionsTab({
           checked: permission.is_assigned,
         })
       );
-
-      const checkedCount = permissions.filter((p) => p.checked).length;
-      const totalCount = permissions.length;
-
-      return {
+      // Use shared state calculation
+      return calculateGroupState({
         id: module.id.toString(),
         name: module.name,
         expanded: false,
-        checked: checkedCount === totalCount,
-        indeterminate: checkedCount > 0 && checkedCount < totalCount,
         permissions,
-      };
+        children: childGroups,
+      });
     });
   };
 
   const toggleGroup = (groupId: string) => {
-    setPermissionGroups((prev) =>
-      prev.map((group) =>
-        group.id === groupId ? { ...group, expanded: !group.expanded } : group
-      )
-    );
+    const toggleInGroup = (groups: PermissionGroup[]): PermissionGroup[] => {
+      return groups.map((group) => {
+        if (group.id === groupId) {
+          return { ...group, expanded: !group.expanded };
+        }
+        if (group.children && group.children.length > 0) {
+          return { ...group, children: toggleInGroup(group.children) };
+        }
+        return group;
+      });
+    };
+    setPermissionGroups((prev) => toggleInGroup(prev));
   };
 
   const updateGroupCheckState = (group: PermissionGroup): PermissionGroup => {
     const newChecked = !group.checked;
+
+    // Recursively update children if they exist
+    const updatedChildren = group.children?.map((child) =>
+      updateGroupCheckStateRecursive(child, newChecked)
+    );
+
     return {
       ...group,
       checked: newChecked,
@@ -168,15 +352,53 @@ export function PermissionsTab({
         ...permission,
         checked: newChecked,
       })),
+      children: updatedChildren,
+    };
+  };
+
+  const updateGroupCheckStateRecursive = (
+    group: PermissionGroup,
+    newChecked: boolean
+  ): PermissionGroup => {
+    // Recursively update children if they exist
+    const updatedChildren = group.children?.map((child) =>
+      updateGroupCheckStateRecursive(child, newChecked)
+    );
+
+    return {
+      ...group,
+      checked: newChecked,
+      indeterminate: false,
+      permissions: group.permissions.map((permission) => ({
+        ...permission,
+        checked: newChecked,
+      })),
+      children: updatedChildren,
     };
   };
 
   const toggleGroupCheckbox = (groupId: string) => {
-    setPermissionGroups((prev) =>
-      prev.map((group) =>
-        group.id === groupId ? updateGroupCheckState(group) : group
-      )
-    );
+    const toggleInGroup = (groups: PermissionGroup[]): PermissionGroup[] => {
+      return groups.map((group) => {
+        if (group.id === groupId) {
+          return updateGroupCheckState(group);
+        }
+        if (group.children && group.children.length > 0) {
+          const updatedGroup = {
+            ...group,
+            children: toggleInGroup(group.children),
+          };
+          // Recalculate parent state after child changes
+          return calculateGroupState(updatedGroup);
+        }
+        return group;
+      });
+    };
+    setPermissionGroups((prev) => {
+      const updated = toggleInGroup(prev);
+      // Recalculate all parent states from root
+      return updated.map((group) => calculateGroupState(group));
+    });
   };
 
   const updatePermissionInGroup = (
@@ -201,28 +423,49 @@ export function PermissionsTab({
   };
 
   const togglePermission = (groupId: string, permissionId: string) => {
-    setPermissionGroups((prev) =>
-      prev.map((group) =>
-        group.id === groupId
-          ? updatePermissionInGroup(group, permissionId)
-          : group
-      )
-    );
+    const toggleInGroup = (groups: PermissionGroup[]): PermissionGroup[] => {
+      return groups.map((group) => {
+        if (group.id === groupId) {
+          return updatePermissionInGroup(group, permissionId);
+        }
+        if (group.children && group.children.length > 0) {
+          const updatedGroup = {
+            ...group,
+            children: toggleInGroup(group.children),
+          };
+          // Recalculate parent state after child changes
+          return calculateGroupState(updatedGroup);
+        }
+        return group;
+      });
+    };
+    setPermissionGroups((prev) => {
+      const updated = toggleInGroup(prev);
+      // Recalculate all parent states from root
+      return updated.map((group) => calculateGroupState(group));
+    });
   };
 
   const handleSave = async () => {
     setIsSaving(true);
 
-    // Collect all selected permission IDs
+    // Collect all selected permission IDs recursively
     const selectedPermissionIds: number[] = [];
 
-    for (const group of permissionGroups) {
-      for (const permission of group.permissions) {
-        if (permission.checked) {
-          selectedPermissionIds.push(Number.parseInt(permission.id, 10));
+    const collectPermissions = (groups: PermissionGroup[]) => {
+      for (const group of groups) {
+        for (const permission of group.permissions) {
+          if (permission.checked) {
+            selectedPermissionIds.push(Number.parseInt(permission.id, 10));
+          }
+        }
+        if (group.children && group.children.length > 0) {
+          collectPermissions(group.children);
         }
       }
-    }
+    };
+
+    collectPermissions(permissionGroups);
 
     // Call the API with the selected role ID and permission IDs
     updatePermissionsMutation.mutate({
@@ -234,7 +477,7 @@ export function PermissionsTab({
   const handleCancel = () => {
     // Revert all changes to original state
     setPermissionGroups(structuredClone(originalPermissionGroups));
-    onCancel();
+    onCancel?.();
   };
 
   const selectedRoleName =
@@ -314,67 +557,15 @@ export function PermissionsTab({
           </div>
         ) : (
           permissionGroups.map((group) => (
-            <div
+            <PermissionGroupItem
               key={group.id}
-              className="border border-border rounded-lg bg-background overflow-hidden"
-            >
-              <div className="flex items-center gap-2 bg-gray-50 py-3 px-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-1 h-6 w-6"
-                  onClick={() => toggleGroup(group.id)}
-                >
-                  {group.expanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </Button>
-
-                <Checkbox
-                  checked={group.checked}
-                  ref={(el) => {
-                    if (el)
-                      (el as HTMLInputElement).indeterminate =
-                        group.indeterminate;
-                  }}
-                  onCheckedChange={() => toggleGroupCheckbox(group.id)}
-                  className="mr-2"
-                  disabled={!canEditPermission}
-                />
-
-                <span className="font-medium text-foreground">
-                  {group.name}
-                </span>
-                <span className="text-sm text-muted-foreground ml-2">
-                  ({group.permissions.filter((p) => p.checked).length}/
-                  {group.permissions.length} selected)
-                </span>
-              </div>
-
-              {group.expanded && (
-                <div className="px-4 py-3 space-y-3 border-t border-border">
-                  {group.permissions.map((permission) => (
-                    <div
-                      key={permission.id}
-                      className="flex items-center gap-3 pl-8"
-                    >
-                      <Checkbox
-                        checked={permission.checked}
-                        onCheckedChange={() =>
-                          togglePermission(group.id, permission.id)
-                        }
-                        disabled={!canEditPermission}
-                      />
-                      <span className="text-sm text-foreground flex-1">
-                        {permission.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              group={group}
+              level={0}
+              toggleGroup={toggleGroup}
+              toggleGroupCheckbox={toggleGroupCheckbox}
+              togglePermission={togglePermission}
+              canEditPermission={canEditPermission}
+            />
           ))
         )}
       </div>

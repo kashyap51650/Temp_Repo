@@ -1,5 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Controller, type FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import {
@@ -17,24 +19,33 @@ import {
 import { AvatarFallback, AvatarImage } from "@/components/atoms/Avatar/Avatar";
 import { useProfile } from "@/hooks";
 import { MAX_FILE_SIZE } from "@/lib/constants";
+import {
+  type ProfileFormDataType,
+  profileSchema,
+} from "@/schemas/profileSchema";
 
 export function ProfileSettings() {
   const { profile, isLoading, updateProfile, isUpdating } = useProfile();
   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [profilePictureFile, setProfilePictureFile] = useState<
-    File | undefined
-  >(undefined);
+  const form = useForm<ProfileFormDataType>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      profilePictureFile: undefined,
+    },
+  });
+  const { handleSubmit, setValue } = form;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
-      setFirstName(profile.first_name || "");
-      setLastName(profile.last_name || "");
+      setValue("firstName", profile.first_name || "");
+      setValue("lastName", profile.last_name || "");
       setAvatarUrl(profile.profile_picture || undefined);
     }
-  }, [profile]);
+  }, [profile, setValue]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,7 +61,7 @@ export function ProfileSettings() {
         return;
       }
 
-      setProfilePictureFile(file);
+      setValue("profilePictureFile", file);
 
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -61,26 +72,21 @@ export function ProfileSettings() {
     }
   };
 
-  const handleUpdateProfile = async () => {
+  const handleUpdateProfile = async (values: ProfileFormDataType) => {
     try {
-      if (!firstName.trim() || !lastName.trim()) {
-        toast.error("First name and last name are required");
-        return;
-      }
-
       const profileData = {
-        first_name: firstName,
-        last_name: lastName,
-        ...(profilePictureFile && { profile_picture: profilePictureFile }),
+        first_name: values.firstName,
+        last_name: values.lastName,
+        ...(values.profilePictureFile && {
+          profile_picture: values.profilePictureFile,
+        }),
       };
 
       await updateProfile(profileData);
 
       toast.success("Profile updated successfully");
-      setProfilePictureFile(undefined);
+      setValue("profilePictureFile", undefined);
     } catch (error: any) {
-      console.error("Profile update error:", error);
-
       const errorMessage =
         error?.details?.message || error?.message || "Failed to update profile";
 
@@ -89,9 +95,19 @@ export function ProfileSettings() {
   };
 
   const getAvatarFallback = () => {
+    const { firstName, lastName } = form.getValues();
     const firstInitial = firstName?.charAt(0)?.toUpperCase() || "";
     const lastInitial = lastName?.charAt(0)?.toUpperCase() || "";
     return firstInitial + lastInitial || "U";
+  };
+
+  const handleError = (errors: FieldErrors<ProfileFormDataType>) => {
+    const validationErrors = Object.values(errors)
+      .map((val) => val?.message)
+      .filter(Boolean);
+    if (validationErrors.length > 0) {
+      toast.error(validationErrors[0]);
+    }
   };
 
   if (isLoading) {
@@ -157,26 +173,36 @@ export function ProfileSettings() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="first-name">First Name</Label>
-            <Input
-              id="first-name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              size="lg"
-              placeholder="Enter first name"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="last-name">Last Name</Label>
-            <Input
-              id="last-name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              size="lg"
-              placeholder="Enter last name"
-            />
-          </div>
+          <Controller
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label htmlFor="first-name">First Name</Label>
+                <Input
+                  id="first-name"
+                  {...field}
+                  size="lg"
+                  placeholder="Enter first name"
+                />
+              </div>
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Last Name</Label>
+                <Input
+                  id="last-name"
+                  {...field}
+                  size="lg"
+                  placeholder="Enter last name"
+                />
+              </div>
+            )}
+          />
         </div>
         <div className="mt-4">
           <div className="space-y-2">
@@ -192,7 +218,11 @@ export function ProfileSettings() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button size="lg" onClick={handleUpdateProfile} disabled={isUpdating}>
+        <Button
+          size="lg"
+          onClick={handleSubmit(handleUpdateProfile, handleError)}
+          disabled={isUpdating}
+        >
           {isUpdating ? "Updating..." : "Update Profile"}
         </Button>
       </CardFooter>

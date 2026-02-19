@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import {
   type DataType,
@@ -7,7 +8,6 @@ import {
   type StudyType,
   studyTypeApi,
 } from "@/api";
-import { specialisationOptions } from "@/data/experiments";
 import {
   DataValidationFilter,
   RANDOMIZATION_PREVIEW_TYPES,
@@ -15,6 +15,7 @@ import {
   statusOptions,
   STUDY_TYPE,
   STUDY_TYPE_CODE,
+  type StudyTypeCode,
 } from "@/lib/constants";
 
 import {
@@ -24,9 +25,13 @@ import {
   usePerformBioD,
   useValidationData,
 } from "../../hooks";
-import { transformExperimentDataToValidationRows } from "../../lib/utils";
+import {
+  generateQueryKey,
+  transformExperimentDataToValidationRows,
+} from "../../lib/utils";
 import { Card } from "../atoms";
 import { CreateExperimentModal } from "../data-upload/CreateExperimentModal";
+import { SpecialisationDropdown } from "../data-upload/SpecialisationDropdown";
 import { AsyncSelect } from "../molecules";
 import { BaseSelect } from "../molecules/BaseSelect";
 import { DataTable } from "../organisms/DataTable/DataTable";
@@ -47,6 +52,7 @@ export default function DataValidation() {
     id: number;
     name: string;
     projectId: number;
+    studyTypeCode: StudyTypeCode;
   } | null>(null);
   const [selectedMouseGroups, setSelectedMouseGroups] = useState<number[]>([]);
   const [preselectedCellLineIds, setPreselectedCellLineIds] = useState<
@@ -145,7 +151,7 @@ export default function DataValidation() {
         (item) => item.id === Number(row.id)
       );
       if (!experimentData) {
-        console.error("Experiment data not found for row:", row);
+        toast.error("Experiment data not found for selected row");
         return;
       }
 
@@ -182,13 +188,15 @@ export default function DataValidation() {
         (item) => item.id === Number(row.id)
       );
       if (!experimentData) {
-        console.error("Experiment data not found for row:", row);
+        toast.error("Experiment data not found for selected row");
         return;
       }
       setSelectedExperiment({
         id: experimentData.experiment.id,
         name: experimentData.experiment.experiment_name,
         projectId: experimentData.project.id,
+        studyTypeCode: experimentData.study_type
+          .study_type_code as StudyTypeCode,
       });
       performBioDModal.openModal();
     },
@@ -225,9 +233,12 @@ export default function DataValidation() {
     }
 
     await performBioD({
-      group_ids: selectedMouseGroups,
-      source_experiment_id: selectedExperiment.id,
-      target_experiment_id: targetExperimentId,
+      payload: {
+        group_ids: selectedMouseGroups,
+        source_experiment_id: selectedExperiment.id,
+        target_experiment_id: targetExperimentId,
+      },
+      studyTypeCode: selectedExperiment.studyTypeCode,
     });
   };
 
@@ -252,9 +263,12 @@ export default function DataValidation() {
 
     if (selectedExperiment && selectedMouseGroups.length > 0) {
       await performBioD({
-        group_ids: selectedMouseGroups,
-        source_experiment_id: selectedExperiment.id,
-        target_experiment_id: createdExperiment.id,
+        payload: {
+          group_ids: selectedMouseGroups,
+          source_experiment_id: selectedExperiment.id,
+          target_experiment_id: createdExperiment.id,
+        },
+        studyTypeCode: selectedExperiment.studyTypeCode,
       });
     }
   };
@@ -335,28 +349,21 @@ export default function DataValidation() {
             />
           </div>
           <div className="w-full md:w-48">
-            <label
-              htmlFor="specialization-select"
-              className="text-sm font-medium text-foreground block mb-2"
-            >
-              Filter by Specialization
-            </label>
-            <BaseSelect
-              id="specialization-select"
+            <SpecialisationDropdown
+              label="Filter by Specialization"
+              placeholder="All Specializations"
               value={specializationFilter}
-              onChange={(value: string | string[]) =>
+              onValueChange={(value: string | string[]) =>
                 handleFilterChange(
                   DataValidationFilter.Specialization,
                   String(value)
                 )
               }
-              options={[
-                { label: "All Specializations", value: SELECT_ALL },
-                ...specialisationOptions,
-              ]}
-              placeholder="All Specializations"
+              optionWithAll={true}
+              allLabel="All Specializations"
               disabled={false}
-              searchable={false}
+              module_perm="data_validate"
+              className="space-y-3.5"
             />
           </div>
           <div className="w-full md:w-48">
@@ -375,7 +382,8 @@ export default function DataValidation() {
                   specializationFilter !== SELECT_ALL
                 ) {
                   const response = await studyTypeApi.getStudyTypes(
-                    normalizeSpecialization(specializationFilter)
+                    normalizeSpecialization(specializationFilter),
+                    "data_validate"
                   );
                   return response.data;
                 }
@@ -386,7 +394,11 @@ export default function DataValidation() {
                 labelKey: "study_type_name",
                 valueKey: "id",
               }}
-              queryKey={["study-types", specializationFilter]}
+              queryKey={generateQueryKey(
+                "study-types",
+                specializationFilter,
+                "data_validate"
+              )}
               allLabel="All Study Types"
               disabled={
                 !specializationFilter || specializationFilter === SELECT_ALL
@@ -411,6 +423,7 @@ export default function DataValidation() {
                 if (studyTypeFilter && studyTypeFilter !== SELECT_ALL) {
                   const response = await dataTypeApi.getDataTypes({
                     study_type_id: Number.parseInt(studyTypeFilter, 10),
+                    module: "data_validate",
                   });
                   return response.data;
                 }
@@ -420,7 +433,11 @@ export default function DataValidation() {
                 labelKey: "data_type_name",
                 valueKey: "id",
               }}
-              queryKey={["data-types", studyTypeFilter]}
+              queryKey={generateQueryKey(
+                "data-types",
+                studyTypeFilter,
+                "data_validate"
+              )}
               allLabel="All Data Types"
               disabled={!studyTypeFilter || studyTypeFilter === SELECT_ALL}
               searchable={false}

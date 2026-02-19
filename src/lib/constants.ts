@@ -3,6 +3,7 @@ export const SPECIALIZATION = {
   HOTLAB: "hotlab",
   PRECLINICAL: "preclinical",
   CMC: "cmc",
+  CHEMISTRY: "chemistry",
 } as const;
 
 // Study types
@@ -17,6 +18,10 @@ export const STUDY_TYPE = {
   DIRECT_BINDING_ASSAY: "Direct Binding Assay",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
+  TOXICITY: "Toxicity",
+  SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
+  DELFIA: "Delfia",
+  ELISA: "ELISA",
 } as const;
 
 export const STUDY_TYPE_CODE = {
@@ -30,6 +35,9 @@ export const STUDY_TYPE_CODE = {
   DIRECT_BINDING_ASSAY: "DIRECT_BINDING_ASSAY",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "RECEPTOR_QUANTIFICATION",
+  DELFIA: "DELFIA",
+  ELISA: "ELISA",
+  SATURATION_BINDING_ASSAY: "SATURATION_BINDING_ASSAY",
 } as const;
 
 export type StudyTypeCode =
@@ -50,6 +58,9 @@ export const DATA_TYPE = {
   DIRECT_BINDING_ASSAY: "Direct Binding Assay",
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
+  SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
+  DELFIA: "Delfia",
+  ELISA: "Elisa",
 } as const;
 
 // Type definitions for the constants
@@ -63,6 +74,7 @@ export const EXPERIMENT_STATUS = {
   COMPLETED: "completed",
   TERMINATED: "terminated",
   CLOSED: "closed",
+  ONGOING: "on_going",
 } as const;
 
 export type ExperimentStatus =

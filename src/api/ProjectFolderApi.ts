@@ -21,7 +21,11 @@ export const moveMiceApi = {
     payload: import("@/types/moveMice").MoveMicePayload
   ): Promise<import("@/types/moveMice").MoveMiceConfirmResponse> => {
     return apiClient.post<import("@/types/moveMice").MoveMiceConfirmResponse>(
-      API_CONFIG.ENDPOINTS.MOVE_MICE.MOVE_MICE(payload.source_experiment_id)
+      API_CONFIG.ENDPOINTS.MOVE_MICE.MOVE_MICE(payload.source_experiment_id),
+      {
+        target_experiment_id: payload.target_experiment_id,
+        mouse_ids: payload.mouse_ids,
+      }
     );
   },
 };

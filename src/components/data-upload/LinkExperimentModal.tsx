@@ -10,11 +10,12 @@ import { Label } from "@/components/atoms/Label/Label";
 import { CreateExperimentModalForMoveMice } from "@/components/project-folders/CreateExperimentModalForMoveMice";
 import { useLinkExperimentModal } from "@/hooks/useLinkExperimentModal";
 import { useModal } from "@/hooks/useModal";
-import type { StudyTypeCode } from "@/lib/constants";
+import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib/constants";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 
 import { CreateExperimentModal } from "./CreateExperimentModal";
 import { ExperimentDropdown } from "./ExperimentDropdown";
+import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
 
 interface LinkExperimentModalProps {
   open: boolean;
@@ -39,6 +40,7 @@ export function LinkExperimentModal({
   // Track whether user is in the create experiment flow
   const studyTypeModal = useModal();
   const experimentFormModal = useModal();
+  const mouseGroupModal = useModal();
 
   const [selectedStudyTypeId, setSelectedStudyTypeId] = useState<
     number | undefined
@@ -98,9 +100,13 @@ export function LinkExperimentModal({
     name: string;
   }) => {
     experimentFormModal.closeModal();
-    // Set to "Other" mode and select the newly created experiment
     setSelectedOption(OTHER_OPTION_ID);
     setSelectedExperimentId(createdExperiment.id);
+
+    if (selectedStudyTypeCode === STUDY_TYPE_CODE.MODEL_STUDY) {
+      mouseGroupModal.openModal();
+    }
+    // Set to "Other" mode and select the newly created experiment
     // Return to the main link modal with the new experiment pre-selected
   };
 
@@ -256,6 +262,15 @@ export function LinkExperimentModal({
           keepOpenAfterCreate={false}
         />
       )}
+
+      <MouseGroupsOrderModal
+        experimentId={selectedExperimentId || undefined}
+        open={mouseGroupModal.isOpen}
+        onClose={() => mouseGroupModal.closeModal()}
+        onSuccess={() => {
+          mouseGroupModal.closeModal();
+        }}
+      />
     </>
   );
 }

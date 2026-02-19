@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   uploadedExperimentDataApi,
@@ -49,7 +49,6 @@ export function useUploadedExperimentData(
           err,
           "Failed to load uploaded experiment data"
         );
-        console.error("Error loading uploaded experiment data:", err);
         toast.error("Failed to load uploaded experiment data", {
           description: errorMessage,
         });
@@ -64,13 +63,16 @@ export function useUploadedExperimentData(
   const data = queryData?.items || [];
   const pagination = queryData?.pagination || null;
 
-  const handleSetFilters = (newFilters: UploadedExperimentDataFilters) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...newFilters,
-      page: newFilters.page ?? 1, // Reset to first page when filters change
-    }));
-  };
+  const handleSetFilters = useCallback(
+    (newFilters: UploadedExperimentDataFilters) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+        page: newFilters.page ?? 1, // Reset to first page when filters change
+      }));
+    },
+    []
+  );
 
   return {
     data,

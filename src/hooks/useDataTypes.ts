@@ -50,7 +50,6 @@ export function useDataTypes(props?: UseDataTypesProps): UseDataTypesResult {
         }
       } catch (err) {
         const errorMessage = handleApiError(err, "Failed to load data types");
-        console.error("Error loading data types:", err);
         toast.error("Failed to load data types", {
           description: errorMessage,
         });

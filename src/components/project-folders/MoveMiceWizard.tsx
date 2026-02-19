@@ -6,9 +6,12 @@ import { CreateExperimentModal } from "@/components/data-upload/CreateExperiment
 import { CreateExperimentModalForMoveMice } from "@/components/project-folders/CreateExperimentModalForMoveMice";
 import { SelectMiceModal } from "@/components/project-folders/SelectMiceModal";
 import { SelectTargetExperimentModal } from "@/components/project-folders/SelectTargetExperimentModal";
+import { useModal } from "@/hooks";
 import { useGetTargetExperiments, useMoveMice } from "@/hooks/useMoveMice";
-import { STUDY_TYPE, type StudyTypeCode } from "@/lib/constants";
+import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib/constants";
 import { MoveMiceStep, type MoveMiceStepType } from "@/types/moveMice";
+
+import { MouseGroupsOrderModal } from "../data-upload/MouseGroupsOrderModal";
 
 interface MoveMiceWizardProps {
   isOpen: boolean;
@@ -39,11 +42,10 @@ export function MoveMiceWizard({
   const [selectedStudyTypeCode, setSelectedStudyTypeCode] = useState<
     StudyTypeCode | undefined
   >();
-  const [selectedStudyTypeName, setSelectedStudyTypeName] =
-    useState<string>("");
   const [newlyCreatedExperimentId, setNewlyCreatedExperimentId] = useState<
     number | undefined
   >();
+  const mouseGroupModal = useModal();
 
   const {
     data: experimentsData,
@@ -88,13 +90,8 @@ export function MoveMiceWizard({
 
   // Step 3: Handle study type selection - immediately open CreateExperimentModal
   const handleStudyTypeSelected = (studyTypeData: StudyType) => {
-    const {
-      id: studyTypeId,
-      study_type_name: studyTypeName,
-      study_type_code: studyTypeCode,
-    } = studyTypeData;
+    const { id: studyTypeId, study_type_code: studyTypeCode } = studyTypeData;
     setSelectedStudyTypeId(studyTypeId);
-    setSelectedStudyTypeName(studyTypeName);
     setSelectedStudyTypeCode(studyTypeCode);
     setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
@@ -106,7 +103,9 @@ export function MoveMiceWizard({
   }) => {
     setNewlyCreatedExperimentId(createdExperiment.id);
 
-    if (selectedStudyTypeName !== STUDY_TYPE.MODEL_STUDY) {
+    if (selectedStudyTypeCode === STUDY_TYPE_CODE.MODEL_STUDY) {
+      mouseGroupModal.openModal();
+    } else {
       try {
         setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
         await refetchExperiments();
@@ -119,14 +118,13 @@ export function MoveMiceWizard({
   };
 
   const handleMouseGroupingComplete = async () => {
-    await refetchExperiments();
     setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
+    await refetchExperiments();
   };
 
   const handleBackToStudyTypeSelection = () => {
     setCurrentStep(MoveMiceStep.CREATE_EXPERIMENT);
     setSelectedStudyTypeId(undefined);
-    setSelectedStudyTypeName("");
   };
 
   // Handle back from Step 3 to Step 2
@@ -140,7 +138,6 @@ export function MoveMiceWizard({
     setCurrentStep(MoveMiceStep.SELECT_MICE);
     setSelectedMiceIds([]);
     setSelectedStudyTypeId(undefined);
-    setSelectedStudyTypeName("");
     setNewlyCreatedExperimentId(undefined);
     onClose();
   };
@@ -175,6 +172,7 @@ export function MoveMiceWizard({
         selectedMiceCount={selectedMiceIds.length}
         experiments={experimentsData || []}
         isLoading={experimentsLoading || experimentsRefetching}
+        isMoving={moveMiceMutation.isPending}
         preSelectedExperimentId={newlyCreatedExperimentId?.toString()}
       />
 
@@ -197,7 +195,16 @@ export function MoveMiceWizard({
         specialization={specialization}
         onExperimentCreated={handleExperimentCreated}
         keepOpenAfterCreate={true}
-        onMouseGroupingComplete={handleMouseGroupingComplete}
+      />
+
+      <MouseGroupsOrderModal
+        experimentId={newlyCreatedExperimentId}
+        open={isOpen && mouseGroupModal.isOpen}
+        onClose={() => mouseGroupModal.closeModal()}
+        onSuccess={() => {
+          mouseGroupModal.closeModal();
+        }}
+        onGroupingSaved={handleMouseGroupingComplete}
       />
     </>
   );

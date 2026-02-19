@@ -2,7 +2,6 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import type { ExperimentDataItem } from "@/api";
-import { specialisationOptions } from "@/data/experiments";
 import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
@@ -137,13 +136,6 @@ export function validatePDFFile(file: File): void {
   }
 }
 
-export const specializationLookup = new Map<string, string>(
-  specialisationOptions.map((option) => [
-    option.value.toLowerCase(),
-    option.label,
-  ])
-);
-
 export type FileTypeKey = keyof typeof FILE_TYPES;
 
 export function validateFile(
@@ -180,4 +172,34 @@ export function validateFile(
     const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
     throw new Error(`File size must be less than ${maxSizeMB}MB`);
   }
+}
+
+export function flattenObject<T = unknown>(
+  obj: Record<string, T>,
+  prefix: string = ""
+): Record<string, T> {
+  const result: Record<string, T> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(result, flattenObject(value as Record<string, T>, newKey));
+    } else {
+      result[newKey] = value;
+    }
+  }
+
+  return result;
+}
+
+export function objectToFlattenArray<T>(obj: Record<string, unknown>): T[] {
+  const flattenedObj = flattenObject(obj);
+  return Object.values(flattenedObj) as T[];
+}
+
+export function generateQueryKey<T extends string | number | boolean>(
+  ...keys: (T | null | undefined)[]
+): T[] {
+  return keys.filter((key): key is T => key !== undefined && key !== null);
 }

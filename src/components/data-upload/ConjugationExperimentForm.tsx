@@ -19,7 +19,7 @@ export default function ConjugationExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: ConjugationExperimentFormProps) {
+}: Readonly<ConjugationExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } = useConjugationForm({
     projectId,
     studyTypeId,

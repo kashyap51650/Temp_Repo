@@ -1,42 +1,38 @@
 import { toast } from "sonner";
 
-import { Dialog } from "@/components/atoms";
 import {
   useApproveExperimentData,
+  useExperimentDataByIdForSaturationBinding,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
 import { usePermissions } from "@/hooks/usePermissions";
-import { DATA_TYPE } from "@/lib/constants";
 import { PERMISSIONS } from "@/lib/permissions";
 
-import { PDFView } from "./PDFView";
+import { Dialog } from "../atoms";
 import { RejectExperimentModal } from "./RejectExperimentModal";
+import { SaturationBindingAssaySheetView } from "./SaturationBindingAssaySheetView";
 import { SheetActions } from "./SheetActions";
 
-interface PDFViewModalProps {
+interface SaturationBindingAssaySheetViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
-  dataType: "necropsy" | "hotlab";
-  title?: string;
-  description?: string;
+  experimentDataType: string;
 }
 
-export function PDFViewModal({
+export function SaturationBindingAssaySheetViewModal({
   isOpen,
   onClose,
   experimentName,
   experimentDataId,
   experimentStatus,
   hideActions,
-  dataType,
-  title,
-  description,
-}: Readonly<PDFViewModalProps>) {
+  experimentDataType,
+}: Readonly<SaturationBindingAssaySheetViewModalProps>) {
   const { hasPermission } = usePermissions();
   const rejectModal = useModal();
 
@@ -46,6 +42,12 @@ export function PDFViewModal({
     PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
   );
 
+  const {
+    data: apiData,
+    isLoading,
+    error,
+  } = useExperimentDataByIdForSaturationBinding(experimentDataId || "");
+
   const handleApprove = () => {
     if (!experimentDataId) return;
     approveMutation.mutate(experimentDataId, {
@@ -54,11 +56,6 @@ export function PDFViewModal({
           description: `Status updated to ${data.status}`,
         });
         onClose();
-      },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
       },
     });
   };
@@ -78,33 +75,11 @@ export function PDFViewModal({
           rejectModal.closeModal();
           onClose();
         },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
-        },
       }
     );
   };
 
   const isPending = experimentStatus === "pending";
-
-  // Default titles and descriptions based on data type
-  const defaultTitle =
-    dataType === DATA_TYPE.NECROPSY_SHEET.toLowerCase()
-      ? `Necropsy - ${experimentName}`
-      : `Hotlab Data - ${experimentName}`;
-
-  const defaultDescription =
-    dataType === DATA_TYPE.NECROPSY_SHEET.toLowerCase()
-      ? "View necropsy data for the experiment"
-      : "View hotlab data for the experiment";
-
-  const displayName =
-    dataType === DATA_TYPE.NECROPSY_SHEET.toLowerCase()
-      ? "Necropsy"
-      : "Hotlab Data";
-
   return (
     <>
       <Dialog
@@ -117,10 +92,10 @@ export function PDFViewModal({
             <div className="flex gap-4 mb-2 items-center">
               <div>
                 <h2 className="text-xl font-semibold">
-                  {title || defaultTitle}
+                  {experimentDataType} - {experimentName}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {description || defaultDescription}
+                  View {experimentDataType} data for the experiment
                 </p>
               </div>
             </div>
@@ -139,10 +114,11 @@ export function PDFViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <PDFView
-          experimentName={experimentName}
+        <SaturationBindingAssaySheetView
           experimentDataId={experimentDataId}
-          dataType={dataType}
+          apiData={apiData}
+          isLoading={isLoading}
+          error={error}
         />
       </Dialog>
       <RejectExperimentModal
@@ -151,7 +127,7 @@ export function PDFViewModal({
         onReject={handleReject}
         item={{
           id: experimentDataId || "",
-          name: displayName,
+          name: experimentDataType,
           status: "Pending",
           canView: true,
           canEdit: true,

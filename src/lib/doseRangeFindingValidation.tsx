@@ -1,11 +1,9 @@
 import { z } from "zod";
 
+import { experimentNameSchema } from "./commonSchema";
+
 export const DoseRangeFindingFormDataSchema = z.object({
-  experimentName: z
-    .string()
-    .trim()
-    .min(3, "Experiment name must be at least 3 characters")
-    .max(255, "Experiment name must be at most 255 characters"),
+  experimentName: experimentNameSchema,
   doses: z
     .array(z.number().positive("Dose must be valid"))
     .min(1, "At least one dose is required"),

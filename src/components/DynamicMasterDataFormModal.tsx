@@ -372,31 +372,50 @@ export function DynamicMasterDataFormModal({
     loadExperimentData,
   ]);
 
+  const validateRequiredField = (
+    field: (typeof formFields)[0],
+    newErrors: Record<string, string>
+  ) => {
+    if (
+      field.required &&
+      (!formData[field.key] || formData[field.key] === "")
+    ) {
+      newErrors[field.key] = `${field.label} is required`;
+    }
+  };
+
+  const validateNumberField = (
+    field: (typeof formFields)[0],
+    newErrors: Record<string, string>
+  ) => {
+    if (field.type === "number" && formData[field.key] !== "") {
+      const numValue = Number(formData[field.key]);
+      if (Number.isNaN(numValue)) {
+        newErrors[field.key] = `${field.label} must be a valid number`;
+      }
+    }
+  };
+
+  const validateDescriptionLength = (
+    field: (typeof formFields)[0],
+    newErrors: Record<string, string>
+  ) => {
+    if (field.key.includes("description") && formData[field.key]) {
+      const descriptionValue = String(formData[field.key]);
+      if (descriptionValue.length > DESCRIPTION_MAX_LENGTH) {
+        newErrors[field.key] =
+          `${field.label} must be ${DESCRIPTION_MAX_LENGTH} characters or less`;
+      }
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     for (const field of formFields) {
-      if (
-        field.required &&
-        (!formData[field.key] || formData[field.key] === "")
-      ) {
-        newErrors[field.key] = `${field.label} is required`;
-      }
-
-      if (field.type === "number" && formData[field.key] !== "") {
-        const numValue = Number(formData[field.key]);
-        if (Number.isNaN(numValue)) {
-          newErrors[field.key] = `${field.label} must be a valid number`;
-        }
-      }
-
-      if (field.key.includes("description") && formData[field.key]) {
-        const descriptionValue = String(formData[field.key]);
-        if (descriptionValue.length > DESCRIPTION_MAX_LENGTH) {
-          newErrors[field.key] =
-            `${field.label} must be ${DESCRIPTION_MAX_LENGTH} characters or less`;
-        }
-      }
+      validateRequiredField(field, newErrors);
+      validateNumberField(field, newErrors);
+      validateDescriptionLength(field, newErrors);
     }
 
     setErrors(newErrors);
@@ -433,8 +452,7 @@ export function DynamicMasterDataFormModal({
 
       await onSave(processedData);
       onClose();
-    } catch (error) {
-      console.error("Failed to save:", error);
+    } catch {
       setErrors({ general: "Failed to save. Please try again." });
     } finally {
       setLoading(false);

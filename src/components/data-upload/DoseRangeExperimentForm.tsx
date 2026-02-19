@@ -15,6 +15,7 @@ interface DoseRangeExperimentFormProps {
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;
   onCancel?: () => void;
+  experimentType?: "dose-range" | "toxicity";
 }
 
 const DoseRangeExperimentForm = ({
@@ -23,6 +24,7 @@ const DoseRangeExperimentForm = ({
   specialization,
   onSuccess,
   onCancel,
+  experimentType = "dose-range",
 }: DoseRangeExperimentFormProps) => {
   const { form, isCreating, handleCancel, handleSubmit } =
     useDoseRangeStudyForm({
@@ -31,6 +33,7 @@ const DoseRangeExperimentForm = ({
       specialization,
       onSuccess,
       onCancel,
+      experimentType,
     });
 
   return (

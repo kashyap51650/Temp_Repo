@@ -39,6 +39,7 @@ steps:
     echo "VITE_REACT_QUERY_RETRY_DELAY=${VITE_REACT_QUERY_RETRY_DELAY}" >> .env
     echo "VITE_REACT_QUERY_STALE_TIME=${VITE_REACT_QUERY_STALE_TIME}" >> .env
     echo "VITE_SOCKET_URL=${VITE_SOCKET_URL}" >> .env
+    echo "VITE_SENTRY_DSN=${VITE_SENTRY_DSN}"
     cat .env
   displayName: 'Create ENV file'
 

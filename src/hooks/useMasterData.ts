@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { masterDataApi } from "@/api";
 import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "@/lib/constants";
@@ -63,10 +63,10 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
       });
       return {
         data: response?.data?.items ?? [],
-        page: response?.data?.page ?? 0,
-        size: response?.data?.size ?? 0,
-        total: response?.data?.total ?? 0,
-        pages: response?.data?.pages ?? 0,
+        page: response?.data?.pagination?.page ?? 0,
+        size: response?.data?.pagination?.size ?? 0,
+        total: response?.data?.pagination?.total ?? 0,
+        pages: response?.data?.pagination?.pages ?? 0,
       };
     },
     enabled: !!slug,
@@ -122,12 +122,12 @@ export function useMasterData(slug: string | null): UseMasterDataResult {
     await deleteMutation.mutateAsync({ slug, id });
   };
 
-  const handleSetFilters = (newFilters: MasterDataFilters) => {
+  const handleSetFilters = useCallback((newFilters: MasterDataFilters) => {
     setFilters((prev) => ({
       ...prev,
       ...newFilters,
     }));
-  };
+  }, []);
 
   return {
     data,

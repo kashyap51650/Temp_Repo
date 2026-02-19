@@ -2,11 +2,66 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import { SESSION_STORAGE_KEYS } from "./constants";
+import { logger } from "./logger";
+import { logError } from "./sentry-logger";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
     skipAuthToken?: boolean;
   }
+}
+
+/**
+ * Decode JWT token and extract payload
+ * Used for checking token expiration before API requests
+ *
+ * ✅ Handles base64url encoding with missing padding
+ * ✅ Uses TextDecoder for proper UTF-8 decoding (avoids edge cases)
+ */
+function decodeJWT(token: string): { exp?: number } | null {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+
+    // ✅ Convert base64url to base64
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    // ✅ Add required padding so length is a multiple of 4
+    // JWT payloads often omit padding - atob() requires it
+    const paddingNeeded = (4 - (base64.length % 4)) % 4;
+    const normalizedBase64 = base64 + "=".repeat(paddingNeeded);
+
+    // ✅ Decode base64 into bytes, then UTF-8 decode into a string
+    // Using TextDecoder instead of decodeURIComponent trick avoids UTF-8 edge cases
+    const binaryString = atob(normalizedBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const jsonPayload = new TextDecoder("utf-8").decode(bytes);
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    logger.error("[JWT] Failed to decode token:", error);
+    return null;
+  }
+}
+
+/**
+ * Check if JWT token is expired
+ * @param token - JWT token string
+ * @returns true if token is expired or invalid
+ */
+function isTokenExpired(token: string): boolean {
+  const decoded = decodeJWT(token);
+  if (!decoded?.exp) return true;
+
+  // exp is in seconds, Date.now() is in milliseconds
+  const expirationTime = decoded.exp * 1000;
+  const now = Date.now();
+
+  // Add 30 second buffer to avoid edge cases
+  return now >= expirationTime - 30000;
 }
 
 export const API_CONFIG = {
@@ -93,6 +148,9 @@ export const API_CONFIG = {
     DOSE_RANGE_FINDING_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/drf-experiments/`,
     },
+    TOXICITY: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/toxicity-experiments/`,
+    },
     CLRF_EXPERIMENTS: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/clrf-experiments/`,
     },
@@ -107,6 +165,15 @@ export const API_CONFIG = {
     },
     RECEPTOR_QUANTIFICATION: {
       CREATE: `/api/${import.meta.env.VITE_API_VERSION}/receptor-quantification-experiments/`,
+    },
+    DELFIA_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/delfia-experiments/`,
+    },
+    ELISA_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/elisa-experiments/`,
+    },
+    SATURATION_BINDING_ASSAY_EXPERIMENTS: {
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/saturation-binding-assay-experiments/`,
     },
     DATA_TYPES: {
       DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
@@ -148,7 +215,7 @@ export const API_CONFIG = {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
-        `api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+        `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
     },
     EXCEL_EXPORT: {
       EXPORT_CALIPER_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/caliper-sheet/export-caliper-sheet`,
@@ -209,10 +276,101 @@ export const API_CONFIG = {
       HISTORY_BY_GROUP: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
     },
-    PERFORM_BIOD: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`,
+    PERFORM_BIOD: {
+      LEGACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`, // Deprecated: Legacy endpoint, no longer used and scheduled for removal in a future release.
+      MODEL_STUDY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/model-study`,
+      EFFICACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/efficacy`,
+    },
     CELL_LINE_VALIDATION: {
       VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
+    },
+    USER_NOTIFICATION_SETTINGS: {
+      GET_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
+      UPDATE_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
+    },
+    DATA_UPLOAD: {
+      PRECLINICAL: {
+        BIOD: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/callipering-sheet`,
+          ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/organ-weight-sheet`,
+          AGC_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/agc-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/hotlab`,
+        },
+
+        DRF: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/weight-sheet`,
+          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-blood-chemistry-report`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/hotlab`,
+        },
+
+        EFFICACY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/callipering-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/hotlab`,
+        },
+
+        MODEL_STUDY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/callipering-sheet`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/hotlab`,
+        },
+
+        TOXICITY: {
+          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/weight-sheet`,
+          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-blood-chemistry-report`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/hotlab`,
+        },
+      },
+
+      HOTLAB: {
+        EXTRACT_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/extract-hotlab-report`,
+        SAVE_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/save-hotlab-report`,
+      },
+
+      CMC: {
+        CLRF: {
+          CLRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/clrf-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/hotlab`,
+        },
+
+        CONJUGATION: {
+          CONJUGATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/conjugation-data`,
+          GEL_IMAGE: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/gel-image`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/hotlab`,
+        },
+
+        DIRECT_BINDING_ASSAY: {
+          DIRECT_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/direct-binding-assay-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/hotlab`,
+        },
+
+        IRF: {
+          IRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/irf-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/hotlab`,
+        },
+
+        RECEPTOR_QUANTIFICATION: {
+          RECEPTOR_QUANTIFICATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/receptor-quantification-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/hotlab`,
+        },
+        SATURATION_BINDING_ASSAY: {
+          SATURATION_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/saturation-binding-assay-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/hotlab`,
+        },
+      },
+    },
+    SPECIALIZATION: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/specializations/dropdown`,
     },
   },
 } as const;
@@ -231,6 +389,12 @@ export interface ValidationError {
   context: {
     error: string;
   };
+}
+
+export interface ApiErrorData {
+  message?: string;
+  details?: unknown;
+  errors?: ValidationError[];
 }
 
 export interface ApiResponse<T = unknown> {
@@ -273,7 +437,7 @@ export function handleApiError(
   return fallbackMessage;
 }
 
-function createApiError(status: number, data: any): ApiError {
+function createApiError(status: number, data: ApiErrorData): ApiError {
   const error = new Error(
     data.message || `HTTP error! status: ${status}`
   ) as ApiError;
@@ -301,10 +465,28 @@ export class ApiClient {
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
       (config) => {
+        // ✅ Get JWT token from sessionStorage
         const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+
         if (token && !config.skipAuthToken) {
+          // ✅ Check if token is expired before making request
+          if (isTokenExpired(token)) {
+            logger.warn("[API] JWT token expired, clearing session");
+
+            // Clear all session data
+            sessionStorage.clear();
+
+            // Redirect to login page
+            window.location.href = "/login?reason=session_expired";
+
+            // Reject the request
+            return Promise.reject(new Error("Token expired"));
+          }
+
+          // ✅ Token is valid - attach to Authorization header
           config.headers.Authorization = `Bearer ${token}`;
         }
+
         return config;
       },
       (error) => {
@@ -317,23 +499,83 @@ export class ApiClient {
         return response;
       },
       (error) => {
+        // ✅ Handle 401 Unauthorized responses (expired/invalid token on backend)
+        if (error.response?.status === 401) {
+          logger.warn("[API] Received 401 Unauthorized, clearing session");
+          sessionStorage.clear();
+          window.location.href = "/login?reason=unauthorized";
+          return Promise.reject(error);
+        }
+
+        let apiError: ApiError;
+
         if (error.response) {
-          const apiError = createApiError(
+          apiError = createApiError(
             error.response.status,
             error.response.data || {}
           );
-          return Promise.reject(apiError);
+
+          // Log API error to Sentry (sanitization happens automatically in Sentry's beforeSend hook)
+          logError(apiError, {
+            level: error.response.status >= 500 ? "error" : "warning",
+            tags: {
+              api_error: "true",
+              http_status: error.response.status.toString(),
+              error_type: "api_response_error",
+            },
+            context: {
+              api: {
+                endpoint: error.config?.url || "unknown",
+                method: error.config?.method?.toUpperCase() || "unknown",
+                status: error.response.status,
+                statusText: error.response.statusText,
+                responseData: error.response.data,
+                requestData: error.config?.data,
+              },
+            },
+          });
         } else if (error.request) {
-          const apiError = createApiError(500, {
+          // Network error - request sent but no response received
+          apiError = createApiError(500, {
             message: "Network error - no response received",
           });
-          return Promise.reject(apiError);
+
+          logError(apiError, {
+            level: "error",
+            tags: {
+              api_error: "true",
+              error_type: "network_error",
+            },
+            context: {
+              api: {
+                endpoint: error.config?.url || "unknown",
+                method: error.config?.method?.toUpperCase() || "unknown",
+                errorDetails: "No response received from server",
+              },
+            },
+          });
         } else {
-          const apiError = createApiError(500, {
+          // Request setup error
+          apiError = createApiError(500, {
             message: error.message || "An unexpected error occurred",
           });
-          return Promise.reject(apiError);
+
+          logError(apiError, {
+            level: "error",
+            tags: {
+              api_error: "true",
+              error_type: "request_setup_error",
+            },
+            context: {
+              api: {
+                errorMessage: error.message || "Unknown error",
+                errorDetails: "Error occurred while setting up the request",
+              },
+            },
+          });
         }
+
+        return Promise.reject(apiError);
       }
     );
   }

@@ -5,15 +5,8 @@ import { toast } from "sonner";
 import type { ExperimentDropdownItem, Project } from "@/api";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
-import { useAGCExperimentDataImport } from "@/hooks/useAGCExperimentDataImport";
-import { useCMCExperimentDataImport } from "@/hooks/useCMCExperimentDataImport";
-import {
-  type PdfImportResponseType,
-  usePdfExperimentDataImport,
-} from "@/hooks/usePdfExperimentDataImport";
 import {
   DATA_TYPE,
-  type ExperimentDataType,
   FILE_SIZE_LIMITS,
   FILE_TYPES,
   SPECIALIZATION,
@@ -24,11 +17,7 @@ import type { BloodChemistryReport } from "@/types/bloodChemistry";
 import type { HematologyReport } from "@/types/hematology";
 import type { HotlabPDFUploadResponse } from "@/types/hotlab";
 
-import {
-  useDownloadSheet,
-  useExperimentDataImport,
-  useModal,
-} from "../../hooks";
+import { useDownloadSheet, useModal, useUploadData } from "../../hooks";
 import { Button } from "../atoms";
 import { CustomToast } from "../molecules";
 import { ViewRandomizationButton } from "../molecules/ViewRandomizationButton/ViewRandomizationButton";
@@ -39,6 +28,7 @@ import { FileUploadArea } from "./FileUploadArea";
 import { GenericFileUploadArea } from "./GenericFileUploadArea";
 import { LinkExperimentModal } from "./LinkExperimentModal";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
+import { NValueSelectionModal } from "./NValueSelectionModal";
 import PreviewBloodChemistryReportModal from "./PreviewBloodChemistryReportModal";
 import { PreviewHematologyReportModal } from "./PreviewHematologyReportModal";
 import { ProjectSection } from "./ProjectSection";
@@ -46,7 +36,7 @@ import { SpecialisationDropdown } from "./SpecialisationDropdown";
 import { StudyTypeDropdown } from "./StudyTypeDropdown";
 import { UploadedFilesList } from "./UploadedFilesList";
 
-interface FormData {
+export interface FormData {
   project: Project | null;
   specialisation: string;
   studyType: string;
@@ -118,6 +108,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation?.toLowerCase() === SPECIALIZATION.PRECLINICAL;
   const isCMCSelected =
     formData.specialisation?.toLowerCase() === SPECIALIZATION.CMC;
+  const isChemistrySelected =
+    formData.specialisation?.toLowerCase() === SPECIALIZATION.CHEMISTRY;
   const isClrfData = formData.dataType === DATA_TYPE.CLRF;
   const isDirectBindingAssayData =
     formData.dataType === DATA_TYPE.DIRECT_BINDING_ASSAY;
@@ -126,6 +118,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.dataType === DATA_TYPE.RECEPTOR_QUANTIFICATION;
   const isConjugationData = formData.dataType === DATA_TYPE.CONJUGATION;
   const isGelImageData = formData.dataType === DATA_TYPE.GEL_IMAGE;
+  const isSaturationBindingDataTypeSelected =
+    formData.dataType === DATA_TYPE.SATURATION_BINDING_ASSAY;
 
   const isStudyTypeSelected = !!formData.studyType;
 
@@ -142,23 +136,31 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
   const isPdfUpload =
     formData.specialisation.toLowerCase() === SPECIALIZATION.HOTLAB ||
-    (formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+    formData.dataType === DATA_TYPE.HOTLAB ||
+    ((formData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING ||
+      formData.studyType === STUDY_TYPE.TOXICITY) &&
       (formData.dataType === DATA_TYPE.NECROPSY_SHEET ||
         formData.dataType === DATA_TYPE.HEMATOLOGY ||
         formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY));
 
-  const canShowStudyType = isPreclinicSelected || isCMCSelected;
-  const canShowExperimentDropdown = isPreclinicSelected || isCMCSelected;
-  const canShowDataType = isPreclinicSelected || isCMCSelected;
+  const canShowStudyType =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
+  const canShowExperimentDropdown =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
+  const canShowDataType =
+    isPreclinicSelected || isCMCSelected || isChemistrySelected;
 
-  const isGenericFileUploadVisible = isPdfUpload || isCMCSelected;
+  const isGenericFileUploadVisible =
+    isPdfUpload || isCMCSelected || isChemistrySelected;
+  const isAGCSelected =
+    isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;
 
   function isGenericUploadDisabled() {
     if (!isProjectSelected) return true;
 
     if (isPreclinicSelected && !isDataTypeSelected) return true;
 
-    if (isCMCSelected) {
+    if (isCMCSelected || isChemistrySelected) {
       if (!isExperimentSelected || !isDataTypeSelected) {
         return true;
       }
@@ -193,6 +195,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   );
 
   const processedExperimentCounter = useRef<number>(0);
+  const nValueSelectModal = useModal();
 
   useEffect(() => {
     if (
@@ -237,63 +240,33 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     openModal: openLinkExperimentModal,
   } = useModal();
 
-  const handlePreviewModalOpen = () => {
-    if (formData.dataType === DATA_TYPE.HEMATOLOGY) {
-      openHematologyReportModal();
-    } else if (formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
-      openBloodChemistryReportModal();
-    }
-  };
-
   useEffect(() => {
     setHematologyDataForPreview(undefined);
     setBloodChemistryDataForPreview(undefined);
   }, [formData.experiment?.id]);
 
-  const handleAgcFileUploadSuccess = () => {
-    setIsOpenGroupSelectionModalForAGC(false);
-    setFormData((prev: FormData) => ({
-      ...prev,
-      uploadAGCFile: null,
-    }));
-  };
-
-  // AGC Sheet Upload Handler
-  const { handleUploadAGCSheet, isAGCSheetUploading } =
-    useAGCExperimentDataImport({
-      onSuccess: handleAgcFileUploadSuccess,
-      onError: (error) => {
-        const errors = error?.message
-          ?.split("\n")
-          .filter((val) => val.trim() !== "");
-
-        toast.custom(
-          (_id) => (
-            <CustomToast
-              title="Error importing AGC Experiment data"
-              variant="error"
-              onDismiss={() => toast.dismiss(_id)}
-              errors={errors}
-              position="top-right"
-            />
-          ),
-          {
-            duration: Infinity,
-          }
-        );
-      },
-    });
-
   const handleUploadFileReset = () => {
     setFormData((prev: FormData) => ({
       ...prev,
       uploadedFile: null,
+      ...(isAGCSelected && { uploadAGCFile: null }),
     }));
   };
 
-  const { handleUploadPdf, isPdfUploading } = usePdfExperimentDataImport({
-    onSuccess: (data: PdfImportResponseType) => {
-      if (data && isHotlabSelected) {
+  const handleSuccess = (data: unknown) => {
+    if (data) {
+      if (isAGCSelected) {
+        setIsOpenGroupSelectionModalForAGC(false);
+        handleUploadFileReset();
+        return;
+      }
+      if (isSaturationBindingDataTypeSelected) {
+        nValueSelectModal.closeModal();
+        handleUploadFileReset();
+        return;
+      }
+
+      if (isHotlabSelected) {
         const hotlabData = data as HotlabPDFUploadResponse;
         if (hotlabData.data?.experiments) {
           const experimentsFromResponse = hotlabData.data.experiments.map(
@@ -307,31 +280,56 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         openLinkExperimentModal();
         return;
       }
+
       handleUploadFileReset();
-      if (data && formData.dataType === DATA_TYPE.HEMATOLOGY) {
-        setHematologyDataForPreview(data.data as HematologyReport);
-      } else if (data && formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
-        setBloodChemistryDataForPreview(data.data as BloodChemistryReport);
+
+      if (formData.dataType === DATA_TYPE.HEMATOLOGY) {
+        setHematologyDataForPreview(data as HematologyReport);
+        openHematologyReportModal();
+      } else if (formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) {
+        setBloodChemistryDataForPreview(data as BloodChemistryReport);
+        openBloodChemistryReportModal();
       }
-    },
-    experimentDataType: formData.dataType as ExperimentDataType,
-    specialization: formData.specialisation,
+    }
+  };
+
+  const handleError = (error: Error) => {
+    if (isAGCSelected) {
+      const errors = error?.message
+        ?.split("\n")
+        .filter((val) => val.trim() !== "");
+
+      toast.custom(
+        (_id) => (
+          <CustomToast
+            title="Error importing AGC Experiment data"
+            variant="error"
+            onDismiss={() => toast.dismiss(_id)}
+            errors={errors}
+            position="top-right"
+          />
+        ),
+        {
+          duration: Infinity,
+        }
+      );
+      return;
+    }
+    toast.error(error.message || "Error uploading file");
+  };
+
+  const { handleUpload, handleAgcUpload, isUploading } = useUploadData({
+    onSuccess: handleSuccess,
+    onError: handleError,
   });
 
-  const { handleUploadCMCData, isCMCDataUploading } =
-    useCMCExperimentDataImport({
-      onSuccess: () => {
-        handleUploadFileReset();
-      },
-      experimentDataType: formData.dataType as ExperimentDataType,
-      experimentStudyType: formData.studyType as ExperimentStudyType,
-    });
-
-  const { uploadFile, isUploading } = useExperimentDataImport({
-    onSuccess: () => {
-      handleUploadFileReset();
-    },
-  });
+  const handleGenericFileUpload = () => {
+    if (isSaturationBindingDataTypeSelected) {
+      nValueSelectModal.openModal();
+      return;
+    }
+    handleUpload({ formData, isPdfUpload: true });
+  };
 
   // Download Sheet Hook
   const { downloadSheet, isDownloading } = useDownloadSheet();
@@ -353,29 +351,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     }
   };
 
-  const handleDataUpload = async () => {
-    if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
-      return;
-    }
-
-    let experimentId: number | null = null;
-
-    if (formData.experiment?.id) {
-      experimentId = Number.parseInt(formData.experiment.id.toString());
-    }
-
-    if (!formData.dataTypeId) {
-      console.error("No data type selected");
-    }
-
-    await uploadFile({
-      experiment_id: experimentId,
-      data_type_id: formData.dataTypeId,
-      file: formData.uploadedFile,
-    });
-  };
-
   const canShowDownloadButton =
     isPreclinicSelected && isStudyTypeSelected && isDataTypeSelected;
 
@@ -384,11 +359,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
       return true;
     }
 
-    if (isPreclinicSelected) {
-      return !!(formData.studyType && formData.dataType);
-    }
-
-    if (isCMCSelected) {
+    if (isPreclinicSelected || isCMCSelected || isChemistrySelected) {
       return !!(formData.studyType && formData.dataType);
     }
 
@@ -400,71 +371,6 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.specialisation &&
     formData.uploadedFile &&
     hasRequiredFieldsForUpload();
-
-  const isAGCSelected =
-    isNecropsyData || formData.dataType === DATA_TYPE.AGC_SHEET;
-
-  const handleAgcFileUpload = async (selectedCodes: string[]) => {
-    if (isAGCSelected && formData.uploadAGCFile && formData.experiment?.id) {
-      handleUploadAGCSheet({
-        experiment_id: formData.experiment?.id,
-        group_ids: selectedCodes,
-        file: formData.uploadAGCFile,
-      });
-    }
-  };
-
-  const handleUploadPdfClick = async () => {
-    if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
-      return;
-    }
-
-    const experimentId = formData.experiment?.id;
-
-    if (!isHotlabSelected && !experimentId) {
-      console.error("No experiment selected");
-      return;
-    }
-
-    if (isPdfUpload) {
-      handleUploadPdf({
-        experiment_id: experimentId,
-        file: formData.uploadedFile,
-      });
-    }
-  };
-
-  const handleCMCFileUpload = () => {
-    if (!formData.uploadedFile) {
-      console.error("No file selected for upload");
-      return;
-    }
-
-    const experimentId = formData.experiment?.id;
-
-    if (!experimentId) {
-      console.error("No experiment selected");
-      return;
-    }
-
-    if (isCMCSelected) {
-      handleUploadCMCData({
-        experiment_id: experimentId,
-        file: formData.uploadedFile,
-      });
-    }
-  };
-
-  const handleGenericFileUploadClick = () => {
-    if (isPdfUpload) {
-      handleUploadPdfClick();
-      return;
-    }
-    if (isCMCSelected) {
-      handleCMCFileUpload();
-    }
-  };
 
   const renderDownloadButtonText = () => {
     if (isNecropsyData) {
@@ -487,7 +393,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     if (isPreclinicSelected && !isDataTypeSelected) {
       return "Please select data type to continue";
     }
-    if (isCMCSelected) {
+    if (isCMCSelected || isChemistrySelected) {
       if (!isExperimentSelected) {
         return "Please select experiment to continue";
       }
@@ -586,6 +492,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           disabled={!isProjectSelected}
           error={errors.specialisation}
           showHelperText={!isProjectSelected}
+          module_perm="data_upload"
         />
 
         {canShowStudyType && (
@@ -605,11 +512,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             error={errors.studyType}
             showHelperText={!isSpecialisationSelected}
             specialization={formData.specialisation}
+            module="data_upload"
           />
         )}
-        {/* </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4"> */}
         {canShowExperimentDropdown && (
           <ExperimentDropdown
             value={formData.experiment?.id.toString() || ""}
@@ -655,6 +561,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             error={errors.dataType}
             showHelperText={!isExperimentSelected}
             studyTypeId={formData.studyTypeId ?? undefined}
+            module="data_upload"
           />
         )}
 
@@ -665,6 +572,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         )}
       </div>
 
+      {/* This section is for upload excel sheets for data types */}
       {formData.dataType !== DATA_TYPE.AGC_SHEET &&
         !isGenericFileUploadVisible && (
           <>
@@ -692,7 +600,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
               </Button>
               <Button
                 size="lg"
-                onClick={handleDataUpload}
+                onClick={() => handleUpload({ formData, isPdfUpload: false })}
                 disabled={!canUploadData || isUploading}
               >
                 {isUploading ? "Uploading..." : "Upload Data"}
@@ -713,33 +621,16 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           <div className="flex items-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={handleGenericFileUploadClick}
+              onClick={handleGenericFileUpload}
               disabled={
                 !canUploadData ||
                 (!isHotlabSelected && !isExperimentSelected) ||
-                isPdfUploading ||
-                isCMCDataUploading
+                isUploading
               }
               className="ml-auto"
             >
-              {isPdfUploading || isCMCDataUploading
-                ? "Uploading..."
-                : "Upload Data"}
+              {isUploading ? "Uploading..." : "Upload Data"}
             </Button>
-
-            {(formData.dataType === DATA_TYPE.HEMATOLOGY ||
-              formData.dataType === DATA_TYPE.BLOOD_CHEMISTRY) && (
-              <Button
-                size="lg"
-                onClick={handlePreviewModalOpen}
-                disabled={
-                  isPdfUploading ||
-                  (!hematologyDataForPreview && !bloodChemistryDataForPreview)
-                }
-              >
-                Preview
-              </Button>
-            )}
           </div>
         </>
       )}
@@ -762,7 +653,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             <Button
               size="lg"
               onClick={() => setIsOpenGroupSelectionModalForAGC(true)}
-              disabled={isAGCSheetUploading || formData.uploadAGCFile === null}
+              disabled={isUploading || formData.uploadAGCFile === null}
             >
               Upload AGC Data
             </Button>
@@ -783,8 +674,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           open={isOpenGroupSelectionModalForAGC}
           onOpenChange={setIsOpenGroupSelectionModalForAGC}
           experimentId={formData.experiment?.id}
-          onProceed={handleAgcFileUpload}
-          isUploading={isAGCSheetUploading}
+          onProceed={(selectedGroupCodes) => {
+            handleAgcUpload(formData, selectedGroupCodes);
+          }}
+          isUploading={isUploading}
         />
       )}
 
@@ -797,6 +690,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             onOpenChange={closeHematologyReportModal}
             hematologyData={hematologyDataForPreview}
             onSaveSuccess={() => setHematologyDataForPreview(undefined)}
+            experimentStudyType={formData.studyType as ExperimentStudyType}
           />
         )}
 
@@ -809,6 +703,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
             onOpenChange={closeBloodChemistryReportModal}
             bloodChemistryData={bloodChemistryDataForPreview}
             onSaveSuccess={() => setBloodChemistryDataForPreview(undefined)}
+            experimentStudyType={formData.studyType as ExperimentStudyType}
           />
         )}
 
@@ -824,6 +719,16 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           }}
           file={formData?.uploadedFile || undefined}
           projectId={formData.project?.id}
+        />
+      )}
+      {nValueSelectModal.isOpen && (
+        <NValueSelectionModal
+          isOpen={nValueSelectModal.isOpen}
+          onClose={nValueSelectModal.closeModal}
+          onProceed={(nValue) =>
+            handleUpload({ formData, isPdfUpload: true, no_of_replica: nValue })
+          }
+          isUploading={isUploading}
         />
       )}
     </>

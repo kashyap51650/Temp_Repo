@@ -22,7 +22,10 @@ interface AsyncSelectProps<T> {
   multiple?: boolean;
   size?: "sm" | "default" | "lg";
   shouldShowCreateNew?: boolean;
+  createNewLabel?: string;
   onCreateNew?: () => void;
+  triggerClassName?: string;
+  id?: string;
 }
 
 export function AsyncSelect<T>({
@@ -39,13 +42,15 @@ export function AsyncSelect<T>({
   multiple = false,
   size = "lg",
   shouldShowCreateNew = false,
+  createNewLabel = "Create New",
   onCreateNew,
+  triggerClassName = "",
+  id,
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
     queryFn: query,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
-    refetchOnMount: true,
   });
 
   const options = mapToOptions(data, mapConfig);
@@ -68,6 +73,9 @@ export function AsyncSelect<T>({
       multiple={multiple}
       shouldShowCreateNew={shouldShowCreateNew}
       onCreateNew={onCreateNew}
+      createNewLabel={createNewLabel}
+      className={triggerClassName}
+      id={id}
     />
   );
 }

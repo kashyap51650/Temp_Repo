@@ -1,5 +1,6 @@
-import * as Sentry from "@sentry/react";
 import React from "react";
+
+import { logError, setContext } from "@/lib/sentry-logger";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -23,8 +24,19 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    Sentry.captureException(error, {
-      extra: { componentStack: errorInfo.componentStack },
+    // Set React error context
+    setContext("react_error", {
+      componentStack: errorInfo.componentStack,
+    });
+
+    // Log to Sentry with centralized utility
+    logError(error, {
+      tags: {
+        type: "react_component_error",
+      },
+      context: {
+        componentStack: errorInfo.componentStack,
+      },
     });
   }
 

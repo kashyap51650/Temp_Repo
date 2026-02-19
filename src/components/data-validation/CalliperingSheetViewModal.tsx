@@ -9,8 +9,6 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import CaliperHistoryGroupModal from "./CaliperHistoryGroupedModal";
 import CaliperHistoryModal from "./CaliperHistoryModal";
@@ -43,7 +41,6 @@ export function CalliperingSheetViewModal({
   experimentStudyType,
   experimentId,
 }: Readonly<CalliperingSheetViewModalProps>) {
-  const { hasPermission } = usePermissions();
   const editModal = useModal();
   const rejectModal = useModal();
 
@@ -58,10 +55,6 @@ export function CalliperingSheetViewModal({
     isLoading,
     error,
   } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
-  const canEdit = hasPermission(PERMISSIONS.DATA_VALIDATE.EDIT_DATA);
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const handleEdit = () => {
     editModal.openModal();
@@ -75,11 +68,6 @@ export function CalliperingSheetViewModal({
           description: `Status updated to ${data.status}`,
         });
         onClose();
-      },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
       },
     });
   };
@@ -98,11 +86,6 @@ export function CalliperingSheetViewModal({
           });
           rejectModal.closeModal();
           onClose();
-        },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
         },
       }
     );
@@ -164,8 +147,6 @@ export function CalliperingSheetViewModal({
             </div>
             {!hideActions && isPending && (
               <SheetActions
-                showEdit={canEdit}
-                showApproveReject={canApproveReject}
                 onEdit={handleEdit}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}

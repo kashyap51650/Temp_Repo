@@ -2,42 +2,45 @@ import { toast } from "sonner";
 
 import {
   useApproveExperimentData,
+  useExperimentDataByIdForCMC,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { Dialog } from "../atoms";
-import NecropsyView from "./NecropsyView";
+import { FileViewer } from "./FileViewer";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SheetActions } from "./SheetActions";
 
-interface NecropsyViewModalProps {
+interface CMCDataViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
+  experimentDataType: string;
 }
 
-export default function NecropsyViewModal({
+export default function CMCDataViewModal({
   isOpen,
   onClose,
   experimentName,
   experimentDataId,
   experimentStatus,
   hideActions,
-}: Readonly<NecropsyViewModalProps>) {
-  const { hasPermission } = usePermissions();
+  experimentDataType,
+}: Readonly<CMCDataViewModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
+
+  const { data, isLoading } = useExperimentDataByIdForCMC(
+    experimentDataId || ""
   );
+
+  const cmcFile = data?.cmc_file;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -47,11 +50,6 @@ export default function NecropsyViewModal({
           description: `Status updated to ${data.status}`,
         });
         onClose();
-      },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
       },
     });
   };
@@ -71,16 +69,45 @@ export default function NecropsyViewModal({
           rejectModal.closeModal();
           onClose();
         },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
-        },
       }
     );
   };
 
   const isPending = experimentStatus === "pending";
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-lg text-muted-foreground">
+            Loading {experimentDataType} data...
+          </div>
+        </div>
+      );
+    }
+
+    if (cmcFile) {
+      return (
+        <FileViewer
+          fileUrl={cmcFile.file_url}
+          filename={cmcFile.filename}
+          fileType={cmcFile.file_type}
+          title={`${experimentDataType} - ${experimentName}`}
+        />
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center text-muted-foreground">
+          <p className="text-lg font-medium">No CMC data available</p>
+          <p className="text-sm mt-2">
+            No file has been uploaded for this experiment
+          </p>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -94,17 +121,16 @@ export default function NecropsyViewModal({
             <div className="flex gap-4 mb-2 items-center">
               <div>
                 <h2 className="text-xl font-semibold">
-                  Necropsy - {experimentName}
+                  {experimentDataType} - {experimentName}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1">
-                  View necropsy data for the experiment
+                  View {experimentDataType} data for the experiment
                 </p>
               </div>
             </div>
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}
@@ -116,18 +142,17 @@ export default function NecropsyViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <NecropsyView
-          experimentName={experimentName}
-          experimentDataId={experimentDataId}
-        />
+        {/* File Viewer Content */}
+        <div className="flex-1 overflow-hidden">{renderContent()}</div>
       </Dialog>
+
       <RejectExperimentModal
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
         item={{
           id: experimentDataId || "",
-          name: "Necropsy",
+          name: experimentDataType,
           status: "Pending",
           canView: true,
           canEdit: true,

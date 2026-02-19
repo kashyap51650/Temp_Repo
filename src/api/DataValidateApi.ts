@@ -1,4 +1,6 @@
+import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
+import type { PermissionModuleType } from "@/types/auth";
 
 export interface ExperimentDataFilters {
   status?: string;
@@ -7,6 +9,7 @@ export interface ExperimentDataFilters {
   specialization?: string;
   page?: number;
   size?: number;
+  module?: PermissionModuleType;
 }
 
 export interface ExperimentDataItem {
@@ -71,6 +74,9 @@ export const experimentDataApi = {
       params.append("specialization", filters.specialization.toUpperCase());
     if (filters?.page) params.append("page", filters.page.toString());
     if (filters?.size) params.append("size", filters.size.toString());
+    if (filters?.module) {
+      params.append("module_perm", filters.module);
+    }
 
     const queryString = params.toString();
     const endpoint = queryString
@@ -121,12 +127,21 @@ export interface PerformBioDResponse {
 
 export const performBioDApi = {
   performBioD: async (
-    payload: PerformBioDPayload
+    payload: PerformBioDPayload,
+    studyTypeCode: StudyTypeCode
   ): Promise<PerformBioDResponse> => {
-    return apiClient.post<PerformBioDResponse>(
-      API_CONFIG.ENDPOINTS.PERFORM_BIOD,
-      payload
-    );
+    let endpoint: string | null = null;
+    if (studyTypeCode === STUDY_TYPE_CODE.MODEL_STUDY) {
+      endpoint = API_CONFIG.ENDPOINTS.PERFORM_BIOD.MODEL_STUDY;
+    } else if (studyTypeCode === STUDY_TYPE_CODE.EFFICACY) {
+      endpoint = API_CONFIG.ENDPOINTS.PERFORM_BIOD.EFFICACY;
+    }
+
+    if (!endpoint) {
+      throw new Error("Invalid study type code for perform BioD");
+    }
+
+    return apiClient.post<PerformBioDResponse>(endpoint, payload);
   },
 };
 

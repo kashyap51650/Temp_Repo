@@ -19,7 +19,7 @@ export default function ClrfExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: ClrfExperimentFormProps) {
+}: Readonly<ClrfExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } = useClrfForm({
     projectId,
     studyTypeId,

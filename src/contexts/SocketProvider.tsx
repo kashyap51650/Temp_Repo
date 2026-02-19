@@ -3,6 +3,7 @@ import {
   type ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -34,7 +35,9 @@ const SocketContext = createContext<SocketContextType | undefined>(undefined);
  * - Clean connection/disconnection lifecycle
  * - Provides reactive connection status to child components via Context
  */
-export function SocketProvider({ children }: { children: ReactNode }) {
+export function SocketProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const { isAuthenticated, token } = useAuthState();
   const [isConnected, setIsConnected] = useState(false);
 
@@ -76,8 +79,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated, token]);
 
+  const contextValue = useMemo(
+    () => ({
+      isConnected,
+    }),
+    [isConnected]
+  );
+
   return (
-    <SocketContext.Provider value={{ isConnected }}>
+    <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );

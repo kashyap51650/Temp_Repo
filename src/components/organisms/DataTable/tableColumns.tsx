@@ -14,10 +14,9 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 import type { UploadedExperimentDataItem } from "@/api";
-import { specializationLookup } from "@/lib";
 import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
-import { PERMISSIONS } from "@/lib/permissions";
+import { getPerformBioDPermission, PERMISSIONS } from "@/lib/permissions";
 
 import {
   getStatusBadgeClassName,
@@ -813,9 +812,17 @@ export function getValidationColumns(
         row.dataType.toLowerCase().includes("weight")
     ) ?? false;
 
+  // Check if there's any toxicity weight sheet data
+  const hasToxicityWeightSheet =
+    data?.some(
+      (row) =>
+        row.studyType === STUDY_TYPE.TOXICITY &&
+        row.dataType.toLowerCase().includes("weight")
+    ) ?? false;
+
   // Show treatment date column if either condition is met
   const showTreatmentDateColumn =
-    hasCalliperingsheet || hasDoseRangeWeightSheet;
+    hasCalliperingsheet || hasDoseRangeWeightSheet || hasToxicityWeightSheet;
 
   const columns: ColumnDef<ValidationRow>[] = [
     {
@@ -840,9 +847,8 @@ export function getValidationColumns(
       ),
       cell: ({ row }) => {
         const specialization = row.original.experiment.specialization;
-        const label =
-          specializationLookup.get(specialization.toLowerCase()) ?? "Unknown";
-        return <span className="text-muted-foreground">{label}</span>;
+
+        return <span className="text-muted-foreground">{specialization}</span>;
       },
     },
     {
@@ -891,11 +897,22 @@ export function getValidationColumns(
           .toLowerCase()
           .includes("callipering");
 
-        const isDoseRangeWeightSheet =
-          row.original.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
-          row.original.dataType.toLowerCase().includes("weight");
+        const isWeightSheet = row.original.dataType
+          .toLowerCase()
+          .includes("weight");
 
-        if (isCalliperingsheet || isDoseRangeWeightSheet) {
+        const isWeightSheetDoseRange =
+          row.original.studyType === STUDY_TYPE.DOSE_RANGE_FINDING &&
+          isWeightSheet;
+
+        const isWeightSheetToxicity =
+          row.original.studyType === STUDY_TYPE.TOXICITY && isWeightSheet;
+
+        if (
+          isCalliperingsheet ||
+          isWeightSheetDoseRange ||
+          isWeightSheetToxicity
+        ) {
           return (
             <RandomizeDateCell
               value={row.original.treatmentDate}
@@ -936,22 +953,36 @@ export function getValidationColumns(
       header: "Actions",
       cell: ({ row }) => {
         const rowData = row.original;
+        const isWeightSheet = rowData.dataType.toLowerCase().includes("weight");
+        const isCalliperingSheet = rowData.dataType
+          .toLowerCase()
+          .includes("callipering");
 
         const isCalliperingSheetBiod =
-          rowData.dataType.toLowerCase().includes("callipering") &&
+          isCalliperingSheet &&
           rowData.studyType === STUDY_TYPE.BIO_DISTRIBUTION;
+        const isCalliperingSheetModelStudy =
+          isCalliperingSheet && rowData.studyType === STUDY_TYPE.MODEL_STUDY;
+        const isCalliperingSheetEfficacy =
+          isCalliperingSheet && rowData.studyType === STUDY_TYPE.EFFICACY;
 
         const isWeightSheetDoseRange =
-          rowData.dataType.toLowerCase().includes("weight") &&
-          rowData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+          isWeightSheet && rowData.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+        const isWeightSheetToxicity =
+          isWeightSheet && rowData.studyType === STUDY_TYPE.TOXICITY;
 
-        const isCalliperingSheetModelStudy =
-          rowData.dataType.toLowerCase().includes("callipering") &&
-          rowData.studyType === STUDY_TYPE.MODEL_STUDY;
+        const performBioDPermission = getPerformBioDPermission(
+          rowData.studyType
+        );
+        const showPerformBiodButton =
+          (isCalliperingSheetModelStudy || isCalliperingSheetEfficacy) &&
+          performBioDPermission;
 
-        // Show randomize button for both Bio-D callipering and Dose Range weight sheets
+        // Show randomize button for both Bio-D callipering and Dose Range weight sheets and Toxicity weight sheets
         const showRandomizeButton =
-          isCalliperingSheetBiod || isWeightSheetDoseRange;
+          isCalliperingSheetBiod ||
+          isWeightSheetDoseRange ||
+          isWeightSheetToxicity;
 
         const isRandomizationDisabled =
           (rowData?.treatmentDate &&
@@ -972,36 +1003,46 @@ export function getValidationColumns(
               View Data
             </Button>
             {showRandomizeButton && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isRandomizationDisabled}
-                onClick={() => onRandomize?.(rowData)}
-                title={
-                  isRandomizationDisabled
-                    ? "Randomization not allowed for this condition"
-                    : ""
-                }
+              <ProtectedComponent
+                permissions={PERMISSIONS.MOUSE.RANDOMIZATION}
+                redirectTo={false}
               >
-                <Shuffle className="size-4" />
-                Randomize
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isRandomizationDisabled}
+                  onClick={() => onRandomize?.(rowData)}
+                  title={
+                    isRandomizationDisabled
+                      ? "Randomization not allowed for this condition"
+                      : ""
+                  }
+                >
+                  <Shuffle className="size-4" />
+                  Randomize
+                </Button>
+              </ProtectedComponent>
             )}
-            {isCalliperingSheetModelStudy && (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isPerformBioDDisabled}
-                onClick={() => onPerformBioD?.(rowData)}
-                title={
-                  isPerformBioDDisabled
-                    ? "Perform BioD is only available for approved data"
-                    : ""
-                }
+            {showPerformBiodButton && (
+              <ProtectedComponent
+                permissions={performBioDPermission}
+                redirectTo={false}
               >
-                <Shuffle className="size-4" />
-                Perform BioD
-              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isPerformBioDDisabled}
+                  onClick={() => onPerformBioD?.(rowData)}
+                  title={
+                    isPerformBioDDisabled
+                      ? "Perform BioD is only available for approved data"
+                      : ""
+                  }
+                >
+                  <Shuffle className="size-4" />
+                  Perform BioD
+                </Button>
+              </ProtectedComponent>
             )}
           </div>
         );

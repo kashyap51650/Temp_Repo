@@ -27,7 +27,7 @@ export default function ReceptorQuantificationExperimentForm({
   specialization,
   onSuccess,
   onCancel,
-}: ReceptorQuantificationExperimentFormProps) {
+}: Readonly<ReceptorQuantificationExperimentFormProps>) {
   const { form, isCreating, handleCancel, handleSubmit } =
     useReceptorQuantificationForm({
       projectId,

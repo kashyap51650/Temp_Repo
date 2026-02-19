@@ -7,8 +7,6 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { Dialog } from "../atoms";
 import { RejectExperimentModal } from "../data-validation/RejectExperimentModal";
@@ -45,12 +43,6 @@ export const ViewHematologyDataModal: React.FC<
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
-  const { hasPermission } = usePermissions();
-
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
-
   // Fetch hematology data from API
   const {
     data: fetchedData,
@@ -80,11 +72,6 @@ export const ViewHematologyDataModal: React.FC<
         });
         handleClose();
       },
-      onError: (error) => {
-        toast.error("Failed to approve experiment data", {
-          description: error.message,
-        });
-      },
     });
   };
 
@@ -102,11 +89,6 @@ export const ViewHematologyDataModal: React.FC<
           });
           rejectModal.closeModal();
           handleClose();
-        },
-        onError: (error) => {
-          toast.error("Failed to reject experiment data", {
-            description: error.message,
-          });
         },
       }
     );
@@ -180,7 +162,6 @@ export const ViewHematologyDataModal: React.FC<
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}

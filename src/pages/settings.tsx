@@ -1,3 +1,4 @@
+import { AccountActions } from "@/components/settings/account-setting";
 import { PasswordSettings } from "@/components/settings/password-settings";
 import { ProfileSettings } from "@/components/settings/profile-settings";
 
@@ -12,6 +13,7 @@ export default function SettingsPage() {
       </div>
       <ProfileSettings />
       <PasswordSettings />
+      <AccountActions />
     </div>
   );
 }

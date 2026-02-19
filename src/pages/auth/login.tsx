@@ -66,9 +66,9 @@ export default function LoginPage() {
 
       const redirectTo = (search as { redirect?: string })?.redirect || "/home";
       navigate({ to: redirectTo });
-    } catch (error) {
-      // In future replace it by sentry error logs
-      console.error("Login error:", error);
+    } catch {
+      // Error handling is done by useLogin's onError callback
+      // API errors are already logged by the API interceptor
     }
   };
 

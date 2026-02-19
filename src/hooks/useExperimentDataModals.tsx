@@ -1,19 +1,55 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import ViewBloodChemistryDataModal from "@/components/data-upload/ViewBloodChemistryDataModal";
-import { ViewHematologyDataModal } from "@/components/data-upload/ViewHematologyDataModal";
-import { AGCSheetViewModal } from "@/components/data-validation/AGCSheetViewModal";
-import { BioDOrganViewModal } from "@/components/data-validation/BioDOrganViewModal";
-import { BioDWeightSheetViewModal } from "@/components/data-validation/BioDWeightSheetViewModal";
-import { CalliperingSheetViewModal } from "@/components/data-validation/CalliperingSheetViewModal";
-import { PDFViewModal } from "@/components/data-validation/PDFViewModal";
+import { ModalSkeleton } from "@/components/skeletons/ModalSkeleton";
 import { DATA_TYPE } from "@/lib/constants";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { useModal } from "./useModal";
-import { usePermissions } from "./usePermissions";
+
+const ViewBloodChemistryDataModal = lazy(
+  () => import("@/components/data-upload/ViewBloodChemistryDataModal")
+);
+const ViewHematologyDataModal = lazy(() =>
+  import("@/components/data-upload/ViewHematologyDataModal").then((module) => ({
+    default: module.ViewHematologyDataModal,
+  }))
+);
+const AGCSheetViewModal = lazy(() =>
+  import("@/components/data-validation/AGCSheetViewModal").then((module) => ({
+    default: module.AGCSheetViewModal,
+  }))
+);
+const BioDOrganViewModal = lazy(() =>
+  import("@/components/data-validation/BioDOrganViewModal").then((module) => ({
+    default: module.BioDOrganViewModal,
+  }))
+);
+const BioDWeightSheetViewModal = lazy(() =>
+  import("@/components/data-validation/BioDWeightSheetViewModal").then(
+    (module) => ({ default: module.BioDWeightSheetViewModal })
+  )
+);
+const CalliperingSheetViewModal = lazy(() =>
+  import("@/components/data-validation/CalliperingSheetViewModal").then(
+    (module) => ({ default: module.CalliperingSheetViewModal })
+  )
+);
+const NecropsyAndHotlabPDFViewModal = lazy(() =>
+  import("@/components/data-validation/NecropsyAndHotlabPDFViewModal").then(
+    (module) => ({ default: module.NecropsyAndHotlabPDFViewModal })
+  )
+);
+const CMCDataViewModal = lazy(
+  () => import("@/components/data-validation/CMCDataViewModal")
+);
+const SaturationBindingAssaySheetViewModal = lazy(() =>
+  import(
+    "@/components/data-validation/SaturationBindingAssaySheetViewModal"
+  ).then((module) => ({
+    default: module.SaturationBindingAssaySheetViewModal,
+  }))
+);
 
 interface ExperimentDataItem {
   id: string | number;
@@ -41,16 +77,8 @@ export function useExperimentDataModals(
   options: UseExperimentDataModalsOptions = {}
 ) {
   const { hideActions = false } = options;
-  const { hasAnyPermission } = usePermissions();
 
   const navigate = useNavigate();
-
-  const canEditOrApprove =
-    !hideActions &&
-    hasAnyPermission([
-      PERMISSIONS.DATA_VALIDATE.EDIT_DATA,
-      PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA,
-    ]);
 
   const [selectedExperiment, setSelectedExperiment] =
     useState<ExperimentDataItem | null>(null);
@@ -63,6 +91,8 @@ export function useExperimentDataModals(
   const bloodChemistryViewModal = useModal();
   const necropsyViewModal = useModal();
   const hotlabViewModal = useModal();
+  const cmcViewModal = useModal();
+  const saturationBindingAssayViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -91,6 +121,17 @@ export function useExperimentDataModals(
       const isBloodChemistrySheet = dataTypeName === DATA_TYPE.BLOOD_CHEMISTRY;
       const isHotlab = dataTypeName === DATA_TYPE.HOTLAB;
       const isNecropsy = dataTypeLower.includes("necropsy");
+
+      const isClrfData = dataTypeName === DATA_TYPE.CLRF;
+      const isConjugationData = dataTypeName === DATA_TYPE.CONJUGATION;
+      const isDirectBindingAssayData =
+        dataTypeName === DATA_TYPE.DIRECT_BINDING_ASSAY;
+      const isGelImageData = dataTypeName === DATA_TYPE.GEL_IMAGE;
+      const isIrfData = dataTypeName === DATA_TYPE.IRF;
+      const isReceptorQuantification =
+        dataTypeName === DATA_TYPE.RECEPTOR_QUANTIFICATION;
+      const isSaturationBindingAssay =
+        dataTypeName === DATA_TYPE.SATURATION_BINDING_ASSAY;
 
       if (isCalliperingSheet) {
         navigate({
@@ -136,6 +177,23 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (
+        isClrfData ||
+        isConjugationData ||
+        isDirectBindingAssayData ||
+        isGelImageData ||
+        isIrfData ||
+        isReceptorQuantification
+      ) {
+        cmcViewModal.openModal();
+        return;
+      }
+
+      if (isSaturationBindingAssay) {
+        saturationBindingAssayViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -150,6 +208,8 @@ export function useExperimentDataModals(
       bloodChemistryViewModal,
       necropsyViewModal,
       hotlabViewModal,
+      cmcViewModal,
+      saturationBindingAssayViewModal,
       navigate,
     ]
   );
@@ -186,86 +246,128 @@ export function useExperimentDataModals(
     return (
       <>
         {calliperingViewModal.isOpen && (
-          <CalliperingSheetViewModal
-            isOpen={calliperingViewModal.isOpen}
-            onClose={calliperingViewModal.closeModal}
-            experimentName={experimentName}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-            experimentDataType={experimentDataType}
-            experimentStudyType={experimentStudyType}
-            experimentId={experimentId || 0}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <CalliperingSheetViewModal
+              isOpen={calliperingViewModal.isOpen}
+              onClose={calliperingViewModal.closeModal}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+              experimentDataType={experimentDataType}
+              experimentStudyType={experimentStudyType}
+              experimentId={experimentId || 0}
+            />
+          </Suspense>
         )}
         {weightSheetViewModal.isOpen && (
-          <BioDWeightSheetViewModal
-            isOpen={weightSheetViewModal.isOpen}
-            onClose={weightSheetViewModal.closeModal}
-            experimentName={experimentName}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-            experimentStudyType={experimentStudyType}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <BioDWeightSheetViewModal
+              isOpen={weightSheetViewModal.isOpen}
+              onClose={weightSheetViewModal.closeModal}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+              experimentStudyType={experimentStudyType}
+            />
+          </Suspense>
         )}
         {organViewModal.isOpen && (
-          <BioDOrganViewModal
-            isOpen={organViewModal.isOpen}
-            onClose={organViewModal.closeModal}
-            experimentName={experimentName}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <BioDOrganViewModal
+              isOpen={organViewModal.isOpen}
+              onClose={organViewModal.closeModal}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+            />
+          </Suspense>
         )}
         {necropsyViewModal.isOpen && (
-          <PDFViewModal
-            isOpen={necropsyViewModal.isOpen}
-            onClose={necropsyViewModal.closeModal}
-            experimentName={experimentName}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-            dataType="necropsy"
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <NecropsyAndHotlabPDFViewModal
+              isOpen={necropsyViewModal.isOpen}
+              onClose={necropsyViewModal.closeModal}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+              dataType="necropsy"
+            />
+          </Suspense>
         )}
         {hotlabViewModal.isOpen && (
-          <PDFViewModal
-            isOpen={hotlabViewModal.isOpen}
-            onClose={hotlabViewModal.closeModal}
-            experimentName={experimentName}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-            dataType="hotlab"
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <NecropsyAndHotlabPDFViewModal
+              isOpen={hotlabViewModal.isOpen}
+              onClose={hotlabViewModal.closeModal}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+              dataType="hotlab"
+            />
+          </Suspense>
         )}
         {agcViewModal.isOpen && (
-          <AGCSheetViewModal
-            isOpen={agcViewModal.isOpen}
-            onClose={agcViewModal.closeModal}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <AGCSheetViewModal
+              isOpen={agcViewModal.isOpen}
+              onClose={agcViewModal.closeModal}
+            />
+          </Suspense>
         )}
         {experimentId && hematologyViewModal.isOpen && (
-          <ViewHematologyDataModal
-            open={hematologyViewModal.isOpen}
-            onOpenChange={hematologyViewModal.closeModal}
-            experimentId={experimentId}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <ViewHematologyDataModal
+              open={hematologyViewModal.isOpen}
+              onOpenChange={hematologyViewModal.closeModal}
+              experimentId={experimentId}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+            />
+          </Suspense>
         )}
         {experimentId && bloodChemistryViewModal.isOpen && (
-          <ViewBloodChemistryDataModal
-            open={bloodChemistryViewModal.isOpen}
-            onOpenChange={bloodChemistryViewModal.closeModal}
-            experimentId={experimentId}
-            experimentDataId={experimentDataId}
-            experimentStatus={experimentStatus}
-            hideActions={hideActions || !canEditOrApprove}
-          />
+          <Suspense fallback={<ModalSkeleton />}>
+            <ViewBloodChemistryDataModal
+              open={bloodChemistryViewModal.isOpen}
+              onOpenChange={bloodChemistryViewModal.closeModal}
+              experimentId={experimentId}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && cmcViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <CMCDataViewModal
+              isOpen={cmcViewModal.isOpen}
+              onClose={cmcViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && saturationBindingAssayViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <SaturationBindingAssaySheetViewModal
+              isOpen={saturationBindingAssayViewModal.isOpen}
+              onClose={saturationBindingAssayViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
         )}
       </>
     );

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { performBioDApi, type PerformBioDPayload } from "@/api";
+import type { StudyTypeCode } from "@/lib";
 import { handleApiError } from "@/lib/api";
 
 interface UsePerformBioDOptions {
@@ -13,8 +14,13 @@ export function usePerformBioD(options?: UsePerformBioDOptions) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (payload: PerformBioDPayload) =>
-      performBioDApi.performBioD(payload),
+    mutationFn: ({
+      payload,
+      studyTypeCode,
+    }: {
+      payload: PerformBioDPayload;
+      studyTypeCode: StudyTypeCode;
+    }) => performBioDApi.performBioD(payload, studyTypeCode),
     onSuccess: (data) => {
       toast.success("BioD performed successfully", {
         description:

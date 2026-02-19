@@ -1,7 +1,11 @@
+import { useCallback } from "react";
+
 import { type StudyType, studyTypeApi } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
 import { AsyncSelect } from "@/components/molecules/AsyncSelect";
+import { generateQueryKey } from "@/lib";
 import queryClient from "@/lib/queryClient";
+import type { PermissionModuleType } from "@/types/auth";
 
 interface StudyTypeDropdownProps {
   value: string;
@@ -11,6 +15,7 @@ interface StudyTypeDropdownProps {
   showHelperText?: boolean;
   helperText?: string;
   specialization?: string;
+  module?: PermissionModuleType;
 }
 
 export function StudyTypeDropdown({
@@ -21,11 +26,24 @@ export function StudyTypeDropdown({
   showHelperText = false,
   helperText = "Please select specialisation to continue",
   specialization,
+  module,
 }: Readonly<StudyTypeDropdownProps>) {
-  const studyTypes = queryClient.getQueryData([
-    "study-types",
-    specialization || "",
-  ]) as StudyType[] | undefined;
+  const onStudyTypeChange = useCallback(
+    (value: string) => {
+      const key = generateQueryKey("study-types", specialization, module);
+
+      const studyTypes = queryClient.getQueryData(key) as
+        | StudyType[]
+        | undefined;
+
+      const selectedStudyType = studyTypes?.find(
+        (st) => st.study_type_name === value
+      );
+      onValueChange(value, selectedStudyType?.id);
+    },
+    [module, specialization, onValueChange]
+  );
+
   return (
     <div className="space-y-2">
       <Label
@@ -36,23 +54,20 @@ export function StudyTypeDropdown({
       </Label>
       <AsyncSelect
         value={value}
-        onChange={(newValue) => {
-          // Find the selected study type to get its ID
-          const selectedStudyType = studyTypes?.find(
-            (st) => st.study_type_name === newValue
-          );
-          onValueChange(newValue as string, selectedStudyType?.id);
-        }}
+        onChange={(value) => onStudyTypeChange(value as string)}
         mapConfig={{
           labelKey: "study_type_name" as const,
           valueKey: "study_type_name" as const,
         }}
         query={async () => {
           if (!specialization) return [];
-          const response = await studyTypeApi.getStudyTypes(specialization);
+          const response = await studyTypeApi.getStudyTypes(
+            specialization,
+            module
+          );
           return response.data;
         }}
-        queryKey={["study-types", specialization || ""]}
+        queryKey={generateQueryKey("study-types", specialization, module)}
         placeholder="Select study type"
         disabled={disabled || !specialization}
         searchable={false}

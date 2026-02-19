@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { useExperimentDataModals } from "../../hooks/useExperimentDataModals";
 import { useUploadedExperimentData } from "../../hooks/useUploadedExperimentData";
@@ -9,6 +9,13 @@ import { getUploadedDatasetColumns } from "../organisms/DataTable/tableColumns";
 import { DataTableSkeleton } from "../skeletons/DataTableSkeleton";
 import { CustomSelect } from "./CustomSelect";
 
+const STATUS_OPTIONS = [
+  { label: "All Status", value: "All Status" },
+  { label: "Pending", value: "Pending" },
+  { label: "Approved", value: "Approved" },
+  { label: "Rejected", value: "Rejected" },
+];
+
 export default function UploadedList() {
   const [status, setStatus] = useState<string>("All Status");
   const { data, loading, error, pagination, setFilters } =
@@ -18,14 +25,21 @@ export default function UploadedList() {
     hideActions: true,
   });
 
-  const statusOptions = [
-    { label: "All Status", value: "All Status" },
-    { label: "Pending", value: "Pending" },
-    { label: "Approved", value: "Approved" },
-    { label: "Rejected", value: "Rejected" },
-  ];
+  const columns = useMemo(
+    () => getUploadedDatasetColumns(handleViewData),
+    [handleViewData]
+  );
 
-  const columns = getUploadedDatasetColumns(handleViewData);
+  const handleStatusChange = useCallback(
+    (value: string | string[]) => {
+      const selectedValue = typeof value === "string" ? value : value[0];
+      setStatus(selectedValue);
+      setFilters({
+        status: selectedValue === "All Status" ? "" : selectedValue,
+      });
+    },
+    [setFilters]
+  );
 
   if (error) {
     return (
@@ -62,17 +76,10 @@ export default function UploadedList() {
           <div className="w-48">
             <Label className="mb-2">Filter by Status</Label>
             <CustomSelect
-              options={statusOptions}
+              options={STATUS_OPTIONS}
               placeholder="All Status"
               value={status}
-              onValueChange={(value: string | string[]) => {
-                const selectedValue =
-                  typeof value === "string" ? value : value[0];
-                setStatus(selectedValue);
-                setFilters({
-                  status: selectedValue === "All Status" ? "" : selectedValue,
-                });
-              }}
+              onValueChange={handleStatusChange}
               className="w-full"
               disabled={loading}
             />

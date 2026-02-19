@@ -7,8 +7,6 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { PERMISSIONS } from "@/lib/permissions";
 
 import { Dialog } from "../atoms";
 import { RejectExperimentModal } from "../data-validation/RejectExperimentModal";
@@ -37,17 +35,11 @@ export default function ViewBloodChemistryDataModal({
   experimentDataId,
   hideActions = false,
   experimentStatus,
-}: ViewBloodChemistryDataModalProps) {
+}: Readonly<ViewBloodChemistryDataModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
-
-  const { hasPermission } = usePermissions();
-
-  const canApproveReject = hasPermission(
-    PERMISSIONS.DATA_VALIDATE.APPROVE_REJECT_DATA
-  );
 
   const {
     data: fetchedData,
@@ -78,8 +70,12 @@ export default function ViewBloodChemistryDataModal({
         handleClose();
       },
       onError: (error) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to approve experiment data";
         toast.error("Failed to approve experiment data", {
-          description: error.message,
+          description: message,
         });
       },
     });
@@ -101,8 +97,12 @@ export default function ViewBloodChemistryDataModal({
           handleClose();
         },
         onError: (error) => {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Failed to reject experiment data";
           toast.error("Failed to reject experiment data", {
-            description: error.message,
+            description: message,
           });
         },
       }
@@ -176,7 +176,6 @@ export default function ViewBloodChemistryDataModal({
             {!hideActions && isPending && (
               <SheetActions
                 showEdit={false}
-                showApproveReject={canApproveReject}
                 onApprove={handleApprove}
                 onReject={() => rejectModal.openModal()}
                 isApproveLoading={approveMutation.isPending}

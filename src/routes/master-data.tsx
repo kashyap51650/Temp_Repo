@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/Button/Button";
@@ -11,8 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/atoms/Select/Select";
-import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
-import { DynamicMasterDataFormModal } from "@/components/DynamicMasterDataFormModal";
 import { DataTable } from "@/components/organisms/DataTable/DataTable";
 import {
   createDynamicMasterDataColumns,
@@ -22,6 +20,7 @@ import {
   ProtectedComponent,
   ProtectedRoute,
 } from "@/components/organisms/ProtectedRoute";
+import { SimpleModalFallback } from "@/components/skeletons/ModalSkeleton";
 import { type MasterDataItem, useMasterData } from "@/hooks/useMasterData";
 import {
   type MasterDataSource,
@@ -29,6 +28,17 @@ import {
 } from "@/hooks/useMasterDataSources";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PERMISSIONS } from "@/lib/permissions";
+
+const DeleteConfirmModal = lazy(() =>
+  import("@/components/DeleteConfirmModal").then((module) => ({
+    default: module.DeleteConfirmModal,
+  }))
+);
+const DynamicMasterDataFormModal = lazy(() =>
+  import("@/components/DynamicMasterDataFormModal").then((module) => ({
+    default: module.DynamicMasterDataFormModal,
+  }))
+);
 
 export const Route = createFileRoute("/master-data")({
   component: () => (
@@ -73,26 +83,32 @@ function MasterDataComponent() {
     PERMISSIONS.MASTER_DATA.DELETE,
   ]);
 
-  const handleSourceChange = (value: string) => {
-    const source = (masterDataSources as MasterDataSource[]).find(
-      (s: MasterDataSource) => s.slug === value
-    );
-    setSelectedSource(source || null);
-    setFilters({ page: 1, size: 10 });
-  };
+  const handleSourceChange = useCallback(
+    (value: string) => {
+      const source = (masterDataSources as MasterDataSource[]).find(
+        (s: MasterDataSource) => s.slug === value
+      );
+      setSelectedSource(source || null);
+      setFilters({ page: 1, size: 10 });
+    },
+    [masterDataSources, setFilters]
+  );
 
-  const handlePageChange = (page: number) => {
-    setFilters({
-      ...filters,
-      page,
-    });
-  };
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setFilters({
+        ...filters,
+        page,
+      });
+    },
+    [filters, setFilters]
+  );
 
-  const handleAddNew = () => {
+  const handleAddNew = useCallback(() => {
     setIsAddModalOpen(true);
-  };
+  }, []);
 
-  const handleEdit = (item: TableDataItem) => {
+  const handleEdit = useCallback((item: TableDataItem) => {
     const originalItem: MasterDataItem = {
       ...item,
       id: Number(item.id),
@@ -103,9 +119,9 @@ function MasterDataComponent() {
     };
     setSelectedItem(originalItem);
     setIsEditModalOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (item: TableDataItem) => {
+  const handleDelete = useCallback((item: TableDataItem) => {
     // Convert back to MasterDataItem - spread all properties and override id
     const originalItem: MasterDataItem = {
       ...item,
@@ -117,53 +133,58 @@ function MasterDataComponent() {
     };
     setSelectedItem(originalItem);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  const handleSaveAdd = async (data: Record<string, any>) => {
-    try {
-      await addItem(data);
-      setIsAddModalOpen(false);
-      toast.success("Data added successfully.");
-    } catch (error) {
-      toast.error(String(error));
-      throw error;
-    }
-  };
-
-  const handleSaveEdit = async (data: Record<string, any>) => {
-    if (selectedItem) {
+  const handleSaveAdd = useCallback(
+    async (data: Record<string, any>) => {
       try {
-        await updateItem(selectedItem.id, data);
-        setIsEditModalOpen(false);
-        setSelectedItem(null);
-        toast.success("Data updated successfully.");
+        await addItem(data);
+        setIsAddModalOpen(false);
+        toast.success("Data added successfully.");
       } catch (error) {
-        toast.error("Failed to update data. Please try again.");
+        toast.error(String(error));
         throw error;
       }
-    }
-  };
+    },
+    [addItem]
+  );
 
-  const handleConfirmDelete = async () => {
+  const handleSaveEdit = useCallback(
+    async (data: Record<string, any>) => {
+      if (selectedItem) {
+        try {
+          await updateItem(selectedItem.id, data);
+          setIsEditModalOpen(false);
+          setSelectedItem(null);
+          toast.success("Data updated successfully.");
+        } catch (error) {
+          toast.error("Failed to update data. Please try again.");
+          throw error;
+        }
+      }
+    },
+    [selectedItem, updateItem]
+  );
+
+  const handleConfirmDelete = useCallback(async () => {
     if (selectedItem) {
       try {
         await deleteItem(selectedItem.id);
         setIsDeleteModalOpen(false);
         setSelectedItem(null);
         toast.success("Record deleted successfully.");
-      } catch (error) {
-        console.error(error);
+      } catch {
         toast.error("Failed to delete record. Please try again.");
       }
     }
-  };
+  }, [selectedItem, deleteItem]);
 
-  const handleCloseModals = () => {
+  const handleCloseModals = useCallback(() => {
     setIsAddModalOpen(false);
     setIsEditModalOpen(false);
     setIsDeleteModalOpen(false);
     setSelectedItem(null);
-  };
+  }, []);
 
   if (sourcesLoading) {
     return (
@@ -294,25 +315,29 @@ function MasterDataComponent() {
       )}
 
       {selectedSource && (isAddModalOpen || isEditModalOpen) && (
-        <DynamicMasterDataFormModal
-          isOpen={isAddModalOpen || isEditModalOpen}
-          onClose={handleCloseModals}
-          onSave={isAddModalOpen ? handleSaveAdd : handleSaveEdit}
-          masterDataSource={selectedSource}
-          initialData={selectedItem}
-          mode={isAddModalOpen ? "add" : "edit"}
-          sampleData={data?.data}
-        />
+        <Suspense fallback={<SimpleModalFallback />}>
+          <DynamicMasterDataFormModal
+            isOpen={isAddModalOpen || isEditModalOpen}
+            onClose={handleCloseModals}
+            onSave={isAddModalOpen ? handleSaveAdd : handleSaveEdit}
+            masterDataSource={selectedSource}
+            initialData={selectedItem}
+            mode={isAddModalOpen ? "add" : "edit"}
+            sampleData={data?.data}
+          />
+        </Suspense>
       )}
 
       {selectedSource && isDeleteModalOpen && selectedItem && (
-        <DeleteConfirmModal
-          isOpen={isDeleteModalOpen}
-          onClose={handleCloseModals}
-          onConfirm={handleConfirmDelete}
-          item={{ id: selectedItem.id.toString() } as any}
-          itemLabel={selectedSource.title}
-        />
+        <Suspense fallback={<SimpleModalFallback />}>
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={handleCloseModals}
+            onConfirm={handleConfirmDelete}
+            item={{ id: selectedItem.id.toString() } as any}
+            itemLabel={selectedSource.title}
+          />
+        </Suspense>
       )}
     </div>
   );

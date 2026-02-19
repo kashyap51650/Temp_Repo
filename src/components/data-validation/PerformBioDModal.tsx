@@ -171,8 +171,7 @@ export function PerformBioDModal({
               mouseStrainName: response.data.mouse_strain_name,
               message: response.data.message,
             };
-          } catch (error) {
-            console.error("Validation error:", error);
+          } catch {
             // On error, assume valid to not block the user
             return {
               cellLineId,
@@ -207,8 +206,7 @@ export function PerformBioDModal({
         // All valid - proceed
         proceedWithSave();
       }
-    } catch (error) {
-      console.error("Failed to validate groups:", error);
+    } catch {
       toast.error("Failed to validate mouse groups");
     } finally {
       setIsValidating(false);
@@ -229,8 +227,7 @@ export function PerformBioDModal({
       });
 
       toast.success("Association added successfully!");
-    } catch (error) {
-      console.error("Failed to add association:", error);
+    } catch {
       toast.error("Failed to add association. Please try again.");
       // Keep dialog open so user can retry
     }
@@ -304,7 +301,7 @@ export function PerformBioDModal({
             id="select-all"
             checked={isAllSelected}
             onCheckedChange={handleSelectAll}
-            disabled={enabledGroupsCount === 0}
+            disabled={enabledGroupsCount === 0 || selectedGroups.length === 0}
           />
           <label
             htmlFor="select-all"

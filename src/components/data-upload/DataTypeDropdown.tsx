@@ -1,8 +1,10 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 import { type DataType, dataTypeApi } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
 import { AsyncSelect } from "@/components/molecules/AsyncSelect";
+import { generateQueryKey, queryClient } from "@/lib";
+import type { PermissionModuleType } from "@/types/auth";
 
 interface DataTypeDropdownProps {
   value: string;
@@ -12,6 +14,7 @@ interface DataTypeDropdownProps {
   showHelperText?: boolean;
   helperText?: string;
   studyTypeId?: number;
+  module?: PermissionModuleType;
 }
 
 export function DataTypeDropdown({
@@ -22,13 +25,19 @@ export function DataTypeDropdown({
   showHelperText = false,
   helperText = "Please select experiment to continue",
   studyTypeId,
+  module,
 }: Readonly<DataTypeDropdownProps>) {
-  const queryClient = useQueryClient();
-
-  const dataTypes = queryClient.getQueryData([
-    "data-types",
-    ["data-types", String(studyTypeId || "")],
-  ]) as DataType[];
+  const onDataTypeChange = useCallback(
+    (newValue: string) => {
+      const key = generateQueryKey("data-types", String(studyTypeId), module);
+      const dataTypes = queryClient.getQueryData(key) as DataType[];
+      const selectedDataType = dataTypes?.find(
+        (dt) => dt.data_type_name === newValue
+      );
+      onValueChange(newValue, selectedDataType?.id);
+    },
+    [module, studyTypeId, onValueChange]
+  );
 
   return (
     <div className="space-y-2">
@@ -40,13 +49,7 @@ export function DataTypeDropdown({
       </Label>
       <AsyncSelect
         value={value}
-        onChange={(newValue) => {
-          // Find the selected data type to get its ID
-          const selectedDataType = dataTypes?.find(
-            (dt) => dt.data_type_name === newValue
-          );
-          onValueChange(newValue as string, selectedDataType?.id);
-        }}
+        onChange={(newValue) => onDataTypeChange(newValue as string)}
         mapConfig={{
           labelKey: "data_type_name" as const,
           valueKey: "data_type_name" as const,
@@ -55,10 +58,11 @@ export function DataTypeDropdown({
           if (!studyTypeId) return [];
           const response = await dataTypeApi.getDataTypes({
             study_type_id: studyTypeId,
+            module,
           });
           return response.data || [];
         }}
-        queryKey={["data-types", String(studyTypeId || "")]}
+        queryKey={generateQueryKey("data-types", String(studyTypeId), module)}
         placeholder="Select data type"
         disabled={disabled || !studyTypeId}
         searchable={false}

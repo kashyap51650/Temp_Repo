@@ -21,6 +21,7 @@ export function useValidationData(): UseValidationDataResult {
   const [filters, setFilters] = useState<ExperimentDataFilters>({
     page: 1,
     size: DEFAULT_PAGE_SIZE,
+    module: "data_validate",
   });
 
   const { data, isLoading, error, refetch } = useQuery({

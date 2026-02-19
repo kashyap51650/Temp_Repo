@@ -141,6 +141,8 @@ export interface ApiModule {
   description: string;
   is_active: boolean;
   permissions: ApiPermission[];
+  parent_id: number | null;
+  children: ApiModule[];
 }
 
 export interface PermissionsApiResponse {
@@ -158,6 +160,8 @@ export interface PermissionsApiResponse {
     modules: ApiModule[];
   };
 }
+
+export type PermissionModuleType = "data_upload" | "data_validate";
 
 export const transformUserToRow = (
   user: User

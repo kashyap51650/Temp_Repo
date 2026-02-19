@@ -11,9 +11,7 @@ import {
   isotopeOptions,
 } from "@/data/experiments";
 import { useModal, useProjects } from "@/hooks";
-import { usePermissions } from "@/hooks/usePermissions";
-import { STUDY_TYPE } from "@/lib/constants";
-import { PERMISSIONS } from "@/lib/permissions";
+import { STUDY_TYPE, STUDY_TYPE_CODE } from "@/lib/constants";
 
 import { Card } from "../atoms";
 import {
@@ -25,6 +23,7 @@ import {
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { CreateExperimentModal } from "./CreateExperimentModal";
 import { CreateProjectModal } from "./CreateProjectModal";
+import { MouseGroupsOrderModal } from "./MouseGroupsOrderModal";
 import UploadedList from "./UploadedList";
 import UploadPanel from "./UploadPanel";
 
@@ -41,11 +40,12 @@ interface DataUploadFormData {
 }
 
 export default function DataUploadCommon() {
-  const { hasPermission } = usePermissions();
+  const [createdExperimentId, setCreatedExperimentId] = useState<
+    number | undefined
+  >(undefined);
 
-  const canUploadData = hasPermission(PERMISSIONS.DATA_UPLOAD.UPLOAD);
-  const canViewUploadedData = hasPermission(PERMISSIONS.DATA_UPLOAD.VIEW);
   const createExperimentModal = useModal();
+  const mouseGroupModal = useModal();
 
   const {
     projects: apiProjects,
@@ -64,13 +64,7 @@ export default function DataUploadCommon() {
     uploadAGCFile: null,
   });
 
-  const getDefaultTab = () => {
-    if (canUploadData) return "upload-data";
-    if (canViewUploadedData) return "uploaded-data";
-    return "upload-data";
-  };
-
-  const [activeTab, setActiveTab] = useState<string>(getDefaultTab());
+  const [activeTab, setActiveTab] = useState<string>("upload-data");
 
   const queryClient = useQueryClient();
 
@@ -92,6 +86,14 @@ export default function DataUploadCommon() {
   const [experiments, setExperiments] = useState<Experiment[]>(experimentData);
 
   const dispatch = useAppDispatch();
+
+  const selectedStudyType = useMemo(
+    () =>
+      studyTypes?.find(
+        (studyType) => studyType.study_type_name === formData.studyType
+      )?.study_type_code || "",
+    [studyTypes, formData.studyType]
+  );
 
   const hasFormData = () => {
     return !!(
@@ -181,19 +183,26 @@ export default function DataUploadCommon() {
 
         setErrors((prev) => ({ ...prev, project: "" }));
       }
-    } catch (error) {
-      console.error("Failed to create project:", error);
+    } catch {
       setErrors((prev) => ({ ...prev, project: "Failed to create project" }));
     }
   };
 
   const handleCreateExperiment = async (experimentData: {
+    id?: number;
     name: string;
     isotope: string;
     cellLines: string[];
   }) => {
     if (!formData.project) return;
 
+    setCreatedExperimentId(experimentData?.id);
+    if (
+      selectedStudyType === STUDY_TYPE_CODE.MODEL_STUDY &&
+      experimentData?.id
+    ) {
+      mouseGroupModal.openModal();
+    }
     if (formData.project.id && formData.specialisation && formData.studyType) {
       return;
     }
@@ -251,43 +260,28 @@ export default function DataUploadCommon() {
     onShowCreateExperimentModal: () => createExperimentModal.openModal(),
   };
 
-  // Note: visibleTabsCount will never be 0 because ProtectedRoute will only render this component if have at least one Permission
-  const visibleTabsCount = [canUploadData, canViewUploadedData].filter(
-    Boolean
-  ).length;
-
   return (
     <>
       <Card className="p-6 w-full mx-auto shadow-none">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList
-            className="grid"
-            style={{ gridTemplateColumns: `repeat(${visibleTabsCount}, 1fr)` }}
-          >
-            {canUploadData && (
-              <TabsTrigger value="upload-data">Upload Data</TabsTrigger>
-            )}
-            {canViewUploadedData && (
-              <TabsTrigger value="uploaded-data">Uploaded Data</TabsTrigger>
-            )}
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger value="upload-data">Upload Data</TabsTrigger>
+
+            <TabsTrigger value="uploaded-data">Uploaded Data</TabsTrigger>
           </TabsList>
 
-          {canUploadData && (
-            <TabsContent value="upload-data" className="space-y-6 mt-6">
-              <UploadPanel
-                formProps={formProps}
-                apiDataProps={apiDataProps}
-                loadingProps={loadingProps}
-                actionProps={actionProps}
-              />
-            </TabsContent>
-          )}
+          <TabsContent value="upload-data" className="space-y-6 mt-6">
+            <UploadPanel
+              formProps={formProps}
+              apiDataProps={apiDataProps}
+              loadingProps={loadingProps}
+              actionProps={actionProps}
+            />
+          </TabsContent>
 
-          {canViewUploadedData && (
-            <TabsContent value="uploaded-data" className="space-y-6">
-              <UploadedList />
-            </TabsContent>
-          )}
+          <TabsContent value="uploaded-data" className="space-y-6">
+            <UploadedList />
+          </TabsContent>
         </Tabs>
       </Card>
 
@@ -304,22 +298,27 @@ export default function DataUploadCommon() {
           onCreateExperiment={handleCreateExperiment}
           isotopeOptions={isotopeOptions}
           cellLineOptions={cellLineOptions}
-          studyType={
-            studyTypes?.find(
-              (studyType) => studyType.study_type_name === formData.studyType
-            )?.study_type_code || ""
-          }
+          studyType={selectedStudyType}
           projectId={formData.project?.id}
           specialization={formData.specialisation}
           studyTypeId={
             studyTypes?.find((st) => st.study_type_name === formData.studyType)
               ?.id
           }
-          onMouseGroupingComplete={() => {
-            setActiveTab("upload-data");
-          }}
         />
       )}
+
+      <MouseGroupsOrderModal
+        experimentId={createdExperimentId}
+        open={mouseGroupModal.isOpen}
+        onClose={() => mouseGroupModal.closeModal()}
+        onSuccess={() => {
+          mouseGroupModal.closeModal();
+        }}
+        onGroupingSaved={() => {
+          setActiveTab("upload-data");
+        }}
+      />
 
       <ConfirmationDialog
         isOpen={showProjectChangeConfirm}

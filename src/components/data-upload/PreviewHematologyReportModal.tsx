@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { useHematologyDataEdit } from "@/hooks/useHematologyDataEdit";
 import { useSaveHematologyReport } from "@/hooks/useSaveHematologyReport";
+import { type StudyType as ExperimentStudyType } from "@/lib/constants";
 import type { HematologyReport } from "@/types/hematology";
 
 import { Button, Dialog } from "../atoms";
@@ -14,6 +15,7 @@ interface PreviewHematologyReportModalProps {
   hematologyData: HematologyReport;
   experimentId: number;
   onSaveSuccess?: () => void;
+  experimentStudyType: ExperimentStudyType;
 }
 
 /**
@@ -24,7 +26,14 @@ interface PreviewHematologyReportModalProps {
  */
 export const PreviewHematologyReportModal: React.FC<
   PreviewHematologyReportModalProps
-> = ({ open, onOpenChange, experimentId, hematologyData, onSaveSuccess }) => {
+> = ({
+  open,
+  onOpenChange,
+  experimentId,
+  hematologyData,
+  onSaveSuccess,
+  experimentStudyType,
+}) => {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   // Use the custom hook for data management with props data
@@ -39,7 +48,9 @@ export const PreviewHematologyReportModal: React.FC<
     experimentId,
   });
 
-  const { saveHematologyReport, isSaving } = useSaveHematologyReport();
+  const { saveHematologyReport, isSaving } = useSaveHematologyReport({
+    experimentStudyType,
+  });
 
   const handleEdit = () => {
     setMode("edit");
@@ -117,7 +128,7 @@ export const PreviewHematologyReportModal: React.FC<
     <Dialog
       open={open}
       onOpenChange={handleClose}
-      preventOutsideClose={isSaving}
+      preventOutsideClose
       title={
         <div className="flex items-center justify-between w-full pr-8">
           <div>

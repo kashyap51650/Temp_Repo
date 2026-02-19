@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { experimentNameSchema } from "./commonSchema";
+
 export const CellLineStrainPairSchema = z.object({
   cell_line_id: z.number().optional(),
   mouse_strain_id: z.number().optional(),
@@ -7,11 +9,7 @@ export const CellLineStrainPairSchema = z.object({
 
 // Schema for complete form data validation (with cellLineStrainPairs)
 export const ModelStudyFormDataSchema = z.object({
-  experimentName: z
-    .string()
-    .trim()
-    .min(3, "Experiment name must be at least 3 characters")
-    .max(255, "Experiment name must be at most 255 characters"),
+  experimentName: experimentNameSchema,
   cellLineStrainPairs: z
     .array(CellLineStrainPairSchema)
     .min(1, "At least one cell line-strain pair is required")

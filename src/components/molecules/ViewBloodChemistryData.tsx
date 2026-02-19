@@ -161,6 +161,7 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({
             optionWithAll={false}
             searchable={true}
             size="default"
+            triggerClassName="bg-white"
           />
         </div>
       </div>
@@ -207,7 +208,7 @@ export default function ViewBloodChemistryData({
   mouseChangeCallbacks = [],
   reportDateTimeChangeCallbacks = [],
   experimentId,
-}: ViewBloodChemistryDataProps) {
+}: Readonly<ViewBloodChemistryDataProps>) {
   const [activeTab, setActiveTab] = useState<string>("0");
 
   const reports = data;

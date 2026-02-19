@@ -5,6 +5,7 @@ import {
   useBloodChemistryDataEdit,
   useSaveBloodChemistryReport,
 } from "@/hooks";
+import { type StudyType as ExperimentStudyType } from "@/lib/constants";
 import type { BloodChemistryReport } from "@/types/bloodChemistry";
 
 import { Button, Dialog } from "../atoms";
@@ -16,6 +17,7 @@ interface PreviewBloodChemistryReportModalProps {
   bloodChemistryData: BloodChemistryReport;
   experimentId: number;
   onSaveSuccess?: () => void;
+  experimentStudyType: ExperimentStudyType;
 }
 
 /**
@@ -30,7 +32,8 @@ export default function PreviewBloodChemistryReportModal({
   onOpenChange,
   bloodChemistryData,
   onSaveSuccess,
-}: PreviewBloodChemistryReportModalProps) {
+  experimentStudyType,
+}: Readonly<PreviewBloodChemistryReportModalProps>) {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
   const {
@@ -44,7 +47,9 @@ export default function PreviewBloodChemistryReportModal({
     experimentId,
   });
 
-  const { saveBloodChemistryReport, isSaving } = useSaveBloodChemistryReport();
+  const { saveBloodChemistryReport, isSaving } = useSaveBloodChemistryReport({
+    experimentStudyType,
+  });
 
   const handleEdit = () => {
     setMode("edit");
@@ -85,7 +90,7 @@ export default function PreviewBloodChemistryReportModal({
   // Render dialog content based on data state
   const renderDialogContent = () => {
     // No data state
-    if (!bloodChemistryData || !bloodChemistryData.reports_data?.length) {
+    if (!bloodChemistryData?.reports_data?.length) {
       return (
         <div className="flex flex-col items-center justify-center h-64">
           <div>
@@ -122,7 +127,7 @@ export default function PreviewBloodChemistryReportModal({
     <Dialog
       open={open}
       onOpenChange={handleClose}
-      preventOutsideClose={isSaving}
+      preventOutsideClose
       title={
         <div className="flex items-center justify-between w-full pr-8">
           <div>

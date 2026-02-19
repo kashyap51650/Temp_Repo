@@ -41,7 +41,6 @@ export const useAddCellLineMouseStrainAssociation = (
       props?.onSuccess?.();
     },
     onError: (error) => {
-      console.error("Error adding association:", error);
       const errorMessage = handleApiError(
         error,
         "Failed to add association. Please try again."
@@ -61,8 +60,7 @@ export const useAddCellLineMouseStrainAssociation = (
     try {
       await addMutation.mutateAsync(payload);
       return true;
-    } catch (error) {
-      console.error("Error adding association:", error);
+    } catch {
       return false;
     }
   };
