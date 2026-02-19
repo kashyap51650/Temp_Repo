@@ -369,6 +369,9 @@ export const API_CONFIG = {
         },
       },
     },
+    SPECIALIZATION: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/specializations/dropdown`,
+    },
   },
 } as const;
 

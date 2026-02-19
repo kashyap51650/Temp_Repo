@@ -2,7 +2,6 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import type { ExperimentDataItem } from "@/api";
-import { specialisationOptions } from "@/data/experiments";
 import type { SelectOption } from "@/types/utils";
 
 import type { ValidationRow } from "../components/organisms/DataTable/tableData";
@@ -136,13 +135,6 @@ export function validatePDFFile(file: File): void {
     throw new Error("File size must be less than 10MB");
   }
 }
-
-export const specializationLookup = new Map<string, string>(
-  specialisationOptions.map((option) => [
-    option.value.toLowerCase(),
-    option.label,
-  ])
-);
 
 export type FileTypeKey = keyof typeof FILE_TYPES;
 

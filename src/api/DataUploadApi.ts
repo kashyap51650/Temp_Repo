@@ -1,3 +1,4 @@
+import type { PermissionModuleType } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import {
   STUDY_TYPE,
@@ -1032,6 +1033,27 @@ export const saturationBindingExperimentApi = {
     return apiClient.post(
       API_CONFIG.ENDPOINTS.SATURATION_BINDING_ASSAY_EXPERIMENTS.CREATE,
       payload
+    );
+  },
+};
+
+interface SpecializationType {
+  value: string;
+  label: string;
+}
+
+export const specializationApi = {
+  specializationDropdown: async ({
+    module_perm,
+  }: {
+    module_perm?: PermissionModuleType;
+  }) => {
+    const params = module_perm ? { module_perm } : undefined;
+    return apiClient.get<ApiResponse<SpecializationType[]>>(
+      API_CONFIG.ENDPOINTS.SPECIALIZATION.DROPDOWN,
+      {
+        params,
+      }
     );
   },
 };

@@ -14,7 +14,6 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 import type { UploadedExperimentDataItem } from "@/api";
-import { specializationLookup } from "@/lib";
 import { STUDY_TYPE } from "@/lib/constants";
 import { formatDateTime } from "@/lib/date-utils";
 import { getPerformBioDPermission, PERMISSIONS } from "@/lib/permissions";
@@ -848,9 +847,8 @@ export function getValidationColumns(
       ),
       cell: ({ row }) => {
         const specialization = row.original.experiment.specialization;
-        const label =
-          specializationLookup.get(specialization.toLowerCase()) ?? "Unknown";
-        return <span className="text-muted-foreground">{label}</span>;
+
+        return <span className="text-muted-foreground">{specialization}</span>;
       },
     },
     {

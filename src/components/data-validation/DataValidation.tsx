@@ -8,7 +8,6 @@ import {
   type StudyType,
   studyTypeApi,
 } from "@/api";
-import { specialisationOptions } from "@/data/experiments";
 import {
   DataValidationFilter,
   RANDOMIZATION_PREVIEW_TYPES,
@@ -32,6 +31,7 @@ import {
 } from "../../lib/utils";
 import { Card } from "../atoms";
 import { CreateExperimentModal } from "../data-upload/CreateExperimentModal";
+import { SpecialisationDropdown } from "../data-upload/SpecialisationDropdown";
 import { AsyncSelect } from "../molecules";
 import { BaseSelect } from "../molecules/BaseSelect";
 import { DataTable } from "../organisms/DataTable/DataTable";
@@ -349,28 +349,21 @@ export default function DataValidation() {
             />
           </div>
           <div className="w-full md:w-48">
-            <label
-              htmlFor="specialization-select"
-              className="text-sm font-medium text-foreground block mb-2"
-            >
-              Filter by Specialization
-            </label>
-            <BaseSelect
-              id="specialization-select"
+            <SpecialisationDropdown
+              label="Filter by Specialization"
+              placeholder="All Specializations"
               value={specializationFilter}
-              onChange={(value: string | string[]) =>
+              onValueChange={(value: string | string[]) =>
                 handleFilterChange(
                   DataValidationFilter.Specialization,
                   String(value)
                 )
               }
-              options={[
-                { label: "All Specializations", value: SELECT_ALL },
-                ...specialisationOptions,
-              ]}
-              placeholder="All Specializations"
+              optionWithAll={true}
+              allLabel="All Specializations"
               disabled={false}
-              searchable={false}
+              module_perm="data_validate"
+              className="space-y-3.5"
             />
           </div>
           <div className="w-full md:w-48">

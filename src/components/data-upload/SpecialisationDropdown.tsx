@@ -1,6 +1,9 @@
+import { specializationApi } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
+import type { PermissionModuleType } from "@/lib";
+import { cn, generateQueryKey } from "@/lib/utils";
 
-import { CustomSelect } from "./CustomSelect";
+import { AsyncSelect } from "../molecules";
 
 interface SpecialisationDropdownProps {
   value: string;
@@ -9,14 +12,13 @@ interface SpecialisationDropdownProps {
   error?: string;
   showHelperText?: boolean;
   helperText?: string;
+  module_perm?: PermissionModuleType;
+  label?: string;
+  placeholder?: string;
+  optionWithAll?: boolean;
+  allLabel?: string;
+  className?: string;
 }
-
-const specialisationOptions = [
-  { value: "Preclinical", label: "Preclinical" },
-  { value: "CMC", label: "CMC" },
-  { value: "chemistry", label: "Chemistry" },
-  { value: "hotlab", label: "Hotlab" },
-];
 
 export function SpecialisationDropdown({
   value,
@@ -25,6 +27,12 @@ export function SpecialisationDropdown({
   error,
   showHelperText = false,
   helperText = "Please select a project to continue",
+  module_perm,
+  label = "Specialisation",
+  placeholder = "Select specialisation",
+  optionWithAll = false,
+  allLabel,
+  className,
 }: Readonly<SpecialisationDropdownProps>) {
   const handleChange = (selectedValue: string | string[]) => {
     const val =
@@ -33,20 +41,37 @@ export function SpecialisationDropdown({
   };
 
   return (
-    <div className="space-y-2">
+    <div className={cn("space-y-2", className)}>
       <Label
         htmlFor="specialisation"
         className={`${disabled ? "text-muted-foreground" : ""}`}
       >
-        Specialisation
+        {label}
       </Label>
-      <CustomSelect
-        options={specialisationOptions}
-        placeholder="Select specialisation"
+      <AsyncSelect
+        id="specialisation"
         value={value}
-        onValueChange={handleChange}
+        onChange={handleChange}
+        query={async () => {
+          try {
+            const response = await specializationApi.specializationDropdown({
+              module_perm,
+            });
+            return response.data ?? [];
+          } catch {
+            return [];
+          }
+        }}
+        queryKey={generateQueryKey("specialization", module_perm)}
+        mapConfig={{
+          valueKey: "value",
+          labelKey: "label",
+        }}
+        searchable={false}
+        optionWithAll={optionWithAll}
+        allLabel={allLabel}
         disabled={disabled}
-        className={disabled ? "opacity-50 cursor-not-allowed w-full" : "w-full"}
+        placeholder={placeholder}
       />
       {showHelperText && (
         <span className="text-xs text-muted-foreground">{helperText}</span>

@@ -492,6 +492,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           disabled={!isProjectSelected}
           error={errors.specialisation}
           showHelperText={!isProjectSelected}
+          module_perm="data_upload"
         />
 
         {canShowStudyType && (

@@ -25,6 +25,7 @@ interface AsyncSelectProps<T> {
   createNewLabel?: string;
   onCreateNew?: () => void;
   triggerClassName?: string;
+  id?: string;
 }
 
 export function AsyncSelect<T>({
@@ -44,6 +45,7 @@ export function AsyncSelect<T>({
   createNewLabel = "Create New",
   onCreateNew,
   triggerClassName = "",
+  id,
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
@@ -73,6 +75,7 @@ export function AsyncSelect<T>({
       onCreateNew={onCreateNew}
       createNewLabel={createNewLabel}
       className={triggerClassName}
+      id={id}
     />
   );
 }
