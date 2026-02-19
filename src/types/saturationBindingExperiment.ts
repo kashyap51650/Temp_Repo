@@ -30,3 +30,16 @@ export interface SaturationBindingExperiment {
 
 export type CreateSaturationBindingExperimentResponse =
   ApiResponse<SaturationBindingExperiment>;
+
+export interface SaturationBindingExperimentDataUploadPayload {
+  experiment_id: number;
+  file: File;
+  no_of_replica: number;
+}
+
+export type SaturationBindingExperimentDataUploadResponse = ApiResponse<{
+  filename: string;
+  file_type: string;
+  experiment_id: number;
+  uploaded_by: number;
+}>;

@@ -459,7 +459,7 @@ export function CreateExperimentModal({
       );
     }
 
-    if (studyType === STUDY_TYPE_CODE.SATURATION_BINDING) {
+    if (studyType === STUDY_TYPE_CODE.SATURATION_BINDING_ASSAY) {
       return (
         <SaturationBindingExperimentForm
           projectId={projectId}

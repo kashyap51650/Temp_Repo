@@ -19,6 +19,9 @@ export const STUDY_TYPE = {
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
   TOXICITY: "Toxicity",
+  SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
+  DELFIA: "Delfia",
+  ELISA: "ELISA",
 } as const;
 
 export const STUDY_TYPE_CODE = {
@@ -34,7 +37,7 @@ export const STUDY_TYPE_CODE = {
   RECEPTOR_QUANTIFICATION: "RECEPTOR_QUANTIFICATION",
   DELFIA: "DELFIA",
   ELISA: "ELISA",
-  SATURATION_BINDING: "SATURATION_BINDING",
+  SATURATION_BINDING_ASSAY: "SATURATION_BINDING_ASSAY",
 } as const;
 
 export type StudyTypeCode =
@@ -56,6 +59,8 @@ export const DATA_TYPE = {
   IRF: "IRF",
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
   SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
+  DELFIA: "Delfia",
+  ELISA: "Elisa",
 } as const;
 
 // Type definitions for the constants

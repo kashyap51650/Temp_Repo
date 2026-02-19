@@ -20,6 +20,7 @@ type Payload = {
   file: File;
   url: string;
   group_ids?: string[];
+  no_of_replica?: number;
 };
 
 export const useUploadData = ({
@@ -41,6 +42,9 @@ export const useUploadData = ({
       }
       if (payload.group_ids) {
         formData.append("group_ids", payload.group_ids.join(","));
+      }
+      if (payload.no_of_replica) {
+        formData.append("no_of_replica", payload.no_of_replica.toString());
       }
       formData.append("file", payload.file, payload.file.name);
 
@@ -250,6 +254,20 @@ export const useUploadData = ({
           }
         }
 
+        case STUDY_TYPE.SATURATION_BINDING_ASSAY: {
+          const saturationBindingAssay =
+            API_CONFIG.ENDPOINTS.DATA_UPLOAD.CMC.SATURATION_BINDING_ASSAY;
+
+          switch (dataType) {
+            case DATA_TYPE.SATURATION_BINDING_ASSAY:
+              return saturationBindingAssay.SATURATION_BINDING_ASSAY_DATA;
+            case DATA_TYPE.HOTLAB:
+              return saturationBindingAssay.HOTLAB;
+            default:
+              return null;
+          }
+        }
+
         default:
           return null;
       }
@@ -263,9 +281,11 @@ export const useUploadData = ({
   const handleUpload = async ({
     formData,
     isPdfUpload,
+    no_of_replica,
   }: {
     formData: FormData;
     isPdfUpload?: boolean;
+    no_of_replica?: number;
   }) => {
     const url = getConfigurationUrl(formData);
 
@@ -310,6 +330,11 @@ export const useUploadData = ({
           : undefined,
       file: formData.uploadedFile,
       url,
+      no_of_replica:
+        formData.dataType === DATA_TYPE.SATURATION_BINDING_ASSAY &&
+        no_of_replica
+          ? no_of_replica
+          : undefined,
     });
   };
 

@@ -359,6 +359,10 @@ export const API_CONFIG = {
           RECEPTOR_QUANTIFICATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/receptor-quantification-data`,
           HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/hotlab`,
         },
+        SATURATION_BINDING_ASSAY: {
+          SATURATION_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/saturation-binding-assay-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/hotlab`,
+        },
       },
     },
   },

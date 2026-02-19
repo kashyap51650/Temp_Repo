@@ -28,6 +28,7 @@ import { FileUploadArea } from "./FileUploadArea";
 import { GenericFileUploadArea } from "./GenericFileUploadArea";
 import { LinkExperimentModal } from "./LinkExperimentModal";
 import { MouseGroupForAgcSelectionModal } from "./MouseGroupForAgcSelectionModal";
+import { NValueSelectionModal } from "./NValueSelectionModal";
 import PreviewBloodChemistryReportModal from "./PreviewBloodChemistryReportModal";
 import { PreviewHematologyReportModal } from "./PreviewHematologyReportModal";
 import { ProjectSection } from "./ProjectSection";
@@ -117,6 +118,8 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     formData.dataType === DATA_TYPE.RECEPTOR_QUANTIFICATION;
   const isConjugationData = formData.dataType === DATA_TYPE.CONJUGATION;
   const isGelImageData = formData.dataType === DATA_TYPE.GEL_IMAGE;
+  const isSaturationBindingDataTypeSelected =
+    formData.dataType === DATA_TYPE.SATURATION_BINDING_ASSAY;
 
   const isStudyTypeSelected = !!formData.studyType;
 
@@ -192,6 +195,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
   );
 
   const processedExperimentCounter = useRef<number>(0);
+  const nValueSelectModal = useModal();
 
   useEffect(() => {
     if (
@@ -245,6 +249,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     setFormData((prev: FormData) => ({
       ...prev,
       uploadedFile: null,
+      ...(isAGCSelected && { uploadAGCFile: null }),
     }));
   };
 
@@ -252,6 +257,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     if (data) {
       if (isAGCSelected) {
         setIsOpenGroupSelectionModalForAGC(false);
+        handleUploadFileReset();
+        return;
+      }
+      if (isSaturationBindingDataTypeSelected) {
+        nValueSelectModal.closeModal();
         handleUploadFileReset();
         return;
       }
@@ -312,6 +322,14 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
     onSuccess: handleSuccess,
     onError: handleError,
   });
+
+  const handleGenericFileUpload = () => {
+    if (isSaturationBindingDataTypeSelected) {
+      nValueSelectModal.openModal();
+      return;
+    }
+    handleUpload({ formData, isPdfUpload: true });
+  };
 
   // Download Sheet Hook
   const { downloadSheet, isDownloading } = useDownloadSheet();
@@ -602,7 +620,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           <div className="flex items-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={() => handleUpload({ formData, isPdfUpload: true })}
+              onClick={handleGenericFileUpload}
               disabled={
                 !canUploadData ||
                 (!isHotlabSelected && !isExperimentSelected) ||
@@ -700,6 +718,16 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           }}
           file={formData?.uploadedFile || undefined}
           projectId={formData.project?.id}
+        />
+      )}
+      {nValueSelectModal.isOpen && (
+        <NValueSelectionModal
+          isOpen={nValueSelectModal.isOpen}
+          onClose={nValueSelectModal.closeModal}
+          onProceed={(nValue) =>
+            handleUpload({ formData, isPdfUpload: true, no_of_replica: nValue })
+          }
+          isUploading={isUploading}
         />
       )}
     </>
