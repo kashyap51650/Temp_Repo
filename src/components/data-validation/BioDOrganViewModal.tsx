@@ -158,6 +158,7 @@ export function BioDOrganViewModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "BioD Organ",

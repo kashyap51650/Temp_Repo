@@ -194,6 +194,7 @@ export default function ViewBloodChemistryDataModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "Blood Chemistry Data",

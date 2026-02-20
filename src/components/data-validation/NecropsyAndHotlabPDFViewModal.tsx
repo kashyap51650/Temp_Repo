@@ -132,6 +132,7 @@ export function NecropsyAndHotlabPDFViewModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: displayName,

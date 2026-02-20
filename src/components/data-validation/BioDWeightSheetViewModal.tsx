@@ -142,6 +142,7 @@ export function BioDWeightSheetViewModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "BioD Weight Sheet",
