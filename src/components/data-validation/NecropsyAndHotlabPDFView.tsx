@@ -37,8 +37,8 @@ export function NecropsyAndHotlabPDFView({
 
   const pdfUrl =
     dataType === DATA_TYPE.NECROPSY_SHEET.toLowerCase()
-      ? (data as ExperimentDataForNecropsyResponse)?.file_url
-      : (data as ImportHotlabPDFResponse)?.data?.hotlab_file.file_url;
+      ? (data?.data as ExperimentDataForNecropsyResponse["data"])?.file_url
+      : (data?.data as ImportHotlabPDFResponse["data"])?.hotlab_file.file_url;
 
   if (isLoading && experimentDataId) {
     return (

@@ -9,12 +9,12 @@ import type {
   BioDOrganData,
   BulkUpdatePayload,
   BulkUpdateResponse,
-  ExperimentDataForBioDOrganSheetResponse,
+  ExperimentDataForBioDOrganSheetUploadData,
 } from "@/types/organ-sheet";
 
 interface UseBioDOrganEditModalProps {
   experimentData: BioDOrganData;
-  rawUploadedData: ExperimentDataForBioDOrganSheetResponse["uploaded_data"];
+  rawUploadedData: ExperimentDataForBioDOrganSheetUploadData;
   experimentId: number;
   isOpen: boolean;
   onClose: () => void;

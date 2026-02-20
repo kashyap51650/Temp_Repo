@@ -43,8 +43,8 @@ export function BioDOrganViewModal({
   );
 
   const bioDOrganData = useMemo(() => {
-    if (!data) return null;
-    return generateBioDOrganData(data.uploaded_data);
+    if (!data?.data) return null;
+    return generateBioDOrganData(data?.data?.uploaded_data);
   }, [data]);
 
   const handleEdit = () => {
@@ -56,7 +56,7 @@ export function BioDOrganViewModal({
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         onClose();
       },
@@ -73,7 +73,7 @@ export function BioDOrganViewModal({
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           onClose();
@@ -143,13 +143,13 @@ export function BioDOrganViewModal({
         </div>
       </Dialog>
 
-      {bioDOrganData && data?.uploaded_data && (
+      {bioDOrganData && data?.data?.uploaded_data && (
         <BioDOrganEditModal
           isOpen={editModal.isOpen}
           onClose={editModal.closeModal}
           onSave={editModal.closeModal}
           experimentData={bioDOrganData}
-          rawUploadedData={data.uploaded_data}
+          rawUploadedData={data?.data?.uploaded_data}
           experimentId={Number(experimentDataId)}
         />
       )}

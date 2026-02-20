@@ -72,15 +72,17 @@ type MouseMeasurementMap = DynamicMap<OrganMeasurement>;
  */
 type OrganWeightsMap = DynamicMap<MouseMeasurementMap>;
 
-export type ExperimentDataForBioDOrganSheetResponse = {
-  id: string;
-  uploaded_data: {
-    groups: GroupsMap;
-    organs: OrgansMap;
-    mice: MiceMap;
-    organ_weights: OrganWeightsMap;
-  };
+export type ExperimentDataForBioDOrganSheetUploadData = {
+  groups: GroupsMap;
+  organs: OrgansMap;
+  mice: MiceMap;
+  organ_weights: OrganWeightsMap;
 };
+
+export type ExperimentDataForBioDOrganSheetResponse = ApiResponse<{
+  id: string;
+  uploaded_data: ExperimentDataForBioDOrganSheetUploadData;
+}>;
 
 export interface BioDOrganRow {
   id: string;

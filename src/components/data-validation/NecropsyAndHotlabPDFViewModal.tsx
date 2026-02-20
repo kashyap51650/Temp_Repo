@@ -45,7 +45,7 @@ export function NecropsyAndHotlabPDFViewModal({
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         onClose();
       },
@@ -62,7 +62,7 @@ export function NecropsyAndHotlabPDFViewModal({
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           onClose();

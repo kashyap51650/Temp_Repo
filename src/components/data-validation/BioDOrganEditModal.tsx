@@ -1,7 +1,7 @@
 import { useBioDOrganEditModal } from "@/hooks/useBioDOrganEditModal";
 import type {
   BioDOrganData,
-  ExperimentDataForBioDOrganSheetResponse,
+  ExperimentDataForBioDOrganSheetUploadData,
 } from "@/types/organ-sheet";
 
 import { Button, Dialog } from "../atoms";
@@ -12,7 +12,7 @@ interface BioDOrganEditModalProps {
   onClose: () => void;
   onSave?: (data: BioDOrganData) => void;
   experimentData: BioDOrganData;
-  rawUploadedData: ExperimentDataForBioDOrganSheetResponse["uploaded_data"];
+  rawUploadedData: ExperimentDataForBioDOrganSheetUploadData;
   experimentId: number;
   onSaveSuccess?: () => void;
 }

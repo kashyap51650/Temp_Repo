@@ -1,3 +1,5 @@
+import type { ApiResponse } from "@/lib";
+
 export interface CMCFileType {
   file_type: string;
   file_url: string;
@@ -5,7 +7,7 @@ export interface CMCFileType {
   uploaded_at: string;
 }
 
-export interface CMCExperimentDataResponse {
+export type CMCExperimentDataResponse = ApiResponse<{
   cmc_file: CMCFileType;
   experiment_data_id: number;
-}
+}>;

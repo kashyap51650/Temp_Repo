@@ -66,6 +66,7 @@ import type {
   ModelStudyExperimentMouseGroupsPayload,
   ModelStudyExperimentMouseGroupsResponse,
 } from "@/types/modelStudy";
+import type { PaginationData } from "@/types/pagination";
 import type { ProjectFilters, ProjectsListResponse } from "@/types/project";
 import type {
   CreateReceptorQuantificationExperimentPayload,
@@ -273,17 +274,10 @@ export interface UploadedExperimentDataItem {
   uploaded_data: unknown;
 }
 
-export interface UploadedExperimentDataResponse {
+export type UploadedExperimentDataResponse = ApiResponse<{
   items: UploadedExperimentDataItem[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
-}
+  pagination: PaginationData;
+}>;
 
 export interface UploadedExperimentDataFilters {
   page?: number;

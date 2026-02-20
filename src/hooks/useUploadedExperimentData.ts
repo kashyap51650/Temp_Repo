@@ -5,9 +5,9 @@ import {
   uploadedExperimentDataApi,
   type UploadedExperimentDataFilters,
   type UploadedExperimentDataItem,
-  type UploadedExperimentDataResponse,
 } from "@/api";
 import { toast } from "@/components/atoms/Sonner/toast";
+import type { PaginationData } from "@/types/pagination";
 
 import { handleApiError } from "../lib/api";
 import { DEFAULT_PAGE_SIZE, REACT_QUERY_CONFIG } from "../lib/constants";
@@ -18,7 +18,7 @@ interface UseUploadedExperimentDataProps {
 
 interface UseUploadedExperimentDataResult {
   data: UploadedExperimentDataItem[];
-  pagination: UploadedExperimentDataResponse["pagination"] | null;
+  pagination: PaginationData | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -33,7 +33,7 @@ export function useUploadedExperimentData(
   });
 
   const {
-    data: queryData,
+    data: queryResponse,
     isLoading: loading,
     error,
     refetch,
@@ -60,6 +60,7 @@ export function useUploadedExperimentData(
     retry: 1,
   });
 
+  const queryData = queryResponse?.data;
   const data = queryData?.items || [];
   const pagination = queryData?.pagination || null;
 

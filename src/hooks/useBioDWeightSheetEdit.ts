@@ -22,12 +22,14 @@ import { useExperimentDataByIdForWeightSheet } from "./useExperimentDataById";
  */
 export function useBioDWeightSheetEdit(experimentDataId?: string) {
   const {
-    data: apiData,
+    data: apiResponse,
     isLoading,
     error,
   } = useExperimentDataByIdForWeightSheet(experimentDataId || "");
 
-  const { worksheets, hasMultipleWorksheets } = useBioDWeightSheetData(apiData);
+  const { worksheets, hasMultipleWorksheets } = useBioDWeightSheetData(
+    apiResponse?.data
+  );
 
   const [worksheetData, setWorksheetData] = useState<
     Map<number, WorksheetEditData>

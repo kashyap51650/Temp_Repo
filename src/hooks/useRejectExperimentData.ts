@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { apiClient, handleApiError } from "@/lib/api";
+import { apiClient, type ApiResponse, handleApiError } from "@/lib/api";
 
 interface RejectExperimentDataResponse {
   id: number;
@@ -21,12 +21,15 @@ interface RejectExperimentDataResponse {
 const rejectExperimentData = async (
   experimentDataId: string,
   rejectionReason: string
-): Promise<RejectExperimentDataResponse> => {
+): Promise<ApiResponse<RejectExperimentDataResponse>> => {
   const endpoint = `/api/v1/experiment-data/${experimentDataId}/reject`;
   const payload = {
     rejection_reason: rejectionReason,
   };
-  return apiClient.patch<RejectExperimentDataResponse>(endpoint, payload);
+  return apiClient.patch<ApiResponse<RejectExperimentDataResponse>>(
+    endpoint,
+    payload
+  );
 };
 
 export default function useRejectExperimentData() {

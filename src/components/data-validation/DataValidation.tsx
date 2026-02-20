@@ -69,7 +69,15 @@ export default function DataValidation() {
   const selectExperimentModal = useModal();
   const createExperimentModal = useModal();
 
-  const { data, isLoading, error, setFilters, filters } = useValidationData();
+  const {
+    data: apiResponse,
+    isLoading,
+    error,
+    setFilters,
+    filters,
+  } = useValidationData();
+
+  const data = apiResponse?.data;
 
   const { mouseGroups } = useMouseGroupsByExperiment(selectedExperiment?.id);
 

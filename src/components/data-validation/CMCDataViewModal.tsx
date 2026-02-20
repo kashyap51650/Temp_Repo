@@ -40,14 +40,14 @@ export default function CMCDataViewModal({
     experimentDataId || ""
   );
 
-  const cmcFile = data?.cmc_file;
+  const cmcFile = data?.data?.cmc_file;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         onClose();
       },
@@ -64,7 +64,7 @@ export default function CMCDataViewModal({
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           onClose();

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { RandomizationStatus } from "@/api";
-import { apiClient } from "@/lib/api";
+import { apiClient, type ApiResponse } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { CMCExperimentDataResponse } from "@/types/CMC";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
@@ -93,7 +93,7 @@ export interface ExperimentDataResponse {
   };
 }
 
-export type ExperimentDataForCaliperingResponse = {
+export type ExperimentDataForCaliperingResponse = ApiResponse<{
   id: number;
   project?: Project;
   experiment?: Experiment;
@@ -140,9 +140,9 @@ export type ExperimentDataForCaliperingResponse = {
       }[];
     }[];
   };
-};
+}>;
 
-export type ExperimentDataForWeightSheetResponse = {
+export type ExperimentDataForWeightSheetResponse = ApiResponse<{
   id: number;
   project?: Project;
   experiment?: Experiment;
@@ -190,15 +190,14 @@ export type ExperimentDataForWeightSheetResponse = {
       }[];
     }[];
   };
-};
-
-export interface ExperimentDataForNecropsyResponse {
+}>;
+export type ExperimentDataForNecropsyResponse = ApiResponse<{
   experiment_data_id: number;
   file_url: string;
   filename: string;
   file_size_bytes: number | null;
   uploaded_at: string;
-}
+}>;
 
 const fetchExperimentDataForWeightSheet = async (
   experimentDataId: string

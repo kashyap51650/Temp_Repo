@@ -31,3 +31,12 @@ export type PaginationState = {
   onNext: () => void;
   onLast: () => void;
 };
+
+export type PaginationData = {
+  page: number;
+  size: number;
+  total: number;
+  pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+};
