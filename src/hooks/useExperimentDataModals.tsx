@@ -51,6 +51,10 @@ const SaturationBindingAssaySheetViewModal = lazy(() =>
   }))
 );
 
+const ElisaDataViewModal = lazy(
+  () => import("@/components/data-validation/ElisaDataViewModal")
+);
+
 interface ExperimentDataItem {
   id: string | number;
   experimentName?: string;
@@ -93,6 +97,7 @@ export function useExperimentDataModals(
   const hotlabViewModal = useModal();
   const cmcViewModal = useModal();
   const saturationBindingAssayViewModal = useModal();
+  const elisaViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -132,6 +137,7 @@ export function useExperimentDataModals(
         dataTypeName === DATA_TYPE.RECEPTOR_QUANTIFICATION;
       const isSaturationBindingAssay =
         dataTypeName === DATA_TYPE.SATURATION_BINDING_ASSAY;
+      const isElisaData = dataTypeName === DATA_TYPE.ELISA;
 
       if (isCalliperingSheet) {
         navigate({
@@ -194,6 +200,11 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (isElisaData) {
+        elisaViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -210,6 +221,7 @@ export function useExperimentDataModals(
       hotlabViewModal,
       cmcViewModal,
       saturationBindingAssayViewModal,
+      elisaViewModal,
       navigate,
     ]
   );
@@ -361,6 +373,19 @@ export function useExperimentDataModals(
             <SaturationBindingAssaySheetViewModal
               isOpen={saturationBindingAssayViewModal.isOpen}
               onClose={saturationBindingAssayViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && elisaViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <ElisaDataViewModal
+              isOpen={elisaViewModal.isOpen}
+              onClose={elisaViewModal.closeModal}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
               experimentName={experimentName}

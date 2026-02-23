@@ -60,7 +60,7 @@ export const DATA_TYPE = {
   RECEPTOR_QUANTIFICATION: "Receptor Quantification",
   SATURATION_BINDING_ASSAY: "Saturation Binding Assay",
   DELFIA: "Delfia",
-  ELISA: "Elisa",
+  ELISA: "ELISA",
 } as const;
 
 // Type definitions for the constants

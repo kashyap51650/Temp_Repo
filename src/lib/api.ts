@@ -187,6 +187,22 @@ export const API_CONFIG = {
       LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data`,
       UPDATE_TREATMENT_DATE: (experimentDataId: string) =>
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
+      WEIGHT_SHEET_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/weight-sheet`,
+      CALLIPERING_SHEET_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/callipering-sheet`,
+      ORGAN_WEIGHT_SHEET_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/organ-weight-sheet`,
+      NECROPSY_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/necropsy-data`,
+      HOTLAB_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/hotlab-pdf`,
+      CMC_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/cmc-data`,
+      SATURATION_BINDING_ASSAY_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/saturation-binding-assay`,
+      ELISA_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/elisa-data`,
       IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
       IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-necropsy-experiment-data`,
       IMPORT_CLRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/clrf/import-clrf-experiment-data`,
@@ -376,6 +392,13 @@ export const API_CONFIG = {
         SATURATION_BINDING_ASSAY: {
           SATURATION_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/saturation-binding-assay-data`,
           HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/hotlab`,
+        },
+      },
+
+      CHEMISTRY: {
+        ELISA: {
+          ELISA_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/elisa-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/hotlab`,
         },
       },
     },

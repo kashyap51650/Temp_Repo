@@ -2,17 +2,17 @@ import { toast } from "sonner";
 
 import {
   useApproveExperimentData,
-  useExperimentDataByIdForSaturationBinding,
+  useExperimentDataByIdForElisa,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
 
 import { Dialog } from "../atoms";
+import { FileViewer } from "./FileViewer";
 import { RejectExperimentModal } from "./RejectExperimentModal";
-import { SaturationBindingAssaySheetView } from "./SaturationBindingAssaySheetView";
 import { SheetActions } from "./SheetActions";
 
-interface SaturationBindingAssaySheetViewModalProps {
+interface ElisaDataViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
@@ -22,7 +22,7 @@ interface SaturationBindingAssaySheetViewModalProps {
   experimentDataType: string;
 }
 
-export function SaturationBindingAssaySheetViewModal({
+export default function ElisaDataViewModal({
   isOpen,
   onClose,
   experimentName,
@@ -30,17 +30,17 @@ export function SaturationBindingAssaySheetViewModal({
   experimentStatus,
   hideActions,
   experimentDataType,
-}: Readonly<SaturationBindingAssaySheetViewModalProps>) {
+}: Readonly<ElisaDataViewModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
-  const {
-    data: apiData,
-    isLoading,
-    error,
-  } = useExperimentDataByIdForSaturationBinding(experimentDataId || "");
+  const { data, isLoading } = useExperimentDataByIdForElisa(
+    experimentDataId || ""
+  );
+
+  const elisaFile = data?.data?.elisa_file;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -74,6 +74,43 @@ export function SaturationBindingAssaySheetViewModal({
   };
 
   const isPending = experimentStatus === "pending";
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-lg text-muted-foreground">
+            Loading {experimentDataType} data...
+          </div>
+        </div>
+      );
+    }
+
+    if (elisaFile) {
+      return (
+        <FileViewer
+          fileUrl={elisaFile.file_url}
+          filename={elisaFile.filename}
+          fileType={elisaFile.file_type}
+          title={`${experimentDataType} - ${experimentName}`}
+        />
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center text-muted-foreground">
+          <p className="text-lg font-medium">
+            No {experimentDataType} data available
+          </p>
+          <p className="text-sm mt-2">
+            No file has been uploaded for this experiment
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog
@@ -107,13 +144,10 @@ export function SaturationBindingAssaySheetViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <SaturationBindingAssaySheetView
-          experimentDataId={experimentDataId}
-          apiData={apiData}
-          isLoading={isLoading}
-          error={error}
-        />
+        {/* File Viewer Content */}
+        <div className="flex-1 overflow-hidden">{renderContent()}</div>
       </Dialog>
+
       <RejectExperimentModal
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}

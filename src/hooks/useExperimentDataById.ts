@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { RandomizationStatus } from "@/api";
-import { apiClient, type ApiResponse } from "@/lib/api";
+import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { CMCExperimentDataResponse } from "@/types/CMC";
+import type { ElisaExperimentDataResponse } from "@/types/elisaExperiment";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
 import type { SaturationBindingAssayExperimentDataResponse } from "@/types/saturationBindingAssay";
@@ -202,21 +203,28 @@ export type ExperimentDataForNecropsyResponse = ApiResponse<{
 const fetchExperimentDataForWeightSheet = async (
   experimentDataId: string
 ): Promise<ExperimentDataForWeightSheetResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/weight-sheet`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.WEIGHT_SHEET_DATA(experimentDataId);
   return apiClient.get<ExperimentDataForWeightSheetResponse>(endpoint);
 };
 
 const fetchExperimentDataForCalliperingSheet = async (
   experimentDataId: string
 ): Promise<ExperimentDataForCaliperingResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/callipering-sheet`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.CALLIPERING_SHEET_DATA(
+      experimentDataId
+    );
   return apiClient.get<ExperimentDataForCaliperingResponse>(endpoint);
 };
 
 const fetchExperimentDataForBioDOrganSheet = async (
   experimentDataId: string
 ): Promise<ExperimentDataForBioDOrganSheetResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/organ-weight-sheet`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.ORGAN_WEIGHT_SHEET_DATA(
+      experimentDataId
+    );
   const response =
     apiClient.get<ExperimentDataForBioDOrganSheetResponse>(endpoint);
   return response;
@@ -225,25 +233,37 @@ const fetchExperimentDataForBioDOrganSheet = async (
 const fetchExperimentDataForNecropsy = async (
   experimentDataId: string
 ): Promise<ExperimentDataForNecropsyResponse> => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/necropsy-data`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.NECROPSY_DATA(experimentDataId);
   return apiClient.get<ExperimentDataForNecropsyResponse>(endpoint);
 };
 
 const fetchExperimentDataForHotlab = async (experimentDataId: string) => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/hotlab-pdf`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.HOTLAB_DATA(experimentDataId);
   return apiClient.get<ImportHotlabPDFResponse>(endpoint);
 };
 
 const fetchExperimentDataForCMC = async (experimentDataId: string) => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/cmc-data`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.CMC_DATA(experimentDataId);
   return apiClient.get<CMCExperimentDataResponse>(endpoint);
 };
 
 const fetchExperimentDataForSaturationBinding = async (
   experimentDataId: string
 ) => {
-  const endpoint = `/api/v1/experiment-data/${experimentDataId}/saturation-binding-assay`;
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.SATURATION_BINDING_ASSAY_DATA(
+      experimentDataId
+    );
   return apiClient.get<SaturationBindingAssayExperimentDataResponse>(endpoint);
+};
+
+const fetchExperimentDataForElisa = async (experimentDataId: string) => {
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.ELISA_DATA(experimentDataId);
+  return apiClient.get<ElisaExperimentDataResponse>(endpoint);
 };
 
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
@@ -320,6 +340,17 @@ export function useExperimentDataByIdForSaturationBinding(
   return useQuery({
     queryKey: ["experimentData", "saturation-binding-assay", experimentDataId],
     queryFn: () => fetchExperimentDataForSaturationBinding(experimentDataId),
+    enabled: !!experimentDataId,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForElisa(experimentDataId: string) {
+  return useQuery({
+    queryKey: ["experimentData", "elisa", experimentDataId],
+    queryFn: () => fetchExperimentDataForElisa(experimentDataId),
     enabled: !!experimentDataId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,
