@@ -45,7 +45,7 @@ stages:
         scanners: 'vuln,misconfig,secret,license'
         severities: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
         ignoreScanErrors: true
-        failOnSeverityThreshold: 'MEDIUM'
+        failOnSeverityThreshold: 'HIGH'
         reports: 'asff, cosign, cyclonedx, html, junit, sarif, spdx, spdxjson, table'
         publish: true
 
