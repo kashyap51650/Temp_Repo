@@ -29,6 +29,7 @@ import { CustomSelect } from "./CustomSelect";
 import DelfiaExperimentForm from "./DelfiaExperimentForm";
 import DirectBindingAssayExperimentForm from "./DirectBindingAssayExperimentForm";
 import DoseRangeExperimentForm from "./DoseRangeExperimentForm";
+import EfficacyExperimentForm from "./EfficacyExperimentForm";
 import ElisaExperimentForm from "./ElisaExperimentForm";
 import IrfExperimentForm from "./IrfExperimentForm";
 import ModelStudyExperimentForm from "./ModelStudyExperimentForm";
@@ -535,6 +536,18 @@ export function CreateExperimentModal({
       );
     }
 
+    if (studyType === STUDY_TYPE_CODE.EFFICACY) {
+      return (
+        <EfficacyExperimentForm
+          projectId={projectId}
+          studyTypeId={studyTypeId}
+          specialization={specialization}
+          onCancel={handleCancel}
+          onSuccess={handleSuccess}
+        />
+      );
+    }
+
     return null;
   };
 
@@ -802,18 +815,21 @@ export function CreateExperimentModal({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open: boolean) => {
-        if (!open) handleCancel();
-      }}
-      title={"Create New Experiment"}
-      description={"Enter the details for your new experiment"}
-      showClose={true}
-      className="max-w-lg"
-      trigger={null}
-    >
-      {renderExperimentForm()}
-    </Dialog>
+    <>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open: boolean) => {
+          if (!open) handleCancel();
+        }}
+        title={"Create New Experiment"}
+        description={"Enter the details for your new experiment"}
+        showClose={true}
+        className="max-w-lg"
+        trigger={null}
+        preventOutsideClose
+      >
+        {renderExperimentForm()}
+      </Dialog>
+    </>
   );
 }

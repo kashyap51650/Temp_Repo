@@ -245,6 +245,9 @@ export const API_CONFIG = {
         `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments/${experimentId}`,
       IMPORT_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/hotlab/import-hotlab-pdf`,
     },
+    EFFICACY: {
+      CREATE_EXPERIMENT: `/api/${import.meta.env.VITE_API_VERSION}/efficacy-experiments/`,
+    },
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/organ-weights/${experimentId}/bulk-update`,
@@ -284,6 +287,13 @@ export const API_CONFIG = {
     CELL_LINE_VALIDATION: {
       VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
         `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
+    },
+    DOSE_FREQUENCIES: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/dose-frequencies/dropdown`,
+      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/dose-frequencies/`,
+    },
+    MARKET_DOSE: {
+      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/market-doses/dropdown`,
     },
     USER_NOTIFICATION_SETTINGS: {
       GET_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
