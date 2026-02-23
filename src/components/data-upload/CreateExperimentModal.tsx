@@ -777,9 +777,26 @@ export function CreateExperimentModal({
 
     return (
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Experiment creation is not available for the selected specialization.
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-6 text-center">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+            <span className="sr-only">Notice</span>
+            <span aria-hidden="true" className="text-lg text-muted-foreground">
+              !
+            </span>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              Creation Not Available
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Experiment creation is not supported for{" "}
+              <span className="font-medium capitalize">
+                {studyType.split("_").join(" ").toLowerCase()}
+              </span>
+              . Please select an existing experiment instead.
+            </p>
+          </div>
+        </div>
       </div>
     );
   };
