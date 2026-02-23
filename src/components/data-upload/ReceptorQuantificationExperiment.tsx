@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import type { ExperimentDropdownItem } from "@/api";
 import { useReceptorQuantificationForm } from "@/hooks/useReceptorQuantificationForm";
 
@@ -36,6 +38,14 @@ export default function ReceptorQuantificationExperimentForm({
       onSuccess,
       onCancel,
     });
+
+  const primaryAntibody = form.watch("primaryAntibody");
+
+  useEffect(() => {
+    if (form.getValues("secondaryAntibody") !== undefined) {
+      form.trigger("secondaryAntibody");
+    }
+  }, [primaryAntibody, form]);
 
   return (
     <Form {...form}>
