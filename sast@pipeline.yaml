@@ -3,109 +3,45 @@ trigger: none
 pr:
   branches:
     include:
-    - '*'
+      - "*"
+
+resources:
+  repositories:
+    - repository: infra-templates
+      type: git
+      name: Orano-Med/oranomed-infrastructure-repo
+      ref: refs/heads/reusable-template
 
 pool: jumphost-dev-agent
 
 variables:
-- group: sonarqube-frontend-variables
-- name: buildVersion
-  value: "$(Date:yyyyMMdd).$(Rev:.r)"
+  - group: sonarqube-frontend-variables
+  - name: buildVersion
+    value: "$(Date:yyyyMMdd).$(Rev:.r)"
 
 stages:
-- stage: SecurityScan
-  displayName: "GitLeak & Trivy Scan"
-  jobs:
-  - job: RunGitleaks
-    displayName: "Scan for Secrets with Gitleaks"
-    pool: jumphost-dev-agent
-    steps:
-    - checkout: self
-      fetchDepth: 0
+  - stage: SecurityScan
+    displayName: "GitLeak & Trivy Scan"
+    jobs:
+      - template: templates/security-scan.yml@infra-templates
+        parameters:
+          pool: jumphost-dev-agent
+          gitleaksConfigType: "default"
+          gitleaksScanMode: "directory"
+          trivyScanners: "vuln,misconfig,secret,license"
+          trivySeverities: "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+          trivyFailThreshold: "HIGH"
 
-    - task: Gitleaks@3
-      displayName: "Run Gitleaks Security Scan"
-      inputs:
-        scanlocation: "$(Build.SourcesDirectory)"
-        configtype: "default"
-        scanmode: "directory"
-        reportformat: "json"
-        redact: true
-        taskfail: false
-        uploadresults: true
-        reportartifactname: "CodeAnalysisLogs"
-        verbose: false
-        version: "latest"
-
-    - task: trivy@2
-      displayName: "Run Trivy Security Scan"
-      inputs:
-        type: 'filesystem'
-        target: '$(Build.SourcesDirectory)'
-        scanners: 'vuln,misconfig,secret,license'
-        severities: 'UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL'
-        ignoreScanErrors: true
-        failOnSeverityThreshold: 'HIGH'
-        reports: 'asff, cosign, cyclonedx, html, junit, sarif, spdx, spdxjson, table'
-        publish: true
-
-- stage: SonarQubeAnalysis
-  displayName: "SonarQube Scan"
-  dependsOn: SecurityScan
-  condition: succeeded()
-  jobs:
-  - job: SonarQubeScan
-    displayName: "Static Analysis with SonarQube - frontend"
-    pool: jumphost-dev-agent
-    variables:
-      gitLeaksDuration: $[ stageDependencies.SecurityScan.RunGitleaks.outputs['gitLeaksResult.gitLeaksDuration'] ]
-
-    steps:
-    - checkout: self
-
-    - bash: |
-        echo "##[section]Starting SonarQube analysis at $(date)"
-        echo "##vso[task.setvariable variable=sonarStartTime]$(date +%s)"
-        if [[ "$(gitLeaksDuration)" != "" ]]; then
-          echo "##[section]Security scan completed in $(gitLeaksDuration) seconds"
-        fi
-      displayName: "Record SonarQube Start Time"
-
-    - task: SonarQubePrepare@7
-      displayName: "Prepare frontend SonarQube Analysis"
-      inputs:
-        SonarQube: "$(frontendSonarConnection)"
-        scannerMode: "CLI"
-        configMode: "manual"
-        cliProjectKey: "$(frontendSonarProjectKey)"
-        cliProjectName: "PR-1551-OranoMed-frontend-ReactJs"
-        cliSources: "$(System.DefaultWorkingDirectory)"
-        cliProjectVersion: "$(Build.SourceBranchName)"
-        extraProperties: |
-          sonar.token=$(sonarToken)
-          sonar.qualitygate.wait=true
-          sonar.qualitygate.timeout=300
-          sonar.branch.name=$(Build.SourceBranchName)dddddd
-          sonar.exclusions=Dockerfile*,**/*.dockerignore,src/routeTree.gen.ts,src/index.css
-
-    - bash: |
-        # Remove all PR-related parameters that aren't supported in Community Edition
-        params="$SONARQUBE_SCANNER_PARAMS"
-
-        # Remove sonar.pullrequest.* parameters
-        params=$(echo "$params" | sed -E 's/"sonar\.pullrequest\.[^"]*":"[^"]*",?//g')
-
-        # Remove sonar.branch.name parameter
-        params=$(echo "$params" | sed -E 's/"sonar\.branch\.name":"[^"]*",?//g')
-
-        # Clean up any trailing commas before closing braces
-        params=$(echo "$params" | sed -E 's/,\s*}/}/g')
-
-        echo "Cleaned parameters: $params"
-        echo "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$params"
-      displayName: "Clean SonarQube Parameters for Community Edition"
-
-    - task: SonarQubeAnalyze@7
-      displayName: "Run SonarQube Analysis"
-      inputs:
-        jdkversion: "JAVA_HOME_17_X64"
+  - stage: SonarQubeAnalysis
+    displayName: "SonarQube Scan"
+    dependsOn: SecurityScan
+    condition: succeeded()
+    jobs:
+      - template: templates/sonarqube-analysis.yml@infra-templates
+        parameters:
+          pool: jumphost-dev-agent
+          sonarConnection: "$(frontendSonarConnection)"
+          sonarProjectKey: "$(frontendSonarProjectKey)"
+          sonarProjectName: "PR-1551-OranoMed-frontend-ReactJs"
+          sonarToken: "$(sonarToken)"
+          jdkVersion: "JAVA_HOME_17_X64"
