@@ -3,7 +3,8 @@ trigger: none
 pr:
   branches:
     include:
-      - "*"
+      - development
+      - staging
 
 resources:
   repositories:
