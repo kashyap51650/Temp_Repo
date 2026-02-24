@@ -1,91 +1,79 @@
 trigger:
   branches:
     include:
-    - staging
+      - staging
   paths:
     exclude:
-    - README.md
+      - README.md
 
 pr: none
+
+resources:
+  repositories:
+    - repository: infra-templates
+      type: git
+      name: Orano-Med/oranomed-infrastructure-repo
+      ref: refs/heads/reusable-template
 
 pool: jumphost-prod-agent
 
 variables:
-- name: COMMIT_HASH
-  value: $[ substring(variables['Build.SourceVersion'], 0, 7) ]
-- group: stage-frontend
+  - name: COMMIT_HASH
+    value: $[ substring(variables['Build.SourceVersion'], 0, 7) ]
+  - group: stage-frontend
 
 steps:
+  - template: templates/notify-teams.yml@infra-templates
+    parameters:
+      webhookUrl: $(TEAMS_WEBHOOK_URL)
+      status: "started"
 
-- template: ./notify-teams.yml
-  parameters:
-    webhookUrl: $(TEAMS_WEBHOOK_URL)
-    status: 'started'
+  - script: |
+      rm -rf .env
+      echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}" >> .env
+      echo "VITE_API_VERSION=${VITE_API_VERSION}" >> .env
+      echo "VITE_APP_ENV=${VITE_APP_ENV}" >> .env
+      echo "VITE_APP_NAME=${VITE_APP_NAME}" >> .env
+      echo "VITE_APP_VERSION=${VITE_APP_VERSION}" >> .env
+      echo "VITE_AUTH_REFRESH_TOKEN_KEY=${VITE_AUTH_REFRESH_TOKEN_KEY}" >> .env
+      echo "VITE_AUTH_TOKEN_KEY=${VITE_AUTH_TOKEN_KEY}" >> .env
+      echo "VITE_FEATURE_FLAG_EXPERIMENTAL=${VITE_FEATURE_FLAG_EXPERIMENTAL}" >> .env
+      echo "VITE_LOG_LEVEL=${VITE_LOG_LEVEL}" >> .env
+      echo "VITE_REACT_QUERY_CACHE_TIME=${VITE_REACT_QUERY_CACHE_TIME}" >> .env
+      echo "VITE_REACT_QUERY_MAX_RETRY_DELAY=${VITE_REACT_QUERY_MAX_RETRY_DELAY}" >> .env
+      echo "VITE_REACT_QUERY_RETRY=${VITE_REACT_QUERY_RETRY}" >> .env
+      echo "VITE_REACT_QUERY_RETRY_DELAY=${VITE_REACT_QUERY_RETRY_DELAY}" >> .env
+      echo "VITE_REACT_QUERY_STALE_TIME=${VITE_REACT_QUERY_STALE_TIME}" >> .env
+      echo "VITE_SOCKET_URL=${VITE_SOCKET_URL}" >> .env
+      echo "VITE_SENTRY_DSN=${VITE_SENTRY_DSN}" >> .env
+      cat .env
+    displayName: "Create ENV file"
 
-- script: |
-    rm -rf .env
-    echo "VITE_API_BASE_URL=${VITE_API_BASE_URL}" >> .env
-    echo "VITE_API_VERSION=${VITE_API_VERSION}" >> .env
-    echo "VITE_APP_ENV=${VITE_APP_ENV}" >> .env
-    echo "VITE_APP_NAME=${VITE_APP_NAME}" >> .env
-    echo "VITE_APP_VERSION=${VITE_APP_VERSION}" >> .env
-    echo "VITE_AUTH_REFRESH_TOKEN_KEY=${VITE_AUTH_REFRESH_TOKEN_KEY}" >> .env
-    echo "VITE_AUTH_TOKEN_KEY=${VITE_AUTH_TOKEN_KEY}" >> .env
-    echo "VITE_FEATURE_FLAG_EXPERIMENTAL=${VITE_FEATURE_FLAG_EXPERIMENTAL}" >> .env
-    echo "VITE_LOG_LEVEL=${VITE_LOG_LEVEL}" >> .env
-    echo "VITE_REACT_QUERY_CACHE_TIME=${VITE_REACT_QUERY_CACHE_TIME}" >> .env
-    echo "VITE_REACT_QUERY_MAX_RETRY_DELAY=${VITE_REACT_QUERY_MAX_RETRY_DELAY}" >> .env
-    echo "VITE_REACT_QUERY_RETRY=${VITE_REACT_QUERY_RETRY}" >> .env
-    echo "VITE_REACT_QUERY_RETRY_DELAY=${VITE_REACT_QUERY_RETRY_DELAY}" >> .env
-    echo "VITE_REACT_QUERY_STALE_TIME=${VITE_REACT_QUERY_STALE_TIME}" >> .env
-    echo "VITE_SOCKET_URL=${VITE_SOCKET_URL}" >> .env
-    echo "VITE_SENTRY_DSN=${VITE_SENTRY_DSN}"
-    cat .env
-  displayName: 'Create ENV file'
+  - template: templates/docker-build-push.yml@infra-templates
+    parameters:
+      environment: "prod"
+      registry: $(REGISTRY)
+      commitHash: $(COMMIT_HASH)
+      useCompose: false
+      dockerfile: "Dockerfile.prod"
+      imageName: "orano_prod_frontend"
 
-- script: |
-    ls -la
-    cat .env
-    docker build -f Dockerfile.prod -t ${REGISTRY}/prod/orano_prod_frontend:${COMMIT_HASH} . --no-cache
-  displayName: 'Build Frontend Docker Image'
+  - template: templates/helm-update-deploy.yml@infra-templates
+    parameters:
+      commitHash: $(COMMIT_HASH)
+      helmChartPath: "/home/jumpboxadmin/k8s-files/helm-chart-frontend"
 
-- script: |
-    az login --identity
-    az acr login --name ${REGISTRY}
-    docker push ${REGISTRY}/prod/orano_prod_frontend:${COMMIT_HASH}
-  displayName: 'Push Docker Images'
+  - template: templates/notify-teams.yml@infra-templates
+    parameters:
+      webhookUrl: $(TEAMS_WEBHOOK_URL)
+      status: "succeeded"
 
-- script: |
-    
-    # Clone Helm chart repo
-    cd /home/jumpboxadmin/k8s-files/helm-chart-frontend
-    git pull
-    # Update image tags using yq 
-    yq eval ".deployments.frontend.tag = \"$(COMMIT_HASH)\"" -i values.yaml
+  - template: templates/notify-teams.yml@infra-templates
+    parameters:
+      webhookUrl: $(TEAMS_WEBHOOK_URL)
+      status: "failed"
 
-    # Auto-increment Chart.yaml version
-    current_version=$(yq eval '.appVersion' Chart.yaml)
-    IFS='.' read -r major minor patch <<< "$current_version"
-    patch=$((patch + 1))
-    new_version="$major.$minor.$patch"
-
-    yq eval ".appVersion = \"$new_version\"" -i Chart.yaml
-    git add .
-    git commit -m "Update Helm chart to version $new_version with image tag $(COMMIT_HASH)"
-    git push
-  displayName: 'Update Helm Chart Version and AppVersion'
-
-- template: ./notify-teams.yml
-  parameters:
-    webhookUrl: $(TEAMS_WEBHOOK_URL)
-    status: 'succeeded'
-
-- template: ./notify-teams.yml
-  parameters:
-    webhookUrl: $(TEAMS_WEBHOOK_URL)
-    status: 'failed'
-
-- template: ./notify-teams.yml
-  parameters:
-    webhookUrl: $(TEAMS_WEBHOOK_URL)
-    status: 'stopped'
+  - template: templates/notify-teams.yml@infra-templates
+    parameters:
+      webhookUrl: $(TEAMS_WEBHOOK_URL)
+      status: "stopped"
