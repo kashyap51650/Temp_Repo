@@ -4,9 +4,9 @@ import { Badge, Label } from "@/components/atoms";
 import { DataTable } from "@/components/organisms";
 import { cn } from "@/lib";
 import type {
-  SaturationBindingAssaySheetRowData,
   TransformedWorksheetData,
-} from "@/types/saturationBindingAssay";
+  WorksheetSheetRowData,
+} from "@/types/delfiaAndSBA";
 
 interface WorksheetContentProps {
   worksheet: TransformedWorksheetData;
@@ -16,7 +16,7 @@ const getKdValueSheetColumns = ({
   nValue,
 }: {
   nValue: number;
-}): ColumnDef<SaturationBindingAssaySheetRowData>[] => {
+}): ColumnDef<WorksheetSheetRowData>[] => {
   const hasAvgAndSd = nValue === 3;
 
   return [
@@ -73,11 +73,7 @@ const getKdValueSheetColumns = ({
           {
             accessorKey: "average",
             header: () => <span className="block lg:w-32">Average</span>,
-            cell: ({
-              row,
-            }: {
-              row: { original: SaturationBindingAssaySheetRowData };
-            }) => (
+            cell: ({ row }: { row: { original: WorksheetSheetRowData } }) => (
               <span className="font-medium">
                 {row.original.average !== undefined &&
                 row.original.average !== null
@@ -89,11 +85,7 @@ const getKdValueSheetColumns = ({
           {
             accessorKey: "sd",
             header: () => <span className="block lg:w-32">SD</span>,
-            cell: ({
-              row,
-            }: {
-              row: { original: SaturationBindingAssaySheetRowData };
-            }) => (
+            cell: ({ row }: { row: { original: WorksheetSheetRowData } }) => (
               <span className="font-medium">
                 {row.original.sd !== undefined && row.original.sd !== null
                   ? row.original.sd.toFixed(1)
@@ -139,7 +131,7 @@ export function WorksheetContent({ worksheet }: WorksheetContentProps) {
                   className="flex items-center gap-3"
                 >
                   <span className="text-sm font-medium text-gray-700 min-w-[140px]">
-                    {kdValueObj.key}:
+                    {kdValueObj.key ?? "Kd from GraphPad"}:
                   </span>
                   <span className="text-sm font-semibold text-gray-900">
                     {String(kdValueObj.value)}
@@ -181,15 +173,14 @@ export function WorksheetContent({ worksheet }: WorksheetContentProps) {
       </div>
 
       {/* Measurements table */}
-      {worksheet.saturationBindingData &&
-        worksheet.saturationBindingData.length > 0 && (
-          <div className="bg-white mt-4">
-            <DataTable
-              columns={getKdValueSheetColumns({ nValue: worksheet.nValue })}
-              data={worksheet.saturationBindingData}
-            />
-          </div>
-        )}
+      {worksheet.tableData && worksheet.tableData.length > 0 && (
+        <div className="bg-white mt-4">
+          <DataTable
+            columns={getKdValueSheetColumns({ nValue: worksheet.nValue })}
+            data={worksheet.tableData}
+          />
+        </div>
+      )}
     </div>
   );
 }

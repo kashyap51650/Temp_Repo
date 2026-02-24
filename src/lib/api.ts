@@ -203,6 +203,8 @@ export const API_CONFIG = {
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/saturation-binding-assay`,
       ELISA_DATA: (experimentDataId: string) =>
         `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/elisa-data`,
+      DELFIA_DATA: (experimentDataId: string) =>
+        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/delfia-data`,
       IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
       IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-necropsy-experiment-data`,
       IMPORT_CLRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/clrf/import-clrf-experiment-data`,
@@ -399,6 +401,10 @@ export const API_CONFIG = {
         ELISA: {
           ELISA_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/elisa-data`,
           HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/hotlab`,
+        },
+        DELFIA: {
+          DELFIA_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/delfia/delfia-data`,
+          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/delfia/hotlab`,
         },
       },
     },

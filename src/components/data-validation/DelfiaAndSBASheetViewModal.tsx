@@ -2,17 +2,19 @@ import { toast } from "sonner";
 
 import {
   useApproveExperimentData,
+  useExperimentDataByIdForDelfia,
   useExperimentDataByIdForSaturationBinding,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
+import { DATA_TYPE } from "@/lib";
 
 import { Dialog } from "../atoms";
+import { DelfiaAndSBASheetView } from "./DelfiaAndSBASheetView";
 import { RejectExperimentModal } from "./RejectExperimentModal";
-import { SaturationBindingAssaySheetView } from "./SaturationBindingAssaySheetView";
 import { SheetActions } from "./SheetActions";
 
-interface SaturationBindingAssaySheetViewModalProps {
+interface DelfiaAndSBASheetViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
@@ -22,7 +24,7 @@ interface SaturationBindingAssaySheetViewModalProps {
   experimentDataType: string;
 }
 
-export function SaturationBindingAssaySheetViewModal({
+export function DelfiaAndSBASheetViewModal({
   isOpen,
   onClose,
   experimentName,
@@ -30,17 +32,31 @@ export function SaturationBindingAssaySheetViewModal({
   experimentStatus,
   hideActions,
   experimentDataType,
-}: Readonly<SaturationBindingAssaySheetViewModalProps>) {
+}: Readonly<DelfiaAndSBASheetViewModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
   const {
-    data: apiData,
-    isLoading,
-    error,
-  } = useExperimentDataByIdForSaturationBinding(experimentDataId || "");
+    data: sbaData,
+    isLoading: isSBADataLoading,
+    error: sbaError,
+  } = useExperimentDataByIdForSaturationBinding({
+    experimentDataId: experimentDataId || "",
+    enabled: experimentDataType === DATA_TYPE.SATURATION_BINDING_ASSAY,
+  });
+  const {
+    data: delfiaData,
+    isLoading: isDelfiaDataLoading,
+    error: delfiaError,
+  } = useExperimentDataByIdForDelfia({
+    experimentDataId: experimentDataId || "",
+    enabled: experimentDataType === DATA_TYPE.DELFIA,
+  });
+  const apiData = sbaData || delfiaData;
+  const isLoading = isSBADataLoading || isDelfiaDataLoading;
+  const error = sbaError || delfiaError;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -107,7 +123,7 @@ export function SaturationBindingAssaySheetViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        <SaturationBindingAssaySheetView
+        <DelfiaAndSBASheetView
           experimentDataId={experimentDataId}
           apiData={apiData}
           isLoading={isLoading}

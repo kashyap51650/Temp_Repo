@@ -1,21 +1,30 @@
 import { useMemo } from "react";
 
 import type {
-  SaturationBindingAssayExperimentDataResponse,
+  DelfiaOrSBAExperimentDataResponse,
+  DelfiaOrSBAWorksheetData,
   TransformedWorksheetData,
-  WorksheetData,
-} from "@/types/saturationBindingAssay";
+  WorksheetMeasurementData,
+} from "@/types/delfiaAndSBA";
 
-export function useSaturationBindingAssaySheetData(
-  apiData?: SaturationBindingAssayExperimentDataResponse
+function getWorksheetExperimentData(
+  worksheet: DelfiaOrSBAWorksheetData
+): WorksheetMeasurementData[] {
+  return "delfia_data" in worksheet
+    ? worksheet.delfia_data
+    : worksheet.saturation_binding_data;
+}
+
+export function useDelfiaAndSBASheetData(
+  apiData?: DelfiaOrSBAExperimentDataResponse
 ) {
   const transformedWorksheets = useMemo<TransformedWorksheetData[]>(() => {
     if (!apiData?.uploaded_data?.worksheets) return [];
 
     return apiData.uploaded_data.worksheets.map(
-      (worksheetData: WorksheetData) => {
-        const { worksheet, saturation_binding_data, kd_values, metadata } =
-          worksheetData;
+      (worksheetData: DelfiaOrSBAWorksheetData) => {
+        const { worksheet, kd_values, metadata } = worksheetData;
+        const experimentData = getWorksheetExperimentData(worksheetData);
 
         return {
           worksheetId: worksheet.id,
@@ -24,7 +33,7 @@ export function useSaturationBindingAssaySheetData(
           nValue: metadata?.no_of_replica ?? 1,
           isotopeName: metadata?.isotope?.isotope_name ?? "N/A",
           peptideCells: metadata?.peptide_cells ?? "N/A",
-          saturationBindingData: saturation_binding_data.map((data, index) => ({
+          tableData: experimentData.map((data, index) => ({
             id: index,
             sample: data.sample,
             measurements: data.measurements.map(

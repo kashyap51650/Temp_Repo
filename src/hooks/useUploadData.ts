@@ -288,6 +288,17 @@ export const useUploadData = ({
               return null;
           }
         }
+        case STUDY_TYPE.DELFIA: {
+          const delfia = API_CONFIG.ENDPOINTS.DATA_UPLOAD.CHEMISTRY.DELFIA;
+          switch (dataType) {
+            case DATA_TYPE.DELFIA:
+              return delfia.DELFIA_DATA;
+            case DATA_TYPE.HOTLAB:
+              return delfia.HOTLAB;
+            default:
+              return null;
+          }
+        }
         default:
           return null;
       }

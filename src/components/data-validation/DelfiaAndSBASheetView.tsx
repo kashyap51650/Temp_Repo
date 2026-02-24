@@ -6,27 +6,27 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/molecules";
-import { useSaturationBindingAssaySheetData } from "@/hooks/useSaturationBindingAssaySheetData";
-import type { SaturationBindingAssayExperimentDataResponse } from "@/types/saturationBindingAssay";
+import { useDelfiaAndSBASheetData } from "@/hooks/useDelfiaAndSBASheetData";
+import type { DelfiaOrSBAExperimentDataResponse } from "@/types/delfiaAndSBA";
 
-import { WorksheetContent } from "./saturation-binding-sheet/WorksheetContent";
+import { WorksheetContent } from "./delfia-and-sba-sheet/WorksheetContent";
 
-interface SaturationBindingAssaySheetViewProps {
+interface DelfiaAndSBASheetViewProps {
   experimentDataId?: string;
-  apiData?: SaturationBindingAssayExperimentDataResponse;
+  apiData?: DelfiaOrSBAExperimentDataResponse;
   isLoading?: boolean;
   error?: Error | null;
 }
 
-export function SaturationBindingAssaySheetView({
+export function DelfiaAndSBASheetView({
   experimentDataId,
   apiData,
   isLoading,
   error,
-}: SaturationBindingAssaySheetViewProps) {
+}: DelfiaAndSBASheetViewProps) {
   const [activeTab, setActiveTab] = useState<string>("0");
   const { worksheets, hasMultipleWorksheets } =
-    useSaturationBindingAssaySheetData(apiData);
+    useDelfiaAndSBASheetData(apiData);
 
   // Loading state
   if (isLoading && experimentDataId) {

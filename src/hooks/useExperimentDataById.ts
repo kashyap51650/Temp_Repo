@@ -4,6 +4,7 @@ import type { RandomizationStatus } from "@/api";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import { DEFAULT_RETRY_DELAY, REACT_QUERY_CONFIG } from "@/lib/constants";
 import type { CMCExperimentDataResponse } from "@/types/CMC";
+import type { DelfiaExperimentDataResponse } from "@/types/delfiaExperiment";
 import type { ElisaExperimentDataResponse } from "@/types/elisaExperiment";
 import type { ImportHotlabPDFResponse } from "@/types/hotlab";
 import type { ExperimentDataForBioDOrganSheetResponse } from "@/types/organ-sheet";
@@ -266,6 +267,12 @@ const fetchExperimentDataForElisa = async (experimentDataId: string) => {
   return apiClient.get<ElisaExperimentDataResponse>(endpoint);
 };
 
+const fetchExperimentDataForDelfia = async (experimentDataId: string) => {
+  const endpoint =
+    API_CONFIG.ENDPOINTS.EXPERIMENT_DATA.DELFIA_DATA(experimentDataId);
+  return apiClient.get<DelfiaExperimentDataResponse>(endpoint);
+};
+
 export function useExperimentDataByIdForWeightSheet(experimentDataId: string) {
   return useQuery({
     queryKey: ["experimentData", "weightSheet", experimentDataId],
@@ -334,13 +341,34 @@ export function useExperimentDataByIdForCMC(experimentDataId: string) {
   });
 }
 
-export function useExperimentDataByIdForSaturationBinding(
-  experimentDataId: string
-) {
+export function useExperimentDataByIdForSaturationBinding({
+  experimentDataId,
+  enabled,
+}: {
+  experimentDataId: string;
+  enabled: boolean;
+}) {
   return useQuery({
     queryKey: ["experimentData", "saturation-binding-assay", experimentDataId],
     queryFn: () => fetchExperimentDataForSaturationBinding(experimentDataId),
-    enabled: !!experimentDataId,
+    enabled: !!experimentDataId && enabled,
+    staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
+    retry: REACT_QUERY_CONFIG.RETRY.ONE,
+    retryDelay: DEFAULT_RETRY_DELAY,
+  });
+}
+
+export function useExperimentDataByIdForDelfia({
+  experimentDataId,
+  enabled,
+}: {
+  experimentDataId: string;
+  enabled: boolean;
+}) {
+  return useQuery({
+    queryKey: ["experimentData", "delfia", experimentDataId],
+    queryFn: () => fetchExperimentDataForDelfia(experimentDataId),
+    enabled: !!experimentDataId && enabled,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.LONG,
     retry: REACT_QUERY_CONFIG.RETRY.ONE,
     retryDelay: DEFAULT_RETRY_DELAY,
