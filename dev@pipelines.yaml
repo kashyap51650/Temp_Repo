@@ -62,6 +62,8 @@ steps:
     parameters:
       commitHash: $(COMMIT_HASH)
       helmChartPath: "/home/jumpboxadmin/k8s-files/helm-chart-frontend"
+      deployments:
+        - frontend
 
   - template: templates/notify-teams.yml@infra-templates
     parameters:
