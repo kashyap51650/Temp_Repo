@@ -43,12 +43,16 @@ const NecropsyAndHotlabPDFViewModal = lazy(() =>
 const CMCDataViewModal = lazy(
   () => import("@/components/data-validation/CMCDataViewModal")
 );
-const SaturationBindingAssaySheetViewModal = lazy(() =>
-  import(
-    "@/components/data-validation/SaturationBindingAssaySheetViewModal"
-  ).then((module) => ({
-    default: module.SaturationBindingAssaySheetViewModal,
-  }))
+const DelfiaAndSBASheetViewModal = lazy(() =>
+  import("@/components/data-validation/DelfiaAndSBASheetViewModal").then(
+    (module) => ({
+      default: module.DelfiaAndSBASheetViewModal,
+    })
+  )
+);
+
+const ElisaDataViewModal = lazy(
+  () => import("@/components/data-validation/ElisaDataViewModal")
 );
 
 interface ExperimentDataItem {
@@ -93,6 +97,8 @@ export function useExperimentDataModals(
   const hotlabViewModal = useModal();
   const cmcViewModal = useModal();
   const saturationBindingAssayViewModal = useModal();
+  const elisaViewModal = useModal();
+  const delfiaViewModal = useModal();
 
   const handleViewData = useCallback(
     (experiment: ExperimentDataItem) => {
@@ -132,6 +138,8 @@ export function useExperimentDataModals(
         dataTypeName === DATA_TYPE.RECEPTOR_QUANTIFICATION;
       const isSaturationBindingAssay =
         dataTypeName === DATA_TYPE.SATURATION_BINDING_ASSAY;
+      const isElisaData = dataTypeName === DATA_TYPE.ELISA;
+      const isDelfiaData = dataTypeName === DATA_TYPE.DELFIA;
 
       if (isCalliperingSheet) {
         navigate({
@@ -194,6 +202,16 @@ export function useExperimentDataModals(
         return;
       }
 
+      if (isElisaData) {
+        elisaViewModal.openModal();
+        return;
+      }
+
+      if (isDelfiaData) {
+        delfiaViewModal.openModal();
+        return;
+      }
+
       // Fallback for unsupported or unknown data types
       toast.error(
         "Unsupported data type encountered in handleViewData:" + dataTypeName
@@ -210,6 +228,8 @@ export function useExperimentDataModals(
       hotlabViewModal,
       cmcViewModal,
       saturationBindingAssayViewModal,
+      elisaViewModal,
+      delfiaViewModal,
       navigate,
     ]
   );
@@ -358,9 +378,35 @@ export function useExperimentDataModals(
         )}
         {experimentId && saturationBindingAssayViewModal.isOpen && (
           <Suspense fallback={<ModalSkeleton />}>
-            <SaturationBindingAssaySheetViewModal
+            <DelfiaAndSBASheetViewModal
               isOpen={saturationBindingAssayViewModal.isOpen}
               onClose={saturationBindingAssayViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && delfiaViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <DelfiaAndSBASheetViewModal
+              isOpen={delfiaViewModal.isOpen}
+              onClose={delfiaViewModal.closeModal}
+              experimentDataId={experimentDataId}
+              experimentStatus={experimentStatus}
+              experimentName={experimentName}
+              experimentDataType={experimentDataType}
+              hideActions={hideActions}
+            />
+          </Suspense>
+        )}
+        {experimentId && elisaViewModal.isOpen && (
+          <Suspense fallback={<ModalSkeleton />}>
+            <ElisaDataViewModal
+              isOpen={elisaViewModal.isOpen}
+              onClose={elisaViewModal.closeModal}
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
               experimentName={experimentName}

@@ -27,9 +27,17 @@ import type {
   CreateDirectBindingAssayExperimentResponse,
 } from "@/types/directBindingAssay";
 import type {
+  CreateDoseFrequencyPayload,
+  DoseFrequencyDropdownResponse,
+} from "@/types/doseFrequency";
+import type {
   CreateDoseRangeFindingPayload,
   CreateDoseRangeFindingResponse,
 } from "@/types/doseRangeFinding";
+import type {
+  CreateEfficacyExperimentPayload,
+  EfficacyExperimentResponse,
+} from "@/types/efficacy";
 import type {
   CreateElisaExperimentPayload,
   CreateElisaExperimentResponse,
@@ -66,6 +74,7 @@ import type {
   ModelStudyExperimentMouseGroupsPayload,
   ModelStudyExperimentMouseGroupsResponse,
 } from "@/types/modelStudy";
+import type { PaginationData } from "@/types/pagination";
 import type { ProjectFilters, ProjectsListResponse } from "@/types/project";
 import type {
   CreateReceptorQuantificationExperimentPayload,
@@ -273,17 +282,10 @@ export interface UploadedExperimentDataItem {
   uploaded_data: unknown;
 }
 
-export interface UploadedExperimentDataResponse {
+export type UploadedExperimentDataResponse = ApiResponse<{
   items: UploadedExperimentDataItem[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
-}
+  pagination: PaginationData;
+}>;
 
 export interface UploadedExperimentDataFilters {
   page?: number;
@@ -1036,6 +1038,30 @@ export const saturationBindingExperimentApi = {
   },
 };
 
+export const efficacyApi = {
+  createExperiment: async (payload: CreateEfficacyExperimentPayload) => {
+    const response = await apiClient.post<EfficacyExperimentResponse>(
+      API_CONFIG.ENDPOINTS.EFFICACY.CREATE_EXPERIMENT,
+      payload
+    );
+    return response;
+  },
+};
+
+export const doseFrequencyApi = {
+  getDoseFrequenciesDropdown:
+    async (): Promise<DoseFrequencyDropdownResponse> => {
+      return await apiClient.get(
+        API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.DROPDOWN
+      );
+    },
+  createDoseFrequency: async (payload: CreateDoseFrequencyPayload) => {
+    return await apiClient.post<CreateDoseRangeFindingResponse>(
+      API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.CREATE,
+      payload
+    );
+  },
+};
 interface SpecializationType {
   value: string;
   label: string;

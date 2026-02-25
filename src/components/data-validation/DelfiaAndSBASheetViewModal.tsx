@@ -2,17 +2,19 @@ import { toast } from "sonner";
 
 import {
   useApproveExperimentData,
-  useExperimentDataByIdForCMC,
+  useExperimentDataByIdForDelfia,
+  useExperimentDataByIdForSaturationBinding,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
+import { DATA_TYPE } from "@/lib";
 
 import { Dialog } from "../atoms";
-import { FileViewer } from "./FileViewer";
+import { DelfiaAndSBASheetView } from "./DelfiaAndSBASheetView";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SheetActions } from "./SheetActions";
 
-interface CMCDataViewModalProps {
+interface DelfiaAndSBASheetViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
@@ -22,7 +24,7 @@ interface CMCDataViewModalProps {
   experimentDataType: string;
 }
 
-export default function CMCDataViewModal({
+export function DelfiaAndSBASheetViewModal({
   isOpen,
   onClose,
   experimentName,
@@ -30,17 +32,31 @@ export default function CMCDataViewModal({
   experimentStatus,
   hideActions,
   experimentDataType,
-}: Readonly<CMCDataViewModalProps>) {
+}: Readonly<DelfiaAndSBASheetViewModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
-  const { data, isLoading } = useExperimentDataByIdForCMC(
-    experimentDataId || ""
-  );
-
-  const cmcFile = data?.data?.cmc_file;
+  const {
+    data: sbaData,
+    isLoading: isSBADataLoading,
+    error: sbaError,
+  } = useExperimentDataByIdForSaturationBinding({
+    experimentDataId: experimentDataId || "",
+    enabled: experimentDataType === DATA_TYPE.SATURATION_BINDING_ASSAY,
+  });
+  const {
+    data: delfiaData,
+    isLoading: isDelfiaDataLoading,
+    error: delfiaError,
+  } = useExperimentDataByIdForDelfia({
+    experimentDataId: experimentDataId || "",
+    enabled: experimentDataType === DATA_TYPE.DELFIA,
+  });
+  const apiData = sbaData || delfiaData;
+  const isLoading = isSBADataLoading || isDelfiaDataLoading;
+  const error = sbaError || delfiaError;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -74,41 +90,6 @@ export default function CMCDataViewModal({
   };
 
   const isPending = experimentStatus === "pending";
-
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-lg text-muted-foreground">
-            Loading {experimentDataType} data...
-          </div>
-        </div>
-      );
-    }
-
-    if (cmcFile) {
-      return (
-        <FileViewer
-          fileUrl={cmcFile.file_url}
-          filename={cmcFile.filename}
-          fileType={cmcFile.file_type}
-          title={`${experimentDataType} - ${experimentName}`}
-        />
-      );
-    }
-
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">No CMC data available</p>
-          <p className="text-sm mt-2">
-            No file has been uploaded for this experiment
-          </p>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       <Dialog
@@ -142,10 +123,13 @@ export default function CMCDataViewModal({
         trigger={null}
         className="w-full max-w-[var(--width-xxl)] h-[var(--height-modal)] flex flex-col"
       >
-        {/* File Viewer Content */}
-        <div className="flex-1 overflow-hidden">{renderContent()}</div>
+        <DelfiaAndSBASheetView
+          experimentDataId={experimentDataId}
+          apiData={apiData}
+          isLoading={isLoading}
+          error={error}
+        />
       </Dialog>
-
       <RejectExperimentModal
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}

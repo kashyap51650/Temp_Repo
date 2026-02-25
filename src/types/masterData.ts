@@ -1,5 +1,7 @@
 import type { ApiResponse } from "@/lib/api";
 
+import type { PaginationData } from "./pagination";
+
 export interface MasterDataItemType {
   id: number;
   created_by: number;
@@ -25,14 +27,7 @@ export interface MasterDataItemType {
 
 export type MasterDataListResponse = ApiResponse<{
   items: MasterDataItemType[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
+  pagination: PaginationData;
 }>;
 
 export type CreateMasterDataItemResponse = ApiResponse<MasterDataItemType>;

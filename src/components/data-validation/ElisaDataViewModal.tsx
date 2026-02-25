@@ -2,7 +2,7 @@ import { toast } from "sonner";
 
 import {
   useApproveExperimentData,
-  useExperimentDataByIdForCMC,
+  useExperimentDataByIdForElisa,
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
@@ -12,7 +12,7 @@ import { FileViewer } from "./FileViewer";
 import { RejectExperimentModal } from "./RejectExperimentModal";
 import { SheetActions } from "./SheetActions";
 
-interface CMCDataViewModalProps {
+interface ElisaDataViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   experimentName: string;
@@ -22,7 +22,7 @@ interface CMCDataViewModalProps {
   experimentDataType: string;
 }
 
-export default function CMCDataViewModal({
+export default function ElisaDataViewModal({
   isOpen,
   onClose,
   experimentName,
@@ -30,17 +30,17 @@ export default function CMCDataViewModal({
   experimentStatus,
   hideActions,
   experimentDataType,
-}: Readonly<CMCDataViewModalProps>) {
+}: Readonly<ElisaDataViewModalProps>) {
   const rejectModal = useModal();
 
   const approveMutation = useApproveExperimentData();
   const rejectMutation = useRejectExperimentData();
 
-  const { data, isLoading } = useExperimentDataByIdForCMC(
+  const { data, isLoading } = useExperimentDataByIdForElisa(
     experimentDataId || ""
   );
 
-  const cmcFile = data?.data?.cmc_file;
+  const elisaFile = data?.data?.elisa_file;
 
   const handleApprove = () => {
     if (!experimentDataId) return;
@@ -86,12 +86,12 @@ export default function CMCDataViewModal({
       );
     }
 
-    if (cmcFile) {
+    if (elisaFile) {
       return (
         <FileViewer
-          fileUrl={cmcFile.file_url}
-          filename={cmcFile.filename}
-          fileType={cmcFile.file_type}
+          fileUrl={elisaFile.file_url}
+          filename={elisaFile.filename}
+          fileType={elisaFile.file_type}
           title={`${experimentDataType} - ${experimentName}`}
         />
       );
@@ -100,7 +100,9 @@ export default function CMCDataViewModal({
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center text-muted-foreground">
-          <p className="text-lg font-medium">No CMC data available</p>
+          <p className="text-lg font-medium">
+            No {experimentDataType} data available
+          </p>
           <p className="text-sm mt-2">
             No file has been uploaded for this experiment
           </p>

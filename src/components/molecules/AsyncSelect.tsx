@@ -26,6 +26,7 @@ interface AsyncSelectProps<T> {
   onCreateNew?: () => void;
   triggerClassName?: string;
   id?: string;
+  refetchOnMount?: boolean;
 }
 
 export function AsyncSelect<T>({
@@ -46,11 +47,13 @@ export function AsyncSelect<T>({
   onCreateNew,
   triggerClassName = "",
   id,
+  refetchOnMount = true,
 }: Readonly<AsyncSelectProps<T>>) {
   const { data = [], isLoading } = useQuery({
     queryKey,
     queryFn: query,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.MEDIUM,
+    refetchOnMount: refetchOnMount,
   });
 
   const options = mapToOptions(data, mapConfig);

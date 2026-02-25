@@ -2,7 +2,7 @@ import { ORGAN_KEYS } from "@/lib/constants";
 import type {
   BioDOrganData,
   BioDOrganRow,
-  ExperimentDataForBioDOrganSheetResponse,
+  ExperimentDataForBioDOrganSheetUploadData,
 } from "@/types/organ-sheet";
 
 /* ---------------------------------- utils --------------------------------- */
@@ -44,7 +44,7 @@ const buildMouseDataMap = (
 /* ------------------------------ main function ------------------------------ */
 
 export const generateBioDOrganData = (
-  uploadedData: ExperimentDataForBioDOrganSheetResponse["uploaded_data"]
+  uploadedData: ExperimentDataForBioDOrganSheetUploadData
 ): BioDOrganData => {
   const { groups, organs, mice, organ_weights } = uploadedData;
 

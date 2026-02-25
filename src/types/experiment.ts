@@ -1,6 +1,8 @@
 import type { ApiResponse } from "@/lib/api";
 import type { ExperimentStatus } from "@/lib/constants";
 
+import type { PaginationData } from "./pagination";
+
 export interface Project {
   id: number;
   project_name: string;
@@ -66,14 +68,7 @@ export interface Experiment {
 // Experiments list response with pagination
 export type ExperimentsListResponse = ApiResponse<{
   items: Experiment[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
+  pagination: PaginationData;
 }>;
 
 // Filters for experiments API

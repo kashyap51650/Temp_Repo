@@ -1,5 +1,7 @@
 import type { ApiResponse } from "@/lib/api";
 
+import type { PaginationData } from "./pagination";
+
 export interface ProjectItem {
   id: number;
   project_name: string;
@@ -13,14 +15,7 @@ export interface ProjectItem {
 
 export type ProjectsListResponse = ApiResponse<{
   items: ProjectItem[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
+  pagination: PaginationData;
 }>;
 
 export interface ProjectFilters {

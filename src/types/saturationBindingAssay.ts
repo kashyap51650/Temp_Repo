@@ -1,4 +1,4 @@
-export interface WorksheetMetadata {
+export interface SBAWorksheetMetadata {
   id: number;
   worksheet_name: string;
 }
@@ -15,8 +15,8 @@ export interface KDValueData {
   value: string;
 }
 
-export interface WorksheetData {
-  worksheet: WorksheetMetadata;
+export interface SBAWorksheetData {
+  worksheet: SBAWorksheetMetadata;
   saturation_binding_data: SaturationBindingAssayData[];
   metadata?: {
     isotope: { isotope_name: string };
@@ -30,7 +30,7 @@ export interface WorksheetData {
 export interface SaturationBindingAssayExperimentDataResponse {
   id: number;
   uploaded_data: {
-    worksheets: WorksheetData[];
+    worksheets: SBAWorksheetData[];
   };
 }
 
@@ -42,12 +42,12 @@ export interface SaturationBindingAssaySheetRowData {
   sd?: number;
 }
 
-export interface TransformedWorksheetData {
+export interface TransformedSBAWorksheetData {
   worksheetId: number;
   worksheetName: string;
   nValue: number;
   isotopeName: string;
   peptideCells: string;
   kdValues: KDValueData[];
-  saturationBindingData: SaturationBindingAssaySheetRowData[];
+  tableData: SaturationBindingAssaySheetRowData[];
 }

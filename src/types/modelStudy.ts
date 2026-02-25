@@ -6,6 +6,8 @@
 import type { RandomizationStatus } from "@/api";
 import type { ApiResponse } from "@/lib/api";
 
+import type { PaginationData } from "./pagination";
+
 export interface CellLineStrainPair {
   cell_line_id: number;
   mouse_strain_id: number;
@@ -102,14 +104,7 @@ export interface CalliperNoteCommentItem {
 
 export type CalliperingNotesListResponse = ApiResponse<{
   items: Array<CalliperNoteCommentItem>;
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
+  pagination: PaginationData;
 }>;
 
 export interface CreateCalliperingNotesCommentPayload {

@@ -187,7 +187,9 @@ export function BioDWeightSheetView({
   const [activeTab, setActiveTab] = useState("0");
 
   // Transform API data using custom hook
-  const { worksheets, hasMultipleWorksheets } = useBioDWeightSheetData(apiData);
+  const { worksheets, hasMultipleWorksheets } = useBioDWeightSheetData(
+    apiData?.data
+  );
 
   // Loading state
   if (isLoading && experimentDataId) {

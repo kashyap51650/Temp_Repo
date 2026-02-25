@@ -57,7 +57,7 @@ export function BioDWeightSheetViewModal({
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         onClose();
       },
@@ -74,7 +74,7 @@ export function BioDWeightSheetViewModal({
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           onClose();
@@ -142,6 +142,7 @@ export function BioDWeightSheetViewModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "BioD Weight Sheet",

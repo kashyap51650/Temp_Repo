@@ -68,7 +68,7 @@ export const ViewHematologyDataModal: React.FC<
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         handleClose();
       },
@@ -85,7 +85,7 @@ export const ViewHematologyDataModal: React.FC<
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           handleClose();
@@ -180,6 +180,7 @@ export const ViewHematologyDataModal: React.FC<
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "Hematology Data",

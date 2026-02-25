@@ -272,6 +272,38 @@ export const useUploadData = ({
           return null;
       }
     }
+
+    if (formData.specialisation.toLowerCase() === SPECIALIZATION.CHEMISTRY) {
+      const { studyType, dataType } = formData;
+
+      switch (studyType) {
+        case STUDY_TYPE.ELISA: {
+          const elisa = API_CONFIG.ENDPOINTS.DATA_UPLOAD.CHEMISTRY.ELISA;
+          switch (dataType) {
+            case DATA_TYPE.ELISA:
+              return elisa.ELISA_DATA;
+            case DATA_TYPE.HOTLAB:
+              return elisa.HOTLAB;
+            default:
+              return null;
+          }
+        }
+        case STUDY_TYPE.DELFIA: {
+          const delfia = API_CONFIG.ENDPOINTS.DATA_UPLOAD.CHEMISTRY.DELFIA;
+          switch (dataType) {
+            case DATA_TYPE.DELFIA:
+              return delfia.DELFIA_DATA;
+            case DATA_TYPE.HOTLAB:
+              return delfia.HOTLAB;
+            default:
+              return null;
+          }
+        }
+        default:
+          return null;
+      }
+    }
+
     if (formData.specialisation.toLowerCase() === SPECIALIZATION.HOTLAB) {
       return API_CONFIG.ENDPOINTS.DATA_UPLOAD.HOTLAB.EXTRACT_HOTLAB_REPORT;
     }

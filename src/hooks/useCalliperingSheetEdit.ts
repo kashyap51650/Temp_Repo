@@ -16,13 +16,14 @@ import { useExperimentDataByIdForCalliperingSheet } from "./useExperimentDataByI
  */
 export function useCalliperingSheetEdit(experimentDataId?: string) {
   const {
-    data: apiData,
+    data: apiResponse,
     isLoading,
     error,
   } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
 
-  const { worksheets, hasMultipleWorksheets } =
-    useCalliperingSheetData(apiData);
+  const { worksheets, hasMultipleWorksheets } = useCalliperingSheetData(
+    apiResponse?.data
+  );
 
   const [worksheetData, setWorksheetData] = useState<
     Map<number, CalliperingWorksheetEditData>

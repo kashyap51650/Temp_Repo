@@ -51,10 +51,12 @@ export function CalliperingSheetViewModal({
   const caliperHistoryGroupModal = useModal();
 
   const {
-    data: apiData,
+    data: apiResponse,
     isLoading,
     error,
   } = useExperimentDataByIdForCalliperingSheet(experimentDataId || "");
+
+  const apiData = apiResponse?.data;
 
   const handleEdit = () => {
     editModal.openModal();
@@ -65,7 +67,7 @@ export function CalliperingSheetViewModal({
     approveMutation.mutate(experimentDataId, {
       onSuccess: (data) => {
         toast.success("Experiment data approved successfully", {
-          description: `Status updated to ${data.status}`,
+          description: `Status updated to ${data.data?.status}`,
         });
         onClose();
       },
@@ -82,7 +84,7 @@ export function CalliperingSheetViewModal({
       {
         onSuccess: (data) => {
           toast.success("Experiment data rejected successfully", {
-            description: `Status updated to ${data.status}`,
+            description: `Status updated to ${data.data?.status}`,
           });
           rejectModal.closeModal();
           onClose();
@@ -184,6 +186,7 @@ export function CalliperingSheetViewModal({
         isOpen={rejectModal.isOpen}
         onClose={rejectModal.closeModal}
         onReject={handleReject}
+        isRejectLoading={rejectMutation.isPending}
         item={{
           id: experimentDataId || "",
           name: "Callipering Sheet",

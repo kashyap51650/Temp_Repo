@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { apiClient, handleApiError } from "@/lib/api";
+import { apiClient, type ApiResponse, handleApiError } from "@/lib/api";
 
 import { useThrottledMutation } from "./useThrottledMutation";
 
@@ -22,9 +22,9 @@ interface ApproveExperimentDataResponse {
 
 const approveExperimentData = async (
   experimentDataId: string
-): Promise<ApproveExperimentDataResponse> => {
+): Promise<ApiResponse<ApproveExperimentDataResponse>> => {
   const endpoint = `/api/v1/experiment-data/${experimentDataId}/approve`;
-  return apiClient.patch<ApproveExperimentDataResponse>(endpoint);
+  return apiClient.patch<ApiResponse<ApproveExperimentDataResponse>>(endpoint);
 };
 
 /**

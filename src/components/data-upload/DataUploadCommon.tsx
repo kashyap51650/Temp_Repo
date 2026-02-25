@@ -11,6 +11,7 @@ import {
   isotopeOptions,
 } from "@/data/experiments";
 import { useModal, useProjects } from "@/hooks";
+import { generateQueryKey } from "@/lib";
 import { STUDY_TYPE, STUDY_TYPE_CODE } from "@/lib/constants";
 
 import { Card } from "../atoms";
@@ -68,10 +69,10 @@ export default function DataUploadCommon() {
 
   const queryClient = useQueryClient();
 
-  const studyTypes = queryClient.getQueryData([
-    "study-types",
-    formData.specialisation || "",
-  ]) as StudyType[];
+  const studyTypes =
+    queryClient.getQueryData<StudyType[]>(
+      generateQueryKey("study-types", formData.specialisation, "data_upload")
+    ) ?? [];
 
   const [isCreatingNewProject] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});

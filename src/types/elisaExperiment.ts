@@ -35,3 +35,14 @@ export interface ElisaExperiment {
 }
 
 export type CreateElisaExperimentResponse = ApiResponse<ElisaExperiment>;
+export interface ElisaFileType {
+  file_type: string;
+  file_url: string;
+  filename: string;
+  uploaded_at: string;
+}
+
+export type ElisaExperimentDataResponse = ApiResponse<{
+  elisa_file: ElisaFileType;
+  experiment_data_id: number;
+}>;

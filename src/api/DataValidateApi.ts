@@ -1,6 +1,7 @@
 import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import type { PermissionModuleType } from "@/types/auth";
+import type { PaginationData } from "@/types/pagination";
 
 export interface ExperimentDataFilters {
   status?: string;
@@ -49,17 +50,10 @@ export interface ExperimentDataItem {
   };
 }
 
-export interface ExperimentDataResponse {
+export type ExperimentDataResponse = ApiResponse<{
   items: ExperimentDataItem[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
-    pages: number;
-    has_next: boolean;
-    has_prev: boolean;
-  };
-}
+  pagination: PaginationData;
+}>;
 
 export const experimentDataApi = {
   getExperimentData: async (
