@@ -11,7 +11,7 @@ import { useEffect } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/organisms";
 import { AppSidebar } from "@/components/templates";
 import { SiteHeader } from "@/components/templates/SiteHeader/site-header";
-import { useSessionTimeout, useTabCloseCleanup } from "@/hooks";
+import { useSessionTimeout } from "@/hooks";
 import { useIsAuthenticated } from "@/lib/auth";
 
 function RootLayout() {
@@ -26,12 +26,6 @@ function RootLayout() {
   useSessionTimeout({
     timeoutMs: 30 * 60 * 1000, // 30 minutes
     warningMs: 2 * 60 * 1000, // 2 minute warning before timeout
-  });
-
-  // ✅ JWT Security: Clear sessionStorage when browser tab closes
-  useTabCloseCleanup({
-    clearSessionStorage: true,
-    clearOnRefresh: false, // Keep session on page refresh for better UX
   });
 
   useEffect(() => {

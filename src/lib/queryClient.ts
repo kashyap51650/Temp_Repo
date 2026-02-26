@@ -54,10 +54,16 @@ export const queryClient = new QueryClient({
         return failureCount < 1;
       },
 
-      // Retry delay for mutations
-      retryDelay: REACT_QUERY_CONFIG.MAX_RETRY_DELAY
-        ? Number(REACT_QUERY_CONFIG.MAX_RETRY_DELAY)
-        : 1000,
+      retryDelay: (attemptIndex) =>
+        Math.min(
+          (REACT_QUERY_CONFIG.RETRY_DELAY
+            ? Number(REACT_QUERY_CONFIG.RETRY_DELAY)
+            : 1000) *
+            2 ** attemptIndex,
+          REACT_QUERY_CONFIG.MAX_RETRY_DELAY
+            ? Number(REACT_QUERY_CONFIG.MAX_RETRY_DELAY)
+            : 30000
+        ),
     },
   },
 });
