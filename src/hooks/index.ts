@@ -55,6 +55,7 @@ export * from "./useTheme";
 export { useTheme } from "./useTheme";
 export * from "./useThrottledMutation";
 export * from "./useToggle";
+export * from "./useTruncationDetection";
 export * from "./useUpdateExperimentStatus";
 export * from "./useUpdateProjectStatus";
 export * from "./useUploadData";

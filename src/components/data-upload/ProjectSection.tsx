@@ -33,7 +33,7 @@ export function ProjectSection({
     <div className="space-y-2">
       <Label htmlFor="project">Project</Label>
       <div className="flex gap-2 items-start">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {isCreatingNewProject ? (
             <Input
               placeholder="Enter new project name"
@@ -70,6 +70,7 @@ export function ProjectSection({
               }}
               onCreateNew={() => onShowCreateProjectModal?.()}
               disabled={projectsLoading}
+              className="max-w-full"
             />
           )}
           {projectsLoading && (

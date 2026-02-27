@@ -1,3 +1,4 @@
+import { AlertCircle } from "lucide-react";
 import { useMemo } from "react";
 
 import { ExperimentDrugSelect } from "@/components/molecules/ExperimentDrugSelect";
@@ -27,7 +28,15 @@ export const RandomizationView = ({
 
       {error && (
         <div className="flex items-center justify-center h-full">
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-8 py-6 text-center">
+            <AlertCircle className="size-8 text-destructive" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-destructive">
+                Failed to load randomization data
+              </p>
+              <p className="text-xs text-muted-foreground">{error.message}</p>
+            </div>
+          </div>
         </div>
       )}
 

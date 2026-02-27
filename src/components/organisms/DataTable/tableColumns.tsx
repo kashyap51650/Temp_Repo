@@ -684,9 +684,9 @@ export function getUploadedDatasetColumns(
         <SortableHeader column={column} title="Project Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-40 block truncate">
+        <TruncateWithTooltip className="w-40 block">
           {row.original.project.project_name}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {
@@ -695,9 +695,9 @@ export function getUploadedDatasetColumns(
         <SortableHeader column={column} title="Experiment Name" />
       ),
       cell: ({ row }) => (
-        <span className="w-48 block truncate">
+        <TruncateWithTooltip className="w-48 block">
           {row.original.experiment.experiment_name}
-        </span>
+        </TruncateWithTooltip>
       ),
     },
     {

@@ -27,6 +27,7 @@ interface CalliperingSheetViewProps {
   apiData?: CalliperingSheetApiResponse;
   isLoading?: boolean;
   error?: Error | null;
+  experimentStatus?: string;
 }
 
 /**
@@ -49,6 +50,7 @@ export function CalliperingSheetView({
   apiData,
   isLoading,
   error,
+  experimentStatus,
 }: Readonly<CalliperingSheetViewProps>) {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [selectedNote, setSelectedNote] = useState<SelectedNoteType | null>(
@@ -81,7 +83,7 @@ export function CalliperingSheetView({
     experimentStudyType === STUDY_TYPE.MODEL_STUDY;
 
   // Enable row selection for terminating mice (independent of notes column)
-  const enableRowSelection = true;
+  const enableRowSelection = experimentStatus !== "rejected";
 
   // Loading state
   if (isLoading && experimentDataId) {
