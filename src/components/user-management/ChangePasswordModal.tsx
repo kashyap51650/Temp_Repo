@@ -19,6 +19,7 @@ export interface ChangePasswordModalProps {
   }) => void;
   onSuccess?: () => void;
   mode?: "change" | "reset";
+  resetToken?: string | null;
 }
 
 export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
@@ -27,6 +28,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   onChangePassword,
   onSuccess,
   mode = "change",
+  resetToken,
 }) => {
   type FormValues = {
     current?: string;
@@ -71,7 +73,6 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           confirmPassword: values.confirm,
         });
       } else if (mode === "reset") {
-        const resetToken = sessionStorage.getItem("reset_token");
         if (!resetToken) {
           toast.error("Reset token not found. Please try again.");
           return;

@@ -70,20 +70,19 @@ function ChartContainer({
 }
 
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
-  const colorConfig = Object.entries(config).filter(
-    ([, config]) => config.theme || config.color
-  );
+  // Build the CSS string outside JSX so we can pass it as a child to <style>.
+  // React sets textContent (not innerHTML) when a <style> has children, which
+  // is XSS-safe and avoids dangerouslySetInnerHTML entirely.
+  const css = React.useMemo(() => {
+    const colorConfig = Object.entries(config).filter(
+      ([, config]) => config.theme || config.color
+    );
 
-  if (!colorConfig.length) {
-    return null;
-  }
+    if (!colorConfig.length) return null;
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+    return Object.entries(THEMES)
+      .map(
+        ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
@@ -92,14 +91,19 @@ ${colorConfig
       itemConfig.color;
     return color ? `  --color-${key}: ${color};` : null;
   })
+  .filter(Boolean)
   .join("\n")}
 }
 `
-          )
-          .join("\n"),
-      }}
-    />
-  );
+      )
+      .join("\n");
+  }, [config, id]);
+
+  if (!css) {
+    return null;
+  }
+
+  return <style>{css}</style>;
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

@@ -50,13 +50,41 @@ const SENSITIVE_FIELD_PATTERNS = [
 ];
 
 /**
+ * Helper function to sanitize a string that might contain JSON
+ * only attempts JSON.parse on strings that look like JSON
+ *
+ * @param str - String to sanitize
+ * @returns Sanitized string (re-stringified if it was valid JSON, otherwise as-is)
+ */
+function sanitizeStringValue(str: string): string {
+  const trimmed = str.trim();
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(str);
+      const sanitized = sanitizeSentryData(parsed);
+      return JSON.stringify(sanitized);
+    } catch {
+      // Not valid JSON despite looking like it - return as-is
+      return str;
+    }
+  }
+  // Plain string - return as-is without parsing attempt
+  return str;
+}
+
+/**
  * Recursively sanitize sensitive data from objects before sending to Sentry
  * Replaces sensitive field values with "[REDACTED]" to prevent data leaks
  *
  * @param data - Data to sanitize (can be object, array, or primitive)
  * @returns Sanitized data with sensitive fields redacted
  */
-function sanitizeSentryData(data: unknown): unknown {
+export function sanitizeSentryData(data: unknown): unknown {
+  // Handle JSON strings (e.g., Axios post-transform request bodies)
+  if (typeof data === "string") {
+    return sanitizeStringValue(data);
+  }
+
   if (!data || typeof data !== "object") {
     return data;
   }
@@ -80,8 +108,11 @@ function sanitizeSentryData(data: unknown): unknown {
     if (isSensitive) {
       sanitized[key] = "[REDACTED]";
     } else if (value && typeof value === "object") {
-      // Recursively sanitize nested objects
+      // Recursively sanitize nested objects/arrays
       sanitized[key] = sanitizeSentryData(value);
+    } else if (typeof value === "string") {
+      // Handle nested JSON strings (e.g., stringified request bodies within objects)
+      sanitized[key] = sanitizeStringValue(value);
     } else {
       sanitized[key] = value;
     }
@@ -132,8 +163,6 @@ export function initSentry(options: SentryInitOptions = {}): void {
     environment,
     release,
     debug,
-    // For automatic IP address collection on events
-    sendDefaultPii: true,
 
     // Performance Monitoring
     integrations: [

@@ -32,7 +32,7 @@ export interface TabCloseCleanupConfig {
  *     clearSessionStorage: true,
  *     clearOnRefresh: false, // Keep session on refresh
  *     onCleanup: () => {
- *       console.log('Cleaning up session data');
+ *       // perform cleanup
  *     }
  *   });
  *
