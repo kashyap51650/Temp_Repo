@@ -27,6 +27,7 @@ interface CalliperingSheetViewProps {
   apiData?: CalliperingSheetApiResponse;
   isLoading?: boolean;
   error?: Error | null;
+  experimentId: number;
   experimentStatus?: string;
 }
 
@@ -42,6 +43,7 @@ interface CalliperingSheetViewProps {
  * @param apiData - Pre-fetched API data for the callipering sheet
  * @param isLoading - Loading state for the API data
  * @param error - Error state for the API data
+ * @param experimentId - ID of the experiment (for termination API calls)
  */
 export function CalliperingSheetView({
   experimentDataId,
@@ -50,6 +52,7 @@ export function CalliperingSheetView({
   apiData,
   isLoading,
   error,
+  experimentId,
   experimentStatus,
 }: Readonly<CalliperingSheetViewProps>) {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
@@ -71,7 +74,10 @@ export function CalliperingSheetView({
     handleTerminateClick,
     handleTerminateConfirm,
     isLoading: isTerminating,
-  } = useTerminateMice(experimentDataId);
+  } = useTerminateMice({
+    experimentDataId,
+    experimentId,
+  });
 
   // Transform API data into component-friendly format
   const { worksheets, hasMultipleWorksheets } =
