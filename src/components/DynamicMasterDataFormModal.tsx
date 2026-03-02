@@ -169,18 +169,18 @@ export function DynamicMasterDataFormModal({
       ],
       "mouse-strains": [
         {
-          key: "strain_name",
+          key: "mouse_strain_name",
           label: "Strain Name",
           type: "text",
           required: true,
           placeholder: "Enter mouse strain name",
         },
         {
-          key: "description",
+          key: "mouse_strain_description",
           label: "Description",
           type: "textarea",
           required: true,
-          placeholder: "Enter strain description",
+          placeholder: "Enter mouse strain description",
         },
       ],
       "experiment-drugs": [
