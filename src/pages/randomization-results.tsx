@@ -1,5 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
-import { ArrowLeft, Plus } from "lucide-react";
+import { AlertCircle, ArrowLeft, Plus } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { Label } from "@/components";
@@ -17,6 +17,8 @@ export default function RandomizationResults() {
     selectedGroupDrug,
     setSelectedGroupDrug,
     isPending,
+    isError,
+    error,
     previewRandomizationfn,
     isConfirmationPending,
     handleConfirmClick,
@@ -188,6 +190,26 @@ export default function RandomizationResults() {
 
       {isPending ? (
         <p>Loading randomization results...</p>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-destructive/30 bg-destructive/5 px-10 py-10 text-center max-w-md w-full shadow-sm">
+            <div className="flex size-14 items-center justify-center rounded-full bg-destructive/10">
+              <AlertCircle className="size-7 text-destructive" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-base font-semibold text-destructive">
+                Randomization Preview Failed
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {error?.message ||
+                  "An unexpected error occurred while generating the preview."}
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground font-medium text-center mt-2">
+              Retry by changing the number of mice per group
+            </p>
+          </div>
+        </div>
       ) : (
         <>
           {groups && (
