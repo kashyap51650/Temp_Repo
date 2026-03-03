@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -41,6 +40,7 @@ interface SelectedMice {
  * - Toast notifications for success/error
  *
  * @param experimentDataId - ID of the experiment data to invalidate after termination
+ * @param experimentId - ID of the experiment for API call
  * @returns Object with modal state, handlers, and loading state
  *
  * @example
@@ -53,7 +53,7 @@ interface SelectedMice {
  *   handleTerminateClick,
  *   handleTerminateConfirm,
  *   isLoading,
- * } = useTerminateMice(experimentDataId);
+ * } = useTerminateMice({ experimentDataId, experimentId });
  *
  * // When user selects mice and clicks terminate button
  * handleTerminateClick(selectedRows, onClearCallback);
@@ -62,16 +62,18 @@ interface SelectedMice {
  * handleTerminateConfirm(reason);
  * ```
  */
-export function useTerminateMice(experimentDataId?: string) {
+export function useTerminateMice({
+  experimentDataId,
+  experimentId,
+}: {
+  experimentDataId?: string;
+  experimentId: number;
+}) {
   const queryClient = useQueryClient();
   const { isOpen: isModalOpen, openModal, closeModal } = useModal();
   const [selectedMice, setSelectedMice] = useState<SelectedMice>({
     ids: [],
     measurementIds: [],
-  });
-
-  const search = useSearch({
-    from: "/data-validate",
   });
 
   const mutation = useMutation({
@@ -129,7 +131,7 @@ export function useTerminateMice(experimentDataId?: string) {
    */
   const handleTerminateConfirm = (reason: string) => {
     mutation.mutate({
-      experiment_id: search?.experimentId as number,
+      experiment_id: experimentId,
       mouse_ids: selectedMice.ids.map((id) => Number.parseInt(id, 10)),
       termination_reason: reason,
     });

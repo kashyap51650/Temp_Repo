@@ -58,6 +58,7 @@ export function ProjectSelect({
       showSearch={true}
       disabled={disabled}
       shouldShowCreateNew={canCreateNew}
+      truncateValue={true}
     />
   );
 }

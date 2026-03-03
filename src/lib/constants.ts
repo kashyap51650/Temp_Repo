@@ -13,7 +13,7 @@ export const STUDY_TYPE = {
   BIODISTRIBUTION: "Biodistribution",
   MODEL_STUDY: "Model Study",
   DOSE_RANGE_FINDING: "Dose Range Finding",
-  CLRF: "clRF",
+  CLRF: "CLRF",
   CONJUGATION: "Conjugation",
   DIRECT_BINDING_ASSAY: "Direct Binding Assay",
   IRF: "IRF",

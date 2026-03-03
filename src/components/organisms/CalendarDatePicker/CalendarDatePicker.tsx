@@ -50,7 +50,7 @@ export function CalendarDatePicker({
 
   const currentYear = new Date().getFullYear();
   const fromYear = disablePastDates ? currentYear : currentYear - 100;
-  const toYear = currentYear + 15;
+  const toYear = currentYear + 10;
 
   React.useEffect(() => {
     setDate(initialValue);
@@ -123,6 +123,7 @@ export function CalendarDatePicker({
                     }
                   : undefined
               }
+              fixedWeeks
             />
           </PopoverContent>
         </Popover>

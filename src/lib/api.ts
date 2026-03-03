@@ -3,7 +3,7 @@ import axios from "axios";
 
 import { SESSION_STORAGE_KEYS } from "./constants";
 import { logger } from "./logger";
-import { logError } from "./sentry-logger";
+import { logError, sanitizeSentryData } from "./sentry-logger";
 
 declare module "axios" {
   export interface AxiosRequestConfig {
@@ -64,352 +64,350 @@ function isTokenExpired(token: string): boolean {
   return now >= expirationTime - 30000;
 }
 
+const API_VERSION = import.meta.env.VITE_API_VERSION as string;
+
 export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
-  VERSION: import.meta.env.VITE_API_VERSION,
+  VERSION: API_VERSION,
   ENDPOINTS: {
     AUTH: {
-      LOGIN: `/api/${import.meta.env.VITE_API_VERSION}/auth/login`,
-      LOGOUT: `/api/${import.meta.env.VITE_API_VERSION}/auth/logout`,
-      PROFILE: `/api/${import.meta.env.VITE_API_VERSION}/auth/profile`,
-      FORGOT_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/forgot-password`,
-      VERIFY_RESET_CODE: `/api/${import.meta.env.VITE_API_VERSION}/auth/verify-reset-code`,
-      RESET_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/reset-password`,
-      CHANGE_PASSWORD: `/api/${import.meta.env.VITE_API_VERSION}/auth/change-password`,
+      LOGIN: `/api/${API_VERSION}/auth/login`,
+      LOGOUT: `/api/${API_VERSION}/auth/logout`,
+      PROFILE: `/api/${API_VERSION}/auth/profile`,
+      FORGOT_PASSWORD: `/api/${API_VERSION}/auth/forgot-password`,
+      VERIFY_RESET_CODE: `/api/${API_VERSION}/auth/verify-reset-code`,
+      RESET_PASSWORD: `/api/${API_VERSION}/auth/reset-password`,
+      CHANGE_PASSWORD: `/api/${API_VERSION}/auth/change-password`,
     },
     USERS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/users/`,
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/users/`,
-      UPDATE: (userId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/users/${userId}`,
-      STATUS: (userId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/users/${userId}/status`,
+      LIST: `/api/${API_VERSION}/users/`,
+      CREATE: `/api/${API_VERSION}/users/`,
+      UPDATE: (userId: string) => `/api/${API_VERSION}/users/${userId}`,
+      STATUS: (userId: string) => `/api/${API_VERSION}/users/${userId}/status`,
     },
     RBAC: {
-      ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/roles`,
-      ROLES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/rbac/roles/dropdown`,
-      USER_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/user-roles`,
-      USERS_WITH_ROLES: `/api/${import.meta.env.VITE_API_VERSION}/rbac/users-with-roles`,
-      MY_PERMISSIONS: `/api/${import.meta.env.VITE_API_VERSION}/rbac/my-permissions`,
+      ROLES: `/api/${API_VERSION}/rbac/roles`,
+      ROLES_DROPDOWN: `/api/${API_VERSION}/rbac/roles/dropdown`,
+      USER_ROLES: `/api/${API_VERSION}/rbac/user-roles`,
+      USERS_WITH_ROLES: `/api/${API_VERSION}/rbac/users-with-roles`,
+      MY_PERMISSIONS: `/api/${API_VERSION}/rbac/my-permissions`,
     },
     MASTER_DATA: {
-      SOURCES: `/api/${import.meta.env.VITE_API_VERSION}/master-data/`,
-      ITEMS: (slug: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/${slug}/`,
-      ITEM: (slug: string, id: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/${slug}/${id}`,
+      SOURCES: `/api/${API_VERSION}/master-data/`,
+      ITEMS: (slug: string) => `/api/${API_VERSION}/${slug}/`,
+      ITEM: (slug: string, id: number) => `/api/${API_VERSION}/${slug}/${id}`,
     },
     NOTIFICATIONS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/notifications`,
-      MY_NOTIFICATIONS: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/my-notifications`,
-      UNREAD_COUNT: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/unread-count`,
+      CREATE: `/api/${API_VERSION}/notifications`,
+      LIST: `/api/${API_VERSION}/notifications`,
+      MY_NOTIFICATIONS: `/api/${API_VERSION}/user-notifications/my-notifications`,
+      UNREAD_COUNT: `/api/${API_VERSION}/user-notifications/unread-count`,
       MARK_READ: (notificationId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/${notificationId}/mark-read`,
-      MARK_ALL_READ: `/api/${import.meta.env.VITE_API_VERSION}/user-notifications/mark-all-read`,
-      TEMPLATES: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates`,
-      TEMPLATES_DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/notification-templates/dropdown`,
+        `/api/${API_VERSION}/user-notifications/${notificationId}/mark-read`,
+      MARK_ALL_READ: `/api/${API_VERSION}/user-notifications/mark-all-read`,
+      TEMPLATES: `/api/${API_VERSION}/notification-templates`,
+      TEMPLATES_DROPDOWN: `/api/${API_VERSION}/notification-templates/dropdown`,
     },
     PROJECTS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/projects`,
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
-      SEARCH: `/api/${import.meta.env.VITE_API_VERSION}/projects/dropdown`,
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/projects/`,
+      LIST: `/api/${API_VERSION}/projects`,
+      DROPDOWN: `/api/${API_VERSION}/projects/dropdown`,
+      SEARCH: `/api/${API_VERSION}/projects/dropdown`,
+      CREATE: `/api/${API_VERSION}/projects/`,
       STATUS_UPDATE: (projectId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/projects/${projectId}/status`,
+        `/api/${API_VERSION}/projects/${projectId}/status`,
     },
     STUDY_TYPES: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/study-types/dropdown`,
+      LIST: `/api/${API_VERSION}/study-types/dropdown`,
     },
     ISOTOPES: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/isotopes/dropdown`,
+      LIST: `/api/${API_VERSION}/isotopes/dropdown`,
     },
     CELL_LINES: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/dropdown`,
+      LIST: `/api/${API_VERSION}/cell-lines/dropdown`,
     },
     MOUSE_STRAINS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/mouse-strains/dropdown`,
+      LIST: `/api/${API_VERSION}/mouse-strains/dropdown`,
     },
     EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/experiments/`,
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiments/dropdown`,
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiments`,
+      CREATE: `/api/${API_VERSION}/experiments/`,
+      DROPDOWN: `/api/${API_VERSION}/experiments/dropdown`,
+      LIST: `/api/${API_VERSION}/experiments`,
       STATUS_UPDATE: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiments/${experimentId}/status`,
+        `/api/${API_VERSION}/experiments/${experimentId}/status`,
     },
     BIOD_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/biod-experiments/`,
+      CREATE: `/api/${API_VERSION}/biod-experiments/`,
     },
     MODEL_STUDY_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/`,
-      MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/preview`,
-      CONFIRM_MOUSE_GROUPS: `/api/${import.meta.env.VITE_API_VERSION}/model-study-experiments/mouse-groups/confirm`,
+      CREATE: `/api/${API_VERSION}/model-study-experiments/`,
+      MOUSE_GROUPS: `/api/${API_VERSION}/model-study-experiments/mouse-groups/preview`,
+      CONFIRM_MOUSE_GROUPS: `/api/${API_VERSION}/model-study-experiments/mouse-groups/confirm`,
     },
     DOSE_RANGE_FINDING_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/drf-experiments/`,
+      CREATE: `/api/${API_VERSION}/drf-experiments/`,
     },
     TOXICITY: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/toxicity-experiments/`,
+      CREATE: `/api/${API_VERSION}/toxicity-experiments/`,
     },
     CLRF_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/clrf-experiments/`,
+      CREATE: `/api/${API_VERSION}/clrf-experiments/`,
     },
     DIRECT_BINDING_ASSAY_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/direct-binding-assay-experiments/`,
+      CREATE: `/api/${API_VERSION}/direct-binding-assay-experiments/`,
     },
     CONJUGATION_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/conjugation-experiments/`,
+      CREATE: `/api/${API_VERSION}/conjugation-experiments/`,
     },
     IRF: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/irf-experiments/`,
+      CREATE: `/api/${API_VERSION}/irf-experiments/`,
     },
     RECEPTOR_QUANTIFICATION: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/receptor-quantification-experiments/`,
+      CREATE: `/api/${API_VERSION}/receptor-quantification-experiments/`,
     },
     DELFIA_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/delfia-experiments/`,
+      CREATE: `/api/${API_VERSION}/delfia-experiments/`,
     },
     ELISA_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/elisa-experiments/`,
+      CREATE: `/api/${API_VERSION}/elisa-experiments/`,
     },
     SATURATION_BINDING_ASSAY_EXPERIMENTS: {
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/saturation-binding-assay-experiments/`,
+      CREATE: `/api/${API_VERSION}/saturation-binding-assay-experiments/`,
     },
     DATA_TYPES: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/data-types/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/data-types/dropdown`,
     },
     SAMPLE_FILES: {
-      DOWNLOAD: `/api/${import.meta.env.VITE_API_VERSION}/sample-file-download`,
+      DOWNLOAD: `/api/${API_VERSION}/sample-file-download`,
     },
     EXPERIMENT_DATA: {
-      IMPORT: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-experiment-data`,
-      MY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/my-experiment-data`,
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data`,
+      IMPORT: `/api/${API_VERSION}/experiment-data/import-experiment-data`,
+      MY_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/my-experiment-data`,
+      LIST: `/api/${API_VERSION}/experiment-data`,
       UPDATE_TREATMENT_DATE: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/treatment-date`,
       WEIGHT_SHEET_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/weight-sheet`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/weight-sheet`,
       CALLIPERING_SHEET_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/callipering-sheet`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/callipering-sheet`,
       ORGAN_WEIGHT_SHEET_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/organ-weight-sheet`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/organ-weight-sheet`,
       NECROPSY_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/necropsy-data`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/necropsy-data`,
       HOTLAB_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/hotlab-pdf`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/hotlab-pdf`,
       CMC_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/cmc-data`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/cmc-data`,
       SATURATION_BINDING_ASSAY_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/saturation-binding-assay`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/saturation-binding-assay`,
       ELISA_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/elisa-data`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/elisa-data`,
       DELFIA_DATA: (experimentDataId: string) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentDataId}/delfia-data`,
-      IMPORT_AGC_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-agc-experiment-data`,
-      IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/import-necropsy-experiment-data`,
-      IMPORT_CLRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/clrf/import-clrf-experiment-data`,
-      IMPORT_CONJUGATION_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/conjugation/import-conjugation-experiment-data`,
-      IMPORT_CONJUGATION_GEL_IMAGE_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/conjugation/import-gel-image-experiment-data`,
-      IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/direct-binding-assay/import-direct-binding-assay-experiment-data`,
-      IMPORT_IRF_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/irf/import-irf-experiment-data`,
-      IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/cmc/receptor-quantification/import-receptor-quantification-experiment-data`,
+        `/api/${API_VERSION}/experiment-data/${experimentDataId}/delfia-data`,
+      IMPORT_AGC_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/import-agc-experiment-data`,
+      IMPORT_NECROPSY_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/import-necropsy-experiment-data`,
+      IMPORT_CLRF_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/clrf/import-clrf-experiment-data`,
+      IMPORT_CONJUGATION_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/conjugation/import-conjugation-experiment-data`,
+      IMPORT_CONJUGATION_GEL_IMAGE_DATA: `/api/${API_VERSION}/experiment-data/cmc/conjugation/import-gel-image-experiment-data`,
+      IMPORT_DIRECT_BINDING_ASSAY_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/direct-binding-assay/import-direct-binding-assay-experiment-data`,
+      IMPORT_IRF_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/irf/import-irf-experiment-data`,
+      IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/receptor-quantification/import-receptor-quantification-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/experiment-drugs/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/experiment-drugs/dropdown`,
     },
     DOSES: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/doses/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/doses/dropdown`,
     },
     ANTIBODIES: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/antibodies/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/antibodies/dropdown`,
     },
     RANDOMIZATION: {
-      PREVIEW: `/api/${import.meta.env.VITE_API_VERSION}/randomization/preview`,
-      CONFIRM: `/api/${import.meta.env.VITE_API_VERSION}/randomization/confirm`,
+      PREVIEW: `/api/${API_VERSION}/randomization/preview`,
+      CONFIRM: `/api/${API_VERSION}/randomization/confirm`,
       VIEW: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/randomization/view/${experimentId}`,
+        `/api/${API_VERSION}/randomization/view/${experimentId}`,
     },
     MOUSE_GROUPS: {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
+        `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+        `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
     },
     EXCEL_EXPORT: {
-      EXPORT_CALIPER_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/caliper-sheet/export-caliper-sheet`,
-      EXPORT_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/weight-sheet/export-weight-sheet`,
+      EXPORT_CALIPER_SHEET: `/api/${API_VERSION}/caliper-sheet/export-caliper-sheet`,
+      EXPORT_WEIGHT_SHEET: `/api/${API_VERSION}/weight-sheet/export-weight-sheet`,
     },
     HEMATOLOGY: {
-      SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/hematology/save-hematology-report`,
-      EXTRACT_HEMATOLOGY: `/api/${import.meta.env.VITE_API_VERSION}/hematology/extract-hematology-report`,
+      SAVE_HEMATOLOGY_REPORT: `/api/${API_VERSION}/hematology/save-hematology-report`,
+      EXTRACT_HEMATOLOGY: `/api/${API_VERSION}/hematology/extract-hematology-report`,
       GET_HEMATOLOGY_REPORT: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentId}/hematology`,
+        `/api/${API_VERSION}/experiment-data/${experimentId}/hematology`,
     },
     BLOOD_CHEMISTRY: {
-      SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/blood-chemistry/save-blood-chemistry-report`,
-      EXTRACT_BLOOD_CHEMISTRY: `/api/${import.meta.env.VITE_API_VERSION}/blood-chemistry/extract-blood-chemistry-report`,
+      SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${API_VERSION}/blood-chemistry/save-blood-chemistry-report`,
+      EXTRACT_BLOOD_CHEMISTRY: `/api/${API_VERSION}/blood-chemistry/extract-blood-chemistry-report`,
       GET_BLOOD_CHEMISTRY_REPORT: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/experiment-data/${experimentId}/blood-chemistry`,
+        `/api/${API_VERSION}/experiment-data/${experimentId}/blood-chemistry`,
     },
     NECROPSY: {
-      EXPORT_ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/necropsy/export-organ-weight-sheet`,
+      EXPORT_ORGAN_WEIGHT_SHEET: `/api/${API_VERSION}/necropsy/export-organ-weight-sheet`,
     },
     HOTLAB: {
-      EXTRACT_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/hotlab/extract-report`,
-      CREATE_EXPERIMENT: `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments`,
+      EXTRACT_REPORT: `/api/${API_VERSION}/hotlab/extract-report`,
+      CREATE_EXPERIMENT: `/api/${API_VERSION}/hotlab-experiments`,
       GET_EXPERIMENT: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments/${experimentId}`,
+        `/api/${API_VERSION}/hotlab-experiments/${experimentId}`,
       UPDATE_EXPERIMENT: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/hotlab-experiments/${experimentId}`,
-      IMPORT_EXPERIMENT_DATA: `/api/${import.meta.env.VITE_API_VERSION}/hotlab/import-hotlab-pdf`,
+        `/api/${API_VERSION}/hotlab-experiments/${experimentId}`,
+      IMPORT_EXPERIMENT_DATA: `/api/${API_VERSION}/hotlab/import-hotlab-pdf`,
     },
     EFFICACY: {
-      CREATE_EXPERIMENT: `/api/${import.meta.env.VITE_API_VERSION}/efficacy-experiments/`,
+      CREATE_EXPERIMENT: `/api/${API_VERSION}/efficacy-experiments/`,
     },
     ORGAN_WEIGHTS: {
       BULK_UPDATE: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/organ-weights/${experimentId}/bulk-update`,
+        `/api/${API_VERSION}/organ-weights/${experimentId}/bulk-update`,
     },
     CELL_INJECTION_COUNTS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/cell-injection-counts/dropdown`,
+      LIST: `/api/${API_VERSION}/cell-injection-counts/dropdown`,
     },
     VEHICLES: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/vehicles/dropdown`,
+      LIST: `/api/${API_VERSION}/vehicles/dropdown`,
     },
     MOVE_MICE: {
       GET_MICE: (sourceExperimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/mice`,
+        `/api/${API_VERSION}/move-mice/${sourceExperimentId}/mice`,
       GET_TARGET_EXPERIMENTS: (sourceExperimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/experiments`,
+        `/api/${API_VERSION}/move-mice/${sourceExperimentId}/experiments`,
       MOVE_MICE: (sourceExperimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/move-mice/${sourceExperimentId}/move`,
+        `/api/${API_VERSION}/move-mice/${sourceExperimentId}/move`,
     },
     CALLIPER_MEASUREMENT_COMMENTS: {
-      LIST: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurement-comments`,
+      LIST: `/api/${API_VERSION}/caliper-measurement-comments`,
+      CREATE: `/api/${API_VERSION}/caliper-measurement-comments`,
     },
     MICE_TERMINATION: {
-      TERMINATE_MICE: `/api/${import.meta.env.VITE_API_VERSION}/mice-termination`,
+      TERMINATE_MICE: `/api/${API_VERSION}/mice-termination`,
     },
     CALIPER_MEASUREMENTS: {
       HISTORY_BY_MOUSE: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-mouse`,
+        `/api/${API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-mouse`,
       HISTORY_BY_GROUP: (experimentId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
+        `/api/${API_VERSION}/caliper-measurements/experiment/${experimentId}/history-by-group`,
     },
     PERFORM_BIOD: {
-      LEGACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod`, // Deprecated: Legacy endpoint, no longer used and scheduled for removal in a future release.
-      MODEL_STUDY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/model-study`,
-      EFFICACY: `/api/${import.meta.env.VITE_API_VERSION}/perform-biod/efficacy`,
+      LEGACY: `/api/${API_VERSION}/perform-biod`, // Deprecated: Legacy endpoint, no longer used and scheduled for removal in a future release.
+      MODEL_STUDY: `/api/${API_VERSION}/perform-biod/model-study`,
+      EFFICACY: `/api/${API_VERSION}/perform-biod/efficacy`,
     },
     CELL_LINE_VALIDATION: {
       VALIDATE_MOUSE_STRAIN: (cellLineId: number) =>
-        `/api/${import.meta.env.VITE_API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
+        `/api/${API_VERSION}/cell-lines/${cellLineId}/mouse-strain/validate`,
     },
     DOSE_FREQUENCIES: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/dose-frequencies/dropdown`,
-      CREATE: `/api/${import.meta.env.VITE_API_VERSION}/dose-frequencies/`,
+      DROPDOWN: `/api/${API_VERSION}/dose-frequencies/dropdown`,
+      CREATE: `/api/${API_VERSION}/dose-frequencies/`,
     },
     MARKET_DOSE: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/market-doses/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/market-doses/dropdown`,
     },
     USER_NOTIFICATION_SETTINGS: {
-      GET_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
-      UPDATE_USER_NOTIFICATION_SETTINGS: `/api/${import.meta.env.VITE_API_VERSION}/user-notification-settings`,
+      GET_USER_NOTIFICATION_SETTINGS: `/api/${API_VERSION}/user-notification-settings`,
+      UPDATE_USER_NOTIFICATION_SETTINGS: `/api/${API_VERSION}/user-notification-settings`,
     },
     DATA_UPLOAD: {
       PRECLINICAL: {
         BIOD: {
-          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/weight-sheet`,
-          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/callipering-sheet`,
-          ORGAN_WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/organ-weight-sheet`,
-          AGC_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/agc-sheet`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/biod/hotlab`,
+          WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/biod/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${API_VERSION}/data-upload/preclinical/biod/callipering-sheet`,
+          ORGAN_WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/biod/organ-weight-sheet`,
+          AGC_SHEET: `/api/${API_VERSION}/data-upload/preclinical/biod/agc-sheet`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/preclinical/biod/hotlab`,
         },
 
         DRF: {
-          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/weight-sheet`,
-          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/necropsy`,
-          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-hematology-report`,
-          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-hematology-report`,
-          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/extract-blood-chemistry-report`,
-          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/save-blood-chemistry-report`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/drf/hotlab`,
+          WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/drf/weight-sheet`,
+          NECROPSY: `/api/${API_VERSION}/data-upload/preclinical/drf/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/drf/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/drf/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/drf/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/drf/save-blood-chemistry-report`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/preclinical/drf/hotlab`,
         },
 
         EFFICACY: {
-          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/weight-sheet`,
-          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/callipering-sheet`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/efficacy/hotlab`,
+          WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/efficacy/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${API_VERSION}/data-upload/preclinical/efficacy/callipering-sheet`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/preclinical/efficacy/hotlab`,
         },
 
         MODEL_STUDY: {
-          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/weight-sheet`,
-          CALLIPERING_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/callipering-sheet`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/model-study/hotlab`,
+          WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/model-study/weight-sheet`,
+          CALLIPERING_SHEET: `/api/${API_VERSION}/data-upload/preclinical/model-study/callipering-sheet`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/preclinical/model-study/hotlab`,
         },
 
         TOXICITY: {
-          WEIGHT_SHEET: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/weight-sheet`,
-          NECROPSY: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/necropsy`,
-          EXTRACT_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-hematology-report`,
-          SAVE_HEMATOLOGY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-hematology-report`,
-          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/extract-blood-chemistry-report`,
-          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/save-blood-chemistry-report`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/preclinical/toxicity/hotlab`,
+          WEIGHT_SHEET: `/api/${API_VERSION}/data-upload/preclinical/toxicity/weight-sheet`,
+          NECROPSY: `/api/${API_VERSION}/data-upload/preclinical/toxicity/necropsy`,
+          EXTRACT_HEMATOLOGY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/toxicity/extract-hematology-report`,
+          SAVE_HEMATOLOGY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/toxicity/save-hematology-report`,
+          EXTRACT_BLOOD_CHEMISTRY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/toxicity/extract-blood-chemistry-report`,
+          SAVE_BLOOD_CHEMISTRY_REPORT: `/api/${API_VERSION}/data-upload/preclinical/toxicity/save-blood-chemistry-report`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/preclinical/toxicity/hotlab`,
         },
       },
 
       HOTLAB: {
-        EXTRACT_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/extract-hotlab-report`,
-        SAVE_HOTLAB_REPORT: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/hotlab/save-hotlab-report`,
+        EXTRACT_HOTLAB_REPORT: `/api/${API_VERSION}/data-upload/hotlab/extract-hotlab-report`,
+        SAVE_HOTLAB_REPORT: `/api/${API_VERSION}/data-upload/hotlab/save-hotlab-report`,
       },
 
       CMC: {
         CLRF: {
-          CLRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/clrf-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/clrf/hotlab`,
+          CLRF_DATA: `/api/${API_VERSION}/data-upload/cmc/clrf/clrf-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/clrf/hotlab`,
         },
 
         CONJUGATION: {
-          CONJUGATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/conjugation-data`,
-          GEL_IMAGE: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/gel-image`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/conjugation/hotlab`,
+          CONJUGATION_DATA: `/api/${API_VERSION}/data-upload/cmc/conjugation/conjugation-data`,
+          GEL_IMAGE: `/api/${API_VERSION}/data-upload/cmc/conjugation/gel-image`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/conjugation/hotlab`,
         },
 
         DIRECT_BINDING_ASSAY: {
-          DIRECT_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/direct-binding-assay-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/direct-binding-assay/hotlab`,
+          DIRECT_BINDING_ASSAY_DATA: `/api/${API_VERSION}/data-upload/cmc/direct-binding-assay/direct-binding-assay-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/direct-binding-assay/hotlab`,
         },
 
         IRF: {
-          IRF_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/irf-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/irf/hotlab`,
+          IRF_DATA: `/api/${API_VERSION}/data-upload/cmc/irf/irf-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/irf/hotlab`,
         },
 
         RECEPTOR_QUANTIFICATION: {
-          RECEPTOR_QUANTIFICATION_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/receptor-quantification-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/receptor-quantification/hotlab`,
+          RECEPTOR_QUANTIFICATION_DATA: `/api/${API_VERSION}/data-upload/cmc/receptor-quantification/receptor-quantification-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/receptor-quantification/hotlab`,
         },
         SATURATION_BINDING_ASSAY: {
-          SATURATION_BINDING_ASSAY_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/saturation-binding-assay-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/cmc/saturation-binding-assay/hotlab`,
+          SATURATION_BINDING_ASSAY_DATA: `/api/${API_VERSION}/data-upload/cmc/saturation-binding-assay/saturation-binding-assay-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/cmc/saturation-binding-assay/hotlab`,
         },
       },
 
       CHEMISTRY: {
         ELISA: {
-          ELISA_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/elisa-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/elisa/hotlab`,
+          ELISA_DATA: `/api/${API_VERSION}/data-upload/chemistry/elisa/elisa-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/chemistry/elisa/hotlab`,
         },
         DELFIA: {
-          DELFIA_DATA: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/delfia/delfia-data`,
-          HOTLAB: `/api/${import.meta.env.VITE_API_VERSION}/data-upload/chemistry/delfia/hotlab`,
+          DELFIA_DATA: `/api/${API_VERSION}/data-upload/chemistry/delfia/delfia-data`,
+          HOTLAB: `/api/${API_VERSION}/data-upload/chemistry/delfia/hotlab`,
         },
       },
     },
     SPECIALIZATION: {
-      DROPDOWN: `/api/${import.meta.env.VITE_API_VERSION}/specializations/dropdown`,
+      DROPDOWN: `/api/${API_VERSION}/specializations/dropdown`,
     },
   },
 } as const;
@@ -516,7 +514,7 @@ export class ApiClient {
             sessionStorage.clear();
 
             // Redirect to login page
-            window.location.href = "/login?reason=session_expired";
+            window.location.href = "/login";
 
             // Reject the request
             return Promise.reject(new Error("Token expired"));
@@ -542,7 +540,7 @@ export class ApiClient {
         if (error.response?.status === 401) {
           logger.warn("[API] Received 401 Unauthorized, clearing session");
           sessionStorage.clear();
-          window.location.href = "/login?reason=unauthorized";
+          window.location.href = "/login";
           return Promise.reject(error);
         }
 
@@ -568,8 +566,9 @@ export class ApiClient {
                 method: error.config?.method?.toUpperCase() || "unknown",
                 status: error.response.status,
                 statusText: error.response.statusText,
-                responseData: error.response.data,
-                requestData: error.config?.data,
+                // ✅ Sanitized before sending — handles both objects and JSON strings
+                responseData: sanitizeSentryData(error.response.data),
+                requestData: sanitizeSentryData(error.config?.data),
               },
             },
           });

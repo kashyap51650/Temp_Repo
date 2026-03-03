@@ -1,73 +1,190 @@
-# React + TypeScript + Vite
+# Orano Med - Frontend Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A production-ready web application for managing pharmaceutical research data and experiment management.
 
-Currently, two official plugins are available:
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.1.1-61dafb.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.1.11-646cff.svg)](https://vitejs.dev/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Table of Contents
 
-## React Compiler
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Development](#development)
+- [Building](#building)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
 
-## Expanding the ESLint configuration
+### Core Functionality
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 🧪 **Experiment Data Management** - Efficacy studies, bio-distribution, dose-range finding
+- 📊 **Data Upload & Validation** - Multi-format data upload with validation
+- 🎲 **Randomization Analysis** - Advanced mouse group randomization and analysis
+- 👥 **User Management** - Role-based access control (RBAC)
+- 📁 **Master Data CRUD** - Drugs, mice strains, organs, isotopes
+- 🔔 **Real-time Notifications** - WebSocket-based notifications
+- ✅ **Approval Workflows** - Data review and approval
 
-```js
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
+### Technical Features
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- 🎨 **Modern UI/UX** - Tailwind CSS and shadcn/ui components
+- 🔐 **Security** - JWT authentication, data sanitization
+- 📈 **Performance** - Code splitting, lazy loading
+- 🐛 **Error Tracking** - Sentry integration
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+## 🚀 Tech Stack
+
+See [SYSTEM-ARCHITECTURE.md](./SYSTEM-ARCHITECTURE.md) for detailed architecture.
+
+**Core**: React 19.1.1 • TypeScript 5.9.3 • Vite 7.1.11  
+**State**: Redux Toolkit • TanStack Query • React Context  
+**UI**: Tailwind CSS • Radix UI • shadcn/ui  
+**Forms**: React Hook Form • Zod  
+**Data**: Axios • TanStack Table • recharts
+
+## 📦 Prerequisites
+
+- **Node.js**: 20.x or 22.x (LTS)
+- **npm**: 10.x+
+- **Git**: Latest stable
+
+## 🏁 Getting Started
+
+```bash
+# 1. Clone repository
+git clone <repository-url>
+cd orano_med_frontend_reactjs
+
+# 2. Install dependencies
+npm install
+
+# 3. Setup environment
+cp .env.example .env
+# Edit .env with your configuration
+
+# 4. Start development
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Application runs at `http://localhost:5173`
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+### Environment Variables
 
-export default defineConfig([
-  globalIgnores(["dist"]),
-  {
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs["recommended-typescript"],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+```env
+# API Base URL
+VITE_API_BASE_URL=
+
+# Version for API
+VITE_API_VERSION=
+
+# Socket.IO Configuration
+VITE_SOCKET_URL=
+
+# Authentication
+VITE_AUTH_TOKEN_KEY=
+VITE_AUTH_REFRESH_TOKEN_KEY=
+
+# Feature Flags
+VITE_FEATURE_FLAG_EXPERIMENTAL=
+
+# Application Metadata
+VITE_APP_NAME=
+VITE_APP_VERSION=
+VITE_APP_ENV=
+
+# Logging
+VITE_LOG_LEVEL=
+
+# Sentry DSN
+VITE_SENTRY_DSN=
 ```
+
+**Note**: All variables must be prefixed with `VITE_`. See `.env.example` for the latest reference.
+
+## 💻 Development
+
+### Available Scripts
+
+```bash
+# Development
+npm run dev                   # Start dev server
+npm run build                 # Production build
+npm run preview               # Preview production build
+
+# Code Quality
+npm run lint                  # Run ESLint
+npm run lint:fix              # Fix ESLint issues
+npm run format                # Format with Prettier
+npm run type-check            # TypeScript check
+
+# Components
+npm run add-component         # Add shadcn/ui component
+npm run organize-components   # Organize by atomic design
+```
+
+### Project Structure
+
+```
+src/
+├── api/                      # API integration
+├── app/store/                # Redux store
+├── components/               # React components (Atomic Design)
+│   ├── atoms/                # Basic UI elements
+│   ├── molecules/            # Component combinations
+│   ├── organisms/            # Complex sections
+│   └── layouts/              # Layout wrappers
+├── hooks/                    # Custom hooks
+├── lib/                      # Utilities & config
+├── pages/                    # Page components
+├── routes/                   # TanStack Router
+├── schemas/                  # Zod schemas
+└── types/                    # TypeScript types
+```
+
+### Routing
+
+File-based routing with TanStack Router:
+
+- Routes in `src/routes/`
+- Auto-generated `routeTree.gen.ts`
+- Type-safe navigation
+
+## 🏗️ Building
+
+```bash
+# Build
+npm run build
+
+# Preview
+npm run preview
+```
+
+Output in `dist/` folder
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
+- Branching & PR workflow (development → staging, no production branch)
+- TaskId-prefixed branch and commit naming
+- Copilot review before reviewer approval
+- Squash & merge policy
+- Development standards
+
+**Quick steps:**
+
+1. Create a new branch from `development` (use TaskId prefix, e.g. `TASK-123-feature-x`)
+2. Make changes and run quality checks
+3. Commit with TaskId-prefixed message (e.g. `TASK-123: add new feature`)
+4. Push and create PR to `development`
+5. Copilot reviews first; after Copilot comments are resolved, a reviewer with approval permission reviews
+6. After approval, squash & merge to `development`
+7. Raise PR from `development` to `staging` for release
+
+---
+
+**Last Updated**: February 2026

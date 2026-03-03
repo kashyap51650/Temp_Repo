@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/atoms/Button/Button";
 import {
@@ -25,7 +25,7 @@ export function DatePicker({
   disabled,
   className,
 }: Readonly<DatePickerProps>) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const parseDateString = (dateStr: string): Date | undefined => {
     if (!dateStr) return undefined;
@@ -33,13 +33,19 @@ export function DatePicker({
     return new Date(year, month - 1, day);
   };
 
-  const [selected, setSelected] = React.useState<Date | undefined>(
+  const [selected, setSelected] = useState<Date | undefined>(
     parseDateString(value || "")
   );
 
-  React.useEffect(() => {
+  const [month, setMonth] = useState<Date | undefined>(selected);
+
+  useEffect(() => {
     setSelected(parseDateString(value || ""));
   }, [value]);
+
+  useEffect(() => {
+    setMonth(selected);
+  }, [selected]);
 
   const handleSelect = (date?: Date) => {
     setSelected(date);
@@ -50,6 +56,10 @@ export function DatePicker({
       const day = String(date.getDate()).padStart(2, "0");
       onChange(`${year}-${month}-${day}`);
     }
+  };
+
+  const handleMonthChange = (date: Date | undefined) => {
+    setMonth(date);
   };
 
   return (
@@ -78,6 +88,8 @@ export function DatePicker({
           mode="single"
           selected={selected}
           onSelect={handleSelect}
+          month={month}
+          onMonthChange={handleMonthChange}
           initialFocus
           className="w-full"
         />

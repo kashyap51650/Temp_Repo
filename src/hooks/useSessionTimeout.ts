@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { authApi } from "@/lib/auth";
 import { SESSION_STORAGE_KEYS } from "@/lib/constants";
 import { logger } from "@/lib/logger";
 
@@ -68,10 +69,24 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
   /**
    * Handle session timeout - clear session and redirect to login
    */
-  const handleTimeout = useCallback(() => {
+  const handleTimeout = useCallback(async () => {
     logger.warn("[Session Timeout] User session expired due to inactivity");
 
-    // Clear session storage
+    // Revoke the server-side session before clearing local state.
+    // The access token is still cryptographically valid at this point
+    // (inactivity is a client-side concept), so the backend logout endpoint
+    // can accept and invalidate it / the refresh token.
+    const hasToken = !!sessionStorage.getItem(
+      SESSION_STORAGE_KEYS.ACCESS_TOKEN
+    );
+    if (hasToken) {
+      try {
+        await authApi.logout();
+      } catch {
+        // authApi.logout already warns on failure; swallow here so the
+        // local cleanup below always runs
+      }
+    }
     sessionStorage.clear();
 
     // Show toast notification
@@ -86,7 +101,7 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
       onTimeout();
     } else {
       // Default: redirect to login with reason
-      window.location.href = "/login?reason=session_timeout";
+      window.location.href = "/login";
     }
   }, [onTimeout]);
 
@@ -164,8 +179,8 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
     }
 
     // Set timeout timer (always runs regardless of warning validity)
-    timeoutRef.current = setTimeout(() => {
-      handleTimeout();
+    timeoutRef.current = setTimeout(async () => {
+      await handleTimeout();
     }, timeoutMs);
   }, [timeoutMs, warningMs, handleTimeout, showWarning]);
 

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import React from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -47,10 +47,11 @@ type OtpFormValues = z.infer<typeof otpSchema>;
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const [step, setStep] = React.useState<"email" | "otp">("email");
-  const [email, setEmail] = React.useState("");
-  const [timer, setTimer] = React.useState(120);
-  const [resetModalOpen, setResetModalOpen] = React.useState(false);
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [email, setEmail] = useState("");
+  const [timer, setTimer] = useState(120);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
 
   const form = useForm<ForgotFormValues>({
     resolver: zodResolver(forgotSchema),
@@ -66,7 +67,7 @@ export default function ForgotPasswordPage() {
     resolver: zodResolver(otpSchema),
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (step === "otp" && timer > 0) {
       const interval = setInterval(() => setTimer((t) => t - 1), 1000);
       return () => clearInterval(interval);
@@ -106,7 +107,7 @@ export default function ForgotPasswordPage() {
 
       toast.success(response.message || "OTP verified successfully!");
 
-      sessionStorage.setItem("reset_token", response.data.reset_token);
+      setResetToken(response.data.reset_token);
 
       setResetModalOpen(true);
     } catch (error) {
@@ -120,7 +121,7 @@ export default function ForgotPasswordPage() {
   };
 
   const handlePasswordResetSuccess = () => {
-    sessionStorage.removeItem("reset_token");
+    setResetToken(null);
     navigate({ to: "/auth/login" });
   };
 
@@ -278,6 +279,7 @@ export default function ForgotPasswordPage() {
         onOpenChange={setResetModalOpen}
         onSuccess={handlePasswordResetSuccess}
         mode="reset"
+        resetToken={resetToken}
       />
     </>
   );

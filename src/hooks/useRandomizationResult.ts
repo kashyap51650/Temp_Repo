@@ -27,6 +27,7 @@ export const useRandomizationResult = () => {
     mutate: previewRandomizationfn,
     isPending,
     isError,
+    error,
   } = useMutation({
     mutationFn: (payload: {
       experiment_id: number;
@@ -100,6 +101,7 @@ export const useRandomizationResult = () => {
     handleBack,
     isPending,
     isError,
+    error,
     bufferGroups,
     setBufferGroups,
   };

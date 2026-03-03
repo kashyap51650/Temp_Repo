@@ -19,7 +19,8 @@ import {
  *
  *   useEffect(() => {
  *     const handleNotification = (data) => {
- *       console.log('Notification:', data);
+ *       // handle notification data
+ *       void data;
  *     };
  *
  *     on('notification', handleNotification);

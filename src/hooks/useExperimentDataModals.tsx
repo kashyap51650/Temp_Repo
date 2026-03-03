@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { lazy, Suspense, useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -82,8 +81,6 @@ export function useExperimentDataModals(
 ) {
   const { hideActions = false } = options;
 
-  const navigate = useNavigate();
-
   const [selectedExperiment, setSelectedExperiment] =
     useState<ExperimentDataItem | null>(null);
 
@@ -142,12 +139,6 @@ export function useExperimentDataModals(
       const isDelfiaData = dataTypeName === DATA_TYPE.DELFIA;
 
       if (isCalliperingSheet) {
-        navigate({
-          to: "/data-validate",
-          search: {
-            experimentId: experiment.experiment?.id,
-          },
-        });
         calliperingViewModal.openModal();
         return;
       }
@@ -230,7 +221,6 @@ export function useExperimentDataModals(
       saturationBindingAssayViewModal,
       elisaViewModal,
       delfiaViewModal,
-      navigate,
     ]
   );
 

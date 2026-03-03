@@ -169,6 +169,8 @@ export function CalliperingSheetViewModal({
           apiData={apiData}
           isLoading={isLoading}
           error={error}
+          experimentId={experimentId}
+          experimentStatus={experimentStatus}
         />
       </Dialog>
 

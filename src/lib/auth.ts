@@ -12,6 +12,7 @@ import type {
 } from "@/types/auth";
 
 import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "./constants";
+import { logger } from "./logger";
 import { clearUserContext, setUserContext } from "./sentry-logger";
 
 // Query keys for TanStack Query
@@ -50,7 +51,10 @@ export const authApi = {
     try {
       await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
     } catch {
-      // Already logged by API interceptor, no need to log again
+      // Already logged by API interceptor; warn so silent revocation failures are traceable
+      logger.warn(
+        "[Auth] Server-side token revocation failed — local session will still be cleared"
+      );
     } finally {
       tokenUtils.removeTokens();
     }

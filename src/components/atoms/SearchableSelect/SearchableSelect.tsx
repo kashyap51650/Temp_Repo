@@ -1,6 +1,7 @@
 import { Plus, SearchIcon, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useTruncationDetection } from "@/hooks/useTruncationDetection";
 import { cn } from "@/lib/utils";
 import type { SelectOption } from "@/types/utils";
 
@@ -32,6 +33,7 @@ type SearchableSelectProps<TMultiple extends boolean = false> = {
   multiple?: TMultiple;
   shouldShowCreateNew?: boolean;
   id?: string;
+  truncateValue?: boolean;
 };
 
 export function SearchableSelect<TMultiple extends boolean = false>({
@@ -49,6 +51,7 @@ export function SearchableSelect<TMultiple extends boolean = false>({
   multiple = false as TMultiple,
   shouldShowCreateNew = true,
   id,
+  truncateValue = false,
 }: Readonly<SearchableSelectProps<TMultiple>>) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -127,6 +130,25 @@ export function SearchableSelect<TMultiple extends boolean = false>({
       return () => clearInterval(interval);
     }
   }, [isOpen, shouldShowSearch]);
+
+  // Compute selected option for single-select mode (used with truncateValue)
+  const selectedOption = useMemo(
+    () => options.find((opt) => opt.value === singleValue),
+    [options, singleValue]
+  );
+
+  const truncationSelector = useMemo(
+    () => [".truncate", '[data-slot="select-value"]'],
+    []
+  );
+
+  // Track if value is truncated for smart tooltip display
+  const { ref: triggerRef, isTruncated: showTooltip } =
+    useTruncationDetection<HTMLButtonElement>({
+      enabled: truncateValue,
+      selector: truncationSelector,
+      dependencies: [singleValue, selectedOption],
+    });
 
   if (multiple) {
     return (
@@ -285,14 +307,35 @@ export function SearchableSelect<TMultiple extends boolean = false>({
       open={isOpen}
       onOpenChange={setIsOpen}
     >
-      <SelectTrigger
-        size={size}
-        className={cn("w-full", className)}
-        aria-label={placeholder}
-        id={id}
-      >
-        <SelectValue placeholder={placeholder} className="text-xs" />
-      </SelectTrigger>
+      {(() => {
+        const selectTrigger = (
+          <SelectTrigger
+            ref={triggerRef}
+            size={size}
+            className={cn("w-full", className)}
+            aria-label={placeholder}
+            id={id}
+          >
+            <SelectValue
+              placeholder={placeholder}
+              className={cn("text-xs", truncateValue && "truncate")}
+            />
+          </SelectTrigger>
+        );
+
+        if (truncateValue && showTooltip && selectedOption) {
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>{selectTrigger}</TooltipTrigger>
+              <TooltipContent side="top" sideOffset={8} className="max-w-sm">
+                <p className="break-words">{selectedOption.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        }
+
+        return selectTrigger;
+      })()}
 
       <SelectContent className="max-h-96 relative p-0">
         {shouldShowSearch && (

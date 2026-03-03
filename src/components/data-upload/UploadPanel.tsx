@@ -555,6 +555,7 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
                 dataType: value,
                 dataTypeId: dataTypeId || null,
                 uploadedFile: null,
+                uploadAGCFile: null,
               }));
             }}
             disabled={!isExperimentSelected}
