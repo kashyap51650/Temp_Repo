@@ -291,6 +291,7 @@ export interface UploadedExperimentDataFilters {
   page?: number;
   size?: number;
   status?: string;
+  data_type?: string;
   module?: PermissionModuleType;
 }
 
@@ -523,7 +524,7 @@ export interface DataTypesResponse {
 }
 
 export interface DataTypeFilters {
-  study_type_id: number;
+  study_type_id?: number;
   module?: PermissionModuleType;
 }
 
@@ -533,8 +534,9 @@ export const dataTypeApi = {
   ): Promise<DataTypesResponse> => {
     const params = new URLSearchParams();
 
-    params.append("study_type_id", filters.study_type_id.toString());
-
+    if (filters.study_type_id) {
+      params.append("study_type_id", filters.study_type_id.toString());
+    }
     if (filters.module) {
       params.append("module_perm", filters.module);
     }
@@ -583,6 +585,9 @@ export const uploadedExperimentDataApi = {
     if (filters?.size) params.append("size", filters.size.toString());
     if (filters?.status && filters.status !== "All Status") {
       params.append("status", filters.status.toLowerCase());
+    }
+    if (filters?.data_type) {
+      params.append("data_type_id", filters.data_type);
     }
     if (filters?.module) {
       params.append("module_perm", filters.module);
