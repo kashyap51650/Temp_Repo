@@ -10,10 +10,16 @@ export const moveMiceApi = {
   },
 
   getTargetExperiments: async (
-    sourceExperimentId: number
+    sourceExperimentId: number,
+    studyTypeId?: number
   ): Promise<import("@/types/moveMice").TargetExperimentsResponse> => {
     return apiClient.get<import("@/types/moveMice").TargetExperimentsResponse>(
-      API_CONFIG.ENDPOINTS.MOVE_MICE.GET_TARGET_EXPERIMENTS(sourceExperimentId)
+      API_CONFIG.ENDPOINTS.MOVE_MICE.GET_TARGET_EXPERIMENTS(sourceExperimentId),
+      {
+        params: {
+          study_type_id: studyTypeId,
+        },
+      }
     );
   },
 

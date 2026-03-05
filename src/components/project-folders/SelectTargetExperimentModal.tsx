@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
+import type { StudyType } from "@/api";
 import { Button, Dialog, Label } from "@/components/atoms";
-import { ExperimentSelect } from "@/components/atoms/Selects";
+import { SPECIALIZATION } from "@/lib";
+
+import { ExperimentSelect } from "../atoms/Selects";
+import { StudyTypeDropdown } from "../data-upload/StudyTypeDropdown";
 
 type Experiment = {
   id: string;
@@ -22,6 +26,8 @@ interface SelectTargetExperimentModalProps {
   isLoading?: boolean;
   isMoving?: boolean;
   preSelectedExperimentId?: string;
+  onStudyTypeChange?: (studyType: StudyType | undefined) => void;
+  selectedStudyTypeId?: number;
 }
 
 export function SelectTargetExperimentModal({
@@ -34,8 +40,11 @@ export function SelectTargetExperimentModal({
   isLoading = false,
   isMoving = false,
   preSelectedExperimentId,
+  onStudyTypeChange,
+  selectedStudyTypeId,
 }: Readonly<SelectTargetExperimentModalProps>) {
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
+  const [selectedStudyType, setSelectedStudyType] = useState<string>("");
 
   useEffect(() => {
     if (
@@ -54,6 +63,8 @@ export function SelectTargetExperimentModal({
 
   const handleClose = () => {
     setSelectedExperimentId("");
+    setSelectedStudyType("");
+    onStudyTypeChange?.(undefined);
     onClose();
   };
 
@@ -81,29 +92,39 @@ export function SelectTargetExperimentModal({
           </p>
         </div>
 
+        <StudyTypeDropdown
+          value={selectedStudyType}
+          onValueChange={(value, studyType) => {
+            setSelectedStudyType(value);
+            onStudyTypeChange?.(studyType);
+            setSelectedExperimentId("");
+          }}
+          disabled={false}
+          specialization={SPECIALIZATION.PRECLINICAL}
+        />
+
         {/* Target Experiment Selection */}
         <div className="space-y-3">
           <Label htmlFor="exp" className="text-sm font-medium">
             Target Experiment
           </Label>
 
-          {/* ✅ Show loading state or dropdown */}
-          {isLoading ? (
-            <div className="text-center py-4 text-muted-foreground">
-              Loading experiments...
-            </div>
-          ) : (
-            <ExperimentSelect
-              experiments={experiments}
-              value={selectedExperimentId}
-              placeholder="Search or select experiment..."
-              onValueChange={setSelectedExperimentId}
-              onCreateNew={handleCreateNewExperiment}
-              className="w-full"
-              showSearch={true}
-              disabled={isLoading}
-            />
-          )}
+          <ExperimentSelect
+            experiments={experiments}
+            value={selectedExperimentId}
+            placeholder={
+              !selectedStudyTypeId
+                ? "Please select a study type first"
+                : isLoading
+                  ? "Loading experiments..."
+                  : "Select experiment..."
+            }
+            onValueChange={setSelectedExperimentId}
+            onCreateNew={handleCreateNewExperiment}
+            className="w-full"
+            showSearch={true}
+            disabled={!selectedStudyTypeId || isLoading}
+          />
         </div>
 
         {/* Actions */}
