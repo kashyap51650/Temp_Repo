@@ -7,12 +7,18 @@ import { STUDY_TYPE_COLORS } from "@/lib/constants";
 
 interface StudyTypeSelectionProps {
   onSelect: (studyType: StudyType) => void;
+  specialization: string;
 }
 
 export const StudyTypeSelection: React.FC<StudyTypeSelectionProps> = ({
   onSelect,
+  specialization,
 }) => {
-  const { studyTypes, loading } = useStudyTypes({ enabled: true });
+  const { studyTypes, loading } = useStudyTypes({
+    enabled: true,
+    specialisation: specialization,
+    module: "data_view",
+  });
   return (
     <>
       {loading ? (

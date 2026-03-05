@@ -119,7 +119,10 @@ export function ProjectFoldersContent() {
           ].filter((item) => item.label)}
           onClickHandlers={[goBackToProjects, goBackToExperiments]}
         />
-        <StudyTypeSelection onSelect={handleStudyTypeClick} />
+        <StudyTypeSelection
+          onSelect={handleStudyTypeClick}
+          specialization={selectedExperiment.specialization}
+        />
       </div>
     );
   }

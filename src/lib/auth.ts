@@ -21,8 +21,6 @@ export const AUTH_QUERY_KEYS = {
   user: ["auth", "user"] as const,
 };
 
-export type PermissionModuleType = "data_upload" | "data_validate";
-
 // Authentication API functions
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {

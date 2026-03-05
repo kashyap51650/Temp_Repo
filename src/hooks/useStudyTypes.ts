@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { type StudyType, studyTypeApi } from "@/api";
 import { toast } from "@/components/atoms/Sonner/toast";
+import { generateQueryKey } from "@/lib";
+import type { PermissionModuleType } from "@/types/auth";
 
 import { handleApiError } from "../lib/api";
 import { REACT_QUERY_CONFIG } from "../lib/constants";
@@ -9,6 +11,7 @@ import { REACT_QUERY_CONFIG } from "../lib/constants";
 interface UseStudyTypesProps {
   enabled?: boolean;
   specialisation?: string;
+  module?: PermissionModuleType;
 }
 
 interface UseStudyTypesResult {
@@ -20,7 +23,7 @@ interface UseStudyTypesResult {
 }
 
 export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
-  const { enabled = false, specialisation } = props || {};
+  const { enabled = false, specialisation, module } = props || {};
 
   const {
     data: studyTypes = [],
@@ -28,10 +31,13 @@ export function useStudyTypes(props?: UseStudyTypesProps): UseStudyTypesResult {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["study-types", specialisation],
+    queryKey: generateQueryKey("study-types", specialisation, module),
     queryFn: async () => {
       try {
-        const response = await studyTypeApi.getStudyTypes(specialisation);
+        const response = await studyTypeApi.getStudyTypes(
+          specialisation,
+          module
+        );
 
         if (response.success) {
           return response.data;

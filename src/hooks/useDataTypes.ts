@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { type DataType, dataTypeApi } from "@/api";
+import { generateQueryKey } from "@/lib";
+import type { PermissionModuleType } from "@/types/auth";
 
 import { handleApiError } from "../lib/api";
 import { REACT_QUERY_CONFIG } from "../lib/constants";
@@ -9,6 +11,7 @@ import { REACT_QUERY_CONFIG } from "../lib/constants";
 interface UseDataTypesProps {
   studyTypeId?: number;
   enabled?: boolean;
+  module?: PermissionModuleType;
 }
 
 interface UseDataTypesResult {
@@ -20,7 +23,7 @@ interface UseDataTypesResult {
 }
 
 export function useDataTypes(props?: UseDataTypesProps): UseDataTypesResult {
-  const { studyTypeId, enabled = false } = props || {};
+  const { studyTypeId, module, enabled = false } = props || {};
 
   const {
     data: dataTypes = [],
@@ -28,7 +31,7 @@ export function useDataTypes(props?: UseDataTypesProps): UseDataTypesResult {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["data-types", studyTypeId],
+    queryKey: generateQueryKey("data-types", studyTypeId, module),
     queryFn: async () => {
       if (!studyTypeId) {
         return [];
@@ -37,6 +40,7 @@ export function useDataTypes(props?: UseDataTypesProps): UseDataTypesResult {
       try {
         const response = await dataTypeApi.getDataTypes({
           study_type_id: studyTypeId,
+          module,
         });
 
         if (response.success) {

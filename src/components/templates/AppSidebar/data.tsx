@@ -52,7 +52,10 @@ export const sidebarData = {
       title: "Project Folders",
       url: "/project-folders",
       icon: "IconFolder",
-      permissions: [PERMISSIONS.PROJECTS.VIEW],
+      requiredPermissions: [PERMISSIONS.PROJECTS.VIEW],
+      permissions: objectToFlattenArray<Permission>(
+        PERMISSIONS.PROJECTS.DATA_VIEW
+      ),
     },
     {
       title: "Master Data",

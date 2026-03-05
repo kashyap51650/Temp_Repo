@@ -29,6 +29,7 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
   const { dataTypes, loading, error } = useDataTypes({
     enabled: true,
     studyTypeId: selectedStudyType.id,
+    module: "data_view",
   });
 
   const handleMoveMiceClick = () => {

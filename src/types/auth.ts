@@ -161,7 +161,10 @@ export interface PermissionsApiResponse {
   };
 }
 
-export type PermissionModuleType = "data_upload" | "data_validate";
+export type PermissionModuleType =
+  | "data_upload"
+  | "data_validate"
+  | "data_view";
 
 export const transformUserToRow = (
   user: User
