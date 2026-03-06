@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { authApi } from "@/lib/auth";
 import { SESSION_STORAGE_KEYS } from "@/lib/constants";
+import { getEncryptedItem } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 
 /**
@@ -76,9 +77,7 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
     // The access token is still cryptographically valid at this point
     // (inactivity is a client-side concept), so the backend logout endpoint
     // can accept and invalidate it / the refresh token.
-    const hasToken = !!sessionStorage.getItem(
-      SESSION_STORAGE_KEYS.ACCESS_TOKEN
-    );
+    const hasToken = !!getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
     if (hasToken) {
       try {
         await authApi.logout();
@@ -199,7 +198,7 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
 
   useEffect(() => {
     // Check if user is logged in (has token)
-    const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+    const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
     if (!token) {
       logger.info("[Session Timeout] No token found, skipping timeout setup");
       return;
