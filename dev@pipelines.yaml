@@ -46,7 +46,6 @@ steps:
       echo "VITE_REACT_QUERY_STALE_TIME=${VITE_REACT_QUERY_STALE_TIME}" >> .env
       echo "VITE_SOCKET_URL=${VITE_SOCKET_URL}" >> .env
       echo "VITE_SENTRY_DSN=${VITE_SENTRY_DSN}" >> .env
-      cat .env
     displayName: "Create ENV file"
 
   - template: templates/docker-build-push.yml@infra-templates
