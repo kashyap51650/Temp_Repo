@@ -2,6 +2,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
 import { SESSION_STORAGE_KEYS } from "./constants";
+import { getEncryptedItem } from "./crypto";
 import { logger } from "./logger";
 import { logError, sanitizeSentryData } from "./sentry-logger";
 
@@ -503,7 +504,7 @@ export class ApiClient {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         // ✅ Get JWT token from sessionStorage
-        const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+        const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
         if (token && !config.skipAuthToken) {
           // ✅ Check if token is expired before making request

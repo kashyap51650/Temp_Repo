@@ -268,6 +268,89 @@ export const PERMISSIONS = {
     UPDATE: "project:update_project",
     DELETE: "project:delete_project",
     CLOSE: "project:close_project",
+
+    DATA_VIEW: {
+      PRECLINICAL: {
+        BIOD: {
+          WEIGHT: "data_view__preclinical__biod:weight_sheet_view",
+          CALLIPERING: "data_view__preclinical__biod:callipering_sheet_view",
+          ORGAN_WEIGHT: "data_view__preclinical__biod:organ_weight_sheet_view",
+          AGC: "data_view__preclinical__biod:agc_sheet_view",
+          HOTLAB: "data_view__preclinical__biod:hotlab_sheet_view",
+        },
+        MODEL_STUDY: {
+          WEIGHT: "data_view__preclinical__model_study:weight_sheet_view",
+          CALLIPERING:
+            "data_view__preclinical__model_study:callipering_sheet_view",
+          HOTLAB: "data_view__preclinical__model_study:hotlab_sheet_view",
+        },
+        DRF: {
+          WEIGHT: "data_view__preclinical__drf:weight_sheet_view",
+          HEMATOLOGY: "data_view__preclinical__drf:hematology_view",
+          BLOOD_CHEMISTRY: "data_view__preclinical__drf:blood_chemistry_view",
+          NECROPSY: "data_view__preclinical__drf:necropsy_view",
+          HOTLAB: "data_view__preclinical__drf:hotlab_sheet_view",
+        },
+        TOXICITY: {
+          WEIGHT: "data_view__preclinical__toxicity:weight_sheet_view",
+          HEMATOLOGY: "data_view__preclinical__toxicity:hematology_view",
+          BLOOD_CHEMISTRY:
+            "data_view__preclinical__toxicity:blood_chemistry_view",
+          NECROPSY: "data_view__preclinical__toxicity:necropsy_view",
+          HOTLAB: "data_view__preclinical__toxicity:hotlab_sheet_view",
+        },
+        EFFICACY: {
+          WEIGHT: "data_view__preclinical__efficacy:weight_sheet_view",
+          CALLIPERING:
+            "data_view__preclinical__efficacy:callipering_sheet_view",
+          HOTLAB: "data_view__preclinical__efficacy:hotlab_sheet_view",
+        },
+      },
+      CMC: {
+        CLRF: {
+          CLRF: "data_view__cmc__clrf:clrf_data_view",
+          HOTLAB: "data_view__cmc__clrf:hotlab_data_view",
+        },
+        CONJUGATION: {
+          CONJUGATION: "data_view__cmc__conjugation:conjugation_data_view",
+          HOTLAB: "data_view__cmc__conjugation:hotlab_data_view",
+        },
+        DIRECT_BINDING_ASSAY: {
+          DIRECT_BINDING_ASSAY:
+            "data_view__cmc__direct_binding_assay:direct_binding_assay_data_view",
+          HOTLAB: "data_view__cmc__direct_binding_assay:hotlab_data_view",
+        },
+        IRF: {
+          IRF: "data_view__cmc__irf:irf_data_view",
+          HOTLAB: "data_view__cmc__irf:hotlab_data_view",
+        },
+        RECEPTOR_QUANTIFICATION: {
+          RECEPTOR_QUANTIFICATION:
+            "data_view__cmc__receptor_quantification:receptor_quantification_data_view",
+          HOTLAB: "data_view__cmc__receptor_quantification:hotlab_data_view",
+        },
+        SATURATION_BINDING_ASSAY: {
+          SATURATION_BINDING_ASSAY:
+            "data_view__cmc__saturation_binding_assay:saturation_binding_assay_data_view",
+          HOTLAB: "data_view__cmc__saturation_binding_assay:hotlab_data_view",
+        },
+      },
+      CHEMICAL: {
+        ELISA: {
+          ELISA: "data_view__chemical__elisa:elisa_data_view",
+          HOTLAB: "data_view__chemical__elisa:hotlab_data_view",
+        },
+        DELFIA: {
+          DELFIA: "data_view__chemical__delfia:delfia_data_view",
+          HOTLAB: "data_view__chemical__delfia:hotlab_data_view",
+        },
+      },
+      HOTLAB: {
+        HOTLAB: {
+          HOTLAB: "data_view__hotlab__hotlab:hotlab_data_view",
+        },
+      },
+    },
   },
 
   // ─────────────────────────────

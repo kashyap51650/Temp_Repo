@@ -11,12 +11,17 @@ import {
 import { ProtectedRoute } from "@/components/organisms/ProtectedRoute";
 import { ProjectFoldersContent } from "@/components/project-folders/ProjectFoldersContent";
 import { PERMISSIONS } from "@/lib/permissions";
-import { parseSearchParams } from "@/lib/utils";
+import { objectToFlattenArray, parseSearchParams } from "@/lib/utils";
 
 export const Route = createFileRoute("/project-folders")({
   component: () => (
     <ProtectedRoute permissions={PERMISSIONS.PROJECTS.VIEW}>
-      <ProjectFoldersComponent />
+      <ProtectedRoute
+        permissions={objectToFlattenArray(PERMISSIONS.PROJECTS.DATA_VIEW)}
+        mode="any"
+      >
+        <ProjectFoldersComponent />
+      </ProtectedRoute>
     </ProtectedRoute>
   ),
   validateSearch: (search) => {

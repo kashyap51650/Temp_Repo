@@ -3,7 +3,6 @@ import { toast } from "sonner";
 
 import type { StudyType } from "@/api";
 import { CreateExperimentModal } from "@/components/data-upload/CreateExperimentModal";
-import { CreateExperimentModalForMoveMice } from "@/components/project-folders/CreateExperimentModalForMoveMice";
 import { SelectMiceModal } from "@/components/project-folders/SelectMiceModal";
 import { SelectTargetExperimentModal } from "@/components/project-folders/SelectTargetExperimentModal";
 import { useModal } from "@/hooks";
@@ -56,7 +55,9 @@ export function MoveMiceWizard({
     sourceExperimentId,
     isOpen &&
       (currentStep === MoveMiceStep.SELECT_TARGET_EXPERIMENT ||
-        newlyCreatedExperimentId !== undefined)
+        newlyCreatedExperimentId !== undefined) &&
+      !!selectedStudyTypeId,
+    selectedStudyTypeId
   );
 
   const moveMiceMutation = useMoveMice();
@@ -88,14 +89,6 @@ export function MoveMiceWizard({
     );
   };
 
-  // Step 3: Handle study type selection - immediately open CreateExperimentModal
-  const handleStudyTypeSelected = (studyTypeData: StudyType) => {
-    const { id: studyTypeId, study_type_code: studyTypeCode } = studyTypeData;
-    setSelectedStudyTypeId(studyTypeId);
-    setSelectedStudyTypeCode(studyTypeCode);
-    setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
-  };
-
   // Step 4: Handle experiment creation success
   const handleExperimentCreated = async (createdExperiment: {
     id: number;
@@ -123,14 +116,7 @@ export function MoveMiceWizard({
   };
 
   const handleBackToStudyTypeSelection = () => {
-    setCurrentStep(MoveMiceStep.CREATE_EXPERIMENT);
-    setSelectedStudyTypeId(undefined);
-  };
-
-  // Handle back from Step 3 to Step 2
-  const handleBackToTargetExperiment = () => {
     setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
-    setNewlyCreatedExperimentId(undefined);
   };
 
   // Handle wizard close
@@ -144,13 +130,21 @@ export function MoveMiceWizard({
 
   // Handle "Create New Experiment" button click
   const handleCreateNewExperiment = () => {
-    setCurrentStep(MoveMiceStep.CREATE_EXPERIMENT);
+    setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
 
   // Handle back navigation
   const handleBackToSelectMice = () => {
     setCurrentStep(MoveMiceStep.SELECT_MICE);
+    setSelectedStudyTypeId(undefined);
+    setSelectedStudyTypeCode(undefined);
     setSelectedMiceIds([]);
+  };
+
+  // Handle study type selection for target experiments filtering
+  const handleTargetStudyTypeChange = (studyType: StudyType | undefined) => {
+    setSelectedStudyTypeId(studyType?.id);
+    setSelectedStudyTypeCode(studyType?.study_type_code);
   };
 
   return (
@@ -174,13 +168,8 @@ export function MoveMiceWizard({
         isLoading={experimentsLoading || experimentsRefetching}
         isMoving={moveMiceMutation.isPending}
         preSelectedExperimentId={newlyCreatedExperimentId?.toString()}
-      />
-
-      {/* Step 3: Study Type Selection Modal */}
-      <CreateExperimentModalForMoveMice
-        isOpen={isOpen && currentStep === MoveMiceStep.CREATE_EXPERIMENT}
-        onClose={handleBackToTargetExperiment}
-        onStudyTypeSelected={handleStudyTypeSelected}
+        onStudyTypeChange={handleTargetStudyTypeChange}
+        selectedStudyTypeId={selectedStudyTypeId}
       />
 
       {/* Step 4: Full Experiment Form based on Study Type */}

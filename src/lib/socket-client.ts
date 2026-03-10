@@ -5,6 +5,7 @@ import {
   SOCKET_CONFIG,
   SOCKET_EVENTS,
 } from "./constants";
+import { getEncryptedItem } from "./crypto";
 import { logError } from "./sentry-logger";
 
 /**
@@ -94,7 +95,7 @@ export function connectSocket(): void {
   }
 
   // Get token and URL
-  const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+  const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
   if (!token) {
     logError("Cannot connect socket - no authentication token found", {

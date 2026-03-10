@@ -9,7 +9,7 @@ import type { PermissionModuleType } from "@/types/auth";
 
 interface StudyTypeDropdownProps {
   value: string;
-  onValueChange: (value: string, studyTypeId?: number) => void;
+  onValueChange: (value: string, studyType?: StudyType) => void;
   disabled: boolean;
   error?: string;
   showHelperText?: boolean;
@@ -39,7 +39,7 @@ export function StudyTypeDropdown({
       const selectedStudyType = studyTypes?.find(
         (st) => st.study_type_name === value
       );
-      onValueChange(value, selectedStudyType?.id);
+      onValueChange(value, selectedStudyType);
     },
     [module, specialization, onValueChange]
   );

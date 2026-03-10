@@ -41,7 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { profile } = useProfile();
   const navItems = sidebarData.navMain;
 
-  const { hasAnyPermission } = usePermissions();
+  const { hasAnyPermission, hasAllPermissions } = usePermissions();
 
   const userData = React.useMemo(() => {
     if (profile) {
@@ -57,9 +57,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return sidebarData.user;
   }, [profile]);
 
-  const authorizedNavItems = navItems.filter(
-    (item) => !item.permissions || hasAnyPermission(item.permissions)
-  );
+  const authorizedNavItems = navItems.filter((item) => {
+    const hasRequired =
+      !item.requiredPermissions || hasAllPermissions(item.requiredPermissions);
+    const hasAny = !item.permissions || hasAnyPermission(item.permissions);
+    return hasRequired && hasAny;
+  });
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>

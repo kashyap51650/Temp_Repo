@@ -95,8 +95,8 @@
 
 ### Required Software
 
-- **Node.js**: 20.x or 22.x (LTS recommended)
-- **npm**: 10.x or higher (included with Node.js)
+- **Node.js**: >= 20.19.0 or 22.x (LTS recommended)
+- **npm**: >= 10.0.0 (included with Node.js)
 - **Git**: Latest stable
 
 ### OS Requirements

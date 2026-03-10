@@ -26,11 +26,18 @@ export function useGetMiceFromExperiment(
 
 export function useGetTargetExperiments(
   sourceExperimentId: number,
-  enabled: boolean = false
+  enabled: boolean = false,
+  studyTypeId?: number
 ) {
   return useQuery({
-    queryKey: ["moveMice", "targetExperiments", sourceExperimentId],
-    queryFn: () => moveMiceApi.getTargetExperiments(sourceExperimentId),
+    queryKey: [
+      "moveMice",
+      "targetExperiments",
+      sourceExperimentId,
+      studyTypeId,
+    ],
+    queryFn: () =>
+      moveMiceApi.getTargetExperiments(sourceExperimentId, studyTypeId),
     enabled: enabled && !!sourceExperimentId,
     staleTime: REACT_QUERY_CONFIG.STALE_TIME_OPTIONS.SHORT, // 2 minutes
     select: (data) => {

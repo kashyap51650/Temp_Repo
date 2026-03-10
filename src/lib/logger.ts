@@ -2,16 +2,17 @@
  * Centralized logging utility for the application
  *
  * Provides consistent logging across development and production environments.
- * In production, only warnings and errors are logged, and errors are sent to Sentry.
+ * In production, console logging is disabled (silent); errors are sent to Sentry only.
+ * In development, all log levels output to console for debugging.
  *
  * @example
  * ```typescript
  * import { logger } from '@/lib/logger';
  *
- * logger.debug('User data:', userData); // Only in development
- * logger.info('Operation completed'); // Only in development
- * logger.warn('Deprecated API used'); // Always logged
- * logger.error('Failed to save', error); // Always logged + sent to Sentry
+ * logger.debug('User data:', userData); // Console output in development only
+ * logger.info('Operation completed'); // Console output in development only
+ * logger.warn('Deprecated API used'); // Console output in development only
+ * logger.error('Failed to save', error); // Console in dev, sent to Sentry in production
  * ```
  */
 
@@ -89,22 +90,26 @@ export const logger = {
   },
 
   /**
-   * Warning-level logging - always visible
+   * Warning-level logging - only visible in development
    * Use for non-critical issues that should be addressed
    */
   warn: (...args: unknown[]) => {
-    console.warn("[WARN]", ...args);
+    if (isDevelopment) {
+      console.warn("[WARN]", ...args);
+    }
   },
 
   /**
-   * Error-level logging - always visible and sent to Sentry in production
+   * Error-level logging - visible in development, sent to Sentry in production
    * Use for errors and exceptions
    *
    * ✅ Safely serializes all arguments (handles circular refs, BigInt, etc.)
    * ✅ Captures any Error instances in arguments (not just first arg)
    */
   error: (...args: unknown[]) => {
-    console.error("[ERROR]", ...args);
+    if (isDevelopment) {
+      console.error("[ERROR]", ...args);
+    }
 
     // Send to Sentry in production
     if (!isDevelopment && typeof window !== "undefined" && window.Sentry) {
@@ -155,8 +160,10 @@ export const logger = {
           });
         }
       } catch (sentryError) {
-        // ✅ Prevent logger from throwing - log to console as fallback
-        console.error("[ERROR] Failed to send error to Sentry:", sentryError);
+        // ✅ Prevent logger from throwing - log to console as fallback (development only)
+        if (isDevelopment) {
+          console.error("[ERROR] Failed to send error to Sentry:", sentryError);
+        }
       }
     }
   },

@@ -1,7 +1,7 @@
 import { specializationApi } from "@/api";
 import { Label } from "@/components/atoms/Label/Label";
-import type { PermissionModuleType } from "@/lib";
 import { cn, generateQueryKey } from "@/lib/utils";
+import type { PermissionModuleType } from "@/types/auth";
 
 import { AsyncSelect } from "../molecules";
 

@@ -1,5 +1,7 @@
 import * as Sentry from "@sentry/react";
 
+const isDevelopment = import.meta.env.DEV;
+
 export type SentryLevel = Sentry.SeverityLevel;
 
 export interface SentryUser {
@@ -154,7 +156,9 @@ export function initSentry(options: SentryInitOptions = {}): void {
 
   // Skip initialization if no DSN provided
   if (!dsn) {
-    console.warn("⚠️ Sentry DSN not provided. Error tracking is disabled.");
+    if (isDevelopment) {
+      console.warn("⚠️ Sentry DSN not provided. Error tracking is disabled.");
+    }
     return;
   }
 
@@ -274,7 +278,9 @@ export function logError(
   options?: LogErrorOptions
 ): void {
   if (!isSentryAvailable()) {
-    console.error("Sentry not available:", error, options);
+    if (isDevelopment) {
+      console.error("Sentry not available:", error, options);
+    }
     return;
   }
 
@@ -303,7 +309,9 @@ export function logError(
 
 export function logWarning(message: string, context?: SentryContext): void {
   if (!isSentryAvailable()) {
-    console.warn("Sentry not available:", message, context);
+    if (isDevelopment) {
+      console.warn("Sentry not available:", message, context);
+    }
     return;
   }
 
@@ -320,7 +328,9 @@ export function logWarning(message: string, context?: SentryContext): void {
 
 export function logInfo(message: string, context?: SentryContext): void {
   if (!isSentryAvailable()) {
-    console.info("Sentry not available:", message, context);
+    if (isDevelopment) {
+      console.info("Sentry not available:", message, context);
+    }
     return;
   }
 
@@ -337,7 +347,9 @@ export function logInfo(message: string, context?: SentryContext): void {
 
 export function logDebug(message: string, context?: SentryContext): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available:", message, context);
+    if (isDevelopment) {
+      console.debug("Sentry not available:", message, context);
+    }
     return;
   }
 
@@ -354,7 +366,9 @@ export function logDebug(message: string, context?: SentryContext): void {
 
 export function setUserContext(user: SentryUser | null): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available");
+    if (isDevelopment) {
+      console.debug("Sentry not available");
+    }
     return;
   }
 
@@ -399,7 +413,12 @@ export function clearUserContext(): void {
  */
 export function addBreadcrumb(breadcrumb: SentryBreadcrumb): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available - cannot add breadcrumb:", breadcrumb);
+    if (isDevelopment) {
+      console.debug(
+        "Sentry not available - cannot add breadcrumb:",
+        breadcrumb
+      );
+    }
     return;
   }
 
@@ -414,7 +433,9 @@ export function addBreadcrumb(breadcrumb: SentryBreadcrumb): void {
 
 export function setContext(key: string, value: SentryContext): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available - cannot set context:", key, value);
+    if (isDevelopment) {
+      console.debug("Sentry not available - cannot set context:", key, value);
+    }
     return;
   }
 
@@ -423,7 +444,9 @@ export function setContext(key: string, value: SentryContext): void {
 
 export function setTag(key: string, value: string | number | boolean): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available - cannot set tag:", key, value);
+    if (isDevelopment) {
+      console.debug("Sentry not available - cannot set tag:", key, value);
+    }
     return;
   }
 
@@ -432,7 +455,9 @@ export function setTag(key: string, value: string | number | boolean): void {
 
 export function setTags(tags: Record<string, string | number | boolean>): void {
   if (!isSentryAvailable()) {
-    console.debug("Sentry not available - cannot set tags:", tags);
+    if (isDevelopment) {
+      console.debug("Sentry not available - cannot set tags:", tags);
+    }
     return;
   }
 
@@ -445,7 +470,7 @@ export function initSentryLogger(): void {
       app_version: import.meta.env.VITE_APP_VERSION || "unknown",
       environment: import.meta.env.VITE_APP_ENV || "development",
     });
-  } else {
+  } else if (isDevelopment) {
     console.warn("⚠️ Sentry is not available");
   }
 }

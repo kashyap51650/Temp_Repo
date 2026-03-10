@@ -12,6 +12,7 @@ import type {
 } from "@/types/auth";
 
 import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "./constants";
+import { getEncryptedItem, setEncryptedItem } from "./crypto";
 import { logger } from "./logger";
 import { clearUserContext, setUserContext } from "./sentry-logger";
 
@@ -20,8 +21,6 @@ export const AUTH_QUERY_KEYS = {
   auth: ["auth"] as const,
   user: ["auth", "user"] as const,
 };
-
-export type PermissionModuleType = "data_upload" | "data_validate";
 
 // Authentication API functions
 export const authApi = {
@@ -84,16 +83,31 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data: LoginResponse) => {
-      // Store tokens in sessionStorage
-      sessionStorage.setItem(
-        SESSION_STORAGE_KEYS.ACCESS_TOKEN,
-        data.access_token
-      );
-      sessionStorage.setItem(
-        SESSION_STORAGE_KEYS.REFRESH_TOKEN,
-        data.refresh_token
-      );
-      globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+      // Securely store tokens FIRST - if this fails, roll back the login
+      try {
+        setEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+        setEncryptedItem(
+          SESSION_STORAGE_KEYS.REFRESH_TOKEN,
+          data.refresh_token
+        );
+        globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+      } catch (error) {
+        // Encryption failed - invalidate server session to prevent partial auth state
+        logger.error(
+          "[Auth] Token encryption failed, rolling back server session",
+          error
+        );
+
+        try {
+          await authApi.logout();
+        } catch (logoutError) {
+          // Logout failed, but we still need to inform the user
+          logger.warn(
+            "[Auth] Failed to invalidate server session after encryption failure",
+            logoutError
+          );
+        }
+      }
 
       // Cache auth data in TanStack Query
       queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
@@ -259,11 +273,11 @@ export const useIsAuthenticated = () => {
 // Utility functions for token management
 export const tokenUtils = {
   getAccessToken: (): string | null => {
-    return sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+    return getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
   },
 
   getRefreshToken: (): string | null => {
-    return sessionStorage.getItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
+    return getEncryptedItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
   },
 
   removeTokens: (): void => {

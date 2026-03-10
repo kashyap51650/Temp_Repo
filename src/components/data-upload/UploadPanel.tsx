@@ -2,7 +2,7 @@ import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import type { ExperimentDropdownItem, Project } from "@/api";
+import type { ExperimentDropdownItem, Project, StudyType } from "@/api";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { clearExperimentEvents } from "@/app/store/slices/experimentSlice";
 import {
@@ -498,11 +498,11 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
         {canShowStudyType && (
           <StudyTypeDropdown
             value={formData.studyType}
-            onValueChange={(value: string, studyTypeId?: number) => {
+            onValueChange={(value: string, studyType?: StudyType) => {
               setFormData((prev: FormData) => ({
                 ...prev,
                 studyType: value,
-                studyTypeId: studyTypeId || null,
+                studyTypeId: studyType?.id || null,
                 experiment: null, // Reset experiment when study type changes
                 dataType: "", // Reset data type when study type changes
                 dataTypeId: null, // Reset data type ID when study type changes

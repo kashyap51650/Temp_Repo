@@ -48,8 +48,8 @@ See [SYSTEM-ARCHITECTURE.md](./SYSTEM-ARCHITECTURE.md) for detailed architecture
 
 ## 📦 Prerequisites
 
-- **Node.js**: 20.x or 22.x (LTS)
-- **npm**: 10.x+
+- **Node.js**: >= 20.19.0 or 22.x (LTS recommended)
+- **npm**: >= 10.0.0
 - **Git**: Latest stable
 
 ## 🏁 Getting Started
