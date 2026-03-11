@@ -67,7 +67,10 @@ export function getRoleColumns(
       accessorKey: "description",
       header: () => <span className="w-80 block">Description</span>,
       cell: ({ row }) => (
-        <TruncateWithTooltip className="w-80 block">
+        <TruncateWithTooltip
+          className="w-80 block"
+          tooltipContentClassName="max-w-[calc(100vw-1rem)]"
+        >
           {row.original.description}
         </TruncateWithTooltip>
       ),
