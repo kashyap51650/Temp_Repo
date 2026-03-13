@@ -16,6 +16,7 @@ interface CellLineFieldPropsWithForm<T extends FieldValues> {
   value?: never;
   onChange?: never;
   multiple?: boolean;
+  disabled?: boolean;
 }
 
 interface CellLineFieldPropsWithValue {
@@ -60,6 +61,7 @@ export function CellLineField<T extends FieldValues = Record<string, never>>(
               placeholder="Select cell line"
               valueAsNumber={true}
               multiple={props.multiple ?? false}
+              disabled={props.disabled}
             />
           </FormItem>
         )}

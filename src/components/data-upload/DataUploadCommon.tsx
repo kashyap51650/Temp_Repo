@@ -5,11 +5,7 @@ import type { ExperimentDropdownItem, Project, StudyType } from "@/api";
 import { useAppDispatch } from "@/app/store/hooks";
 import { projectChanged } from "@/app/store/slices/experimentSlice";
 import type { Experiment } from "@/data/experiments";
-import {
-  cellLineOptions,
-  experiments as experimentData,
-  isotopeOptions,
-} from "@/data/experiments";
+import { experiments as experimentData } from "@/data/experiments";
 import { useModal, useProjects } from "@/hooks";
 import { generateQueryKey } from "@/lib";
 import { STUDY_TYPE, STUDY_TYPE_CODE } from "@/lib/constants";
@@ -297,8 +293,6 @@ export default function DataUploadCommon() {
           isOpen={createExperimentModal.isOpen}
           onClose={() => createExperimentModal.closeModal()}
           onCreateExperiment={handleCreateExperiment}
-          isotopeOptions={isotopeOptions}
-          cellLineOptions={cellLineOptions}
           studyType={selectedStudyType}
           projectId={formData.project?.id}
           specialization={formData.specialisation}

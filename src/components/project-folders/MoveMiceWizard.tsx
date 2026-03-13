@@ -1,3 +1,4 @@
+import { useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -6,7 +7,9 @@ import { CreateExperimentModal } from "@/components/data-upload/CreateExperiment
 import { SelectMiceModal } from "@/components/project-folders/SelectMiceModal";
 import { SelectTargetExperimentModal } from "@/components/project-folders/SelectTargetExperimentModal";
 import { useModal } from "@/hooks";
+import { useExperimentDetails } from "@/hooks/useExperimentDetails";
 import { useGetTargetExperiments, useMoveMice } from "@/hooks/useMoveMice";
+import { queryClient } from "@/lib";
 import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib/constants";
 import { MoveMiceStep, type MoveMiceStepType } from "@/types/moveMice";
 
@@ -45,6 +48,14 @@ export function MoveMiceWizard({
     number | undefined
   >();
   const mouseGroupModal = useModal();
+
+  const search = useSearch({
+    from: "/project-folders",
+  });
+
+  const { experimentDetails, error } = useExperimentDetails(
+    search.experimentId ?? null
+  );
 
   const {
     data: experimentsData,
@@ -130,6 +141,20 @@ export function MoveMiceWizard({
 
   // Handle "Create New Experiment" button click
   const handleCreateNewExperiment = () => {
+    if (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to load experiment details"
+      );
+      return;
+    }
+    queryClient.setQueryData(["cell-lines-dropdown"], () => {
+      return experimentDetails?.cell_lines || [];
+    });
+    queryClient.setQueryData(["strains-dropdown"], () => {
+      return experimentDetails?.mouse_strains || [];
+    });
     setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
 
@@ -176,8 +201,6 @@ export function MoveMiceWizard({
       <CreateExperimentModal
         isOpen={isOpen && currentStep === MoveMiceStep.STUDY_TYPE_FORM}
         onClose={handleBackToStudyTypeSelection}
-        isotopeOptions={[]}
-        cellLineOptions={[]}
         studyType={selectedStudyTypeCode}
         projectId={projectId}
         studyTypeId={selectedStudyTypeId}

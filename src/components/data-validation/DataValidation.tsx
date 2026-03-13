@@ -518,8 +518,6 @@ export default function DataValidation() {
         <CreateExperimentModal
           isOpen={createExperimentModal.isOpen}
           onClose={handleCloseCreateExperiment}
-          isotopeOptions={[]}
-          cellLineOptions={[]}
           studyType={STUDY_TYPE_CODE.BIO_DISTRIBUTION}
           projectId={selectedExperiment.projectId}
           specialization="PRECLINICAL"

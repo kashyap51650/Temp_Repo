@@ -252,8 +252,6 @@ export function LinkExperimentModal({
         <CreateExperimentModal
           isOpen={experimentFormModal.isOpen}
           onClose={handleCloseExperimentForm}
-          isotopeOptions={[]}
-          cellLineOptions={[]}
           studyType={selectedStudyTypeCode}
           projectId={projectId}
           studyTypeId={selectedStudyTypeId}

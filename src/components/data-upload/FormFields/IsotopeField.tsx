@@ -11,11 +11,13 @@ import {
 interface IsotopeFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
+  valueAsNumber?: boolean;
 }
 
 export function IsotopeField<T extends FieldValues>({
   control,
   name,
+  valueAsNumber = false,
 }: Readonly<IsotopeFieldProps<T>>) {
   return (
     <FormField
@@ -38,6 +40,7 @@ export function IsotopeField<T extends FieldValues>({
             searchable={false}
             queryKey={["isotopes-dropdown"]}
             placeholder={"Select isotope"}
+            valueAsNumber={valueAsNumber}
           />
         </FormItem>
       )}

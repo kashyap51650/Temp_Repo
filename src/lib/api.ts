@@ -135,6 +135,8 @@ export const API_CONFIG = {
       LIST: `/api/${API_VERSION}/experiments`,
       STATUS_UPDATE: (experimentId: number) =>
         `/api/${API_VERSION}/experiments/${experimentId}/status`,
+      EXPERIMENT_DETAILS: (experimentId: number) =>
+        `/api/${API_VERSION}/experiments/${experimentId}`,
     },
     BIOD_EXPERIMENTS: {
       CREATE: `/api/${API_VERSION}/biod-experiments/`,
