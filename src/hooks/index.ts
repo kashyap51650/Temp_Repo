@@ -58,6 +58,7 @@ export * from "./useThrottledMutation";
 export * from "./useToggle";
 export * from "./useTruncationDetection";
 export * from "./useUpdateExperimentStatus";
+export * from "./useUpdateMouseGroupNoOfMice";
 export * from "./useUpdateProjectStatus";
 export * from "./useUploadData";
 export * from "./useUploadedExperimentData";

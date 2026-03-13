@@ -235,6 +235,8 @@ export const API_CONFIG = {
         `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
         `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+      UPDATE_MOUSE_GROUP_NO_OF_MICE: (mouseGroupId: number) =>
+        `/api/${API_VERSION}/mouse-groups/${mouseGroupId}/no-of-mice`,
     },
     EXCEL_EXPORT: {
       EXPORT_CALIPER_SHEET: `/api/${API_VERSION}/caliper-sheet/export-caliper-sheet`,

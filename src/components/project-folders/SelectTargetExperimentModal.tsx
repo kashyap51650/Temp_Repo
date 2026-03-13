@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import type { StudyType } from "@/api";
 import { Button, Dialog, Label } from "@/components/atoms";
@@ -24,8 +24,10 @@ interface SelectTargetExperimentModalProps {
   selectedMiceCount: number;
   experiments: Experiment[];
   isLoading?: boolean;
+  isCheckingSlots?: boolean;
   isMoving?: boolean;
-  preSelectedExperimentId?: string;
+  selectedExperimentId: string;
+  onExperimentIdChange: (id: string) => void;
   onStudyTypeChange?: (studyType: StudyType | undefined) => void;
   selectedStudyTypeId?: number;
 }
@@ -38,22 +40,14 @@ export function SelectTargetExperimentModal({
   selectedMiceCount,
   experiments,
   isLoading = false,
+  isCheckingSlots = false,
   isMoving = false,
-  preSelectedExperimentId,
+  selectedExperimentId,
+  onExperimentIdChange,
   onStudyTypeChange,
   selectedStudyTypeId,
 }: Readonly<SelectTargetExperimentModalProps>) {
-  const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
   const [selectedStudyType, setSelectedStudyType] = useState<string>("");
-
-  useEffect(() => {
-    if (
-      preSelectedExperimentId &&
-      experiments.some((exp) => exp.id === preSelectedExperimentId)
-    ) {
-      setSelectedExperimentId(preSelectedExperimentId);
-    }
-  }, [preSelectedExperimentId, experiments]);
 
   const handleMove = () => {
     if (selectedExperimentId) {
@@ -62,7 +56,6 @@ export function SelectTargetExperimentModal({
   };
 
   const handleClose = () => {
-    setSelectedExperimentId("");
     setSelectedStudyType("");
     onStudyTypeChange?.(undefined);
     onClose();
@@ -97,7 +90,7 @@ export function SelectTargetExperimentModal({
           onValueChange={(value, studyType) => {
             setSelectedStudyType(value);
             onStudyTypeChange?.(studyType);
-            setSelectedExperimentId("");
+            onExperimentIdChange("");
           }}
           disabled={false}
           specialization={SPECIALIZATION.PRECLINICAL}
@@ -115,15 +108,19 @@ export function SelectTargetExperimentModal({
             placeholder={
               !selectedStudyTypeId
                 ? "Please select a study type first"
-                : isLoading
-                  ? "Loading experiments..."
-                  : "Select experiment..."
+                : isCheckingSlots
+                  ? "Checking group slots..."
+                  : isLoading
+                    ? "Loading experiments..."
+                    : "Select experiment..."
             }
-            onValueChange={setSelectedExperimentId}
+            onValueChange={(value) => {
+              onExperimentIdChange(value);
+            }}
             onCreateNew={handleCreateNewExperiment}
             className="w-full"
             showSearch={true}
-            disabled={!selectedStudyTypeId || isLoading}
+            disabled={!selectedStudyTypeId || isLoading || isCheckingSlots}
           />
         </div>
 
@@ -132,13 +129,15 @@ export function SelectTargetExperimentModal({
           <Button
             variant="outline"
             onClick={handleClose}
-            disabled={isLoading || isMoving}
+            disabled={isLoading || isMoving || isCheckingSlots}
           >
             Cancel
           </Button>
           <Button
             onClick={handleMove}
-            disabled={!selectedExperimentId || isLoading || isMoving}
+            disabled={
+              !selectedExperimentId || isLoading || isMoving || isCheckingSlots
+            }
           >
             {isMoving ? "Moving..." : "Move"}
           </Button>

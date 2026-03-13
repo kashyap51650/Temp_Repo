@@ -18,6 +18,7 @@ export const useMouseGroupsByExperiment = (experimentId?: number) => {
           name: group.group_name,
           cellLineId: group.cell_line_id,
           mouseStrainId: group.mouse_strain_id,
+          slotSize: group.no_of_mice ?? 0,
         };
       });
     },
