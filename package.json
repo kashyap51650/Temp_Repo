@@ -74,6 +74,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
     "vaul": "^1.1.2",
+    "web-vitals": "^5.1.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
@@ -111,7 +112,7 @@
     ]
   },
   "overrides": {
-    "tar": "7.5.10",
+    "tar": "7.5.11",
     "seroval": "1.5.0",
     "rollup": "4.59.0"
   }

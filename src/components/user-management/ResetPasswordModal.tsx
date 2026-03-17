@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
@@ -6,7 +7,10 @@ import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
 import { useChangePassword } from "@/lib/auth";
-import { isPasswordFormValid } from "@/lib/password-utils";
+import {
+  changePasswordSchema,
+  isPasswordFormValid,
+} from "@/lib/password-utils";
 
 export interface ResetPasswordModalProps {
   open: boolean;
@@ -30,6 +34,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({
   };
 
   const form = useForm<FormValues>({
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       current: "",
       new: "",

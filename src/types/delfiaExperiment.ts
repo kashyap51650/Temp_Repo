@@ -59,12 +59,12 @@ export interface DelfiaWorksheetData {
   kd_values: KDValueData[];
 }
 
-export interface DelfiaExperimentDataResponse {
+export type DelfiaExperimentDataResponse = ApiResponse<{
   id: number;
   uploaded_data: {
     worksheets: DelfiaWorksheetData[];
   };
-}
+}>;
 
 export interface DelfiaSheetRowData {
   id: number;

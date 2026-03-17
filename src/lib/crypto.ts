@@ -1,7 +1,7 @@
 /**
  * Token encryption utilities for sessionStorage.
  *
- * Uses AES-256-GCM (via @noble/ciphers) with a SHA-256 derived key.
+ * Uses AES-256-GCM (via Web Crypto API) with a SHA-256 derived key.
  * Key material = SHA-256( navigator.userAgent || VITE_CRYPTO_SECRET ).
  *
  * GCM provides authenticated encryption (AEAD) to prevent tampering.
@@ -10,34 +10,54 @@
  * Format: base64(nonce || ciphertext+tag)
  */
 
-import { gcm } from "@noble/ciphers/aes.js";
-import { sha256 } from "@noble/hashes/sha2.js";
-
 const APP_SECRET = import.meta.env.VITE_CRYPTO_SECRET || "";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 /**
- * Derives a 32-byte AES-256 key from browser user agent + app secret.
+ * Derives an AES-256-GCM CryptoKey from browser user agent + app secret.
  *
- * Combines navigator.userAgent with VITE_CRYPTO_SECRET for key material.
+ * Combines navigator.userAgent with VITE_CRYPTO_SECRET for key material,
+ * hashes it with SHA-256, then imports the result as a non-extractable key.
+ *
+ * The derived CryptoKey is cached for the lifetime of the module to avoid
+ * repeating expensive Web Crypto operations on every call.
  */
-function getDerivedKey(): Uint8Array {
-  const keyMaterial = `${navigator.userAgent}|${APP_SECRET}`;
-  return sha256(encoder.encode(keyMaterial));
+let derivedKeyPromise: Promise<CryptoKey> | null = null;
+
+async function getDerivedKey(): Promise<CryptoKey> {
+  if (!derivedKeyPromise) {
+    const keyMaterial = `${navigator.userAgent}|${APP_SECRET}`;
+    derivedKeyPromise = crypto.subtle
+      .digest("SHA-256", encoder.encode(keyMaterial))
+      .then((keyBytes) =>
+        crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, [
+          "encrypt",
+          "decrypt",
+        ])
+      );
+  }
+  return derivedKeyPromise;
 }
 
-export function setEncryptedItem(storageKey: string, value: string): void {
+export async function setEncryptedItem(
+  storageKey: string,
+  value: string
+): Promise<void> {
   try {
     // Generate random 12-byte nonce (GCM recommended size)
-    const nonce = new Uint8Array(12);
-    crypto.getRandomValues(nonce);
+    const nonce = crypto.getRandomValues(new Uint8Array(12));
+    const key = await getDerivedKey();
 
-    const plaintext = encoder.encode(value);
-    const ciphertext = gcm(getDerivedKey(), nonce).encrypt(plaintext);
+    const ciphertextBuffer = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: nonce },
+      key,
+      encoder.encode(value)
+    );
 
     // Store nonce + ciphertext+tag together
+    const ciphertext = new Uint8Array(ciphertextBuffer);
     const combined = new Uint8Array(nonce.length + ciphertext.length);
     combined.set(nonce, 0);
     combined.set(ciphertext, nonce.length);
@@ -57,7 +77,9 @@ export function setEncryptedItem(storageKey: string, value: string): void {
   }
 }
 
-export function getEncryptedItem(storageKey: string): string | null {
+export async function getEncryptedItem(
+  storageKey: string
+): Promise<string | null> {
   const stored = sessionStorage.getItem(storageKey);
   if (!stored) return null;
 
@@ -68,8 +90,14 @@ export function getEncryptedItem(storageKey: string): string | null {
     const nonce = combined.slice(0, 12);
     const ciphertext = combined.slice(12);
 
-    const decrypted = gcm(getDerivedKey(), nonce).decrypt(ciphertext);
-    return decoder.decode(decrypted);
+    const key = await getDerivedKey();
+    const decryptedBuffer = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: nonce },
+      key,
+      ciphertext
+    );
+
+    return decoder.decode(decryptedBuffer);
   } catch (error) {
     // Decryption/parsing failure: clear invalid data and return null
     if (import.meta.env.DEV) {

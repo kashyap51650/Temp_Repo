@@ -2,7 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import {
   AUTH_QUERY_KEYS,
-  tokenUtils,
+  useAuthTokens,
   useCurrentUser,
   useIsAuthenticated,
   useLogout,
@@ -11,7 +11,8 @@ import type { User } from "@/types/auth";
 
 export const useAuthState = () => {
   const queryClient = useQueryClient();
-  const isAuthenticated = useIsAuthenticated();
+  const { isAuthenticated } = useIsAuthenticated();
+  const { accessToken, refreshToken } = useAuthTokens();
   const {
     data: user,
     isLoading: isUserLoading,
@@ -31,8 +32,8 @@ export const useAuthState = () => {
     logout: logoutMutation.mutate,
     isLoggingOut: logoutMutation.isPending,
 
-    token: tokenUtils.getAccessToken(),
-    refreshToken: tokenUtils.getRefreshToken(),
+    token: accessToken,
+    refreshToken: refreshToken,
 
     clearAuthCache: () => {
       queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.auth });

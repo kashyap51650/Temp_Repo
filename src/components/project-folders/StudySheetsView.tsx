@@ -5,6 +5,7 @@ import type { StudyType } from "@/api";
 import { Button } from "@/components/atoms";
 import { MoveMiceWizard } from "@/components/project-folders/MoveMiceWizard";
 import { useDataTypes } from "@/hooks";
+import { queryClient } from "@/lib";
 import { PERMISSIONS } from "@/lib/permissions";
 
 import { ProtectedComponent } from "../organisms/ProtectedRoute";
@@ -37,6 +38,12 @@ export const StudySheetsView: React.FC<StudySheetsViewProps> = ({
   };
 
   const handleWizardClose = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["cell-lines-dropdown"],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["strains-dropdown"],
+    });
     setIsMoveMiceWizardOpen(false);
   };
 

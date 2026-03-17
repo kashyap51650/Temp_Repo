@@ -1,7 +1,7 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
 
-import { SESSION_STORAGE_KEYS } from "./constants";
+import { API_CUSTOM_TIMEOUT, SESSION_STORAGE_KEYS } from "./constants";
 import { getEncryptedItem } from "./crypto";
 import { logger } from "./logger";
 import { logError, sanitizeSentryData } from "./sentry-logger";
@@ -135,6 +135,8 @@ export const API_CONFIG = {
       LIST: `/api/${API_VERSION}/experiments`,
       STATUS_UPDATE: (experimentId: number) =>
         `/api/${API_VERSION}/experiments/${experimentId}/status`,
+      EXPERIMENT_DETAILS: (experimentId: number) =>
+        `/api/${API_VERSION}/experiments/${experimentId}`,
     },
     BIOD_EXPERIMENTS: {
       CREATE: `/api/${API_VERSION}/biod-experiments/`,
@@ -233,6 +235,8 @@ export const API_CONFIG = {
         `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
       MOUSE_GROUPS_WITH_ORGAN_WEIGHTS: (experimentId: number) =>
         `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups-with-organ-weights`,
+      UPDATE_MOUSE_GROUP_NO_OF_MICE: (mouseGroupId: number) =>
+        `/api/${API_VERSION}/mouse-groups/${mouseGroupId}/no-of-mice`,
     },
     EXCEL_EXPORT: {
       EXPORT_CALIPER_SHEET: `/api/${API_VERSION}/caliper-sheet/export-caliper-sheet`,
@@ -492,6 +496,7 @@ export class ApiClient {
   constructor(baseURL: string = API_CONFIG.BASE_URL) {
     this.axiosInstance = axios.create({
       baseURL,
+      timeout: API_CUSTOM_TIMEOUT,
       headers: {
         "Content-Type": "application/json",
       },
@@ -502,9 +507,9 @@ export class ApiClient {
 
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
-      (config) => {
+      async (config) => {
         // ✅ Get JWT token from sessionStorage
-        const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+        const token = await getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
         if (token && !config.skipAuthToken) {
           // ✅ Check if token is expired before making request
@@ -515,7 +520,7 @@ export class ApiClient {
             sessionStorage.clear();
 
             // Redirect to login page
-            window.location.href = "/login";
+            window.location.href = "/auth/login";
 
             // Reject the request
             return Promise.reject(new Error("Token expired"));

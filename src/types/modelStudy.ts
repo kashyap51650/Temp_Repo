@@ -56,6 +56,7 @@ export interface ExperimentMouseGroupsType {
   vehicle_name: string;
   cell_injection_count_id: number;
   cell_injection_count_value: string;
+  no_of_mice: number | null;
 }
 
 export interface ExperimentMouseGroupsWithDragIdType
@@ -75,6 +76,10 @@ export type ModelStudyExperimentMouseGroupsResponse =
 export interface ConfirmExperimentMouseGroupsPayload {
   experiment_id: number;
   group_ids: Array<number>;
+  no_of_mice_per_group: Array<{
+    group_id: number;
+    no_of_mice: number;
+  }>;
 }
 
 export interface ConfirmExperimentMouseGroupsResponse {

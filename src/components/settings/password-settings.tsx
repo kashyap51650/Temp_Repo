@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -12,7 +13,10 @@ import {
 } from "@/components/atoms";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
-import { isPasswordFormValid } from "@/lib/password-utils";
+import {
+  changePasswordSchema,
+  isPasswordFormValid,
+} from "@/lib/password-utils";
 
 export function PasswordSettings() {
   type PasswordFormValues = {
@@ -22,6 +26,7 @@ export function PasswordSettings() {
   };
 
   const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       current: "",
       new: "",

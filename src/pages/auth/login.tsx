@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -50,7 +50,35 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
 
+  const failedAttemptsRef = useRef(0);
+  const [lockoutUntil, setLockoutUntil] = useState(0);
+  const [countdown, setCountdown] = useState(0);
+
+  const getLockoutMs = (attempts: number) => {
+    if (attempts >= 5) return 5 * 60 * 1000;
+    if (attempts === 4) return 40_000;
+    if (attempts === 3) return 10_000;
+    return 0;
+  };
+
+  useEffect(() => {
+    if (lockoutUntil <= Date.now()) return;
+    setCountdown(Math.ceil((lockoutUntil - Date.now()) / 1000));
+    const id = setInterval(() => {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      if (remaining <= 0) {
+        setCountdown(0);
+        clearInterval(id);
+      } else {
+        setCountdown(remaining);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lockoutUntil]);
+
   const onSubmit = async (data: LoginFormValues) => {
+    if (Date.now() < lockoutUntil) return;
+
     const credentials: LoginCredentials = {
       email: data.email,
       password: data.password,
@@ -64,11 +92,43 @@ export default function LoginPage() {
         return;
       }
 
+      failedAttemptsRef.current = 0;
+      setLockoutUntil(0);
+      setCountdown(0);
       const redirectTo = (search as { redirect?: string })?.redirect || "/home";
       navigate({ to: redirectTo });
-    } catch {
+    } catch (error: unknown) {
       // Error handling is done by useLogin's onError callback
       // API errors are already logged by the API interceptor
+      // Only increment failed attempts for authentication failures
+      let status: number | undefined;
+      let message: string | undefined;
+      if (typeof error === "object" && error !== null) {
+        const anyError = error as {
+          status?: number;
+          response?: { status?: number };
+          message?: string;
+        };
+        status = anyError.status ?? anyError.response?.status;
+        if (typeof anyError.message === "string") {
+          message = anyError.message;
+        }
+      } else if (typeof error === "string") {
+        message = error;
+      }
+      const isThrottlingError =
+        typeof message === "string" &&
+        (message.includes("Request throttled") ||
+          message.includes("already pending"));
+      const isAuthFailure = status === 401 || status === 403 || status === 400;
+
+      if (isAuthFailure && !isThrottlingError) {
+        failedAttemptsRef.current += 1;
+        const lockMs = getLockoutMs(failedAttemptsRef.current);
+        if (lockMs > 0) {
+          setLockoutUntil(Date.now() + lockMs);
+        }
+      }
     }
   };
 
@@ -105,7 +165,9 @@ export default function LoginPage() {
                         autoComplete="off"
                         placeholder="Enter your email"
                         disabled={
-                          form.formState.isSubmitting || loginMutation.isPending
+                          form.formState.isSubmitting ||
+                          loginMutation.isPending ||
+                          countdown > 0
                         }
                         {...field}
                       />
@@ -129,7 +191,8 @@ export default function LoginPage() {
                           placeholder="Enter your password"
                           disabled={
                             form.formState.isSubmitting ||
-                            loginMutation.isPending
+                            loginMutation.isPending ||
+                            countdown > 0
                           }
                           className="pr-10"
                           {...field}
@@ -170,12 +233,18 @@ export default function LoginPage() {
                 size={"lg"}
                 className="w-full"
                 disabled={
-                  form.formState.isSubmitting || loginMutation.isPending
+                  form.formState.isSubmitting ||
+                  loginMutation.isPending ||
+                  countdown > 0
                 }
               >
-                {form.formState.isSubmitting || loginMutation.isPending
-                  ? "Signing in..."
-                  : "Sign In"}
+                {(() => {
+                  if (countdown > 0)
+                    return `Too many attempts — wait ${countdown}s`;
+                  if (form.formState.isSubmitting || loginMutation.isPending)
+                    return "Signing in...";
+                  return "Sign In";
+                })()}
               </Button>
             </form>
           </Form>

@@ -627,11 +627,18 @@ export interface MouseGroup {
   mouse_strain_id: number | null; // 👈 Add this property
   cell_dose: number | null;
   strain: string | null;
+  no_of_mice: number | null;
   is_locked: boolean;
   description: string;
   created_at: string;
   updated_at: string;
 }
+
+export interface UpdateMouseGroupNoOfMicePayload {
+  no_of_mice: number;
+}
+
+export type UpdateMouseGroupNoOfMiceResponse = ApiResponse<MouseGroup>;
 
 export const mouseGroupApi = {
   getMouseGroupsByExperiment: async (
@@ -648,6 +655,17 @@ export const mouseGroupApi = {
       API_CONFIG.ENDPOINTS.MOUSE_GROUPS.MOUSE_GROUPS_WITH_ORGAN_WEIGHTS(
         experimentId
       )
+    );
+  },
+  updateMouseGroupNoOfMice: async (
+    mouseGroupId: number,
+    payload: UpdateMouseGroupNoOfMicePayload
+  ): Promise<UpdateMouseGroupNoOfMiceResponse> => {
+    return apiClient.patch(
+      API_CONFIG.ENDPOINTS.MOUSE_GROUPS.UPDATE_MOUSE_GROUP_NO_OF_MICE(
+        Number(mouseGroupId)
+      ),
+      payload
     );
   },
 };

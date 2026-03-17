@@ -83,6 +83,31 @@ export const createPasswordSchema = (fieldName: string = "password") => {
     );
 };
 
+export const changePasswordSchema = z
+  .object({
+    current: z.string().min(1, "Current password is required"),
+    new: createPasswordSchema("New password"),
+    confirm: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.new === data.confirm, {
+    message: "Passwords do not match",
+    path: ["confirm"],
+  });
+
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    new: createPasswordSchema("New password"),
+    confirm: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.new === data.confirm, {
+    message: "Passwords do not match",
+    path: ["confirm"],
+  });
+
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
 export const isPasswordFormValid = (
   newPassword: string,
   confirmPassword: string,

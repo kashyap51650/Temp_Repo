@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 import { SESSION_STORAGE_KEYS } from "@/lib/constants";
-import { getEncryptedItem } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 
 /**
@@ -97,7 +96,7 @@ export function useTabCloseCleanup(config: TabCloseCleanupConfig = {}) {
       }
 
       // ✅ Only clear if user has an active session (has token)
-      const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+      const token = sessionStorage.getItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
       if (!token) {
         logger.info("[Tab Close Cleanup] No active session - skipping cleanup");

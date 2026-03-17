@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { permissionsApi } from "@/api";
+import { useThrottledMutation } from "@/hooks";
 import { API_CONFIG, apiClient } from "@/lib/api";
 import type {
   LoginApiResponse,
@@ -80,84 +81,115 @@ export const authApi = {
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: authApi.login,
-    onSuccess: async (data: LoginResponse) => {
-      // Securely store tokens FIRST - if this fails, roll back the login
-      try {
-        setEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
-        setEncryptedItem(
-          SESSION_STORAGE_KEYS.REFRESH_TOKEN,
-          data.refresh_token
-        );
-        globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
-      } catch (error) {
-        // Encryption failed - invalidate server session to prevent partial auth state
-        logger.error(
-          "[Auth] Token encryption failed, rolling back server session",
-          error
-        );
-
+  return useThrottledMutation(
+    {
+      mutationFn: authApi.login,
+      onSuccess: async (data: LoginResponse) => {
+        // Securely store tokens FIRST - if this fails, roll back the login
         try {
-          await authApi.logout();
-        } catch (logoutError) {
-          // Logout failed, but we still need to inform the user
-          logger.warn(
-            "[Auth] Failed to invalidate server session after encryption failure",
-            logoutError
+          await setEncryptedItem(
+            SESSION_STORAGE_KEYS.ACCESS_TOKEN,
+            data.access_token
           );
+          await setEncryptedItem(
+            SESSION_STORAGE_KEYS.REFRESH_TOKEN,
+            data.refresh_token
+          );
+          globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+        } catch (error) {
+          // Encryption failed - invalidate server session and roll back client auth state
+          logger.error(
+            "[Auth] Token encryption failed, rolling back server session",
+            error
+          );
+
+          try {
+            await authApi.logout();
+          } catch (logoutError) {
+            // Logout failed, but we still need to inform the user
+            logger.warn(
+              "[Auth] Failed to invalidate server session after encryption failure",
+              logoutError
+            );
+          }
+
+          sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+          sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
+          globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+          queryClient.removeQueries({
+            queryKey: AUTH_QUERY_KEYS.auth,
+            exact: true,
+          });
+          queryClient.removeQueries({
+            queryKey: AUTH_QUERY_KEYS.user,
+            exact: true,
+          });
+          clearUserContext();
+
+          const errorMessage =
+            (error as Error)?.message ||
+            "Failed to securely login your session. Please try again.";
+          toast.error(errorMessage);
+
+          throw new Error(errorMessage);
         }
-      }
 
-      // Cache auth data in TanStack Query
-      queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
-      queryClient.setQueryData(AUTH_QUERY_KEYS.user, data.user);
+        // Cache auth data in TanStack Query
+        queryClient.setQueryData(AUTH_QUERY_KEYS.auth, data);
+        queryClient.setQueryData(AUTH_QUERY_KEYS.user, data.user);
 
-      // Prefetch permissions immediately after login to prevent flicker
-      try {
-        await queryClient.prefetchQuery({
-          queryKey: ["my-permissions"],
-          queryFn: () => permissionsApi.getMyPermissions(),
-        });
+        // Prefetch permissions immediately after login to prevent flicker
+        try {
+          await queryClient.prefetchQuery({
+            queryKey: ["my-permissions"],
+            queryFn: () => permissionsApi.getMyPermissions(),
+          });
 
-        setUserContext({
-          id: data.user.id?.toString(),
-          email: data.user.email,
-          username: data.user.username,
-        });
+          setUserContext({
+            id: data.user.id?.toString(),
+            email: data.user.email,
+            username: data.user.username,
+          });
 
-        toast.success("Login successful!", {
-          description: `Welcome back, ${data.user.full_name || data.user.username}!`,
-        });
-      } catch (error) {
-        sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
-        sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
-        globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
-        queryClient.removeQueries({
-          queryKey: AUTH_QUERY_KEYS.auth,
-          exact: true,
-        });
-        queryClient.removeQueries({
-          queryKey: AUTH_QUERY_KEYS.user,
-          exact: true,
-        });
+          toast.success("Login successful!", {
+            description: `Welcome back, ${data.user.full_name || data.user.username}!`,
+          });
+        } catch (error) {
+          sessionStorage.removeItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+          sessionStorage.removeItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
+          globalThis.dispatchEvent(new CustomEvent(CUSTOM_EVENTS.TOKEN_CHANGE));
+          queryClient.removeQueries({
+            queryKey: AUTH_QUERY_KEYS.auth,
+            exact: true,
+          });
+          queryClient.removeQueries({
+            queryKey: AUTH_QUERY_KEYS.user,
+            exact: true,
+          });
 
-        const errorMessage =
-          (error as Error).message ||
-          "Failed to load permissions. Please try again.";
+          const errorMessage =
+            (error as Error).message ||
+            "Failed to load permissions. Please try again.";
 
-        toast.error(errorMessage);
-        throw new Error(errorMessage);
-      }
+          toast.error(errorMessage);
+          throw new Error(errorMessage);
+        }
+      },
+      onError: (error: Error) => {
+        // Throttle errors already show their own toast via useThrottledMutation
+        const isThrottleError =
+          error.message.includes("Request throttled") ||
+          error.message.includes("Request already in progress");
+        if (!isThrottleError) {
+          toast.error("Login failed", {
+            description:
+              error.message || "Please check your credentials and try again.",
+          });
+        }
+      },
     },
-    onError: (error: Error) => {
-      // Show error toast
-      toast.error("Login failed", {
-        description:
-          error.message || "Please check your credentials and try again.",
-      });
-    },
-  });
+    1000
+  );
 };
 
 export const useLogout = () => {
@@ -211,10 +243,12 @@ export const useResetPassword = () => {
 
 // Hook to get current authentication state
 export const useAuth = () => {
+  const { isAuthenticated } = useIsAuthenticated();
+
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.auth,
-    queryFn: () => {
-      const token = tokenUtils.getAccessToken();
+    queryFn: async () => {
+      const token = await tokenUtils.getAccessToken();
       if (!token || tokenUtils.isTokenExpired(token)) {
         throw new Error("No valid token");
       }
@@ -222,7 +256,7 @@ export const useAuth = () => {
       // Return cached auth data or null if not authenticated
       return null;
     },
-    enabled: !!tokenUtils.getAccessToken(),
+    enabled: isAuthenticated,
     staleTime: Infinity, // Auth data doesn't get stale
     retry: false,
   });
@@ -230,34 +264,81 @@ export const useAuth = () => {
 
 // Hook to get current user data
 export const useCurrentUser = () => {
+  const { isAuthenticated } = useIsAuthenticated();
+
   return useQuery({
     queryKey: AUTH_QUERY_KEYS.user,
     queryFn: authApi.getCurrentUser,
-    enabled:
-      !!tokenUtils.getAccessToken() &&
-      !tokenUtils.isTokenExpired(tokenUtils.getAccessToken()!),
+    enabled: isAuthenticated,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
   });
 };
 
-const checkAccessTokenValid = () => {
-  const token = tokenUtils.getAccessToken();
+const checkAccessTokenValid = async () => {
+  const token = await tokenUtils.getAccessToken();
   const isValid = !!token && !tokenUtils.isTokenExpired(token);
   return isValid;
 };
 
+export const useAuthTokens = () => {
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadTokens = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [access, refresh] = await Promise.all([
+        tokenUtils.getAccessToken(),
+        tokenUtils.getRefreshToken(),
+      ]);
+      setAccessToken(access);
+      setRefreshToken(refresh);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initial load
+    void loadTokens();
+  }, [loadTokens]);
+
+  useEffect(() => {
+    // Reload tokens whenever they change
+    const handler = () => {
+      void loadTokens();
+    };
+    globalThis.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, handler);
+    return () => {
+      globalThis.removeEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, handler);
+    };
+  }, [loadTokens]);
+
+  return { accessToken, refreshToken, isLoading };
+};
+
 // Helper hook to check if user is authenticated
 export const useIsAuthenticated = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const isValid = checkAccessTokenValid();
-    return isValid;
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const checkAuth = useCallback(() => {
-    const isValid = checkAccessTokenValid();
+  const checkAuth = useCallback(async () => {
+    const isValid = await checkAccessTokenValid();
     setIsAuthenticated(isValid);
   }, []);
+
+  useEffect(() => {
+    setIsLoading(true);
+    (async () => {
+      try {
+        await checkAuth();
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, [checkAuth]);
 
   useEffect(() => {
     globalThis.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, checkAuth);
@@ -267,16 +348,16 @@ export const useIsAuthenticated = () => {
     };
   }, [checkAuth]);
 
-  return isAuthenticated;
+  return { isAuthenticated, isLoading };
 };
 
 // Utility functions for token management
 export const tokenUtils = {
-  getAccessToken: (): string | null => {
+  getAccessToken: (): Promise<string | null> => {
     return getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
   },
 
-  getRefreshToken: (): string | null => {
+  getRefreshToken: (): Promise<string | null> => {
     return getEncryptedItem(SESSION_STORAGE_KEYS.REFRESH_TOKEN);
   },
 

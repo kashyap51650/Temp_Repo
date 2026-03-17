@@ -77,7 +77,7 @@ function setupSocketEventHandlers(socketInstance: Socket): void {
 /**
  * Connect to socket server
  */
-export function connectSocket(): void {
+export async function connectSocket(): Promise<void> {
   // Prevent multiple connection attempts
   if (socket?.connected) {
     return;
@@ -95,7 +95,7 @@ export function connectSocket(): void {
   }
 
   // Get token and URL
-  const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+  const token = await getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
 
   if (!token) {
     logError("Cannot connect socket - no authentication token found", {

@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 
@@ -7,7 +8,11 @@ import { toast } from "@/components/atoms/Sonner/toast";
 import { PasswordFields } from "@/components/molecules/PasswordFields";
 import { Form } from "@/components/organisms/Form/Form";
 import { API_CONFIG, apiClient } from "@/lib/api";
-import { isPasswordFormValid } from "@/lib/password-utils";
+import {
+  changePasswordSchema,
+  isPasswordFormValid,
+  resetPasswordSchema,
+} from "@/lib/password-utils";
 
 export interface ChangePasswordModalProps {
   open: boolean;
@@ -37,6 +42,9 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   };
 
   const form = useForm<FormValues>({
+    resolver: zodResolver(
+      mode === "change" ? changePasswordSchema : resetPasswordSchema
+    ),
     defaultValues: {
       ...(mode === "change" && { current: "" }),
       new: "",
@@ -51,7 +59,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   let currentPassword = "";
   if (mode === "change") {
     try {
-      currentPassword = (form.getValues() as any).current || "";
+      currentPassword = form.getValues().current ?? "";
     } catch {
       currentPassword = "";
     }
@@ -68,7 +76,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     try {
       if (mode === "change" && onChangePassword) {
         onChangePassword({
-          currentPassword: (values as any).current,
+          currentPassword: values.current ?? "",
           newPassword: values.new,
           confirmPassword: values.confirm,
         });

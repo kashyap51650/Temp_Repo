@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/react";
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
 const isDevelopment = import.meta.env.DEV;
 
@@ -473,4 +474,35 @@ export function initSentryLogger(): void {
   } else if (isDevelopment) {
     console.warn("⚠️ Sentry is not available");
   }
+}
+
+const sendWebVitalToSentry = ({
+  name,
+  value,
+  rating,
+  id,
+}: {
+  name: string;
+  value: number;
+  rating: string;
+  id: string;
+}) => {
+  if (!isSentryAvailable()) return;
+
+  Sentry.captureEvent({
+    message: `Web Vital: ${name}`,
+    level: "info",
+    tags: { webVital: name, rating },
+    extra: { value: Math.round(name === "CLS" ? value * 1000 : value), id },
+  });
+};
+
+export function reportWebVitals(): void {
+  if (!isSentryAvailable()) return;
+
+  onCLS(sendWebVitalToSentry);
+  onFCP(sendWebVitalToSentry);
+  onINP(sendWebVitalToSentry);
+  onLCP(sendWebVitalToSentry);
+  onTTFB(sendWebVitalToSentry);
 }

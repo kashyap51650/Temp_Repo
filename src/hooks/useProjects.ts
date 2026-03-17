@@ -24,7 +24,7 @@ export function useProjects(): UseProjectsResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const isAuthenticated = useIsAuthenticated();
+  const { isAuthenticated } = useIsAuthenticated();
 
   const isInitialized = useRef(false);
   const loadingRef = useRef(false);

@@ -1,3 +1,5 @@
+import type { ApiResponse } from "@/lib";
+
 export interface SBAWorksheetMetadata {
   id: number;
   worksheet_name: string;
@@ -27,12 +29,12 @@ export interface SBAWorksheetData {
   kd_values: KDValueData[];
 }
 
-export interface SaturationBindingAssayExperimentDataResponse {
+export type SaturationBindingAssayExperimentDataResponse = ApiResponse<{
   id: number;
   uploaded_data: {
     worksheets: SBAWorksheetData[];
   };
-}
+}>;
 
 export interface SaturationBindingAssaySheetRowData {
   id: number;

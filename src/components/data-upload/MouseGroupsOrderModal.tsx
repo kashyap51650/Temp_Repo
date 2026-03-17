@@ -8,18 +8,25 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import React, { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 
 import { Button } from "@/components/atoms/Button/Button";
+import { Input } from "@/components/atoms/Input/Input";
 import useConfirmExperimentMouseGroups from "@/hooks/useConfirmExperimentMouseGroups";
 import useExperimentMouseGroups from "@/hooks/useExperimentMouseGroups";
+import {
+  ModelStudyGroupOrderSchema,
+  type ModelStudyGroupOrderSchemaData,
+} from "@/lib/mouseGroupOrderValidation";
 import type { ExperimentMouseGroupsWithDragIdType } from "@/types/modelStudy";
 
+import { Label } from "../atoms";
 import { Dialog } from "../atoms/Dialog/Dialog";
 import { DialogFooter } from "../molecules";
 import { SortableItem } from "./SortableItem";
@@ -41,7 +48,6 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
   onSuccess,
   onGroupingSaved,
 }) => {
-  const [items, setItems] = useState<ExperimentMouseGroupsWithDragIdType[]>([]);
   const { mutationFn, mouseGroupData, isLoading, error } =
     useExperimentMouseGroups();
   const { createMouseGroups, isCreating } = useConfirmExperimentMouseGroups({
@@ -51,19 +57,49 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
     },
   });
 
+  const {
+    control,
+    register,
+    reset: resetForm,
+    getValues,
+    formState: { errors: formErrors, isValid: formIsValid },
+  } = useForm<ModelStudyGroupOrderSchemaData>({
+    resolver: zodResolver(ModelStudyGroupOrderSchema),
+    mode: "onChange",
+    defaultValues: { groups: [] },
+  });
+
+  const {
+    fields,
+    move: moveField,
+    remove: removeField,
+  } = useFieldArray({
+    control,
+    name: "groups",
+  });
+
   useEffect(() => {
     if (open && experimentId) {
-      mutationFn({
-        experiment_id: experimentId,
-      });
+      mutationFn({ experiment_id: experimentId });
     }
-  }, [open, experimentId]);
+  }, [open, experimentId, mutationFn]);
 
   useEffect(() => {
     if (open && mouseGroupData?.length) {
-      setItems(mouseGroupData);
+      resetForm({
+        groups: mouseGroupData.map((group) => ({
+          dragId: group.dragId,
+          groupId: group.group_id,
+          groupName: group.group_name,
+          slotSize: group.no_of_mice ?? 0,
+        })),
+      });
     }
-  }, [open, mouseGroupData]);
+  }, [open, mouseGroupData, resetForm]);
+
+  useEffect(() => {
+    if (!open) resetForm({ groups: [] });
+  }, [open, resetForm]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -75,27 +111,36 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setItems((prev) => {
-        const oldIndex = prev.findIndex((i) => i.dragId === active.id);
-        const newIndex = prev.findIndex((i) => i.dragId === over.id);
-        return arrayMove(prev, oldIndex, newIndex);
-      });
+      const oldIndex = fields.findIndex((group) => group.dragId === active.id);
+      const newIndex = fields.findIndex((group) => group.dragId === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) moveField(oldIndex, newIndex);
     }
   };
 
   const handleRemove = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.dragId !== id));
+    const index = fields.findIndex((group) => group.dragId === id);
+    if (index !== -1) removeField(index);
   };
 
   const handleSave = () => {
     if (!experimentId) return;
-
-    const groupIds = items.map((group) => group.group_id);
+    const currentGroups = getValues("groups");
     createMouseGroups({
       experiment_id: experimentId,
-      group_ids: groupIds,
+      group_ids: fields.map((group) => group.groupId),
+      no_of_mice_per_group: currentGroups.map((group) => ({
+        group_id: group.groupId,
+        no_of_mice: group.slotSize,
+      })),
     });
-    onSave?.(items);
+    const itemsWithSlotSizes: ExperimentMouseGroupsWithDragIdType[] =
+      currentGroups.map((formGroup) => ({
+        ...(mouseGroupData.find(
+          (group) => group.group_id === formGroup.groupId
+        ) ?? ({} as ExperimentMouseGroupsWithDragIdType)),
+        no_of_mice: formGroup.slotSize,
+      }));
+    onSave?.(itemsWithSlotSizes);
   };
 
   const renderContent = () => {
@@ -128,23 +173,53 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={items.map((i) => i.dragId)}
+          items={fields.map((field) => field.dragId)}
           strategy={verticalListSortingStrategy}
         >
           <ul className="flex flex-col gap-4 max-h-96 overflow-y-auto pr-2">
-            {items.length === 0 && (
+            {fields.length === 0 && (
               <li className="text-muted-foreground text-sm">
                 No groups to display.
               </li>
             )}
-            {items.map((item, idx) => (
+            {fields.map((field, idx) => (
               <SortableItem
-                key={item.dragId}
-                id={item.dragId}
+                key={field.id}
+                id={field.dragId}
                 index={idx}
-                groupName={item.group_name}
+                groupName={field.groupName}
                 onRemove={handleRemove}
-                disableDelete={items.length === 1}
+                disableDelete={fields.length === 1}
+                slotSizeInput={
+                  <>
+                    <Label
+                      className="text-xs text-muted-foreground font-medium"
+                      htmlFor={`slot-size-${idx}`}
+                    >
+                      Slot Size
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min={1}
+                        id={`slot-size-${idx}`}
+                        {...register(`groups.${idx}.slotSize`, {
+                          valueAsNumber: true,
+                        })}
+                        className={`w-24 h-8 text-sm ${
+                          formErrors.groups?.[idx]?.slotSize
+                            ? "border-destructive focus-visible:ring-destructive"
+                            : ""
+                        }`}
+                      />
+                      {formErrors.groups?.[idx]?.slotSize?.message && (
+                        <p className="absolute top-full left-1/2 -translate-x-1/2 w-48 z-10 text-xs text-destructive pt-0.5 text-center break-words">
+                          {formErrors.groups?.[idx]?.slotSize?.message ?? ""}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                }
               />
             ))}
           </ul>
@@ -174,7 +249,13 @@ export const MouseGroupsOrderModal: React.FC<MouseGroupsOrderModalProps> = ({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isCreating || isLoading || !!error || items.length === 0}
+            disabled={
+              isCreating ||
+              isLoading ||
+              !!error ||
+              !formIsValid ||
+              fields.length === 0
+            }
           >
             {isCreating ? "Saving..." : "Save Groups"}
           </Button>
