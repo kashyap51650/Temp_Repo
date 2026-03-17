@@ -15,6 +15,7 @@
  * logger.error('Failed to save', error); // Console in dev, sent to Sentry in production
  * ```
  */
+const isDevelopment = import.meta.env.DEV;
 
 /**
  * Safely serialize a value to string, handling circular references and non-serializable types
@@ -58,15 +59,15 @@ function safeStringify(value: unknown): string {
     });
   } catch (error) {
     // Fallback for any serialization errors
-    console.error(error);
+    if (isDevelopment) {
+      console.error(error);
+    }
     return String(value);
   }
 }
 
 // Track visited objects for circular reference detection
 let seen = new WeakSet();
-
-const isDevelopment = import.meta.env.DEV;
 
 export const logger = {
   /**

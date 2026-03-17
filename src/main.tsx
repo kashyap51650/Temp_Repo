@@ -13,9 +13,10 @@ import ErrorBoundary from "./app/ErrorBoundary.tsx";
 import store from "./app/store/index.ts";
 import { SocketProvider } from "./contexts/SocketProvider.tsx";
 import queryClient from "./lib/queryClient";
-import { initSentry } from "./lib/sentry-logger";
+import { initSentry, reportWebVitals } from "./lib/sentry-logger";
 
 initSentry();
+reportWebVitals();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

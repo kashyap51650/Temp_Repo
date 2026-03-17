@@ -18,7 +18,7 @@ function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const routerState = useRouterState();
-  const isAuthenticated = useIsAuthenticated();
+  const { isAuthenticated, isLoading } = useIsAuthenticated();
   const isAuthRoute = location.pathname.startsWith("/auth");
   const isNavigating = routerState.status === "pending";
 
@@ -29,7 +29,7 @@ function RootLayout() {
   });
 
   useEffect(() => {
-    if (isAuthRoute) return;
+    if (isAuthRoute || isLoading) return;
 
     if (!isAuthenticated) {
       navigate({
@@ -37,10 +37,10 @@ function RootLayout() {
         search: { redirect: location.pathname },
       });
     }
-  }, [isAuthenticated, isAuthRoute, navigate, location.pathname]);
+  }, [isAuthenticated, isLoading, isAuthRoute, navigate, location.pathname]);
 
   // If not authenticated and navigating away, don't render anything
-  if (!isAuthenticated && isNavigating) {
+  if ((!isAuthenticated && isNavigating) || isLoading) {
     return null;
   }
 

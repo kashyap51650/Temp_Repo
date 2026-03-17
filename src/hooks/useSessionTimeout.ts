@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { authApi } from "@/lib/auth";
-import { SESSION_STORAGE_KEYS } from "@/lib/constants";
+import { CUSTOM_EVENTS, SESSION_STORAGE_KEYS } from "@/lib/constants";
 import { getEncryptedItem } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 
@@ -77,7 +77,9 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
     // The access token is still cryptographically valid at this point
     // (inactivity is a client-side concept), so the backend logout endpoint
     // can accept and invalidate it / the refresh token.
-    const hasToken = !!getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+    const hasToken = !!(await getEncryptedItem(
+      SESSION_STORAGE_KEYS.ACCESS_TOKEN
+    ));
     if (hasToken) {
       try {
         await authApi.logout();
@@ -197,22 +199,10 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
   }, [resetTimer]);
 
   useEffect(() => {
-    // Check if user is logged in (has token)
-    const token = getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
-    if (!token) {
-      logger.info("[Session Timeout] No token found, skipping timeout setup");
-      return;
-    }
+    let mounted = true;
+    let listenersAttached = false;
 
-    logger.info("[Session Timeout] Initializing session timeout", {
-      timeoutMinutes: timeoutMs / 1000 / 60,
-      warningMinutes: warningMs / 1000 / 60,
-    });
-
-    // Start timer
-    resetTimer();
-
-    // Activity event listeners
+    // Activity event listeners (defined here so cleanup can reference them)
     const events = [
       "mousedown",
       "mousemove",
@@ -222,13 +212,69 @@ export function useSessionTimeout(config: SessionTimeoutConfig = {}) {
       "click",
     ];
 
-    // Add event listeners with passive option for performance
-    events.forEach((event) => {
-      window.addEventListener(event, handleActivity, { passive: true });
-    });
+    // Check if user is logged in (has token) — async via Web Crypto API
+    const initSessionIfAuthenticated = async () => {
+      const token = await getEncryptedItem(SESSION_STORAGE_KEYS.ACCESS_TOKEN);
+      if (!mounted) return;
 
-    // Cleanup function
+      if (!token) {
+        logger.info(
+          "[Session Timeout] No token found, tearing down timeout mechanism"
+        );
+        // Clear any existing timers so they don't fire after logout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = undefined;
+        }
+        if (warningRef.current) {
+          clearTimeout(warningRef.current);
+          warningRef.current = undefined;
+        }
+        // Remove activity listeners if they were previously attached
+        if (listenersAttached) {
+          events.forEach((event) => {
+            window.removeEventListener(event, handleActivity);
+          });
+          listenersAttached = false;
+        }
+        // Reset last activity since there is no active authenticated session
+        lastActivityRef.current = Date.now();
+        return;
+      }
+
+      logger.info("[Session Timeout] Initializing session timeout", {
+        timeoutMinutes: timeoutMs / 1000 / 60,
+        warningMinutes: warningMs / 1000 / 60,
+      });
+
+      // Start timer
+      resetTimer();
+
+      // Add event listeners with passive option for performance
+      if (!listenersAttached) {
+        events.forEach((event) => {
+          window.addEventListener(event, handleActivity, { passive: true });
+        });
+        listenersAttached = true;
+      }
+    };
+
+    const handleTokenChange = () => {
+      void initSessionIfAuthenticated();
+    };
+
+    // Initial check on mount
+    void initSessionIfAuthenticated();
+
+    // Re-run setup when the authentication token changes
+    window.addEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, handleTokenChange);
+
+    // Cleanup function — runs synchronously on unmount/dep change
     return () => {
+      mounted = false;
+
+      window.removeEventListener(CUSTOM_EVENTS.TOKEN_CHANGE, handleTokenChange);
+
       // Remove event listeners
       events.forEach((event) => {
         window.removeEventListener(event, handleActivity);
