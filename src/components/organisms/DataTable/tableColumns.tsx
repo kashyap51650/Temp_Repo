@@ -69,7 +69,7 @@ export function getRoleColumns(
       cell: ({ row }) => (
         <TruncateWithTooltip
           className="w-80 block"
-          tooltipContentClassName="max-w-[calc(100vw-1rem)]"
+          tooltipContentClassName="max-w-xl"
         >
           {row.original.description}
         </TruncateWithTooltip>
