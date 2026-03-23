@@ -31,41 +31,44 @@ export function useProjects(): UseProjectsResult {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  const loadProjects = useCallback(async (search?: string) => {
-    if (loadingRef.current || !isAuthenticated) {
-      return;
-    }
+  const loadProjects = useCallback(
+    async (search?: string) => {
+      if (loadingRef.current || !isAuthenticated) {
+        return;
+      }
 
-    try {
-      loadingRef.current = true;
-      setLoading(true);
-      setError(null);
+      try {
+        loadingRef.current = true;
+        setLoading(true);
+        setError(null);
 
-      const response = search
-        ? await projectApi.searchProjects(search)
-        : await projectApi.getProjects();
+        const response = search
+          ? await projectApi.searchProjects(search)
+          : await projectApi.getProjects();
 
-      if (response.success) {
-        setProjects(response.data);
-      } else {
-        const errorMessage = response.message || "Failed to load projects";
+        if (response.success) {
+          setProjects(response.data);
+        } else {
+          const errorMessage = response.message || "Failed to load projects";
+          setError(errorMessage);
+          toast.error("Failed to load projects", {
+            description: errorMessage,
+          });
+        }
+      } catch (err) {
+        const errorMessage = handleApiError(err, "Failed to load projects");
         setError(errorMessage);
+
         toast.error("Failed to load projects", {
           description: errorMessage,
         });
+      } finally {
+        setLoading(false);
+        loadingRef.current = false;
       }
-    } catch (err) {
-      const errorMessage = handleApiError(err, "Failed to load projects");
-      setError(errorMessage);
-
-      toast.error("Failed to load projects", {
-        description: errorMessage,
-      });
-    } finally {
-      setLoading(false);
-      loadingRef.current = false;
-    }
-  }, []);
+    },
+    [isAuthenticated]
+  );
 
   const searchProjects = useCallback((search: string) => {
     setSearchTerm(search);

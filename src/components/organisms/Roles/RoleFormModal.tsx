@@ -30,8 +30,12 @@ interface RoleFormModalProps {
 }
 
 const schema = z.object({
-  name: z.string().min(1, "Role name is required"),
-  description: z.string().min(1, "Description is required"),
+  name: z.string().trim().min(1, "Role name is required"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Description is required")
+    .max(250, "Description must be at most 250 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;

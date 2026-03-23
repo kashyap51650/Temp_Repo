@@ -276,7 +276,7 @@ export function UpdateSlotSizeOfMouseGroupsModal({
             onClick={handleOk}
             disabled={!okEnabled}
           >
-            OK
+            {updateMutation.isPending ? "Updating slot size..." : "OK"}
           </Button>
         </div>
       </div>
