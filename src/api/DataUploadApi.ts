@@ -28,6 +28,7 @@ import type {
 } from "@/types/directBindingAssay";
 import type {
   CreateDoseFrequencyPayload,
+  CreateDoseFrequencyResponse,
   DoseFrequencyDropdownResponse,
 } from "@/types/doseFrequency";
 import type {
@@ -1081,8 +1082,10 @@ export const doseFrequencyApi = {
         API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.DROPDOWN
       );
     },
-  createDoseFrequency: async (payload: CreateDoseFrequencyPayload) => {
-    return await apiClient.post<CreateDoseRangeFindingResponse>(
+  createDoseFrequency: async (
+    payload: CreateDoseFrequencyPayload
+  ): Promise<CreateDoseFrequencyResponse> => {
+    return await apiClient.post<CreateDoseFrequencyResponse>(
       API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.CREATE,
       payload
     );

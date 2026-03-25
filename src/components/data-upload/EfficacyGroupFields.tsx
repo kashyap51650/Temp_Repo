@@ -1,7 +1,9 @@
+import { Plus, Trash2 } from "lucide-react";
+
 import type { CellLine, MouseStrain } from "@/api";
 import { doseFrequencyApi, dosesApi, experimentDrugApi } from "@/api";
 import { marketDoseApi } from "@/api/MarketDoseApi";
-import { Input, Label } from "@/components/atoms";
+import { Button, Input, Label } from "@/components/atoms";
 import { SearchableSelect } from "@/components/atoms/SearchableSelect/SearchableSelect";
 import type { EfficacyGroup } from "@/hooks/useEfficacyFormState";
 
@@ -14,7 +16,14 @@ interface EfficacyGroupFieldsProps {
   strainName?: string;
   selectedStrains?: MouseStrain[];
   selectedCellLines?: CellLine[];
-  onUpdate: (index: number, field: keyof EfficacyGroup, value: number) => void;
+  onUpdate: <K extends keyof EfficacyGroup>(
+    index: number,
+    field: K,
+    value: EfficacyGroup[K]
+  ) => void;
+  onAddDose: (groupIndex: number) => void;
+  onRemoveDose: (groupIndex: number, doseIndex: number) => void;
+  onDoseChange: (groupIndex: number, doseIndex: number, value: string) => void;
   onCreateFrequency?: () => void;
   errors?: {
     strainId?: string;
@@ -36,25 +45,26 @@ export function EfficacyGroupFields({
   selectedStrains = [],
   selectedCellLines = [],
   onUpdate,
+  onAddDose,
+  onRemoveDose,
+  onDoseChange,
   onCreateFrequency,
   errors,
 }: Readonly<EfficacyGroupFieldsProps>) {
-  // Buffer group - only shows strain name
-  if (groupType === "buffer") {
-    return (
-      <div className="flex flex-col items-center justify-center py-6 text-center">
+  const doseValues =
+    group.noOfDoses && group.noOfDoses.length > 0 ? group.noOfDoses : [0];
+
+  return (
+    <div className="space-y-4">
+      {/* Buffer only: group description */}
+      {groupType === "buffer" && (
         <p className="text-sm text-muted-foreground">
           {strainName ? `Buffer of ${strainName}` : "Buffer Group"}
         </p>
-      </div>
-    );
-  }
+      )}
 
-  // Market dose and Normal groups share most fields
-  return (
-    <>
-      <div className="space-y-4">
-        {/* Strain */}
+      {/* Non-buffer only: Strain */}
+      {groupType !== "buffer" && (
         <div className="space-y-2">
           <Label>Select Strain</Label>
           <SearchableSelect
@@ -74,64 +84,64 @@ export function EfficacyGroupFields({
             <p className="text-sm text-red-500">{errors.strainId}</p>
           )}
         </div>
+      )}
 
-        {/* Cell Line */}
+      {/* All: Cell Line */}
+      <div className="space-y-2">
+        <Label>Select Cell Line</Label>
+        <SearchableSelect
+          options={selectedCellLines.map((cellLine) => ({
+            id: cellLine.id.toString(),
+            label: cellLine.cell_line_name,
+            value: cellLine.id.toString(),
+          }))}
+          value={group.cellLineId?.toString() || ""}
+          onValueChange={(value) => {
+            onUpdate(index, "cellLineId", Number.parseInt(value as string, 10));
+          }}
+          placeholder="Select cell line"
+          size="default"
+        />
+        {errors?.cellLineId && (
+          <p className="text-sm text-red-500">{errors.cellLineId}</p>
+        )}
+      </div>
+
+      {/* Market only: Market Dose */}
+      {groupType === "market" && (
         <div className="space-y-2">
-          <Label>Select Cell Line</Label>
-          <SearchableSelect
-            options={selectedCellLines.map((cellLine) => ({
-              id: cellLine.id.toString(),
-              label: cellLine.cell_line_name,
-              value: cellLine.id.toString(),
-            }))}
-            value={group.cellLineId?.toString() || ""}
-            onValueChange={(value) => {
+          <Label>Select Market Dose</Label>
+          <AsyncSelect
+            query={async () => {
+              const response = await marketDoseApi.getMarketDosesDropdown();
+              return response.data || [];
+            }}
+            mapConfig={{
+              labelKey: "market_dose_name" as const,
+              valueKey: "id" as const,
+            }}
+            queryKey={["market-doses-dropdown"]}
+            value={group.marketDoseId?.toString() || ""}
+            onChange={(value) => {
               onUpdate(
                 index,
-                "cellLineId",
+                "marketDoseId",
                 Number.parseInt(value as string, 10)
               );
             }}
-            placeholder="Select cell line"
+            placeholder="Select market dose"
+            optionWithAll={false}
             size="default"
+            searchable={false}
           />
-          {errors?.cellLineId && (
-            <p className="text-sm text-red-500">{errors.cellLineId}</p>
+          {errors?.marketDoseId && (
+            <p className="text-sm text-red-500">{errors.marketDoseId}</p>
           )}
         </div>
-        {/*  Market Does - Only Applicable for Market Does Group */}
-        {groupType === "market" && (
-          <div className="space-y-2">
-            <Label>Select Market Dose</Label>
-            <AsyncSelect
-              query={async () => {
-                const response = await marketDoseApi.getMarketDosesDropdown();
-                return response.data || [];
-              }}
-              mapConfig={{
-                labelKey: "market_dose_name" as const,
-                valueKey: "id" as const,
-              }}
-              queryKey={["market-doses-dropdown"]}
-              value={group.marketDoseId?.toString() || ""}
-              onChange={(value) => {
-                onUpdate(
-                  index,
-                  "marketDoseId",
-                  Number.parseInt(value as string, 10)
-                );
-              }}
-              placeholder="Select market dose"
-              optionWithAll={false}
-              size="default"
-              searchable={false}
-            />
-            {errors?.marketDoseId && (
-              <p className="text-sm text-red-500">{errors.marketDoseId}</p>
-            )}
-          </div>
-        )}
-        {/* Drug Name */}
+      )}
+
+      {/* Non-buffer only: Drug Name */}
+      {groupType !== "buffer" && (
         <div className="space-y-2">
           <Label>Drug Name</Label>
           <AsyncSelect
@@ -163,41 +173,74 @@ export function EfficacyGroupFields({
             <p className="text-sm text-red-500">{errors.experimentDrugId}</p>
           )}
         </div>
-        {/* No of Doses */}
+      )}
+
+      {/* All: No. of Doses */}
+      <div className="space-y-2">
+        <Label>No. of Doses</Label>
         <div className="space-y-2">
-          <Label>No. of Doses</Label>
-          <Input
-            type="number"
-            placeholder="Enter number of doses"
-            min={1}
-            value={group.noOfDoses || ""}
-            onChange={(e) => {
-              const value = e.target.value;
-              onUpdate(index, "noOfDoses", Number(value));
-            }}
-          />
-          {errors?.noOfDoses && (
-            <p className="text-sm text-red-500">{errors.noOfDoses}</p>
-          )}
+          {doseValues.map((dose, doseIndex) => (
+            <div
+              key={`dose-${index}-${doseIndex}`}
+              className="flex items-center gap-2"
+            >
+              <Input
+                type="number"
+                placeholder="Enter dose"
+                min={1}
+                value={dose > 0 ? dose : ""}
+                onChange={(e) => {
+                  onDoseChange(index, doseIndex, e.target.value);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => onRemoveDose(index, doseIndex)}
+                disabled={doseValues.length <= 1}
+                aria-label="Delete dose"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+              {doseIndex === doseValues.length - 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onAddDose(index)}
+                  aria-label="Add dose"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              )}
+            </div>
+          ))}
         </div>
-        {/* No of Mice */}
-        <div className="space-y-2">
-          <Label>No. of Mice</Label>
-          <Input
-            type="number"
-            placeholder="Enter number of mice"
-            min={1}
-            value={group.noOfMice || ""}
-            onChange={(e) => {
-              const value = e.target.value;
-              onUpdate(index, "noOfMice", Number(value));
-            }}
-          />
-          {errors?.noOfMice && (
-            <p className="text-sm text-red-500">{errors.noOfMice}</p>
-          )}
-        </div>
-        {/* Radiation Dose Dropdown  */}
+        {errors?.noOfDoses && (
+          <p className="text-sm text-red-500">{errors.noOfDoses}</p>
+        )}
+      </div>
+
+      {/* All: No. of Mice */}
+      <div className="space-y-2">
+        <Label>No. of Mice</Label>
+        <Input
+          type="number"
+          placeholder="Enter number of mice"
+          min={1}
+          value={group.noOfMice || ""}
+          onChange={(e) => {
+            onUpdate(index, "noOfMice", Number(e.target.value));
+          }}
+        />
+        {errors?.noOfMice && (
+          <p className="text-sm text-red-500">{errors.noOfMice}</p>
+        )}
+      </div>
+
+      {/* Non-buffer only: Radiation Dose */}
+      {groupType !== "buffer" && (
         <div className="space-y-2">
           <Label>Radiation Dose</Label>
           <AsyncSelect
@@ -228,41 +271,42 @@ export function EfficacyGroupFields({
             <p className="text-sm text-red-500">{errors.radiationDoseId}</p>
           )}
         </div>
-        {/* Dose Frequency Dropdown  */}
-        <div className="space-y-2">
-          <Label>Frequency</Label>
-          <AsyncSelect
-            query={async () => {
-              const response =
-                await doseFrequencyApi.getDoseFrequenciesDropdown();
-              return response.data || [];
-            }}
-            mapConfig={{
-              labelKey: "frequency_code" as const,
-              valueKey: "id" as const,
-            }}
-            queryKey={["dose-frequencies-dropdown"]}
-            value={group.doseFrequencyId?.toString() || ""}
-            onChange={(value) => {
-              onUpdate(
-                index,
-                "doseFrequencyId",
-                Number.parseInt(value as string, 10)
-              );
-            }}
-            placeholder="Select frequency"
-            optionWithAll={false}
-            searchable={false}
-            onCreateNew={onCreateFrequency}
-            shouldShowCreateNew
-            size="default"
-            refetchOnMount={false}
-          />
-          {errors?.doseFrequencyId && (
-            <p className="text-sm text-red-500">{errors.doseFrequencyId}</p>
-          )}
-        </div>
+      )}
+
+      {/* All: Frequency */}
+      <div className="space-y-2">
+        <Label>Frequency</Label>
+        <AsyncSelect
+          query={async () => {
+            const response =
+              await doseFrequencyApi.getDoseFrequenciesDropdown();
+            return response.data || [];
+          }}
+          mapConfig={{
+            labelKey: "frequency_code" as const,
+            valueKey: "id" as const,
+          }}
+          queryKey={["dose-frequencies-dropdown"]}
+          value={group.doseFrequencyId?.toString() || ""}
+          onChange={(value) => {
+            onUpdate(
+              index,
+              "doseFrequencyId",
+              Number.parseInt(value as string, 10)
+            );
+          }}
+          placeholder="Select frequency"
+          optionWithAll={false}
+          searchable={false}
+          onCreateNew={onCreateFrequency}
+          shouldShowCreateNew
+          size="default"
+          refetchOnMount={false}
+        />
+        {errors?.doseFrequencyId && (
+          <p className="text-sm text-red-500">{errors.doseFrequencyId}</p>
+        )}
       </div>
-    </>
+    </div>
   );
 }
