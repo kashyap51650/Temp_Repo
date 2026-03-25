@@ -72,19 +72,19 @@ export function ProjectFoldersContent() {
               clickable: true,
             },
             {
-              label: selectedExperiment?.experiment_name || "",
+              label:
+                sheetData?.title || selectedStudyType.study_type_name || "",
               clickable: true,
             },
             {
-              label:
-                sheetData?.title || selectedStudyType.study_type_name || "",
+              label: selectedExperiment?.experiment_name || "",
               clickable: false,
             },
           ].filter((item) => item.label)}
           onClickHandlers={[
             goBackToProjects,
-            goBackToExperiments,
             goBackToStudyTypes,
+            goBackToExperiments,
           ]}
         />
         <StudySheetsView
@@ -99,7 +99,7 @@ export function ProjectFoldersContent() {
   }
 
   // Study Types View
-  if (view === "study-types" && selectedExperiment && currentProject) {
+  if (view === "study-types" && currentProject) {
     return (
       <div className="px-6 pb-6 pt-4">
         <ProjectFoldersHeader
@@ -110,37 +110,35 @@ export function ProjectFoldersContent() {
             },
             {
               label: currentProject?.project_name || "",
-              clickable: true,
-            },
-            {
-              label: selectedExperiment?.experiment_name || "",
               clickable: false,
             },
           ].filter((item) => item.label)}
-          onClickHandlers={[goBackToProjects, goBackToExperiments]}
+          onClickHandlers={[goBackToProjects]}
         />
-        <StudyTypeSelection
-          onSelect={handleStudyTypeClick}
-          specialization={selectedExperiment.specialization}
-        />
+        <StudyTypeSelection onSelect={handleStudyTypeClick} />
       </div>
     );
   }
 
   // Experiments View
-  if (view === "experiments") {
+  if (view === "experiments" && selectedStudyType && currentProject) {
     return (
       <div className="px-6 pb-6 pt-4">
         <ProjectFoldersHeader
           breadcrumbs={[
             { label: "Projects", clickable: true },
-            { label: currentProject?.project_name || "", clickable: false },
+            { label: currentProject?.project_name || "", clickable: true },
+            {
+              label: selectedStudyType.study_type_name || "",
+              clickable: false,
+            },
           ].filter((item) => item.label)}
-          onClickHandlers={[goBackToProjects]}
+          onClickHandlers={[goBackToProjects, goBackToStudyTypes]}
         />
         <ExperimentList
           onExperimentClick={handleExperimentClick}
           onCloseExperiment={handleCloseExperiment}
+          studyTypeId={selectedStudyType.id}
         />
         {experimentToClose && isCloseExperimentOpen && (
           <CloseExperimentModal

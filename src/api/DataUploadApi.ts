@@ -478,6 +478,9 @@ export const experimentApi = {
     if (filters?.project_id !== undefined && filters.project_id !== null) {
       params.append("project_id", filters.project_id.toString());
     }
+    if (filters?.study_type_id !== undefined) {
+      params.append("study_type_id", filters.study_type_id.toString());
+    }
     if (filters?.page !== undefined) {
       params.append("page", filters.page.toString());
     }
