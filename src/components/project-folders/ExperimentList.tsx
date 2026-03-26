@@ -24,11 +24,13 @@ import { ProtectedComponent } from "../organisms/ProtectedRoute";
 interface ExperimentListProps {
   onExperimentClick?: (exp: Experiment) => void;
   onCloseExperiment?: (exp: Experiment) => void;
+  studyTypeId?: number;
 }
 
 export function ExperimentList({
   onExperimentClick,
   onCloseExperiment,
+  studyTypeId,
 }: Readonly<ExperimentListProps>) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +50,7 @@ export function ExperimentList({
     error,
   } = useExperimentsList({
     project_id: search?.projectId,
+    study_type_id: studyTypeId,
     search: debounceValue || undefined,
     page: currentPage,
     size: DEFAULT_PAGE_SIZE,

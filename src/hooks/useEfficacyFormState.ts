@@ -13,7 +13,7 @@ export interface EfficacyGroup {
   cellLineId?: number;
   marketDoseId?: number;
   experimentDrugId?: number;
-  noOfDoses?: number;
+  noOfDoses?: number[];
   radiationDoseId?: number;
   doseFrequencyId?: number;
   noOfMice?: number;
@@ -90,6 +90,7 @@ export function useEfficacyFormState({
           groupNumber: groupCounter++,
           groupType: "buffer",
           strainId: strainId,
+          noOfDoses: [0],
         });
       });
 
@@ -107,6 +108,7 @@ export function useEfficacyFormState({
             groupNumber: groupCounter++,
             groupType: "normal",
             strainId: strainId,
+            noOfDoses: [0],
           });
         }
       }
@@ -117,6 +119,7 @@ export function useEfficacyFormState({
           groupNumber: groupCounter++,
           groupType: "market",
           strainId: formData.selectedStrains[0], // Assign to first strain
+          noOfDoses: [0],
         });
       }
 
@@ -173,37 +176,42 @@ export function useEfficacyFormState({
     // Validate groups
     const groupErrors: FormErrors["groups"] = {};
     formData.groups.forEach((group, index) => {
-      if (group.groupType === "normal" || group.groupType === "market") {
-        const errors: NonNullable<FormErrors["groups"]>[number] = {};
+      const errors: NonNullable<FormErrors["groups"]>[number] = {};
 
+      if (!group.noOfDoses || group.noOfDoses.length === 0) {
+        errors.noOfDoses = "Number of doses is required";
+      } else if (
+        group.noOfDoses.some((dose) => !Number.isFinite(dose) || dose <= 0)
+      ) {
+        errors.noOfDoses = "Each dose must be greater than 0";
+      }
+      if (!group.noOfMice) {
+        errors.noOfMice = "Number of mice is required";
+      }
+      if (!group.doseFrequencyId) {
+        errors.doseFrequencyId = "Frequency is required";
+      }
+      if (!group.cellLineId) {
+        errors.cellLineId = "Cell line is required";
+      }
+
+      if (group.groupType === "normal" || group.groupType === "market") {
         if (!group.strainId) {
           errors.strainId = "Strain is required";
-        }
-        if (!group.cellLineId) {
-          errors.cellLineId = "Cell line is required";
         }
         if (!group.experimentDrugId) {
           errors.experimentDrugId = "Drug name is required";
         }
-        if (!group.noOfDoses) {
-          errors.noOfDoses = "Number of doses is required";
-        }
-        if (!group.noOfMice) {
-          errors.noOfMice = "Number of mice is required";
-        }
         if (!group.radiationDoseId) {
           errors.radiationDoseId = "Radiation dose is required";
-        }
-        if (!group.doseFrequencyId) {
-          errors.doseFrequencyId = "Frequency is required";
         }
         if (group.groupType === "market" && !group.marketDoseId) {
           errors.marketDoseId = "Market dose is required";
         }
+      }
 
-        if (Object.keys(errors).length > 0) {
-          groupErrors[index] = errors;
-        }
+      if (Object.keys(errors).length > 0) {
+        groupErrors[index] = errors;
       }
     });
 
@@ -245,7 +253,10 @@ export function useEfficacyFormState({
           cell_line_id: group.cellLineId ?? null,
           market_dose_id: group.marketDoseId ?? null,
           experiment_drug_id: group.experimentDrugId ?? null,
-          no_of_doses: group.noOfDoses ?? null,
+          no_of_dose_values:
+            group.noOfDoses && group.noOfDoses.length > 0
+              ? group.noOfDoses
+              : null,
           radiation_dose_id: group.radiationDoseId ?? null,
           dose_frequency_id: group.doseFrequencyId ?? null,
           no_of_mice: group.noOfMice ?? null,
@@ -294,14 +305,64 @@ export function useEfficacyFormState({
     setErrors({});
   };
 
-  const updateGroup = (
+  const updateGroup = <K extends keyof EfficacyGroup>(
     index: number,
-    field: keyof EfficacyGroup,
-    value: number
+    field: K,
+    value: EfficacyGroup[K]
   ) => {
     setFormData((prev) => {
       const updatedGroups = [...prev.groups];
       updatedGroups[index] = { ...updatedGroups[index], [field]: value };
+      return { ...prev, groups: updatedGroups };
+    });
+  };
+
+  const addDoseInput = (groupIndex: number) => {
+    setFormData((prev) => {
+      const updatedGroups = [...prev.groups];
+      const group = updatedGroups[groupIndex];
+      const existingDoses = group.noOfDoses ?? [];
+      const doses = existingDoses.length > 0 ? [...existingDoses] : [1];
+      doses.push(1);
+      updatedGroups[groupIndex] = { ...group, noOfDoses: doses };
+      return { ...prev, groups: updatedGroups };
+    });
+  };
+
+  const removeDoseInput = (groupIndex: number, doseIndex: number) => {
+    setFormData((prev) => {
+      const updatedGroups = [...prev.groups];
+      const group = updatedGroups[groupIndex];
+      const doses = [...(group.noOfDoses ?? [])];
+
+      if (doses.length <= 1) {
+        return prev;
+      }
+
+      doses.splice(doseIndex, 1);
+      updatedGroups[groupIndex] = { ...group, noOfDoses: doses };
+      return { ...prev, groups: updatedGroups };
+    });
+  };
+
+  const updateDoseValue = (
+    groupIndex: number,
+    doseIndex: number,
+    value: string
+  ) => {
+    const parsedValue = Number.parseInt(value, 10);
+
+    setFormData((prev) => {
+      const updatedGroups = [...prev.groups];
+      const group = updatedGroups[groupIndex];
+      const doses = [...(group.noOfDoses ?? [])];
+
+      while (doses.length <= doseIndex) {
+        doses.push(1);
+      }
+
+      doses[doseIndex] = Number.isNaN(parsedValue) ? 0 : parsedValue;
+      updatedGroups[groupIndex] = { ...group, noOfDoses: doses };
       return { ...prev, groups: updatedGroups };
     });
   };
@@ -357,6 +418,9 @@ export function useEfficacyFormState({
     handleSubmit,
     handleCancel,
     updateGroup,
+    addDoseInput,
+    removeDoseInput,
+    updateDoseValue,
     updateFormField,
     handleStrainChange,
     handleCellLineChange,

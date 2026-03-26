@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { doseFrequencyApi } from "@/api";
 import { queryClient } from "@/lib";
+import type { CreateDoseFrequencyPayload } from "@/types/doseFrequency";
 
 import { Button, Dialog, Input, Label } from "../atoms";
 
@@ -18,9 +19,14 @@ interface CreateFrequencyModalProps {
 const frequencySchema = z.object({
   frequencyName: z.string().trim().min(1, "Frequency name is required"),
   frequencyCode: z.string().trim().min(1, "Frequency code is required"),
+  noOfDays: z.coerce
+    .number({ message: "No. of days is required" })
+    .int("No. of days must be a whole number")
+    .min(1, "No. of days must be at least 1"),
 });
 
 type FrequencyFormData = z.infer<typeof frequencySchema>;
+type FrequencyFormInput = z.input<typeof frequencySchema>;
 
 export function CreateFrequencyModal({
   open,
@@ -28,7 +34,7 @@ export function CreateFrequencyModal({
   onSuccess,
 }: CreateFrequencyModalProps) {
   const { mutate, isPending } = useMutation({
-    mutationFn: (payload: { description: string; frequency_code: string }) =>
+    mutationFn: (payload: CreateDoseFrequencyPayload) =>
       doseFrequencyApi.createDoseFrequency(payload),
   });
 
@@ -37,11 +43,12 @@ export function CreateFrequencyModal({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<FrequencyFormData>({
+  } = useForm<FrequencyFormInput, unknown, FrequencyFormData>({
     resolver: zodResolver(frequencySchema),
     defaultValues: {
       frequencyName: "",
       frequencyCode: "",
+      noOfDays: 1,
     },
   });
 
@@ -50,6 +57,7 @@ export function CreateFrequencyModal({
       {
         description: data.frequencyName,
         frequency_code: data.frequencyCode,
+        no_of_days: data.noOfDays,
       },
       {
         onSuccess: (data) => {
@@ -114,6 +122,21 @@ export function CreateFrequencyModal({
             <p className="text-sm text-red-500">
               {errors.frequencyCode.message}
             </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="noOfDays">No. of Days</Label>
+          <Input
+            id="noOfDays"
+            type="number"
+            min={1}
+            placeholder="Enter number of days"
+            {...register("noOfDays")}
+            disabled={isPending}
+          />
+          {errors.noOfDays && (
+            <p className="text-sm text-red-500">{errors.noOfDays.message}</p>
           )}
         </div>
 

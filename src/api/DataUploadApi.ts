@@ -28,6 +28,7 @@ import type {
 } from "@/types/directBindingAssay";
 import type {
   CreateDoseFrequencyPayload,
+  CreateDoseFrequencyResponse,
   DoseFrequencyDropdownResponse,
 } from "@/types/doseFrequency";
 import type {
@@ -477,6 +478,9 @@ export const experimentApi = {
 
     if (filters?.project_id !== undefined && filters.project_id !== null) {
       params.append("project_id", filters.project_id.toString());
+    }
+    if (filters?.study_type_id !== undefined) {
+      params.append("study_type_id", filters.study_type_id.toString());
     }
     if (filters?.page !== undefined) {
       params.append("page", filters.page.toString());
@@ -1078,8 +1082,10 @@ export const doseFrequencyApi = {
         API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.DROPDOWN
       );
     },
-  createDoseFrequency: async (payload: CreateDoseFrequencyPayload) => {
-    return await apiClient.post<CreateDoseRangeFindingResponse>(
+  createDoseFrequency: async (
+    payload: CreateDoseFrequencyPayload
+  ): Promise<CreateDoseFrequencyResponse> => {
+    return await apiClient.post<CreateDoseFrequencyResponse>(
       API_CONFIG.ENDPOINTS.DOSE_FREQUENCIES.CREATE,
       payload
     );

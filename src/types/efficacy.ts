@@ -9,7 +9,7 @@ export type CreateEfficacyExperimentPayload = {
     dose_frequency_id: number | null;
     experiment_drug_id: number | null;
     market_dose_id: number | null;
-    no_of_doses: number | null;
+    no_of_dose_values: number[] | null;
     no_of_mice: number | null;
     radiation_dose_id: number | null;
     strain_id: number | null;

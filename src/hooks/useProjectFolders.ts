@@ -35,13 +35,26 @@ export function useProjectFoldersLogic() {
     null
   );
 
+  // Clear all search params on initial mount (page refresh/reload)
   useEffect(() => {
-    if (search.studyTypeId) {
+    navigate({
+      to: "/project-folders",
+      search: {
+        projectId: undefined,
+        experimentId: undefined,
+        studyTypeId: undefined,
+      },
+      replace: true,
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (search.experimentId && search.studyTypeId) {
       setView("study-sheets");
-    } else if (search.experimentId) {
-      setView("study-types");
-    } else if (search.projectId) {
+    } else if (search.studyTypeId) {
       setView("experiments");
+    } else if (search.projectId) {
+      setView("study-types");
     } else {
       setView("projects");
     }
@@ -66,8 +79,8 @@ export function useProjectFoldersLogic() {
       to: "/project-folders",
       search: {
         projectId: search.projectId,
+        studyTypeId: search.studyTypeId,
         experimentId: experiment.id,
-        studyTypeId: undefined,
       },
     });
   };
@@ -78,7 +91,7 @@ export function useProjectFoldersLogic() {
       to: "/project-folders",
       search: {
         projectId: search.projectId,
-        experimentId: search.experimentId,
+        experimentId: undefined,
         studyTypeId: studyType.id,
       },
     });
@@ -104,11 +117,10 @@ export function useProjectFoldersLogic() {
       search: {
         projectId: search.projectId,
         experimentId: undefined,
-        studyTypeId: undefined,
+        studyTypeId: search.studyTypeId,
       },
     });
     setSelectedExperiment(null);
-    setSelectedStudyType(null);
   };
 
   const goBackToStudyTypes = () => {
@@ -116,10 +128,11 @@ export function useProjectFoldersLogic() {
       to: "/project-folders",
       search: {
         projectId: search.projectId,
-        experimentId: search.experimentId,
+        experimentId: undefined,
         studyTypeId: undefined,
       },
     });
+    setSelectedExperiment(null);
     setSelectedStudyType(null);
   };
 

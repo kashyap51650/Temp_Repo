@@ -3,12 +3,14 @@ import type { ApiResponse } from "@/lib";
 export type CreateDoseFrequencyPayload = {
   frequency_code: string;
   description: string;
+  no_of_days: number;
 };
 
 export type CreateDoseFrequencyResponse = ApiResponse<{
   id: number;
   frequency_code: string;
   description: string;
+  no_of_days: number;
   creator: {
     id: number;
     first_name: string;

@@ -74,6 +74,7 @@ export type ExperimentsListResponse = ApiResponse<{
 // Filters for experiments API
 export interface ExperimentListFilters {
   project_id?: number | null;
+  study_type_id?: number;
   page?: number;
   size?: number;
   search?: string;

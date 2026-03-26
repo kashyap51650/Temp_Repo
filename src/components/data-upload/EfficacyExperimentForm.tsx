@@ -36,6 +36,9 @@ const EfficacyExperimentForm = ({
     handleSubmit,
     handleCancel,
     updateGroup,
+    addDoseInput,
+    removeDoseInput,
+    updateDoseValue,
     updateFormField,
     handleStrainChange,
     handleCellLineChange,
@@ -209,6 +212,9 @@ const EfficacyExperimentForm = ({
                     selectedStrains={selectedStrainsData}
                     selectedCellLines={selectedCellLinesData}
                     onUpdate={updateGroup}
+                    onAddDose={addDoseInput}
+                    onRemoveDose={removeDoseInput}
+                    onDoseChange={updateDoseValue}
                     onCreateFrequency={openFrequencyModal}
                     errors={errors.groups?.[index]}
                   />

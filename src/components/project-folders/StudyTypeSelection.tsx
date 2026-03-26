@@ -7,7 +7,7 @@ import { STUDY_TYPE_COLORS } from "@/lib/constants";
 
 interface StudyTypeSelectionProps {
   onSelect: (studyType: StudyType) => void;
-  specialization: string;
+  specialization?: string;
 }
 
 export const StudyTypeSelection: React.FC<StudyTypeSelectionProps> = ({
