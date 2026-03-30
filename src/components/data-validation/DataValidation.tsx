@@ -170,6 +170,18 @@ export default function DataValidation() {
       const isWeightSheetDoseRange =
         row.dataType.toLowerCase().includes("weight") &&
         row.studyType === STUDY_TYPE.DOSE_RANGE_FINDING;
+      const isEfficacyCalipering =
+        isCalliperingSheet && row.studyType === STUDY_TYPE.EFFICACY;
+
+      if (isEfficacyCalipering) {
+        navigate({
+          to: "/efficacy-randomization-result",
+          search: {
+            experiment_id: experimentData?.experiment.id,
+          },
+        });
+        return;
+      }
 
       let randomizationType: string = RANDOMIZATION_PREVIEW_TYPES.BODY_WEIGHT; // default fallback
       if (isCalliperingSheet) {

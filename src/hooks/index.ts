@@ -20,6 +20,7 @@ export * from "./useDataTypes";
 export * from "./useDebounce";
 export * from "./useDownloadSheet";
 export * from "./useEfficacyFormState";
+export * from "./useEfficacyGroupRandomization";
 export * from "./useExperimentData";
 export * from "./useExperimentDataById";
 export * from "./useExperimentDataModals";

@@ -230,6 +230,13 @@ export const API_CONFIG = {
       VIEW: (experimentId: number) =>
         `/api/${API_VERSION}/randomization/view/${experimentId}`,
     },
+    EFFICACY_RANDOMIZATION: {
+      GROUPS: `/api/${API_VERSION}/efficacy-randomization/groups`,
+      PREVIEW: `/api/${API_VERSION}/efficacy-randomization/preview`,
+      CONFIRM: `/api/${API_VERSION}/efficacy-randomization/confirm`,
+      STATUS: (experimentId: number) =>
+        `/api/${API_VERSION}/efficacy-randomization/status/${experimentId}`,
+    },
     MOUSE_GROUPS: {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
         `/api/${API_VERSION}/mouse-groups/experiment/${experimentId}/groups`,
