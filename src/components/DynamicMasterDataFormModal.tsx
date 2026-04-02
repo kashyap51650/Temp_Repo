@@ -1,21 +1,31 @@
 import type { ReactElement } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/atoms/Button/Button";
 import { Dialog } from "@/components/atoms/Dialog/Dialog";
 import { Input } from "@/components/atoms/Input/Input";
 import { Label } from "@/components/atoms/Label/Label";
+import { ProjectSelect } from "@/components/atoms/Selects";
 import { Textarea } from "@/components/atoms/Textarea/Textarea";
 import { CustomSelect } from "@/components/data-upload/CustomSelect";
 import { useExperimentData } from "@/hooks/useExperimentData";
 import type { MasterDataItem } from "@/hooks/useMasterData";
 import type { MasterDataSource } from "@/hooks/useMasterDataSources";
+import { useProjects } from "@/hooks/useProjects";
 import { formatFieldLabel } from "@/lib/utils";
+
+interface FormFieldConfig {
+  key: string;
+  label: string;
+  type: "text" | "number" | "textarea" | "select";
+  required: boolean;
+  placeholder: string;
+}
 
 interface DynamicMasterDataFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Record<string, any>) => Promise<void>;
+  onSave: (data: Record<string, unknown>) => Promise<void>;
   masterDataSource: MasterDataSource;
   initialData?: MasterDataItem | null;
   mode: "add" | "edit";
@@ -31,7 +41,7 @@ export function DynamicMasterDataFormModal({
   mode,
   sampleData = [],
 }: Readonly<DynamicMasterDataFormModalProps>): ReactElement {
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const DESCRIPTION_MAX_LENGTH = 500;
@@ -44,8 +54,18 @@ export function DynamicMasterDataFormModal({
   } = useExperimentData();
 
   const isCellLines = masterDataSource.slug === "cell-lines";
+  const isExperimentDrugs = masterDataSource.slug === "experiment-drugs";
+  const {
+    projects,
+    loading: projectsLoading,
+    error: projectsError,
+  } = useProjects({ enabled: isExperimentDrugs && isOpen });
 
-  const generateFormFields = () => {
+  const generateFormFields = (): FormFieldConfig[] => {
+    if (["cell-lines", "experiment-drugs"].includes(masterDataSource.slug)) {
+      return getDefaultFieldsForSlug(masterDataSource.slug);
+    }
+
     if (sampleData.length > 0 || initialData) {
       const sampleItem = initialData || sampleData[0] || {};
       const excludedKeys = new Set([
@@ -65,7 +85,7 @@ export function DynamicMasterDataFormModal({
         .map((key) => {
           const value = sampleItem[key];
 
-          let fieldType: "text" | "number" | "textarea" = "text";
+          let fieldType: FormFieldConfig["type"] = "text";
           if (typeof value === "number") {
             fieldType = "number";
           } else if (key.includes("description")) {
@@ -86,16 +106,7 @@ export function DynamicMasterDataFormModal({
   };
 
   const getDefaultFieldsForSlug = (slug: string) => {
-    const defaultConfigs: Record<
-      string,
-      Array<{
-        key: string;
-        label: string;
-        type: "text" | "number" | "textarea";
-        required: boolean;
-        placeholder: string;
-      }>
-    > = {
+    const defaultConfigs: Record<string, FormFieldConfig[]> = {
       isotopes: [
         {
           key: "isotope_name",
@@ -184,6 +195,13 @@ export function DynamicMasterDataFormModal({
         },
       ],
       "experiment-drugs": [
+        {
+          key: "project_id",
+          label: "Project",
+          type: "select",
+          required: true,
+          placeholder: "Select project",
+        },
         {
           key: "drug_name",
           label: "Drug Name",
@@ -319,7 +337,7 @@ export function DynamicMasterDataFormModal({
 
   const formFields = generateFormFields();
 
-  const buildEditableData = (): Record<string, string | number> => {
+  const buildEditableData = useCallback((): Record<string, string | number> => {
     const editableData: Record<string, string | number> = {};
 
     for (const field of formFields) {
@@ -331,19 +349,25 @@ export function DynamicMasterDataFormModal({
         continue;
       }
 
+      if (field.key === "project_id" && isExperimentDrugs) {
+        editableData[field.key] =
+          initialData?.project_id ?? initialData?.project?.id ?? "";
+        continue;
+      }
+
       editableData[field.key] = initialData?.[field.key] || "";
     }
 
     return editableData;
-  };
+  }, [formFields, initialData, isCellLines, isExperimentDrugs, mouseStrains]);
 
-  const buildEmptyData = (): Record<string, string> => {
+  const buildEmptyData = useCallback((): Record<string, string> => {
     const emptyData: Record<string, string> = {};
     for (const field of formFields) {
       emptyData[field.key] = "";
     }
     return emptyData;
-  };
+  }, [formFields]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -362,6 +386,7 @@ export function DynamicMasterDataFormModal({
     }
 
     setErrors({});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isOpen,
     mode,
@@ -450,6 +475,10 @@ export function DynamicMasterDataFormModal({
         delete processedData.mouse_strain;
       }
 
+      if (isExperimentDrugs && processedData.project_id) {
+        processedData.project_id = Number(processedData.project_id);
+      }
+
       await onSave(processedData);
       onClose();
     } catch {
@@ -490,6 +519,20 @@ export function DynamicMasterDataFormModal({
     />
   );
 
+  const renderProjectSelect = (field: (typeof formFields)[0]) => (
+    <ProjectSelect
+      projects={projects.map((project) => ({
+        id: String(project.id),
+        name: project.project_name,
+      }))}
+      placeholder={field.placeholder}
+      value={String(formData[field.key] ?? "")}
+      onValueChange={(value) => handleInputChange(field.key, value)}
+      disabled={projectsLoading}
+      className={errors[field.key] ? "w-full" : "w-full"}
+    />
+  );
+
   const renderInputField = (field: (typeof formFields)[0]) => (
     <Input
       id={field.key}
@@ -511,6 +554,10 @@ export function DynamicMasterDataFormModal({
 
     if (isCellLines && field.key === "mouse_strain") {
       return renderMouseStrainSelect(field);
+    }
+
+    if (isExperimentDrugs && field.key === "project_id") {
+      return renderProjectSelect(field);
     }
 
     return renderInputField(field);
@@ -545,6 +592,19 @@ export function DynamicMasterDataFormModal({
           <div key={field.key} className="space-y-2">
             <Label htmlFor={field.key}>{field.label}</Label>
             {renderFieldInput(field)}
+            {isExperimentDrugs &&
+              field.key === "project_id" &&
+              projectsLoading && (
+                <p className="text-sm text-muted-foreground">
+                  Loading projects...
+                </p>
+              )}
+            {isExperimentDrugs &&
+              field.key === "project_id" &&
+              projectsError &&
+              !projectsLoading && (
+                <p className="text-sm text-destructive">{projectsError}</p>
+              )}
             {errors[field.key] && (
               <p className="text-sm text-destructive">{errors[field.key]}</p>
             )}

@@ -50,6 +50,26 @@ export const createDynamicMasterDataColumns = (
     enableSorting: true,
     cell: ({ row }) => {
       const value = row.getValue(key);
+
+      // Experiment Drug API returns project as an object or null.
+      if (key === "project") {
+        const projectName =
+          value &&
+          typeof value === "object" &&
+          "project_name" in (value as object)
+            ? String((value as { project_name?: string }).project_name || "")
+            : "";
+
+        return (
+          <TruncateWithTooltip
+            className="capitalize block w-58"
+            tooltipContentClassName="max-w-xl"
+          >
+            {projectName || "-"}
+          </TruncateWithTooltip>
+        );
+      }
+
       const hasValue =
         value !== null &&
         value !== undefined &&
