@@ -57,6 +57,7 @@ export type UploadedDatasetRow = {
 // Data Validation Table Data
 export type ValidationRow = {
   id: string;
+  projectId: number;
   experimentName: string;
   dataType: string;
   studyType: string;
@@ -474,6 +475,7 @@ export interface BioDOrganAPIResponse {
       experiment_drug: {
         id: number;
         drug_name: string;
+        om_number: string;
       };
       mouse_count: number;
     }
@@ -592,7 +594,7 @@ export const generateBioDOrganData = (
 
   const drugNameData = createGroupedData((groupCode) => {
     const group = groups[groupCode];
-    return group ? group.experiment_drug.drug_name : "";
+    return group ? group.experiment_drug.om_number : "";
   });
 
   const fixedRows: BioDOrganRow[] = [
@@ -693,6 +695,7 @@ const sampleAPIData: BioDOrganAPIResponse = {
       experiment_drug: {
         id: 4,
         drug_name: "AGC-1",
+        om_number: "AGC-1-OM",
       },
       mouse_count: 5,
     },
@@ -709,6 +712,7 @@ const sampleAPIData: BioDOrganAPIResponse = {
       experiment_drug: {
         id: 4,
         drug_name: "AGC-1",
+        om_number: "AGC-1-OM",
       },
       mouse_count: 5,
     },
@@ -725,6 +729,7 @@ const sampleAPIData: BioDOrganAPIResponse = {
       experiment_drug: {
         id: 4,
         drug_name: "AGC-1",
+        om_number: "AGC-1-OM",
       },
       mouse_count: 5,
     },

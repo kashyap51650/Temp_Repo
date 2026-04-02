@@ -12,12 +12,14 @@ interface DrugTypeFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   multiple?: boolean;
+  projectId?: number;
 }
 
 export function DrugTypeField<T extends FieldValues>({
   control,
   name,
   multiple = false,
+  projectId,
 }: Readonly<DrugTypeFieldProps<T>>) {
   return (
     <FormField
@@ -30,18 +32,21 @@ export function DrugTypeField<T extends FieldValues>({
             control={control}
             name={name}
             mapConfig={{
-              labelKey: "drug_name" as const,
+              labelKey: "om_number" as const,
               valueKey: "id" as const,
             }}
             query={async () => {
               const response =
-                await experimentDrugApi.getExperimentDrugsDropdown();
+                await experimentDrugApi.getExperimentDrugsDropdown(projectId);
 
               return response?.data ?? [];
             }}
             searchable={false}
             multiple={multiple}
-            queryKey={["experiments-drugs-dropdown"]}
+            queryKey={[
+              "experiments-drugs-dropdown",
+              projectId?.toString() ?? "all",
+            ]}
             placeholder="Select drug types"
             valueAsNumber={true}
           />

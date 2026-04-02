@@ -23,6 +23,7 @@ interface BioDOrganTableProps {
   ) => void;
   onDrugChange?: (groupCode: string, drugId: string) => void;
   fixedTopRowsEditable?: boolean;
+  projectId?: number;
 }
 
 interface GroupCellProps {
@@ -31,7 +32,7 @@ interface GroupCellProps {
   groupInfo: { value: string; colspan: number };
   editable: boolean;
   fixedTopRowsEditable: boolean;
-  experimentDrugs: Array<{ id: number; drug_name: string }>;
+  experimentDrugs: Array<{ id: number; drug_name: string; om_number: string }>;
   onCellChange?: (
     rowId: string,
     mouseId: string,
@@ -57,7 +58,7 @@ function GroupCell({
     const drugValue = String(
       experimentDrugs.find(
         (val) =>
-          val.drug_name === groupInfo.value ||
+          val.om_number === groupInfo.value ||
           val.id.toString() === groupInfo.value
       )?.id || ""
     );
@@ -129,12 +130,13 @@ export function BioDOrganTable({
   onCellChange,
   onDrugChange,
   fixedTopRowsEditable = false,
+  projectId,
 }: Readonly<BioDOrganTableProps>) {
   const { mouse, rows } = data;
   const fixedRows = rows.slice(0, 4);
   const dataRows = rows.slice(4);
 
-  const { experimentDrugs } = useExperimentsDrugsDropdown();
+  const { experimentDrugs } = useExperimentsDrugsDropdown(projectId);
 
   return (
     <div className="w-full overflow-x-auto">

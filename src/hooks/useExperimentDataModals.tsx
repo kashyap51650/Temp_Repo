@@ -56,9 +56,14 @@ const ElisaDataViewModal = lazy(
 
 interface ExperimentDataItem {
   id: string | number;
+  projectId?: number;
   experimentName?: string;
   status?: string;
   dataType?: string;
+  project?: {
+    id: number;
+    project_name: string;
+  };
   experiment?: {
     id: number;
     experiment_name: string;
@@ -292,6 +297,9 @@ export function useExperimentDataModals(
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
               hideActions={hideActions}
+              projectId={
+                selectedExperiment.project?.id ?? selectedExperiment.projectId
+              }
             />
           </Suspense>
         )}

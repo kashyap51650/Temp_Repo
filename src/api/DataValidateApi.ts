@@ -94,7 +94,9 @@ export const experimentDataApi = {
 };
 
 export const experimentDrugApi = {
-  getExperimentDrugsDropdown: async (): Promise<{
+  getExperimentDrugsDropdown: async (
+    projectId?: number
+  ): Promise<{
     success: boolean;
     message: string;
     data: Array<{
@@ -103,7 +105,9 @@ export const experimentDrugApi = {
       om_number: string;
     }>;
   }> => {
-    return apiClient.get(API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN);
+    return apiClient.get(
+      API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN(projectId)
+    );
   },
 };
 

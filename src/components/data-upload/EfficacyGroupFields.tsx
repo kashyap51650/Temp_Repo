@@ -13,6 +13,7 @@ interface EfficacyGroupFieldsProps {
   group: EfficacyGroup;
   index: number;
   groupType: "buffer" | "market" | "normal";
+  projectId?: number;
   strainName?: string;
   selectedStrains?: MouseStrain[];
   selectedCellLines?: CellLine[];
@@ -41,6 +42,7 @@ export function EfficacyGroupFields({
   group,
   index,
   groupType,
+  projectId,
   strainName,
   selectedStrains = [],
   selectedCellLines = [],
@@ -147,14 +149,17 @@ export function EfficacyGroupFields({
           <AsyncSelect
             query={async () => {
               const response =
-                await experimentDrugApi.getExperimentDrugsDropdown();
+                await experimentDrugApi.getExperimentDrugsDropdown(projectId);
               return response.data || [];
             }}
             mapConfig={{
-              labelKey: "drug_name" as const,
+              labelKey: "om_number" as const,
               valueKey: "id" as const,
             }}
-            queryKey={["experiment-drugs-dropdown"]}
+            queryKey={[
+              "experiment-drugs-dropdown",
+              projectId?.toString() ?? "all",
+            ]}
             value={group.experimentDrugId?.toString() || ""}
             onChange={(value) => {
               onUpdate(

@@ -8,6 +8,7 @@ interface ExperimentDrugSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  projectId?: number;
 }
 
 /**
@@ -30,13 +31,14 @@ export function ExperimentDrugSelect({
   placeholder = "Select Drug",
   className,
   disabled = false,
+  projectId,
 }: Readonly<ExperimentDrugSelectProps>) {
-  const { experimentDrugs, loading } = useExperimentsDrugsDropdown();
+  const { experimentDrugs, loading } = useExperimentsDrugsDropdown(projectId);
 
   // Transform experiment drugs to SearchableSelect option format
   const drugOptions = experimentDrugs.map(
-    (drug: { id: number; drug_name: string }) => ({
-      label: drug.drug_name,
+    (drug: { id: number; drug_name: string; om_number: string }) => ({
+      label: drug.om_number,
       value: drug.id.toString(),
     })
   );

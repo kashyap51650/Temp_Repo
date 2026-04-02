@@ -216,7 +216,10 @@ export const API_CONFIG = {
       IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/receptor-quantification/import-receptor-quantification-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
-      DROPDOWN: `/api/${API_VERSION}/experiment-drugs/dropdown`,
+      DROPDOWN: (projectId?: number) =>
+        `/api/${API_VERSION}/experiment-drugs/dropdown${
+          projectId ? `?project_id=${projectId}` : ""
+        }`,
     },
     DOSES: {
       DROPDOWN: `/api/${API_VERSION}/doses/dropdown`,

@@ -22,6 +22,7 @@ interface BioDOrganViewModalProps {
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
+  projectId?: number;
 }
 
 export function BioDOrganViewModal({
@@ -31,6 +32,7 @@ export function BioDOrganViewModal({
   experimentDataId,
   experimentStatus,
   hideActions = false,
+  projectId,
 }: Readonly<BioDOrganViewModalProps>) {
   const editModal = useModal();
   const rejectModal = useModal();
@@ -130,7 +132,7 @@ export function BioDOrganViewModal({
             </div>
           )}
           {!isLoading && !isFetching && bioDOrganData && (
-            <BioDOrganTable data={bioDOrganData} />
+            <BioDOrganTable data={bioDOrganData} projectId={projectId} />
           )}
 
           {!isLoading && !isFetching && !bioDOrganData && (
@@ -151,6 +153,7 @@ export function BioDOrganViewModal({
           experimentData={bioDOrganData}
           rawUploadedData={data?.data?.uploaded_data}
           experimentId={Number(experimentDataId)}
+          projectId={projectId}
         />
       )}
 

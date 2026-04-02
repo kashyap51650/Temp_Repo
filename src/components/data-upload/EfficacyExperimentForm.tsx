@@ -203,6 +203,7 @@ const EfficacyExperimentForm = ({
                     group={group}
                     index={index}
                     groupType={group.groupType}
+                    projectId={projectId}
                     strainName={
                       group.strainId
                         ? allStrains.find((s) => s.id === group.strainId)
