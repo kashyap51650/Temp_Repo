@@ -1,3 +1,5 @@
+import { formatDateTime } from "@/lib/date-utils";
+
 // Authentication Types
 export interface LoginCredentials {
   email: string;
@@ -173,9 +175,7 @@ export const transformUserToRow = (
   name: user.full_name,
   email: user.email,
   role: user.roles?.[0]?.role_name || "No Role",
-  lastLogin: user.last_login_at
-    ? new Date(user.last_login_at).toLocaleDateString()
-    : "Never",
+  lastLogin: user.last_login_at ? formatDateTime(user.last_login_at) : "Never",
   status: user.status === "active" ? "Active" : "Inactive",
 });
 
