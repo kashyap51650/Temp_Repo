@@ -422,6 +422,21 @@ export const API_CONFIG = {
     SPECIALIZATION: {
       DROPDOWN: `/api/${API_VERSION}/specializations/dropdown`,
     },
+    BIODISTRIBUTION: {
+      SUMMARY: `/api/${API_VERSION}/biodistribution/summary`,
+      SUMMARY_BY_EXPERIMENT: (experimentId: number) =>
+        `/api/${API_VERSION}/biodistribution/experiment/${experimentId}/summary`,
+      UPTAKE_SUMMARY: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/dataset`,
+      UPTAKE_BY_GROUP_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-group`,
+      UPTAKE_BY_GROUP_MICE_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-group-mice`,
+      UPTAKE_BY_MICE_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-mice`,
+      UPTAKE_FILTERS: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/filters`,
+    },
   },
 } as const;
 

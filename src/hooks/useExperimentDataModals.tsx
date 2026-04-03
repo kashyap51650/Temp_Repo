@@ -334,6 +334,9 @@ export function useExperimentDataModals(
             <AGCSheetViewModal
               isOpen={agcViewModal.isOpen}
               onClose={agcViewModal.closeModal}
+              experimentId={experimentId}
+              experimentName={experimentName}
+              experimentDataId={experimentDataId}
             />
           </Suspense>
         )}

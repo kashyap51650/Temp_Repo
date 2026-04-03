@@ -2,6 +2,8 @@ export { default as useApproveExperimentData } from "./useApproveExperimentData"
 export * from "./useAssignUserRole";
 export * from "./useAuthState";
 export * from "./useBiodExperimentForm";
+export * from "./useBiodistributionCsvExport";
+export { useBiodistributionGraph } from "./useBiodistributionSummary";
 export * from "./useBioDOrganEditModal";
 export * from "./useBioDWeightSheetData";
 export * from "./useBioDWeightSheetEdit";
@@ -27,6 +29,7 @@ export * from "./useExperimentDataModals";
 export * from "./useExperimentDrugsDropdown";
 export * from "./useExperimentMouseGroups";
 export * from "./useExperimentsDropdown";
+export * from "./useExportChartAsImage";
 export * from "./useFetch";
 export * from "./useHematologyDataEdit";
 export * from "./useLinkExperimentModal";

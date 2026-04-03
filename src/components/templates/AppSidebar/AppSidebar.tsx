@@ -2,6 +2,7 @@
 
 import {
   IconChartBar,
+  IconChartLine,
   IconDashboard,
   IconDatabase,
   IconFolder,
@@ -30,6 +31,7 @@ const iconMap = {
   IconDashboard,
   IconListDetails,
   IconChartBar,
+  IconChartLine,
   IconFolder,
   IconHelp,
   IconReport,
