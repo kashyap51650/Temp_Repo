@@ -194,6 +194,7 @@ export default function DataValidation() {
         to: "/randomization-results",
         search: {
           experiment_id: experimentData?.experiment.id,
+          project_id: experimentData?.project.id,
           mice_per_group: 5,
           randomization_type: randomizationType,
         },

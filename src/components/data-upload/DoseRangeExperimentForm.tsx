@@ -10,7 +10,7 @@ import {
 } from "./FormFields";
 
 interface DoseRangeExperimentFormProps {
-  projectId?: number;
+  projectId: number;
   studyTypeId?: number;
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;
@@ -41,7 +41,12 @@ const DoseRangeExperimentForm = ({
       <form className="space-y-4" onSubmit={handleSubmit}>
         <ExperimentNameField control={form.control} name="experimentName" />
         <DoseTypeField control={form.control} name="doses" multiple={true} />
-        <DrugTypeField control={form.control} name="drugs" multiple={true} />
+        <DrugTypeField
+          control={form.control}
+          name="drugs"
+          multiple={true}
+          projectId={projectId}
+        />
         <div className="flex justify-end gap-3 pt-4">
           <Button
             variant="outline"

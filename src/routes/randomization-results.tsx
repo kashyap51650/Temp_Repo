@@ -13,6 +13,7 @@ export const Route = createFileRoute("/randomization-results")({
   validateSearch: (search) => {
     return {
       experiment_id: Number(search.experiment_id),
+      project_id: Number(search.project_id),
       mice_per_group: Number(search.mice_per_group),
       randomization_type: String(search.randomization_type),
     };

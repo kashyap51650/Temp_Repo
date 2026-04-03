@@ -24,6 +24,7 @@ export function transformExperimentDataToValidationRows(
   return items.map((item) => ({
     id: item.id.toString(),
     experimentName: item.experiment.experiment_name,
+    projectId: item.project.id,
     dataType: item.data_type.data_type_name,
     studyType: item.study_type.study_type_name,
     uploadedDate: new Date(item.created_at).toLocaleDateString(),

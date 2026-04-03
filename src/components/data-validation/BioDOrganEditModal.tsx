@@ -14,6 +14,7 @@ interface BioDOrganEditModalProps {
   experimentData: BioDOrganData;
   rawUploadedData: ExperimentDataForBioDOrganSheetUploadData;
   experimentId: number;
+  projectId: number;
   onSaveSuccess?: () => void;
 }
 
@@ -24,6 +25,7 @@ export function BioDOrganEditModal({
   experimentData,
   rawUploadedData,
   experimentId,
+  projectId,
   onSaveSuccess,
 }: Readonly<BioDOrganEditModalProps>) {
   const {
@@ -67,6 +69,7 @@ export function BioDOrganEditModal({
           }
           onDrugChange={handleDrugChange}
           fixedTopRowsEditable={true}
+          projectId={projectId}
         />
       </div>
       <div className="flex justify-end gap-3 border-t pt-4">
