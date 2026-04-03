@@ -12,7 +12,7 @@ interface DrugTypeFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   multiple?: boolean;
-  projectId?: number;
+  projectId: number;
 }
 
 export function DrugTypeField<T extends FieldValues>({
@@ -43,10 +43,7 @@ export function DrugTypeField<T extends FieldValues>({
             }}
             searchable={false}
             multiple={multiple}
-            queryKey={[
-              "experiments-drugs-dropdown",
-              projectId?.toString() ?? "all",
-            ]}
+            queryKey={["experiments-drugs-dropdown", projectId.toString()]}
             placeholder="Select drug types"
             valueAsNumber={true}
           />

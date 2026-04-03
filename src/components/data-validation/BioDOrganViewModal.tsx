@@ -22,7 +22,7 @@ interface BioDOrganViewModalProps {
   experimentDataId?: string;
   experimentStatus?: string;
   hideActions?: boolean;
-  projectId?: number;
+  projectId: number;
 }
 
 export function BioDOrganViewModal({

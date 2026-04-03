@@ -95,16 +95,12 @@ export const experimentDataApi = {
 };
 
 export const experimentDrugApi = {
-  getExperimentDrugsDropdown: async (
-    projectId?: number
-  ): Promise<{
-    success: boolean;
-    message: string;
-    data: Array<DrugDropdownOption>;
-  }> => {
-    return apiClient.get(
-      API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN(projectId)
-    );
+  getExperimentDrugsDropdown: async (projectId: number) => {
+    return apiClient.get<{
+      success: boolean;
+      message: string;
+      data: Array<DrugDropdownOption>;
+    }>(API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN(projectId));
   },
 };
 

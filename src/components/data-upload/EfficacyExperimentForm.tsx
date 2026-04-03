@@ -15,7 +15,7 @@ import { CreateFrequencyModal } from "./CreateFrequencyModal";
 import { EfficacyGroupFields } from "./EfficacyGroupFields";
 
 interface EfficacyExperimentFormProps {
-  projectId?: number;
+  projectId: number;
   studyTypeId?: number;
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;

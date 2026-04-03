@@ -11,7 +11,7 @@ export const RandomizationView = ({
   projectId,
 }: {
   experimentId: number;
-  projectId?: number;
+  projectId: number;
 }) => {
   const { data, error, isLoading } = useViewRandomization(experimentId);
 

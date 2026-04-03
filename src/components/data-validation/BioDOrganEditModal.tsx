@@ -14,7 +14,7 @@ interface BioDOrganEditModalProps {
   experimentData: BioDOrganData;
   rawUploadedData: ExperimentDataForBioDOrganSheetUploadData;
   experimentId: number;
-  projectId?: number;
+  projectId: number;
   onSaveSuccess?: () => void;
 }
 

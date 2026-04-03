@@ -13,7 +13,7 @@ interface EfficacyGroupFieldsProps {
   group: EfficacyGroup;
   index: number;
   groupType: "buffer" | "market" | "normal";
-  projectId?: number;
+  projectId: number;
   strainName?: string;
   selectedStrains?: MouseStrain[];
   selectedCellLines?: CellLine[];
@@ -156,10 +156,7 @@ export function EfficacyGroupFields({
               labelKey: "drug_display_name" as const,
               valueKey: "id" as const,
             }}
-            queryKey={[
-              "experiment-drugs-dropdown",
-              projectId?.toString() ?? "all",
-            ]}
+            queryKey={["experiments-drugs-dropdown", projectId.toString()]}
             value={group.experimentDrugId?.toString() || ""}
             onChange={(value) => {
               onUpdate(

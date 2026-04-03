@@ -529,7 +529,7 @@ export function DynamicMasterDataFormModal({
       value={String(formData[field.key] ?? "")}
       onValueChange={(value) => handleInputChange(field.key, value)}
       disabled={projectsLoading}
-      className={errors[field.key] ? "w-full" : "w-full"}
+      className="w-full"
     />
   );
 

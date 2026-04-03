@@ -23,7 +23,7 @@ interface BioDOrganTableProps {
   ) => void;
   onDrugChange?: (groupCode: string, drugId: string) => void;
   fixedTopRowsEditable?: boolean;
-  projectId?: number;
+  projectId: number;
 }
 
 interface GroupCellProps {
@@ -40,6 +40,7 @@ interface GroupCellProps {
     groupCode?: string
   ) => void;
   onDrugChange?: (groupCode: string, drugId: string) => void;
+  projectId: number;
 }
 
 function GroupCell({
@@ -51,6 +52,7 @@ function GroupCell({
   experimentDrugs,
   onCellChange,
   onDrugChange,
+  projectId,
 }: Readonly<GroupCellProps>) {
   const isEditable = editable || fixedTopRowsEditable;
 
@@ -69,6 +71,7 @@ function GroupCell({
         onValueChange={(drugId) => onDrugChange(group, drugId)}
         placeholder="Select Drug"
         className="w-full"
+        projectId={projectId}
       />
     );
   }
@@ -178,6 +181,7 @@ export function BioDOrganTable({
                         experimentDrugs={experimentDrugs}
                         onCellChange={onCellChange}
                         onDrugChange={onDrugChange}
+                        projectId={projectId}
                       />
                     </TableCell>
                   ))

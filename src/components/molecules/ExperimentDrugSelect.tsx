@@ -9,7 +9,7 @@ interface ExperimentDrugSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  projectId?: number;
+  projectId: number;
 }
 
 /**
@@ -25,6 +25,7 @@ interface ExperimentDrugSelectProps {
  * @param placeholder - Placeholder text for the select
  * @param className - Additional CSS classes
  * @param disabled - Whether the select is disabled
+ * @param projectId - ID of the project to fetch drugs for
  */
 export function ExperimentDrugSelect({
   value,

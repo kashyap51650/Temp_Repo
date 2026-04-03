@@ -10,7 +10,7 @@ import {
 } from "./FormFields";
 
 interface DoseRangeExperimentFormProps {
-  projectId?: number;
+  projectId: number;
   studyTypeId?: number;
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;

@@ -566,14 +566,15 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
           />
         )}
 
-        {formData.experiment?.randomization_status === "completed" && (
-          <div className="md:mt-6">
-            <ViewRandomizationButton
-              experimentId={formData.experiment?.id}
-              projectId={formData.project?.id}
-            />
-          </div>
-        )}
+        {formData.experiment?.randomization_status === "completed" &&
+          formData.project?.id && (
+            <div className="md:mt-6">
+              <ViewRandomizationButton
+                experimentId={formData.experiment?.id}
+                projectId={formData.project?.id}
+              />
+            </div>
+          )}
       </div>
 
       {/* This section is for upload excel sheets for data types */}

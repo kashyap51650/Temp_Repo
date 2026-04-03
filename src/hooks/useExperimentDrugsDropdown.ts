@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { experimentDrugApi } from "@/api";
 
-export const useExperimentsDrugsDropdown = (projectId?: number) => {
+export const useExperimentsDrugsDropdown = (projectId: number) => {
   const { data, isLoading } = useQuery({
     queryKey: ["experiments-drugs-dropdown", projectId],
     queryFn: async () => {
@@ -10,7 +10,6 @@ export const useExperimentsDrugsDropdown = (projectId?: number) => {
         await experimentDrugApi.getExperimentDrugsDropdown(projectId);
       return response.data;
     },
-    enabled: !!projectId,
   });
 
   return {

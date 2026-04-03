@@ -257,6 +257,8 @@ export function useExperimentDataModals(
       selectedExperiment.studyType ||
       selectedExperiment.study_type?.study_type_name ||
       "";
+    const selectedProjectId =
+      selectedExperiment.project?.id ?? selectedExperiment.projectId;
 
     return (
       <>
@@ -288,7 +290,7 @@ export function useExperimentDataModals(
             />
           </Suspense>
         )}
-        {organViewModal.isOpen && (
+        {organViewModal.isOpen && selectedProjectId && (
           <Suspense fallback={<ModalSkeleton />}>
             <BioDOrganViewModal
               isOpen={organViewModal.isOpen}
@@ -297,9 +299,7 @@ export function useExperimentDataModals(
               experimentDataId={experimentDataId}
               experimentStatus={experimentStatus}
               hideActions={hideActions}
-              projectId={
-                selectedExperiment.project?.id ?? selectedExperiment.projectId
-              }
+              projectId={selectedProjectId}
             />
           </Suspense>
         )}

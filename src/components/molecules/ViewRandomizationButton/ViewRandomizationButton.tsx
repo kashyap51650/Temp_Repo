@@ -6,7 +6,7 @@ import { useModal } from "@/hooks";
 
 interface ViewRandomizationButtonProps {
   experimentId: number;
-  projectId?: number;
+  projectId: number;
 }
 
 export const ViewRandomizationButton: FC<ViewRandomizationButtonProps> = ({
