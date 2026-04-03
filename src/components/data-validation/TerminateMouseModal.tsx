@@ -1,5 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 
 import { Button, Label, Textarea } from "@/components/atoms";
 import {
@@ -9,6 +11,10 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/molecules/Dialog/Dialog";
+import {
+  type TerminateMouseFormData,
+  terminateMouseSchema,
+} from "@/schemas/terminateMouseSchema";
 
 interface TerminateMouseModalProps {
   open: boolean;
@@ -23,7 +29,6 @@ interface TerminateMouseModalProps {
  * TerminateMouseModal Component
  *
  * Confirmation modal for terminating mice with optional reason input.
- * Uses simple useState for state management.
  *
  * @param open - Controls modal visibility
  * @param onOpenChange - Callback when modal visibility changes
@@ -40,22 +45,26 @@ export function TerminateMouseModal({
   onConfirm,
   isLoading = false,
 }: Readonly<TerminateMouseModalProps>) {
-  const [reason, setReason] = useState("");
+  const form = useForm<TerminateMouseFormData>({
+    resolver: zodResolver(terminateMouseSchema),
+    defaultValues: {
+      reason: "",
+    },
+  });
 
   // Reset reason when modal closes
   useEffect(() => {
     if (!open) {
-      setReason("");
+      form.reset();
     }
-  }, [open]);
+  }, [open, form]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onConfirm(reason);
+  const handleFormSubmit = (data: TerminateMouseFormData) => {
+    onConfirm(data.reason ?? "");
   };
 
   const handleCancel = () => {
-    setReason("");
+    form.reset();
     onOpenChange(false);
   };
 
@@ -79,7 +88,10 @@ export function TerminateMouseModal({
               undone. You may optionally provide a reason for termination.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={form.handleSubmit(handleFormSubmit)}
+              className="space-y-4"
+            >
               {/* Selected Mice Display */}
               <div className="bg-muted rounded-md p-3 max-h-32 overflow-y-auto">
                 <p className="text-sm font-medium mb-2">Selected Mice:</p>
@@ -105,10 +117,14 @@ export function TerminateMouseModal({
                   placeholder="Enter reason for termination (optional)"
                   className="resize-none"
                   rows={4}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
+                  {...form.register("reason")}
                   disabled={isLoading}
                 />
+                {form.formState.errors.reason && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.reason.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end gap-2">

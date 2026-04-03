@@ -84,36 +84,19 @@ export function useEfficacyFormState({
       const newGroups: EfficacyGroup[] = [];
       let groupCounter = 1;
 
-      // Step 1: Add buffer groups for each strain
-      formData.selectedStrains.forEach((strainId) => {
+      // Step 1: Add main (normal) groups from numberOfGroups
+      for (let i = 0; i < formData.numberOfGroups; i++) {
+        const strainId =
+          formData.selectedStrains[i % formData.selectedStrains.length];
         newGroups.push({
           groupNumber: groupCounter++,
-          groupType: "buffer",
-          strainId: strainId,
+          groupType: "normal",
+          strainId,
           noOfDoses: [0],
         });
-      });
-
-      // Step 2: Add normal groups only if numberOfGroups > number of strains
-      // Formula: normalGroupCount = numberOfGroups - numberOfStrains
-      const normalGroupCount =
-        formData.numberOfGroups - formData.selectedStrains.length;
-
-      if (normalGroupCount > 0) {
-        for (let i = 0; i < normalGroupCount; i++) {
-          // Cycle through strains for each normal group
-          const strainId =
-            formData.selectedStrains[i % formData.selectedStrains.length];
-          newGroups.push({
-            groupNumber: groupCounter++,
-            groupType: "normal",
-            strainId: strainId,
-            noOfDoses: [0],
-          });
-        }
       }
 
-      // Step 3: Add ONE separate market dose group (if enabled)
+      // Step 2: Add ONE separate market dose group (if enabled)
       if (formData.includeMarketDose) {
         newGroups.push({
           groupNumber: groupCounter++,
@@ -122,6 +105,16 @@ export function useEfficacyFormState({
           noOfDoses: [0],
         });
       }
+
+      // Step 3: Add buffer groups at the end (1 per selected strain)
+      formData.selectedStrains.forEach((strainId) => {
+        newGroups.push({
+          groupNumber: groupCounter++,
+          groupType: "buffer",
+          strainId,
+          noOfDoses: [0],
+        });
+      });
 
       setFormData((prev) => ({ ...prev, groups: newGroups }));
     }
