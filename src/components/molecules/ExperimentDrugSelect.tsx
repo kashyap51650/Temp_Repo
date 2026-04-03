@@ -1,4 +1,5 @@
 import { useExperimentsDrugsDropdown } from "@/hooks/useExperimentDrugsDropdown";
+import type { DrugDropdownOption } from "@/types/common";
 
 import { SearchableSelect } from "../atoms/SearchableSelect/SearchableSelect";
 
@@ -36,12 +37,10 @@ export function ExperimentDrugSelect({
   const { experimentDrugs, loading } = useExperimentsDrugsDropdown(projectId);
 
   // Transform experiment drugs to SearchableSelect option format
-  const drugOptions = experimentDrugs.map(
-    (drug: { id: number; drug_name: string; om_number: string }) => ({
-      label: drug.om_number,
-      value: drug.id.toString(),
-    })
-  );
+  const drugOptions = experimentDrugs.map((drug: DrugDropdownOption) => ({
+    label: drug.drug_display_name,
+    value: drug.id.toString(),
+  }));
 
   return (
     <SearchableSelect

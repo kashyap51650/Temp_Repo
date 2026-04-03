@@ -8,8 +8,10 @@ import { transformApiGroupsForUI } from "@/lib/randomization-utils";
 
 export const RandomizationView = ({
   experimentId,
+  projectId,
 }: {
   experimentId: number;
+  projectId?: number;
 }) => {
   const { data, error, isLoading } = useViewRandomization(experimentId);
 
@@ -52,6 +54,7 @@ export const RandomizationView = ({
                   placeholder="Select Drug"
                   className="w-44 bg-white text-xs"
                   disabled
+                  projectId={projectId}
                 />
               ) : (
                 <div className="text-sm">No Drugs Available</div>

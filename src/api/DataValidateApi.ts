@@ -1,6 +1,7 @@
 import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import type { PermissionModuleType } from "@/types/auth";
+import type { DrugDropdownOption } from "@/types/common";
 import type { PaginationData } from "@/types/pagination";
 
 export interface ExperimentDataFilters {
@@ -99,11 +100,7 @@ export const experimentDrugApi = {
   ): Promise<{
     success: boolean;
     message: string;
-    data: Array<{
-      id: number;
-      drug_name: string;
-      om_number: string;
-    }>;
+    data: Array<DrugDropdownOption>;
   }> => {
     return apiClient.get(
       API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN(projectId)

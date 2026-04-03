@@ -568,7 +568,10 @@ export default function UploadPanel(props: Readonly<UploadPanelProps>) {
 
         {formData.experiment?.randomization_status === "completed" && (
           <div className="md:mt-6">
-            <ViewRandomizationButton experimentId={formData.experiment?.id} />
+            <ViewRandomizationButton
+              experimentId={formData.experiment?.id}
+              projectId={formData.project?.id}
+            />
           </div>
         )}
       </div>

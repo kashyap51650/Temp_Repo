@@ -32,7 +32,7 @@ export function DrugTypeField<T extends FieldValues>({
             control={control}
             name={name}
             mapConfig={{
-              labelKey: "om_number" as const,
+              labelKey: "drug_display_name" as const,
               valueKey: "id" as const,
             }}
             query={async () => {

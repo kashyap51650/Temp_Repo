@@ -294,7 +294,10 @@ export function ExperimentSection({
       <div className="md:mt-6">
         {formData.experiment?.randomization_status === "completed" &&
           formData.dataType === DATA_TYPE.ORGAN_WEIGHT_SHEET && (
-            <ViewRandomizationButton experimentId={formData.experiment?.id} />
+            <ViewRandomizationButton
+              experimentId={formData.experiment?.id}
+              projectId={projectId}
+            />
           )}
       </div>
     </div>

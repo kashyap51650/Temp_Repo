@@ -153,7 +153,7 @@ export function EfficacyGroupFields({
               return response.data || [];
             }}
             mapConfig={{
-              labelKey: "om_number" as const,
+              labelKey: "drug_display_name" as const,
               valueKey: "id" as const,
             }}
             queryKey={[
