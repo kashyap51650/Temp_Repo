@@ -15,7 +15,7 @@ import { CreateFrequencyModal } from "./CreateFrequencyModal";
 import { EfficacyGroupFields } from "./EfficacyGroupFields";
 
 interface EfficacyExperimentFormProps {
-  projectId?: number;
+  projectId: number;
   studyTypeId?: number;
   specialization?: string;
   onSuccess?: (data: ExperimentDropdownItem) => void;
@@ -203,6 +203,7 @@ const EfficacyExperimentForm = ({
                     group={group}
                     index={index}
                     groupType={group.groupType}
+                    projectId={projectId}
                     strainName={
                       group.strainId
                         ? allStrains.find((s) => s.id === group.strainId)

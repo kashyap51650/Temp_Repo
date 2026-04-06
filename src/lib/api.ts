@@ -216,7 +216,8 @@ export const API_CONFIG = {
       IMPORT_RECEPTOR_QUANTIFICATION_EXPERIMENT_DATA: `/api/${API_VERSION}/experiment-data/cmc/receptor-quantification/import-receptor-quantification-experiment-data`,
     },
     EXPERIMENT_DRUGS: {
-      DROPDOWN: `/api/${API_VERSION}/experiment-drugs/dropdown`,
+      DROPDOWN: (projectId: number) =>
+        `/api/${API_VERSION}/experiment-drugs/dropdown?project_id=${projectId}`,
     },
     DOSES: {
       DROPDOWN: `/api/${API_VERSION}/doses/dropdown`,
@@ -229,6 +230,13 @@ export const API_CONFIG = {
       CONFIRM: `/api/${API_VERSION}/randomization/confirm`,
       VIEW: (experimentId: number) =>
         `/api/${API_VERSION}/randomization/view/${experimentId}`,
+    },
+    EFFICACY_RANDOMIZATION: {
+      GROUPS: `/api/${API_VERSION}/efficacy-randomization/groups`,
+      PREVIEW: `/api/${API_VERSION}/efficacy-randomization/preview`,
+      CONFIRM: `/api/${API_VERSION}/efficacy-randomization/confirm`,
+      STATUS: (experimentId: number) =>
+        `/api/${API_VERSION}/efficacy-randomization/status/${experimentId}`,
     },
     MOUSE_GROUPS: {
       MOUSE_GROUPS_BY_EXPERIMENT: (experimentId: number) =>
@@ -413,6 +421,21 @@ export const API_CONFIG = {
     },
     SPECIALIZATION: {
       DROPDOWN: `/api/${API_VERSION}/specializations/dropdown`,
+    },
+    BIODISTRIBUTION: {
+      SUMMARY: `/api/${API_VERSION}/biodistribution/summary`,
+      SUMMARY_BY_EXPERIMENT: (experimentId: number) =>
+        `/api/${API_VERSION}/biodistribution/experiment/${experimentId}/summary`,
+      UPTAKE_SUMMARY: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/dataset`,
+      UPTAKE_BY_GROUP_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-group`,
+      UPTAKE_BY_GROUP_MICE_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-group-mice`,
+      UPTAKE_BY_MICE_EXPORT_CSV: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/export-csv/uptake-by-mice`,
+      UPTAKE_FILTERS: (experimentId: number) =>
+        `/api/${API_VERSION}/graphs/biod/uptake-summary/${experimentId}/filters`,
     },
   },
 } as const;

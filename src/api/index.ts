@@ -1,4 +1,5 @@
 export * from "./AuthApi";
+export * from "./BiodistributionApi";
 export * from "./DataUploadApi";
 export * from "./DataValidateApi";
 export * from "./MasterDataApi";

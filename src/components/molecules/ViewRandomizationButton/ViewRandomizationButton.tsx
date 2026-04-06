@@ -6,10 +6,12 @@ import { useModal } from "@/hooks";
 
 interface ViewRandomizationButtonProps {
   experimentId: number;
+  projectId: number;
 }
 
 export const ViewRandomizationButton: FC<ViewRandomizationButtonProps> = ({
   experimentId,
+  projectId,
 }) => {
   const viewRandomizationModal = useModal();
   return (
@@ -26,7 +28,7 @@ export const ViewRandomizationButton: FC<ViewRandomizationButtonProps> = ({
         className="max-w-7xl min-h-[40vh]"
         trigger={null}
       >
-        <RandomizationView experimentId={experimentId} />
+        <RandomizationView experimentId={experimentId} projectId={projectId} />
       </Dialog>
     </>
   );

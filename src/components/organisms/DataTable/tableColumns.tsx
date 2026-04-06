@@ -984,6 +984,7 @@ export function getValidationColumns(
         // Show randomize button for both Bio-D callipering and Dose Range weight sheets and Toxicity weight sheets
         const showRandomizeButton =
           isCalliperingSheetBiod ||
+          isCalliperingSheetEfficacy ||
           isWeightSheetDoseRange ||
           isWeightSheetToxicity;
 
@@ -1013,10 +1014,18 @@ export function getValidationColumns(
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={isRandomizationDisabled}
+                  disabled={
+                    isCalliperingSheetEfficacy
+                      ? rowData.status !== "approved"
+                      : isRandomizationDisabled
+                  }
                   onClick={() => onRandomize?.(rowData)}
                   title={
-                    isRandomizationDisabled
+                    (
+                      isCalliperingSheetEfficacy
+                        ? rowData.status !== "approved"
+                        : isRandomizationDisabled
+                    )
                       ? "Randomization not allowed for this condition"
                       : ""
                   }

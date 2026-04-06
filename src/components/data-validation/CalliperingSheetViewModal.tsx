@@ -9,6 +9,7 @@ import {
   useModal,
   useRejectExperimentData,
 } from "@/hooks";
+import { DATA_TYPE, queryClient, STUDY_TYPE } from "@/lib";
 
 import CaliperHistoryGroupModal from "./CaliperHistoryGroupedModal";
 import CaliperHistoryModal from "./CaliperHistoryModal";
@@ -69,6 +70,15 @@ export function CalliperingSheetViewModal({
         toast.success("Experiment data approved successfully", {
           description: `Status updated to ${data.data?.status}`,
         });
+
+        if (
+          experimentStudyType === STUDY_TYPE.EFFICACY &&
+          experimentDataType === DATA_TYPE.CALLIPERING_SHEET
+        ) {
+          queryClient.invalidateQueries({
+            queryKey: ["efficacy-randomization-groups", experimentId],
+          });
+        }
         onClose();
       },
     });

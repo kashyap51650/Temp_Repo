@@ -15,3 +15,10 @@ export interface CellLine {
   cell_line_name: string;
   vendor_name: string;
 }
+
+export type DrugDropdownOption = {
+  id: number;
+  drug_name: string;
+  om_number: string;
+  drug_display_name: string;
+};

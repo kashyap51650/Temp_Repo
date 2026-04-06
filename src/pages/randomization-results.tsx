@@ -35,6 +35,7 @@ export default function RandomizationResults() {
 
   const state = useRouterState({ select: (s) => s.location.search }) as {
     experiment_id: number;
+    project_id: number;
     mice_per_group: number;
     randomization_type: string;
   };
@@ -231,6 +232,7 @@ export default function RandomizationResults() {
                     }}
                     placeholder="Select Drug"
                     className="w-44 bg-white text-xs"
+                    projectId={state.project_id}
                   />
                 </div>
               )}

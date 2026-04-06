@@ -232,6 +232,32 @@ export function CreateExperimentModal({
   };
 
   const renderPreclinicalForms = () => {
+    if (!projectId) {
+      return (
+        <div className="space-y-4">
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 p-6 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+              <span className="sr-only">Notice</span>
+              <span
+                aria-hidden="true"
+                className="text-lg text-muted-foreground"
+              >
+                !
+              </span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Project Required
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Project ID is required to create this experiment type.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (studyType === STUDY_TYPE_CODE.BIO_DISTRIBUTION) {
       return (
         <BiodExperimentForm

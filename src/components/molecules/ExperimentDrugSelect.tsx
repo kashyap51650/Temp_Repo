@@ -1,4 +1,5 @@
 import { useExperimentsDrugsDropdown } from "@/hooks/useExperimentDrugsDropdown";
+import type { DrugDropdownOption } from "@/types/common";
 
 import { SearchableSelect } from "../atoms/SearchableSelect/SearchableSelect";
 
@@ -8,6 +9,7 @@ interface ExperimentDrugSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  projectId: number;
 }
 
 /**
@@ -23,6 +25,7 @@ interface ExperimentDrugSelectProps {
  * @param placeholder - Placeholder text for the select
  * @param className - Additional CSS classes
  * @param disabled - Whether the select is disabled
+ * @param projectId - ID of the project to fetch drugs for
  */
 export function ExperimentDrugSelect({
   value,
@@ -30,16 +33,15 @@ export function ExperimentDrugSelect({
   placeholder = "Select Drug",
   className,
   disabled = false,
+  projectId,
 }: Readonly<ExperimentDrugSelectProps>) {
-  const { experimentDrugs, loading } = useExperimentsDrugsDropdown();
+  const { experimentDrugs, loading } = useExperimentsDrugsDropdown(projectId);
 
   // Transform experiment drugs to SearchableSelect option format
-  const drugOptions = experimentDrugs.map(
-    (drug: { id: number; drug_name: string }) => ({
-      label: drug.drug_name,
-      value: drug.id.toString(),
-    })
-  );
+  const drugOptions = experimentDrugs.map((drug: DrugDropdownOption) => ({
+    label: drug.drug_display_name,
+    value: drug.id.toString(),
+  }));
 
   return (
     <SearchableSelect

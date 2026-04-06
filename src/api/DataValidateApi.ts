@@ -1,6 +1,7 @@
 import { STUDY_TYPE_CODE, type StudyTypeCode } from "@/lib";
 import { API_CONFIG, apiClient, type ApiResponse } from "@/lib/api";
 import type { PermissionModuleType } from "@/types/auth";
+import type { DrugDropdownOption } from "@/types/common";
 import type { PaginationData } from "@/types/pagination";
 
 export interface ExperimentDataFilters {
@@ -94,16 +95,12 @@ export const experimentDataApi = {
 };
 
 export const experimentDrugApi = {
-  getExperimentDrugsDropdown: async (): Promise<{
-    success: boolean;
-    message: string;
-    data: Array<{
-      id: number;
-      drug_name: string;
-      om_number: string;
-    }>;
-  }> => {
-    return apiClient.get(API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN);
+  getExperimentDrugsDropdown: async (projectId: number) => {
+    return apiClient.get<{
+      success: boolean;
+      message: string;
+      data: Array<DrugDropdownOption>;
+    }>(API_CONFIG.ENDPOINTS.EXPERIMENT_DRUGS.DROPDOWN(projectId));
   },
 };
 

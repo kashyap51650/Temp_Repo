@@ -18,6 +18,7 @@ import { Route as ProjectFoldersRouteImport } from "./routes/project-folders";
 import { Route as NotificationsRouteImport } from "./routes/notifications";
 import { Route as MasterDataRouteImport } from "./routes/master-data";
 import { Route as HomeRouteImport } from "./routes/home";
+import { Route as EfficacyRandomizationResultRouteImport } from "./routes/efficacy-randomization-result";
 import { Route as DataValidateRouteImport } from "./routes/data-validate";
 import { Route as DataUploadRouteImport } from "./routes/data-upload";
 import { Route as IndexRouteImport } from "./routes/index";
@@ -69,6 +70,12 @@ const HomeRoute = HomeRouteImport.update({
   path: "/home",
   getParentRoute: () => rootRouteImport,
 } as any);
+const EfficacyRandomizationResultRoute =
+  EfficacyRandomizationResultRouteImport.update({
+    id: "/efficacy-randomization-result",
+    path: "/efficacy-randomization-result",
+    getParentRoute: () => rootRouteImport,
+  } as any);
 const DataValidateRoute = DataValidateRouteImport.update({
   id: "/data-validate",
   path: "/data-validate",
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/efficacy-randomization-result": typeof EfficacyRandomizationResultRoute;
   "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/efficacy-randomization-result": typeof EfficacyRandomizationResultRoute;
   "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
@@ -132,6 +141,7 @@ export interface FileRoutesById {
   "/": typeof IndexRoute;
   "/data-upload": typeof DataUploadRoute;
   "/data-validate": typeof DataValidateRoute;
+  "/efficacy-randomization-result": typeof EfficacyRandomizationResultRoute;
   "/home": typeof HomeRoute;
   "/master-data": typeof MasterDataRoute;
   "/notifications": typeof NotificationsRoute;
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/efficacy-randomization-result"
     | "/home"
     | "/master-data"
     | "/notifications"
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/efficacy-randomization-result"
     | "/home"
     | "/master-data"
     | "/notifications"
@@ -182,6 +194,7 @@ export interface FileRouteTypes {
     | "/"
     | "/data-upload"
     | "/data-validate"
+    | "/efficacy-randomization-result"
     | "/home"
     | "/master-data"
     | "/notifications"
@@ -199,6 +212,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   DataUploadRoute: typeof DataUploadRoute;
   DataValidateRoute: typeof DataValidateRoute;
+  EfficacyRandomizationResultRoute: typeof EfficacyRandomizationResultRoute;
   HomeRoute: typeof HomeRoute;
   MasterDataRoute: typeof MasterDataRoute;
   NotificationsRoute: typeof NotificationsRoute;
@@ -277,6 +291,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof HomeRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/efficacy-randomization-result": {
+      id: "/efficacy-randomization-result";
+      path: "/efficacy-randomization-result";
+      fullPath: "/efficacy-randomization-result";
+      preLoaderRoute: typeof EfficacyRandomizationResultRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/data-validate": {
       id: "/data-validate";
       path: "/data-validate";
@@ -319,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DataUploadRoute: DataUploadRoute,
   DataValidateRoute: DataValidateRoute,
+  EfficacyRandomizationResultRoute: EfficacyRandomizationResultRoute,
   HomeRoute: HomeRoute,
   MasterDataRoute: MasterDataRoute,
   NotificationsRoute: NotificationsRoute,

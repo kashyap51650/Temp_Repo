@@ -19,7 +19,14 @@ interface UseProjectsResult {
   ) => Promise<Project | null>;
 }
 
-export function useProjects(): UseProjectsResult {
+interface UseProjectsOptions {
+  enabled?: boolean;
+}
+
+export function useProjects(
+  options: UseProjectsOptions = {}
+): UseProjectsResult {
+  const { enabled = true } = options;
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +40,7 @@ export function useProjects(): UseProjectsResult {
 
   const loadProjects = useCallback(
     async (search?: string) => {
-      if (loadingRef.current || !isAuthenticated) {
+      if (loadingRef.current || !isAuthenticated || !enabled) {
         return;
       }
 
@@ -67,7 +74,7 @@ export function useProjects(): UseProjectsResult {
         loadingRef.current = false;
       }
     },
-    [isAuthenticated]
+    [enabled, isAuthenticated]
   );
 
   const searchProjects = useCallback((search: string) => {
@@ -122,21 +129,27 @@ export function useProjects(): UseProjectsResult {
   );
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (!isInitialized.current) {
       isInitialized.current = true;
       loadProjects();
     }
-  }, [loadProjects]);
+  }, [enabled, loadProjects]);
 
   useEffect(() => {
-    if (isInitialized.current) {
-      if (debouncedSearchTerm) {
-        loadProjects(debouncedSearchTerm);
-      } else if (debouncedSearchTerm === "" && searchTerm === "") {
-        loadProjects();
-      }
+    if (!enabled || !isInitialized.current) {
+      return;
     }
-  }, [debouncedSearchTerm, loadProjects, searchTerm]);
+
+    if (debouncedSearchTerm) {
+      loadProjects(debouncedSearchTerm);
+    } else if (debouncedSearchTerm === "" && searchTerm === "") {
+      loadProjects();
+    }
+  }, [debouncedSearchTerm, enabled, loadProjects, searchTerm]);
 
   return {
     projects,

@@ -105,7 +105,7 @@ export const generateBioDOrganData = (
   );
 
   const drugNameData = createGroupedData(
-    (groupCode) => groups[groupCode]?.experiment_drug.drug_name ?? ""
+    (groupCode) => groups[groupCode]?.experiment_drug.om_number ?? ""
   );
 
   const fixedRows: BioDOrganRow[] = [
