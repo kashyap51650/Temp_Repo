@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import type { StudyType } from "@/api";
 import { Button, Dialog, Label } from "@/components/atoms";
 import { SPECIALIZATION } from "@/lib";
@@ -30,6 +28,7 @@ interface SelectTargetExperimentModalProps {
   onExperimentIdChange: (id: string) => void;
   onStudyTypeChange?: (studyType: StudyType | undefined) => void;
   selectedStudyTypeId?: number;
+  selectedStudyTypeName?: string;
 }
 
 export function SelectTargetExperimentModal({
@@ -46,9 +45,8 @@ export function SelectTargetExperimentModal({
   onExperimentIdChange,
   onStudyTypeChange,
   selectedStudyTypeId,
+  selectedStudyTypeName,
 }: Readonly<SelectTargetExperimentModalProps>) {
-  const [selectedStudyType, setSelectedStudyType] = useState<string>("");
-
   const handleMove = () => {
     if (selectedExperimentId) {
       onMove(selectedExperimentId);
@@ -56,7 +54,6 @@ export function SelectTargetExperimentModal({
   };
 
   const handleClose = () => {
-    setSelectedStudyType("");
     onStudyTypeChange?.(undefined);
     onClose();
   };
@@ -86,9 +83,8 @@ export function SelectTargetExperimentModal({
         </div>
 
         <StudyTypeDropdown
-          value={selectedStudyType}
-          onValueChange={(value, studyType) => {
-            setSelectedStudyType(value);
+          value={selectedStudyTypeName ?? ""}
+          onValueChange={(_, studyType) => {
             onStudyTypeChange?.(studyType);
             onExperimentIdChange("");
           }}

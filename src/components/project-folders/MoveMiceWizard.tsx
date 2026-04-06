@@ -1,5 +1,5 @@
 import { useSearch } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import type { StudyType } from "@/api";
@@ -46,10 +46,15 @@ export function MoveMiceWizard({
   const [selectedStudyTypeCode, setSelectedStudyTypeCode] = useState<
     StudyTypeCode | undefined
   >();
+  const [selectedStudyTypeName, setSelectedStudyTypeName] =
+    useState<string>("");
   const [newlyCreatedExperimentId, setNewlyCreatedExperimentId] = useState<
     number | undefined
   >();
   const [selectedExperimentId, setSelectedExperimentId] = useState<string>("");
+  const [createdTargetExperiment, setCreatedTargetExperiment] = useState<
+    { id: string; name: string; studyTypeId?: number } | undefined
+  >();
   const mouseGroupModal = useModal();
   const fillGroupsModal = useModal();
   const [fillGroupsExperimentId, setFillGroupsExperimentId] = useState<
@@ -84,6 +89,39 @@ export function MoveMiceWizard({
   );
 
   const moveMiceMutation = useMoveMice();
+
+  const experimentsForSelection = useMemo(() => {
+    const experiments = experimentsData || [];
+
+    if (!createdTargetExperiment) {
+      return experiments;
+    }
+
+    const alreadyPresent = experiments.some(
+      (experiment) => experiment.id === createdTargetExperiment.id
+    );
+
+    if (alreadyPresent) {
+      return experiments;
+    }
+
+    return [
+      {
+        id: createdTargetExperiment.id,
+        name: createdTargetExperiment.name,
+        cellLines: [],
+        isotope: "",
+        projectId: projectId.toString(),
+        studyType: selectedStudyTypeCode,
+      },
+      ...experiments,
+    ];
+  }, [
+    createdTargetExperiment,
+    experimentsData,
+    projectId,
+    selectedStudyTypeCode,
+  ]);
 
   const checkGroupSlots = async (expId: number): Promise<boolean> => {
     try {
@@ -158,6 +196,19 @@ export function MoveMiceWizard({
     name: string;
   }) => {
     setNewlyCreatedExperimentId(createdExperiment.id);
+    setCreatedTargetExperiment({
+      id: createdExperiment.id.toString(),
+      name: createdExperiment.name,
+      studyTypeId: selectedStudyTypeId,
+    });
+
+    if (selectedStudyTypeCode === STUDY_TYPE_CODE.TOXICITY) {
+      setSelectedExperimentId(createdExperiment.id.toString());
+      setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
+      handleTargetExperimentSelected(createdExperiment.id.toString());
+      return;
+    }
+
     if (selectedStudyTypeCode === STUDY_TYPE_CODE.MODEL_STUDY) {
       mouseGroupModal.openModal();
     } else if (selectedStudyTypeCode === STUDY_TYPE_CODE.EFFICACY) {
@@ -244,6 +295,11 @@ export function MoveMiceWizard({
 
   const handleBackToStudyTypeSelection = () => {
     setCurrentStep(MoveMiceStep.SELECT_TARGET_EXPERIMENT);
+    setSelectedExperimentId("");
+    setCreatedTargetExperiment(undefined);
+    setNewlyCreatedExperimentId(undefined);
+    setFillGroupsExperimentId(undefined);
+    setCheckingSlots(false);
   };
 
   // Handle wizard close
@@ -252,7 +308,9 @@ export function MoveMiceWizard({
     setSelectedMiceIds([]);
     setSelectedStudyTypeId(undefined);
     setSelectedStudyTypeCode(undefined);
+    setSelectedStudyTypeName("");
     setSelectedExperimentId("");
+    setCreatedTargetExperiment(undefined);
     setNewlyCreatedExperimentId(undefined);
     setFillGroupsExperimentId(undefined);
     setCheckingSlots(false);
@@ -269,12 +327,16 @@ export function MoveMiceWizard({
       );
       return;
     }
-    queryClient.setQueryData(["cell-lines-dropdown"], () => {
-      return experimentDetails?.cell_lines || [];
-    });
-    queryClient.setQueryData(["strains-dropdown"], () => {
-      return experimentDetails?.mouse_strains || [];
-    });
+    if (experimentDetails?.cell_lines.length !== 0) {
+      queryClient.setQueryData(["cell-lines-dropdown"], () => {
+        return experimentDetails?.cell_lines || [];
+      });
+    }
+    if (experimentDetails?.mouse_strains.length !== 0) {
+      queryClient.setQueryData(["strains-dropdown"], () => {
+        return experimentDetails?.mouse_strains || [];
+      });
+    }
     setCurrentStep(MoveMiceStep.STUDY_TYPE_FORM);
   };
 
@@ -283,6 +345,7 @@ export function MoveMiceWizard({
     setCurrentStep(MoveMiceStep.SELECT_MICE);
     setSelectedStudyTypeId(undefined);
     setSelectedStudyTypeCode(undefined);
+    setSelectedStudyTypeName("");
     setSelectedMiceIds([]);
     setSelectedExperimentId("");
   };
@@ -291,8 +354,16 @@ export function MoveMiceWizard({
   const handleTargetStudyTypeChange = (studyType: StudyType | undefined) => {
     setSelectedStudyTypeId(studyType?.id);
     setSelectedStudyTypeCode(studyType?.study_type_code);
+    setSelectedStudyTypeName(studyType?.study_type_name ?? "");
 
     setSelectedExperimentId("");
+    if (
+      !studyType?.id ||
+      (createdTargetExperiment?.studyTypeId !== undefined &&
+        createdTargetExperiment.studyTypeId !== studyType.id)
+    ) {
+      setCreatedTargetExperiment(undefined);
+    }
     setFillGroupsExperimentId(undefined);
   };
 
@@ -313,7 +384,7 @@ export function MoveMiceWizard({
         onMove={handleTargetExperimentSelected}
         onCreateNew={handleCreateNewExperiment}
         selectedMiceCount={selectedMiceIds.length}
-        experiments={experimentsData || []}
+        experiments={experimentsForSelection || []}
         isLoading={experimentsLoading || experimentsRefetching}
         isCheckingSlots={checkingSlots}
         isMoving={moveMiceMutation.isPending}
@@ -321,6 +392,7 @@ export function MoveMiceWizard({
         onExperimentIdChange={handleExperimentIdChange}
         onStudyTypeChange={handleTargetStudyTypeChange}
         selectedStudyTypeId={selectedStudyTypeId}
+        selectedStudyTypeName={selectedStudyTypeName}
       />
 
       {/* Step 4: Full Experiment Form based on Study Type */}

@@ -25,7 +25,7 @@ interface EfficacyGroupFieldsProps {
   onAddDose: (groupIndex: number) => void;
   onRemoveDose: (groupIndex: number, doseIndex: number) => void;
   onDoseChange: (groupIndex: number, doseIndex: number, value: string) => void;
-  onCreateFrequency?: () => void;
+  onCreateFrequency?: (groupIndex: number) => void;
   errors?: {
     strainId?: string;
     cellLineId?: string;
@@ -291,16 +291,15 @@ export function EfficacyGroupFields({
           queryKey={["dose-frequencies-dropdown"]}
           value={group.doseFrequencyId?.toString() || ""}
           onChange={(value) => {
-            onUpdate(
-              index,
-              "doseFrequencyId",
-              Number.parseInt(value as string, 10)
-            );
+            const parsed = Number.parseInt(value as string, 10);
+            if (!Number.isNaN(parsed)) {
+              onUpdate(index, "doseFrequencyId", parsed);
+            }
           }}
           placeholder="Select frequency"
           optionWithAll={false}
           searchable={false}
-          onCreateNew={onCreateFrequency}
+          onCreateNew={() => onCreateFrequency?.(index)}
           shouldShowCreateNew
           size="default"
           refetchOnMount={false}

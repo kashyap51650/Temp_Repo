@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   type CellLine,
   cellLineApi,
@@ -55,6 +57,24 @@ const EfficacyExperimentForm = ({
     openModal: openFrequencyModal,
     closeModal: closeFrequencyModal,
   } = useModal();
+
+  const [currentGroupIndexForFrequency, setCurrentGroupIndexForFrequency] =
+    useState<number | null>(null);
+
+  const handleOpenFrequencyModal = (groupIndex: number) => {
+    setCurrentGroupIndexForFrequency(groupIndex);
+    openFrequencyModal();
+  };
+
+  const handleFrequencyCreated = (frequencyId: number) => {
+    if (currentGroupIndexForFrequency !== null && !Number.isNaN(frequencyId)) {
+      updateGroup(
+        currentGroupIndexForFrequency,
+        "doseFrequencyId",
+        frequencyId
+      );
+    }
+  };
 
   const allStrains =
     (queryClient.getQueryData(["strains-dropdown"]) as MouseStrain[]) || [];
@@ -216,7 +236,7 @@ const EfficacyExperimentForm = ({
                     onAddDose={addDoseInput}
                     onRemoveDose={removeDoseInput}
                     onDoseChange={updateDoseValue}
-                    onCreateFrequency={openFrequencyModal}
+                    onCreateFrequency={handleOpenFrequencyModal}
                     errors={errors.groups?.[index]}
                   />
                 </div>
@@ -243,6 +263,7 @@ const EfficacyExperimentForm = ({
       <CreateFrequencyModal
         open={isFrequencyModalOpen}
         onOpenChange={closeFrequencyModal}
+        onSuccessWithData={handleFrequencyCreated}
       />
     </>
   );
