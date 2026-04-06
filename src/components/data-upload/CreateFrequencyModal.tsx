@@ -13,7 +13,7 @@ import { Button, Dialog, Input, Label } from "../atoms";
 interface CreateFrequencyModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccessWithData?: (frequencyId: number) => void;
 }
 
 const frequencySchema = z.object({
@@ -31,7 +31,7 @@ type FrequencyFormInput = z.input<typeof frequencySchema>;
 export function CreateFrequencyModal({
   open,
   onOpenChange,
-  onSuccess,
+  onSuccessWithData,
 }: CreateFrequencyModalProps) {
   const { mutate, isPending } = useMutation({
     mutationFn: (payload: CreateDoseFrequencyPayload) =>
@@ -60,13 +60,21 @@ export function CreateFrequencyModal({
         no_of_days: data.noOfDays,
       },
       {
-        onSuccess: (data) => {
-          toast.success(data?.message || "Dose frequency created successfully");
+        onSuccess: async (response) => {
+          toast.success(
+            response?.message || "Dose frequency created successfully"
+          );
+
+          const frequencyId = response?.data?.id;
+
           queryClient.invalidateQueries({
             queryKey: ["dose-frequencies-dropdown"],
           });
+
           reset();
-          onSuccess?.();
+          if (frequencyId) {
+            onSuccessWithData?.(frequencyId);
+          }
           onOpenChange(false);
         },
         onError: (error) => {
