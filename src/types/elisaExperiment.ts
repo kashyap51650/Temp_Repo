@@ -35,7 +35,6 @@ export interface ElisaExperiment {
 }
 
 export type CreateElisaExperimentResponse = ApiResponse<ElisaExperiment>;
-
 export interface ElisaFileType {
   file_type: string;
   file_url: string;
